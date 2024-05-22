@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppInterpreterCodeEditorBreakpointHitContract</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+[DataContract]
+public final class MXTXppInterpreterCodeEditorBreakpointHitContract
+{
+    public int fromLine;
+    public int toLine;
+    public int fromPosition;
+    public int toPosition;
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>parmFromLine</Name>
+				<Source><![CDATA[
+    [DataMember("FromLine")]
+    public int parmFromLine(int _fromLine = fromLine)
+    {
+        fromLine = _fromLine;
+        return fromLine;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmFromPosition</Name>
+				<Source><![CDATA[
+    [DataMember("FromPosition")]
+    public int parmFromPosition(int _fromPosition = fromPosition)
+    {
+        fromPosition = _fromPosition;
+        return fromPosition;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmToLine</Name>
+				<Source><![CDATA[
+    [DataMember("ToLine")]
+    public int parmToLine(int _toLine = toLine)
+    {
+        toLine = _toLine;
+        return toLine;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmToPosition</Name>
+				<Source><![CDATA[
+    [DataMember("ToPosition")]
+    public int parmToPosition(int _toPosition = toPosition)
+    {
+        toPosition = _toPosition;
+        return toPosition;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppExceptionsProxy</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+using XppInterpreter.Interpreter.Proxy;
+
+internal final class MXTXppExceptionsProxy implements XppInterpreter.Interpreter.Proxy.IXppExceptionsProxy
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>Throw</Name>
+				<Source><![CDATA[
+	public void Throw(System.Object obj)
+    {
+        if (obj is System.Exception)
+        {
+            throw obj as System.Exception;
+        }
+        else
+        {
+            // Assume it's a member of Exception enum
+            Exception exception = obj;
+            throw exception;
+        }
+	}
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppBinaryOperationProxy</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+using XppInterpreter.Interpreter.Proxy;
+
+internal final class MXTXppBinaryOperationProxy implements XppInterpreter.Interpreter.Proxy.IXppBinaryOperationProxy
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>Add</Name>
+				<Source><![CDATA[
+	public System.Object Add(System.Object left, System.Object right)
+    {
+        anytype l = left, r = right;
+        return l + r;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>Substract</Name>
+				<Source><![CDATA[
+    public System.Object Substract(System.Object left, System.Object right)
+    {
+        anytype l = left, r = right;
+        return l - r;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>Multiply</Name>
+				<Source><![CDATA[
+    public System.Object Multiply(System.Object left, System.Object right)
+    {
+        anytype l = left, r = right;
+        return l * r;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>Divide</Name>
+				<Source><![CDATA[
+    public System.Object Divide(System.Object left, System.Object right)
+    {
+        anytype l = left, r = right;
+        return l / r;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>IntDivide</Name>
+				<Source><![CDATA[
+    public System.Object IntDivide(System.Object left, System.Object right)
+    {
+        anytype l = left, r = right;
+        return l div r;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>Mod</Name>
+				<Source><![CDATA[
+    public System.Object Mod(System.Object left, System.Object right)
+    {
+        anytype l = left, r = right;
+        return l mod r;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>Greater</Name>
+				<Source><![CDATA[
+    public System.Boolean Greater(System.Object left, System.Object right)
+    {
+        anytype l = left, r = right;
+        return l > r;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>AreEqual</Name>
+				<Source><![CDATA[
+    public System.Boolean AreEqual(System.Object left, System.Object right)
+    {
+        return left == right;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxMenuItemDisplay xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns="Microsoft.Dynamics.AX.Metadata.V1">
+	<Name>MXTXppInterpreterRunner</Name>
+	<ConfigurationKey>SysDevelopmentMorphX</ConfigurationKey>
+	<Label>@MXT:XppCodeRunner</Label>
+	<Object>MXTXppInterpreterRunner</Object>
+	<OperationalDomain>Local</OperationalDomain>
+	<SubscriberAccessLevel>
+		<Correct xmlns="">Deny</Correct>
+		<Create xmlns="">Deny</Create>
+		<Delete xmlns="">Deny</Delete>
+		<Invoke xmlns="">Deny</Invoke>
+		<Read xmlns="">Deny</Read>
+		<Update xmlns="">Deny</Update>
+	</SubscriberAccessLevel>
+	<ViewUserLicense>Universal</ViewUserLicense>
+</AxMenuItemDisplay>

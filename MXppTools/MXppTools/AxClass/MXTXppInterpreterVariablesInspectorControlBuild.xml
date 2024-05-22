@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppInterpreterVariablesInspectorControlBuild</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+[FormDesignControlAttribute("X++ Variables Inspector")]
+public class MXTXppInterpreterVariablesInspectorControlBuild extends FormBuildControl
+{
+    
+}
+]]></Declaration>
+		<Methods />
+	</SourceCode>
+</AxClass>

@@ -1,0 +1,48 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.33.0/ace.js"></script>
+<script src="/resources/scripts/MXTXppInterpreterCodeEditor.js"></script>
+<script src="/resources/scripts/MXTXppInterpreterEditorHighlighter.js"></script>
+
+<style>
+    .ace_gutter-cell.ace_breakpoint {
+        border-radius: 20px 0px 0px 20px;
+        box-shadow: 0px 0px 10px 10px #ff0000 inset;
+    }
+
+    .errorMarker {
+        position: absolute;
+        border-bottom: 100px solid red;
+        z-index: 20;
+    }
+
+    .breakpointMarker {
+        position: absolute;
+        background: #b65252;
+        z-index: 20;
+    }
+
+    .breakpointHitMarked {
+        position: absolute;
+        background: #d8d16a;
+        z-index: 20;
+    }
+
+    #editor {
+        position: relative;
+        z-index: 0;
+        float: left;
+        width: 100%;
+        height: 100%;
+    }
+</style>
+
+
+<div id="MXTXppInterpreterCodeEditor"
+     data-dyn-bind="
+     sizing: { height: $data.Height, width: $data.Width },
+     visible: $data.Visible,
+     keyDown: $data.keydown">
+    <div id="editor"
+         data-dyn-bind="
+         visible: $data.Visible"></div>
+</div>
+

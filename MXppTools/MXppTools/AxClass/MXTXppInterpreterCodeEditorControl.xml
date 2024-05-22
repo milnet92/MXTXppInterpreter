@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppInterpreterCodeEditorControl</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+using XppInterpreter.Interpreter.Debug;
+
+[FormControlAttribute('MXTXppInterpreterCodeEditor', '', classstr(MXTXppInterpreterCodeEditorControlBuild))]
+public class MXTXppInterpreterCodeEditorControl extends FormTemplateControl
+{
+    FormProperty sourceCodeProperty;
+    FormProperty themeProperty;
+    FormProperty modeProperty;
+    FormProperty parseErrorProperty;
+    FormProperty breakpointHitProperty;
+    FormProperty executionPhaseProperty;
+
+    MXTXppInterpreterDebugSession debugSession;
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>setDebugSession</Name>
+				<Source><![CDATA[
+    public void setDebugSession(MXTXppInterpreterDebugSession _debugSession)
+    {
+        this.debugSession = _debugSession;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>new</Name>
+				<Source><![CDATA[
+	public void new(FormBuildControl _build, FormRun _formRun)
+    {
+        super(_build, _formRun);
+
+        this.setTemplateId('MXTXppInterpreterCodeEditor');
+        this.setResourceBundleName("/resources/html/MXTXppInterpreterCodeEditor");
+
+        sourceCodeProperty = properties.addProperty(methodStr(MXTXppInterpreterCodeEditorControl, sourceCode), Types::String);
+        themeProperty = properties.addProperty(methodStr(MXTXppInterpreterCodeEditorControl, theme), Types::String);
+        modeProperty = properties.addProperty(methodStr(MXTXppInterpreterCodeEditorControl, mode), Types::String);
+        parseErrorProperty = properties.addProperty(methodStr(MXTXppInterpreterCodeEditorControl, parseError), Types::Class);
+        breakpointHitProperty = properties.addProperty(methodStr(MXTXppInterpreterCodeEditorControl, breakpointHit), Types::Class);
+        executionPhaseProperty = properties.addProperty(methodStr(MXTXppInterpreterCodeEditorControl, executionPhase), Types::Integer);
+	}
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>applyBuild</Name>
+				<Source><![CDATA[
+    public void applyBuild()
+    {
+        MXTXppInterpreterCodeEditorControlBuild build;
+        
+        super();
+
+        build = this.build();
+
+        if(build)
+        {
+            this.sourceCode(build.sourceCode());
+            this.mode(this.getModeFromLanguage(build.Language()));
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getModeFromLanguage</Name>
+				<Source><![CDATA[
+    private str getModeFromLanguage(MXTXppInterpreterEditorLanguage _languange)
+    {
+        if (_languange == MXTXppInterpreterEditorLanguage::Xpp) return "ace/mode/xpp";
+
+        return "";
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>sourceCode</Name>
+				<Source><![CDATA[
+    [FormPropertyAttribute(FormPropertyKind::Value, "SourceCode", false)]
+    public str sourceCode(str _value = sourceCodeProperty.parmValue())
+    {
+        if(!prmIsDefault(_value))
+        {
+            sourceCodeProperty.setValueOrBinding(_value);
+        }
+
+        return sourceCodeProperty.parmValue();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>theme</Name>
+				<Source><![CDATA[
+    [FormPropertyAttribute(FormPropertyKind::Value, "Theme", true)]
+    public str theme(str _value = themeProperty.parmValue())
+    {
+        if(!prmIsDefault(_value))
+        {
+            themeProperty.setValueOrBinding(_value);
+        }
+
+        return themeProperty.parmValue();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>mode</Name>
+				<Source><![CDATA[
+    [FormPropertyAttribute(FormPropertyKind::Value, "Mode", true)]
+    public str mode(str _value = modeProperty.parmValue())
+    {
+        if(!prmIsDefault(_value))
+        {
+            modeProperty.setValueOrBinding(_value);
+        }
+
+        return modeProperty.parmValue();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parseError</Name>
+				<Source><![CDATA[
+    [FormPropertyAttribute(FormPropertyKind::Value, "ParseError", true)]
+    public MXTXppInterpreterCodeEditorParseException parseError(MXTXppInterpreterCodeEditorParseException _value = parseErrorProperty.parmValue())
+    {
+        if(!prmIsDefault(_value))
+        {
+            parseErrorProperty.setValueOrBinding(_value);
+        }
+
+        return parseErrorProperty.parmValue();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>breakpointHit</Name>
+				<Source><![CDATA[
+    [FormPropertyAttribute(FormPropertyKind::Value, "BreakpointHit", false, true)]
+    public MXTXppInterpreterCodeEditorBreakpointHitContract breakpointHit(MXTXppInterpreterCodeEditorBreakpointHitContract _value = breakpointHitProperty.parmValue())
+    {
+        if(!prmIsDefault(_value))
+        {
+            breakpointHitProperty.setValueOrBinding(_value);
+        }
+
+        return breakpointHitProperty.parmValue();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>executionPhase</Name>
+				<Source><![CDATA[
+    [FormPropertyAttribute(FormPropertyKind::Value, "ExecutionPhase", true)]
+    public int executionPhase(int _value = executionPhaseProperty.parmValue())
+    {
+        if(!prmIsDefault(_value))
+        {
+            executionPhaseProperty.setValueOrBinding(_value);
+        }
+
+        return executionPhaseProperty.parmValue();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>Execute</Name>
+				<Source><![CDATA[
+    [FormCommand("Execute")]
+    public void Execute()
+    {
+        MXTXppInterpreterCodeEditorControlBuild build = this.build() as MXTXppInterpreterCodeEditorControlBuild;
+        build.execute();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>AddOrRemoveBreakpoint</Name>
+				<Source><![CDATA[
+    [FormCommand("AddOrRemoveBreakpoint", true)]
+    public MXTXppINterpreterCodeEditorBreakpointContract AddOrRemoveBreakpoint(int _line, int _position)
+    {
+        if (debugSession == null) return null;
+
+        return debugSession.addOrRemoveBreakpoint(_line, _position, this.sourceCode());
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>ClearSession</Name>
+				<Source><![CDATA[
+    [FormCommand("ClearSession", true)]
+    public void ClearSession()
+    {
+        if (debugSession == null) return;
+
+        debugSession.clear();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>ContinueExecution</Name>
+				<Source><![CDATA[
+    [FormCommand("ContinueExecution", true)]
+    public void ContinueExecution()
+    {
+        debugSession.continueExecution(DebugAction::Continue);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>StopExecution</Name>
+				<Source><![CDATA[
+    [FormCommand("StopExecution", true)]
+    public void StopExecution()
+    {
+        debugSession.continueExecution(DebugAction::CancelExecution);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>StopDebugging</Name>
+				<Source><![CDATA[
+    [FormCommand("StopDebugging", true)]
+    public void StopDebugging()
+    {
+        if (debugSession == null) return;
+
+        debugSession.continueExecution(DebugAction::StopDebugging);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>StepOver</Name>
+				<Source><![CDATA[
+    [FormCommand("StepOverExecution", true)]
+    public void StepOver()
+    {
+        if (debugSession == null) return;
+
+        debugSession.continueExecution(DebugAction::StepOver);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>Parse</Name>
+				<Source><![CDATA[
+    [FormCommand("Parse", true)]
+    public MXTXppInterpreterCodeEditorParseException Parse()
+    {
+        if (debugSession == null) return null;
+
+        return debugSession.tryParse(this.sourceCode());
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

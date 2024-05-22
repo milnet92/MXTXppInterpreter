@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppIntrinsicFunctionProvider</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.Interpreter.Proxy.IIntrinsicFunctionProvider
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>classNum</Name>
+				<Source><![CDATA[
+	public int classNum(str name)
+    {
+        return className2Id(name);
+	}
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>classStr</Name>
+				<Source><![CDATA[
+    public str classStr(str name)
+    {
+        return name;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>formStr</Name>
+				<Source><![CDATA[
+    public str formStr(str name)
+    {
+        return name;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>tableNum</Name>
+				<Source><![CDATA[
+    public int tableNum(str name)
+    {
+        return tableName2Id(name);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>tableStr</Name>
+				<Source><![CDATA[
+    public str tableStr(str name)
+    {
+        return name;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>conNull</Name>
+				<Source><![CDATA[
+    public System.Object conNull()
+    {
+        return conNull();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>dateNull</Name>
+				<Source><![CDATA[
+    public System.Object dateNull()
+    {
+        return dateNull();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>maxDate</Name>
+				<Source><![CDATA[
+    public System.Object maxDate()
+    {
+        return maxDate();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>extendedTypeStr</Name>
+				<Source><![CDATA[
+    public str extendedTypeStr(System.String name)
+    {
+        return name;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>menuItemActionStr</Name>
+				<Source><![CDATA[
+    public str menuItemActionStr(System.String name)
+    {
+        return name;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>menuItemDisplayStr</Name>
+				<Source><![CDATA[
+    public str menuItemDisplayStr(System.String name)
+    {
+        return name;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>menuItemOutputStr</Name>
+				<Source><![CDATA[
+    public str menuItemOutputStr(System.String name)
+    {
+        return name;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>methodStr</Name>
+				<Source><![CDATA[
+    public str methodStr(System.String className, System.String methodName)
+    {
+        return methodName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>staticMethodStr</Name>
+				<Source><![CDATA[
+    public str staticMethodStr(System.String className, System.String methodName)
+    {
+        return methodName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>maxInt</Name>
+				<Source><![CDATA[
+    public int maxInt()
+    {
+        return maxInt();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>minInt</Name>
+				<Source><![CDATA[
+    public int minInt()
+    {
+        return minInt();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>enumNum</Name>
+				<Source><![CDATA[
+    public int enumNum(System.String enumName)
+    {
+        return enumName2Id(enumName);
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

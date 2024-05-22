@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppReflectionProxy</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+using XppInterpreter;
+using CArray = Microsoft.Dynamics.Ax.Xpp.Array;
+
+public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.Proxy.IXppReflectionProxy
+{
+    private System.Type predefinedFunctionsType = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType("PredefinedFunctions");
+    private System.Type globalType = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType("Global");
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>IsEnum</Name>
+				<Source><![CDATA[
+    public System.Boolean IsEnum(System.String name)
+    {
+        return SysDictEnum::newName(name) != null;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>IsInstantiable</Name>
+				<Source><![CDATA[
+    public System.Boolean IsInstantiable(System.String name)
+    {
+        return className2Id(name) != 0;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>CallInstanceFunction</Name>
+				<Source><![CDATA[
+    public System.Object CallInstanceFunction(System.Object _instance, System.String _functionName, System.Object[] _parameters)
+    {
+        return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeInstanceCall(_instance, _functionName, _parameters);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>CallStaticFunction</Name>
+				<Source><![CDATA[
+    public System.Object CallStaticFunction(System.String _className, System.String _methodName, System.Object[] _parameters)
+    {
+        return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeStaticCall(this.getClassType(_className), _methodName, _parameters);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>CreateInstance</Name>
+				<Source><![CDATA[
+    public System.Object CreateInstance(System.String _className, System.Object[] parameters)
+    {
+        return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeNewObjCall(this.getClassType(_className), parameters);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetInstanceProperty</Name>
+				<Source><![CDATA[
+    public System.Object GetInstanceProperty(System.Object _instance, System.String _propertyName)
+    {
+        if (this.isCommon(_instance))
+        {
+            Microsoft.Dynamics.Ax.Xpp.Common common = _instance;
+            return common.getFieldValue(_propertyName);
+        }
+        else
+        {
+            DictClass dictClass = new DictClass(_instance);
+            System.Reflection.PropertyInfo propertyInfo = _instance.GetType().GetProperty(_propertyName);
+
+            if (propertyInfo)
+            {
+                return propertyInfo.GetValue(_instance);
+            }
+
+            throw error(strFmt("@MXT:InvalidPropertyError", _propertyName));
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetStaticProperty</Name>
+				<Source><![CDATA[
+    public System.Object GetStaticProperty(System.String _className, System.String _propertyName)
+    {
+        System.Reflection.PropertyInfo propertyInfo = this.getClassType(_className).GetProperty(_propertyName);
+        
+        if (propertyInfo)
+        {
+            return propertyInfo.GetValue(null);
+        }
+
+        throw error(strFmt("@MXT:InvalidPropertyError", _propertyName));
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>isCommon</Name>
+				<Source><![CDATA[
+    private boolean isCommon(System.Object _instance)
+    {
+        System.Type type = _instance.GetType();
+
+        return type.BaseType == Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType("Common");
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>SetInstanceProperty</Name>
+				<Source><![CDATA[
+    public void SetInstanceProperty(System.Object _instance, System.String _propertyName, System.Object _value)
+    {
+        if (this.isCommon(_instance))
+        {
+            Microsoft.Dynamics.Ax.Xpp.Common common = _instance;
+            common.setFieldValue(_propertyName, _value);
+        }
+        else
+        {
+            System.Reflection.PropertyInfo propertyInfo = _instance.GetType().GetProperty(_propertyName);
+
+            if (propertyInfo)
+            {
+                propertyInfo.SetValue(_instance, _value);
+            }
+            else
+            {
+                throw error(strFmt("@MXT:InvalidPropertyError", _propertyName));
+            }
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>CallGlobalOrPredefinedFunction</Name>
+				<Source><![CDATA[
+    public System.Object CallGlobalOrPredefinedFunction(System.String _methodName, System.Object[] _parameters)
+    {
+        if (MXTXppPredefinedFunctions::isCustomPredefinedFunction(_methodName))
+        {
+            return MXTXppPredefinedFunctions::callMethod(_methodName, _parameters);
+        }
+        else if (this.isPredefinedFunction(_methodName))
+        {
+            System.String invariantMethodName = XppInterpreter.Core.ReflectionHelper::GetMethodInvariantName(predefinedFunctionsType, _methodName);
+            return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeStaticCall(predefinedFunctionsType, invariantMethodName, _parameters);
+        }
+        else
+        {
+            System.String invariantMethodName = XppInterpreter.Core.ReflectionHelper::GetMethodInvariantName(globalType, _methodName);
+            return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeStaticCall(globalType, invariantMethodName, _parameters);
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>isPredefinedFunction</Name>
+				<Source><![CDATA[
+    private boolean isPredefinedFunction(str _methodName)
+    {
+        return XppInterpreter.Core.ReflectionHelper::GetMethodInvariantName(predefinedFunctionsType, _methodName) != null;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getClassType</Name>
+				<Source><![CDATA[
+    private System.Type getClassType(str _className)
+    {
+        return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::GetTypeFromClassName(_className);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetEnumValue</Name>
+				<Source><![CDATA[
+    public System.Object GetEnumValue(System.String _enumClass, System.String _enumValue)
+    {
+        System.Type enumType = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType(_enumClass);
+
+        Debug::assert(enumType.IsEnum);
+
+        return System.Enum::ToObject(enumType, symbol2Enum(enumName2Id(_enumClass), _enumValue));
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetAllEnumvalues</Name>
+				<Source><![CDATA[
+    public System.String[] GetAllEnumvalues(System.String _enumType)
+    {
+        SysDictEnum dictEnum = new SysDictEnum(enumName2Id(_enumType));
+        System.String[] ret = new System.String[dictEnum.values()]();
+
+        for (int i = 0; i < dictEnum.values(); i++)
+        {
+            ret.SetValue(dictEnum.index2Symbol(i), i);
+        }
+
+        return ret;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

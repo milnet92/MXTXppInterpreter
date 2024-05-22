@@ -1,0 +1,227 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{45DF663A-BC15-4EFF-BC61-2CCEEC66CFD7}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>XppInterpreter</RootNamespace>
+    <AssemblyName>XppInterpreter</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Dynamics.AX.ApplicationPlatform">
+      <HintPath>K:\AosService\PackagesLocalDirectory\ApplicationPlatform\bin\Dynamics.AX.ApplicationPlatform.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.Dynamics.AX.Data.Core">
+      <HintPath>K:\AosService\PackagesLocalDirectory\bin\Microsoft.Dynamics.AX.Data.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Dynamics.AX.Server.Core">
+      <HintPath>K:\AosService\PackagesLocalDirectory\bin\Microsoft.Dynamics.AX.Server.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.Dynamics.AX.Xpp.AxShared">
+      <HintPath>K:\AosService\PackagesLocalDirectory\bin\Microsoft.Dynamics.AX.Xpp.AxShared.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.Dynamics.AX.Xpp.Support">
+      <HintPath>K:\AosService\PackagesLocalDirectory\bin\Microsoft.Dynamics.AX.Xpp.Support.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Z.Expressions.Eval, Version=6.1.3.0, Culture=neutral, PublicKeyToken=59b66d028979105b, processorArchitecture=MSIL">
+      <HintPath>..\packages\Z.Expressions.Eval.6.1.3\lib\net45\Z.Expressions.Eval.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Core\ParseException.cs" />
+    <Compile Include="Core\QueryHandler.cs" />
+    <Compile Include="Core\ReflectionHelper.cs" />
+    <Compile Include="Core\Scope.cs" />
+    <Compile Include="Core\ScopeHandler.cs" />
+    <Compile Include="Core\SourceCodeRange.cs" />
+    <Compile Include="Core\ValueTypeHelper.cs" />
+    <Compile Include="Core\VariableCollection.cs" />
+    <Compile Include="Core\VariableEditValueResponse.cs" />
+    <Compile Include="Core\VariableEntry.cs" />
+    <Compile Include="Interpreter\AstSimpleVisitor.cs" />
+    <Compile Include="Interpreter\Bytecode\Arithmetic.cs" />
+    <Compile Include="Interpreter\Bytecode\ByteCode.cs" />
+    <Compile Include="Interpreter\Bytecode\ByteCodeGenerationContext.cs" />
+    <Compile Include="Interpreter\Bytecode\ByteCodeGenerationScope.cs" />
+    <Compile Include="Interpreter\Bytecode\ByteCodeGenerator.cs" />
+    <Compile Include="Interpreter\Bytecode\Call.cs" />
+    <Compile Include="Interpreter\Bytecode\Case.cs" />
+    <Compile Include="Interpreter\Bytecode\ChangeCompany.cs" />
+    <Compile Include="Interpreter\Bytecode\ChangeCompanyDispose.cs" />
+    <Compile Include="Interpreter\Bytecode\Container.cs" />
+    <Compile Include="Interpreter\Bytecode\Debug.cs" />
+    <Compile Include="Interpreter\Bytecode\DefaultValue.cs" />
+    <Compile Include="Interpreter\Bytecode\DefaultValueArray.cs" />
+    <Compile Include="Interpreter\Bytecode\DeleteQuery.cs" />
+    <Compile Include="Interpreter\Bytecode\EndScope.cs" />
+    <Compile Include="Interpreter\Bytecode\IInstruction.cs" />
+    <Compile Include="Interpreter\Bytecode\InserQuery.cs" />
+    <Compile Include="Interpreter\Bytecode\InstanceFunctionCall.cs" />
+    <Compile Include="Interpreter\Bytecode\InstanceLoad.cs" />
+    <Compile Include="Interpreter\Bytecode\IntrinsicCall.cs" />
+    <Compile Include="Interpreter\Bytecode\Jump.cs" />
+    <Compile Include="Interpreter\Bytecode\JumpIfTrue.cs" />
+    <Compile Include="Interpreter\Bytecode\JumpIfFalse.cs" />
+    <Compile Include="Interpreter\Bytecode\LabelGenerate.cs" />
+    <Compile Include="Interpreter\Bytecode\Load.cs" />
+    <Compile Include="Interpreter\Bytecode\LoopControl.cs" />
+    <Compile Include="Interpreter\Bytecode\NewObject.cs" />
+    <Compile Include="Interpreter\Bytecode\BeginScope.cs" />
+    <Compile Include="Interpreter\Bytecode\Next.cs" />
+    <Compile Include="Interpreter\Bytecode\Push.cs" />
+    <Compile Include="Interpreter\Bytecode\SelectQuery.cs" />
+    <Compile Include="Interpreter\Bytecode\StaticFunctionCall.cs" />
+    <Compile Include="Interpreter\Bytecode\StaticLoad.cs" />
+    <Compile Include="Interpreter\Bytecode\Store.cs" />
+    <Compile Include="Interpreter\Bytecode\ThrowException.cs" />
+    <Compile Include="Interpreter\Bytecode\MaxLoopThrow.cs" />
+    <Compile Include="Interpreter\Bytecode\TtsAbort.cs" />
+    <Compile Include="Interpreter\Bytecode\TtsBegin.cs" />
+    <Compile Include="Interpreter\Bytecode\TtsCommit.cs" />
+    <Compile Include="Interpreter\Bytecode\Unary.cs" />
+    <Compile Include="Interpreter\Bytecode\UpdateQuery.cs" />
+    <Compile Include="Interpreter\Bytecode\VariableLoad.cs" />
+    <Compile Include="Interpreter\Debug\AST2SourceCodeBindableCollection.cs" />
+    <Compile Include="Interpreter\Debug\Breakpoint.cs" />
+    <Compile Include="Interpreter\Debug\BreakpointAction.cs" />
+    <Compile Include="Interpreter\Debug\DebugAction.cs" />
+    <Compile Include="Interpreter\Debug\DebugHelper.cs" />
+    <Compile Include="Interpreter\Debug\IDebuggeable.cs" />
+    <Compile Include="Interpreter\Debug\NormalizedScopeEntry.cs" />
+    <Compile Include="Interpreter\Debug\NormalizedScopeEntryHash.cs" />
+    <Compile Include="Interpreter\Debug\XppDebugger.cs" />
+    <Compile Include="Interpreter\Debug\IDebugger.cs" />
+    <Compile Include="Interpreter\IAstVisitor.cs" />
+    <Compile Include="Interpreter\InterpreterResult.cs" />
+    <Compile Include="Interpreter\InterpreterSaveState.cs" />
+    <Compile Include="Interpreter\Query\QueryExpressionGenerator.cs" />
+    <Compile Include="Interpreter\Query\QueryGenerationHelper.cs" />
+    <Compile Include="Interpreter\Query\QueryGenerator.cs" />
+    <Compile Include="Interpreter\RuntimeContext.cs" />
+    <Compile Include="Interpreter\Proxy\ChangeCompanyCallback.cs" />
+    <Compile Include="Interpreter\Proxy\IIntrinsicFunctionProvider.cs" />
+    <Compile Include="Interpreter\Proxy\IXppBinaryOperationProxy.cs" />
+    <Compile Include="Interpreter\Proxy\IXppCastingProxy.cs" />
+    <Compile Include="Interpreter\Proxy\IXppDataAccessProxy.cs" />
+    <Compile Include="Interpreter\Proxy\IXppExceptionsProxy.cs" />
+    <Compile Include="Interpreter\Proxy\IXppReflectionProxy.cs" />
+    <Compile Include="Interpreter\Proxy\IXppUnaryOperationProxy.cs" />
+    <Compile Include="Interpreter\Proxy\XppProxy.cs" />
+    <Compile Include="Interpreter\Proxy\XppProxyHelper.cs" />
+    <Compile Include="Interpreter\Query\IQueryExpressionVisitor.cs" />
+    <Compile Include="Interpreter\Query\SearchInstance.cs" />
+    <Compile Include="Interpreter\XppInterpreter.cs" />
+    <Compile Include="Interpreter\XppInterpreterOptions.cs" />
+    <Compile Include="Lexer\BaseType.cs" />
+    <Compile Include="Core\SourceCodeLocation.cs" />
+    <Compile Include="Lexer\ILexer.cs" />
+    <Compile Include="Lexer\IScanResult.cs" />
+    <Compile Include="Lexer\ScanResult.cs" />
+    <Compile Include="Lexer\Token.cs" />
+    <Compile Include="Lexer\Type.cs" />
+    <Compile Include="Lexer\Word.cs" />
+    <Compile Include="Lexer\XppLexer.cs" />
+    <Compile Include="Parser\ArrayAccess.cs" />
+    <Compile Include="Parser\Assignment.cs" />
+    <Compile Include="Parser\BinaryOperation.cs" />
+    <Compile Include="Parser\Block.cs" />
+    <Compile Include="Parser\Breakpoint.cs" />
+    <Compile Include="Parser\ChangeCompany.cs" />
+    <Compile Include="Parser\Constant.cs" />
+    <Compile Include="Parser\Constructor.cs" />
+    <Compile Include="Parser\ContainerInitialisation.cs" />
+    <Compile Include="Parser\Data\CrossCompany.cs" />
+    <Compile Include="Parser\Data\Field.cs" />
+    <Compile Include="Parser\Data\Setting.cs" />
+    <Compile Include="Parser\DeleteFrom.cs" />
+    <Compile Include="Parser\FunctionDeclaration.cs" />
+    <Compile Include="Parser\FunctionParameter.cs" />
+    <Compile Include="Parser\InsertRecordset.cs" />
+    <Compile Include="Parser\ParseContext.cs" />
+    <Compile Include="Parser\ParseContextStack.cs" />
+    <Compile Include="Parser\Switch.cs" />
+    <Compile Include="Parser\UpdateRecordset.cs" />
+    <Compile Include="Parser\Data\Join.cs" />
+    <Compile Include="Parser\Data\OrderByField.cs" />
+    <Compile Include="Parser\Data\Query.cs" />
+    <Compile Include="Parser\Data\QueryModifiersCollection.cs" />
+    <Compile Include="Parser\Data\SelectionField.cs" />
+    <Compile Include="Parser\Data\ValidTimeState.cs" />
+    <Compile Include="Parser\Data\Where.cs" />
+    <Compile Include="Parser\Do.cs" />
+    <Compile Include="Parser\Else.cs" />
+    <Compile Include="Parser\Expression.cs" />
+    <Compile Include="Parser\For.cs" />
+    <Compile Include="Parser\FunctionCall.cs" />
+    <Compile Include="Parser\If.cs" />
+    <Compile Include="Parser\IAstNode.cs" />
+    <Compile Include="Parser\IParser.cs" />
+    <Compile Include="Parser\ISourceCodeBindable.cs" />
+    <Compile Include="Parser\Loop.cs" />
+    <Compile Include="Parser\LoopControl.cs" />
+    <Compile Include="Parser\Next.cs" />
+    <Compile Include="Parser\NoReturnFunctionCall.cs" />
+    <Compile Include="Parser\Program.cs" />
+    <Compile Include="Parser\Data\QueryParser.cs" />
+    <Compile Include="Parser\Select.cs" />
+    <Compile Include="Parser\SourceCodeBinding.cs" />
+    <Compile Include="Parser\Statement.cs" />
+    <Compile Include="Parser\Ternary.cs" />
+    <Compile Include="Parser\Throw.cs" />
+    <Compile Include="Parser\TtsAbort.cs" />
+    <Compile Include="Parser\TtsBegin.cs" />
+    <Compile Include="Parser\TtsCommit.cs" />
+    <Compile Include="Parser\UnaryOperation.cs" />
+    <Compile Include="Parser\Variable.cs" />
+    <Compile Include="Parser\VariableArrayDeclaration.cs" />
+    <Compile Include="Parser\VariableDeclarations.cs" />
+    <Compile Include="Parser\While.cs" />
+    <Compile Include="Parser\WhileSelect.cs" />
+    <Compile Include="Parser\XppParser.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

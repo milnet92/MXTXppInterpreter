@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxLabelFile xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXT_en-US</Name>
+	<LabelContentFileName>MXT.en-US.label.txt</LabelContentFileName>
+	<LabelFileId>MXT</LabelFileId>
+	<RelativeUriInModelStore>MXppTools\MXppTools\AxLabelFile\LabelResources\en-US\MXT.en-US.label.txt</RelativeUriInModelStore>
+</AxLabelFile>

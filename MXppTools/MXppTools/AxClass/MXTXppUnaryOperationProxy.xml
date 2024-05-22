@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppUnaryOperationProxy</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+using XppInterpreter.Interpreter.Proxy;
+
+internal final class MXTXppUnaryOperationProxy implements XppInterpreter.Interpreter.Proxy.IXppUnaryOperationProxy
+{
+}
+
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>Negate</Name>
+				<Source><![CDATA[
+	public System.Object Negate(System.Object value)
+    {
+        return !value;
+	}
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

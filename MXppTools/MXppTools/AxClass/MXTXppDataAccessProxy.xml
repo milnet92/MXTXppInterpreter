@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppDataAccessProxy</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+using XppInterpreter.Interpreter.Proxy;
+
+internal final class MXTXppDataAccessProxy implements XppInterpreter.Interpreter.Proxy.IXppDataAccessProxy
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>TtsBegin</Name>
+				<Source><![CDATA[
+	public void TtsBegin()
+    {
+        switch (10)
+        {
+            case 10: break;
+            case 11: break;
+            default: {} {} break;
+        }
+
+        ttsbegin;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>TtsCommit</Name>
+				<Source><![CDATA[
+    public void TtsCommit()
+    {
+        ttscommit;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>TtsAbort</Name>
+				<Source><![CDATA[
+    public void TtsAbort()
+    {
+        ttsabort;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>CreateChangeCompanyHandler</Name>
+				<Source><![CDATA[
+    System.IDisposable CreateChangeCompanyHandler(System.String newCompany)
+    {
+        return Microsoft.Dynamics.Ax.Xpp.PredefinedFunctions::changecompany(newCompany);
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

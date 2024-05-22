@@ -1,0 +1,597 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxForm xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns="Microsoft.Dynamics.AX.Metadata.V6">
+	<Name>MXTXppInterpreterRunner</Name>
+	<SourceCode>
+		<Methods xmlns="">
+			<Method>
+				<Name>classDeclaration</Name>
+				<Source><![CDATA[
+using System.Threading;
+using System.Threading.Tasks;
+
+[Form]
+public class MXTXppInterpreterRunner extends FormRun
+{
+    private int normalFGColor = WinAPI::RGB2int(0, 0, 0);
+    private int errorFGColor = WinAPI::RGB2int(255, 0, 0);
+    private int pausedFGColor = WinAPI::RGB2int(202, 222, 73);
+
+    MXTXppInterpreterDebugSession currentSession;
+
+    MXTXppInterpreterScript callerScript;
+    str sourceCode;
+    
+
+}
+]]></Source>
+			</Method>
+			<Method>
+				<Name>run</Name>
+				<Source><![CDATA[
+    public void run()
+    {
+        currentSession = new MXTXppInterpreterDebugSession(MXTXppInterpreterCodeEditorControl, MXTXppInterpreterVariablesInspectorControl);
+
+        currentSession.executionFinished += eventhandler(this.executionFinished);
+        currentSession.executionResumed += eventhandler(this.executionResumed);
+        currentSession.breakpointHit += eventhandler(this.breakpointHit);
+
+        super();
+
+        StaticDisplay.colorScheme(FormColorScheme::RGB);
+        StaticDisplay.foregroundColor(normalFGColor);
+
+        URLUtility urlUtility = new URLUtility();
+        str encodedSourceCode = urlUtility.getQueryParamValue('sc');
+        
+        MXTXppInterpreterCodeEditorControl.setDebugSession(currentSession);
+        MXTXppInterpreterVariablesInspectorControl.setDebugSession(currentSession);
+
+        if (encodedSourceCode)
+        {
+            try
+            {
+                sourceCode = MXTXppInterpreterExecutor::base64Decode(encodedSourceCode);
+                MXTXppInterpreterCodeEditorControl.sourceCode(sourceCode);
+                this.execute();
+            }
+            catch
+            {
+                // Do nothing
+            }
+        }
+        else if (callerScript)
+        {
+            this.design().caption(callerScript.Description);
+            MXTXppInterpreterCodeEditorControl.sourceCode(callerScript.SourceCode);
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>breakpointHit</Name>
+				<Source><![CDATA[
+    private void breakpointHit(MXTXppInterpreterCodeEditorBreakpointHitContract _hit)
+    {
+        StaticDisplay.text("@MXT:ExecutionPaused");
+        StaticDisplay.foregroundColor(pausedFGColor);
+
+        this.enableDebugControls(true);
+        this.showDebugControls(true);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>executionResumed</Name>
+				<Source><![CDATA[
+    private void executionResumed()
+    {
+        StaticDisplay.text("@MXT:CodeRunning");
+        StaticDisplay.foregroundColor(normalFGColor);
+        this.enableDebugControls(false);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>executionFinished</Name>
+				<Source><![CDATA[
+    private void executionFinished()
+    {
+        StaticDisplay.text("@MXT:ExecutionCompleted");
+
+        MXTXppInterpreterCodeEditorControl.enabled(true);
+        ExecuteButton.enabled(true);
+        MXTXppInterpreterCodeEditorControl.setFocus();
+
+        this.showDebugControls(false);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>enableDebugControls</Name>
+				<Source><![CDATA[
+    private void enableDebugControls(boolean _enable)
+    {
+        ContinueButton.enabled(_enable);
+        StepOverButton.enabled(_enable);
+        StopDebuggingButton.enabled(_enable);
+        CancelProcessButton.enabled(_enable);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>showDebugControls</Name>
+				<Source><![CDATA[
+    private void showDebugControls(boolean _visible)
+    {
+        ContinueButton.visible(_visible);
+        StepOverButton.visible(_visible);
+        StopDebuggingButton.visible(_visible);
+        CancelProcessButton.visible(_visible);
+
+        MXTXppInterpreterVariablesInspectorControl.visible(_visible);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>execute</Name>
+				<Source><![CDATA[
+    /// <summary>
+    ///
+    /// </summary>
+    public void execute()
+    {
+        if (currentSession.isExecuting())
+        {
+            warning("@MXT:ExecutionCompleteWait");
+            return;
+        }
+
+        if (!sourceCode)
+        {
+            error("@MXT:NothingToExecute");
+            return;
+        }
+
+        var parseException = currentSession.tryParse(MXTXppInterpreterCodeEditorControl.sourceCode());
+
+        if (parseException)
+        {
+            MXTXppInterpreterCodeEditorControl.parseError(parseException);
+            return;
+        }
+
+        ExecuteButton.enabled(false);
+        MXTXppInterpreterCodeEditorControl.enabled(false);
+
+        if (currentSession.hasAnyBreakpoint())
+        {
+            this.showDebugControls(true);
+        }
+
+        // Set back the foreground color and text
+        StaticDisplay.foregroundColor(normalFGColor);
+        StaticDisplay.text("@MXT:CodeRunning");
+
+        // Timer is enabled here and the running of the class will pickup in the timer elapsed method.
+        // We need to update the UI indicating the class is running.  Running the class here will not update the UI
+        // because the class may break in the debugger, and UI will not be updated until after the this run method has returned.
+        TimerControl.enabled(true);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>init</Name>
+				<Source><![CDATA[
+    /// <summary>
+    ///
+    /// </summary>
+    public void init()
+    {
+        if (this.args().dataset() == tableNum(MXTXppInterpreterScript))
+        {
+            callerScript = this.args().record();
+        }
+
+        super();
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+		<DataSources xmlns="" />
+		<DataControls xmlns="">
+			<Control>
+				<Name>ExecuteButton</Name>
+				<Type>Button</Type>
+				<Methods>
+					<Method>
+						<Name>clicked</Name>
+						<Source><![CDATA[
+        /// <summary>
+        ///
+        /// </summary>
+        public void clicked()
+        {
+            super();
+
+            sourceCode = MXTXppInterpreterCodeEditorControl.sourceCode();
+            element.execute();
+        }
+
+]]></Source>
+					</Method>
+				</Methods>
+			</Control>
+			<Control>
+				<Name>ContinueButton</Name>
+				<Type>Button</Type>
+				<Methods>
+					<Method>
+						<Name>clicked</Name>
+						<Source><![CDATA[
+        /// <summary>
+        ///
+        /// </summary>
+        public void clicked()
+        {
+            MXTXppInterpreterDebugSession session = element.currentSession;
+    
+            session.continueExecution(XppInterpreter.Interpreter.Debug.DebugAction::Continue);
+        }
+
+]]></Source>
+					</Method>
+				</Methods>
+			</Control>
+			<Control>
+				<Name>StepOverButton</Name>
+				<Type>Button</Type>
+				<Methods>
+					<Method>
+						<Name>clicked</Name>
+						<Source><![CDATA[
+        /// <summary>
+        ///
+        /// </summary>
+        public void clicked()
+        {
+            MXTXppInterpreterDebugSession session = element.currentSession;
+    
+            session.continueExecution(XppInterpreter.Interpreter.Debug.DebugAction::StepOver);
+        }
+
+]]></Source>
+					</Method>
+				</Methods>
+			</Control>
+			<Control>
+				<Name>StopDebuggingButton</Name>
+				<Type>Button</Type>
+				<Methods>
+					<Method>
+						<Name>clicked</Name>
+						<Source><![CDATA[
+        /// <summary>
+        ///
+        /// </summary>
+        public void clicked()
+        {
+            MXTXppInterpreterDebugSession session = element.currentSession;
+            
+            session.continueExecution(XppInterpreter.Interpreter.Debug.DebugAction::StopDebugging);
+        }
+
+]]></Source>
+					</Method>
+				</Methods>
+			</Control>
+			<Control>
+				<Name>CancelProcessButton</Name>
+				<Type>Button</Type>
+				<Methods>
+					<Method>
+						<Name>clicked</Name>
+						<Source><![CDATA[
+        /// <summary>
+        ///
+        /// </summary>
+        public void clicked()
+        {
+            MXTXppInterpreterDebugSession session = element.currentSession;
+            
+            session.continueExecution(XppInterpreter.Interpreter.Debug.DebugAction::CancelExecution);
+        }
+
+]]></Source>
+					</Method>
+				</Methods>
+			</Control>
+			<Control>
+				<Name>timerControl</Name>
+				<Type>Custom</Type>
+				<Methods>
+					<Method>
+						<Name>elapsed</Name>
+						<Source><![CDATA[
+        /// <summary>
+        /// This method gets called by the timer control when the interval has elapsed
+        /// </summary>
+        /// <returns>The new desired interval.</returns>
+        public int elapsed()
+        {
+            int ret;
+        
+            ret = super();
+            MXTXppInterpreterDebugSession session = element.currentSession;
+            // if the class is currently not running, then start it
+            if (!session.isExecuting())
+            {
+                System.Exception ex;
+                boolean error = false;
+
+                try
+                {
+                    session.execute();
+                }
+                catch (Exception::Error)
+                {
+                    error = true;
+                    // Intentionally empty block here
+                    // Because there is nothing to do, and the error message would already have been written in the infolog.
+                }
+                catch(ex)
+                {
+                    error = true;
+                    // This is to catch  other errors that may happen during the running of the class Main method.
+                    error(ex.ToString());
+                }
+                finally
+                {
+                    timerControl.enabled(false);
+                }
+            }
+
+            return ret;
+        }
+
+]]></Source>
+					</Method>
+				</Methods>
+			</Control>
+			<Control>
+				<Name>MXTXppInterpreterCodeEditorControl</Name>
+				<Type>Custom</Type>
+				<Methods>
+					<Method>
+						<Name>execute</Name>
+						<Source><![CDATA[
+        /// <summary>
+        ///
+        /// </summary>
+        public void execute()
+        {
+            sourceCode = MXTXppInterpreterCodeEditorControl.sourceCode();
+            element.execute();
+        }
+
+]]></Source>
+					</Method>
+				</Methods>
+			</Control>
+		</DataControls>
+		<Members xmlns="" />
+	</SourceCode>
+	<DataSources />
+	<Design>
+		<AllowUserSetup xmlns="">No</AllowUserSetup>
+		<Caption xmlns="">@MXT:XppCodeInterpreter</Caption>
+		<HeightMode xmlns="">SizeToContent</HeightMode>
+		<Pattern xmlns="">Custom</Pattern>
+		<ShowDeleteButton xmlns="">No</ShowDeleteButton>
+		<ShowNewButton xmlns="">No</ShowNewButton>
+		<ViewEditMode xmlns="">Edit</ViewEditMode>
+		<WidthMode xmlns="">SizeToAvailable</WidthMode>
+		<Controls xmlns="">
+			<AxFormControl xmlns=""
+				i:type="AxFormActionPaneControl">
+				<Name>FormActionPaneControl1</Name>
+				<Type>ActionPane</Type>
+				<FormControlExtension
+					i:nil="true" />
+				<Controls>
+					<AxFormControl xmlns=""
+						i:type="AxFormButtonGroupControl">
+						<Name>FormButtonGroupControl1</Name>
+						<Type>ButtonGroup</Type>
+						<FormControlExtension
+							i:nil="true" />
+						<Controls>
+							<AxFormControl xmlns=""
+								i:type="AxFormButtonControl">
+								<Name>ExecuteButton</Name>
+								<AutoDeclaration>Yes</AutoDeclaration>
+								<Type>Button</Type>
+								<FormControlExtension
+									i:nil="true" />
+								<NormalImage>Send</NormalImage>
+								<Text>@MXT:Execute</Text>
+							</AxFormControl>
+							<AxFormControl xmlns=""
+								i:type="AxFormMenuFunctionButtonControl">
+								<Name>MXTXppInterpreterParameters</Name>
+								<Type>MenuFunctionButton</Type>
+								<FormControlExtension
+									i:nil="true" />
+								<MenuItemName>MXTXppInterpreterParameters</MenuItemName>
+								<NormalImage>Settings</NormalImage>
+							</AxFormControl>
+							<AxFormControl xmlns=""
+								i:type="AxFormButtonControl">
+								<Name>ContinueButton</Name>
+								<AutoDeclaration>Yes</AutoDeclaration>
+								<Enabled>No</Enabled>
+								<Type>Button</Type>
+								<Visible>No</Visible>
+								<FormControlExtension
+									i:nil="true" />
+								<ButtonDisplay>TextWithImageLeft</ButtonDisplay>
+								<ImageLocation>AOTResource</ImageLocation>
+								<NormalImage>MXTDebuggerContinue16x16</NormalImage>
+								<Text>@MXT:DebugContinue</Text>
+							</AxFormControl>
+							<AxFormControl xmlns=""
+								i:type="AxFormButtonControl">
+								<Name>StepOverButton</Name>
+								<AutoDeclaration>Yes</AutoDeclaration>
+								<Enabled>No</Enabled>
+								<Type>Button</Type>
+								<Visible>No</Visible>
+								<FormControlExtension
+									i:nil="true" />
+								<ButtonDisplay>TextWithImageLeft</ButtonDisplay>
+								<ImageLocation>AOTResource</ImageLocation>
+								<NormalImage>MXTDebuggerStepOver16x16</NormalImage>
+								<Text>@MXT:DebugStepOver</Text>
+							</AxFormControl>
+							<AxFormControl xmlns=""
+								i:type="AxFormButtonControl">
+								<Name>StopDebuggingButton</Name>
+								<AutoDeclaration>Yes</AutoDeclaration>
+								<Enabled>No</Enabled>
+								<Type>Button</Type>
+								<Visible>No</Visible>
+								<FormControlExtension
+									i:nil="true" />
+								<ButtonDisplay>TextWithImageLeft</ButtonDisplay>
+								<ImageLocation>AOTResource</ImageLocation>
+								<NormalImage>MXTDebuggerStopDebugging16x16</NormalImage>
+								<Text>@MXT:DebugStop</Text>
+							</AxFormControl>
+							<AxFormControl xmlns=""
+								i:type="AxFormButtonControl">
+								<Name>CancelProcessButton</Name>
+								<AutoDeclaration>Yes</AutoDeclaration>
+								<Enabled>No</Enabled>
+								<Type>Button</Type>
+								<Visible>No</Visible>
+								<FormControlExtension
+									i:nil="true" />
+								<ButtonDisplay>TextWithImageLeft</ButtonDisplay>
+								<ImageLocation>AOTResource</ImageLocation>
+								<NormalImage>MXTDebuggerCancelProcess16x16</NormalImage>
+								<Text>@MXT:DebugCancel</Text>
+							</AxFormControl>
+						</Controls>
+					</AxFormControl>
+				</Controls>
+				<AllowUserSetup>No</AllowUserSetup>
+				<Style>Strip</Style>
+			</AxFormControl>
+			<AxFormControl xmlns=""
+				i:type="AxFormGroupControl">
+				<Name>Title</Name>
+				<Height>50</Height>
+				<HeightMode>Manual</HeightMode>
+				<Type>Group</Type>
+				<WidthMode>SizeToAvailable</WidthMode>
+				<FormControlExtension
+					i:nil="true" />
+				<Controls>
+					<AxFormControl xmlns=""
+						i:type="AxFormStaticTextControl">
+						<Name>StaticDisplay</Name>
+						<AutoDeclaration>Yes</AutoDeclaration>
+						<HeightMode>SizeToAvailable</HeightMode>
+						<Type>StaticText</Type>
+						<WidthMode>SizeToAvailable</WidthMode>
+						<FormControlExtension
+							i:nil="true" />
+						<Text></Text>
+					</AxFormControl>
+				</Controls>
+			</AxFormControl>
+			<AxFormControl>
+				<Name>timerControl</Name>
+				<AutoDeclaration>Yes</AutoDeclaration>
+				<Enabled>No</Enabled>
+				<FormControlExtension>
+					<Name>TimerControl</Name>
+					<ExtensionComponents />
+					<ExtensionProperties>
+						<AxFormControlExtensionProperty>
+							<Name>interval</Name>
+							<Type>Int32</Type>
+							<Value>1</Value>
+						</AxFormControlExtensionProperty>
+						<AxFormControlExtensionProperty>
+							<Name>startOnFormCreation</Name>
+							<Type>Enum</Type>
+							<TypeName>NoYes</TypeName>
+							<Value>No</Value>
+						</AxFormControlExtensionProperty>
+					</ExtensionProperties>
+				</FormControlExtension>
+			</AxFormControl>
+			<AxFormControl xmlns=""
+				i:type="AxFormGroupControl">
+				<Name>FormGroupControl1</Name>
+				<HeightMode>SizeToAvailable</HeightMode>
+				<Type>Group</Type>
+				<Width>1300</Width>
+				<WidthMode>Manual</WidthMode>
+				<FormControlExtension
+					i:nil="true" />
+				<Controls>
+					<AxFormControl>
+						<Name>MXTXppInterpreterCodeEditorControl</Name>
+						<AutoDeclaration>Yes</AutoDeclaration>
+						<Height>440</Height>
+						<HeightMode>Manual</HeightMode>
+						<Width>800</Width>
+						<WidthMode>Manual</WidthMode>
+						<FormControlExtension>
+							<Name>MXTXppInterpreterCodeEditorControl</Name>
+							<ExtensionComponents />
+							<ExtensionProperties>
+								<AxFormControlExtensionProperty>
+									<Name>SourceCode</Name>
+									<Type>String</Type>
+								</AxFormControlExtensionProperty>
+								<AxFormControlExtensionProperty>
+									<Name>Language</Name>
+									<Type>Enum</Type>
+									<TypeName>MXTXppInterpreterEditorLanguage</TypeName>
+									<Value>Xpp</Value>
+								</AxFormControlExtensionProperty>
+							</ExtensionProperties>
+						</FormControlExtension>
+					</AxFormControl>
+					<AxFormControl>
+						<Name>MXTXppInterpreterVariablesInspectorControl</Name>
+						<AutoDeclaration>Yes</AutoDeclaration>
+						<Height>440</Height>
+						<HeightMode>Manual</HeightMode>
+						<Visible>No</Visible>
+						<Width>400</Width>
+						<WidthMode>Manual</WidthMode>
+						<FormControlExtension>
+							<Name>MXTXppInterpreterVariablesInspectorControl</Name>
+							<ExtensionComponents />
+							<ExtensionProperties />
+						</FormControlExtension>
+					</AxFormControl>
+				</Controls>
+				<Columns>2</Columns>
+			</AxFormControl>
+		</Controls>
+	</Design>
+	<Parts />
+</AxForm>

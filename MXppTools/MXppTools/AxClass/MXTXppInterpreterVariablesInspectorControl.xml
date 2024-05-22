@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppInterpreterVariablesInspectorControl</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+using XppInterpreter.Interpreter.Debug;
+
+[FormControlAttribute('MXTXppInterpreterVariablesInspector', '', classstr(MXTXppInterpreterVariablesInspectorControlBuild))]
+public class MXTXppInterpreterVariablesInspectorControl extends FormTemplateControl
+{
+    FormProperty localsProperty;
+    FormProperty executionPhaseProperty;
+    MXTXppInterpreterDebugSession debugSession;
+    
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>setDebugSession</Name>
+				<Source><![CDATA[
+    public void setDebugSession(MXTXppInterpreterDebugSession _debugSession)
+    {
+        this.debugSession = _debugSession;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>new</Name>
+				<Source><![CDATA[
+	public void new(FormBuildControl _build, FormRun _formRun)
+    {
+        super(_build, _formRun);
+
+        this.setTemplateId('MXTXppInterpreterVariablesInspector');
+        this.setResourceBundleName("/resources/html/MXTXppInterpreterVariablesInspector");
+
+        localsProperty = properties.addProperty(methodStr(MXTXppInterpreterVariablesInspectorControl, inspectVariables), Types::Class);
+        executionPhaseProperty = properties.addProperty(methodStr(MXTXppInterpreterVariablesInspectorControl, executionPhase), Types::Integer);
+	}
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>inspectVariables</Name>
+				<Source><![CDATA[
+    [FormPropertyAttribute(FormPropertyKind::Value, "InspectVariables", true)]
+    public MXTXppInterpreterVariablesInspectorLocalsEntry inspectVariables(MXTXppInterpreterVariablesInspectorLocalsEntry _value = localsProperty.parmValue())
+    {
+        if(!prmIsDefault(_value))
+        {
+            localsProperty.setValueOrBinding(_value);
+        }
+
+        return localsProperty.parmValue();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>executionPhase</Name>
+				<Source><![CDATA[
+    [FormPropertyAttribute(FormPropertyKind::Value, "ExecutionPhase", true)]
+    public int executionPhase(int _value = executionPhaseProperty.parmValue())
+    {
+        if(!prmIsDefault(_value))
+        {
+            executionPhaseProperty.setValueOrBinding(_value);
+        }
+
+        return executionPhaseProperty.parmValue();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>tryUpdateVariableValue</Name>
+				<Source><![CDATA[
+    [FormCommand("TryUpdateVariableValue", true)]
+    public MXTXppInterpreterVariableEditContract tryUpdateVariableValue(str _variableName, str _value)
+    {
+        return debugSession.tryUpdateVariableValue(_variableName, _value);
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

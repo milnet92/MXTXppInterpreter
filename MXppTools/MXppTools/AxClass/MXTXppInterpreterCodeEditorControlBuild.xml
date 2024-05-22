@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppInterpreterCodeEditorControlBuild</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+[FormDesignControlAttribute("X++ Code Editor")]
+public class MXTXppInterpreterCodeEditorControlBuild extends FormBuildControl
+{
+    str sourceCode;
+    MXTXppInterpreterEditorLanguage language;
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>SourceCode</Name>
+				<Source><![CDATA[
+    [FormDesignPropertyAttribute("Source code", "Data")]
+    public str SourceCode(str _value = sourceCode)
+    {
+        if(!prmIsDefault(_value))
+        {
+            sourceCode = _value;
+        }
+
+        return sourceCode;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>Language</Name>
+				<Source><![CDATA[
+    [FormDesignPropertyAttribute("Language", "Data")]
+    public MXTXppInterpreterEditorLanguage Language(MXTXppInterpreterEditorLanguage _value = language)
+    {
+        if(!prmIsDefault(_value))
+        {
+            language = _value;
+        }
+
+        return language;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>execute</Name>
+				<Source><![CDATA[
+    public void execute()
+    {
+        // This is a placeholder method that must be handled by the consumer
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

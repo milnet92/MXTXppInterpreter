@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppInterpreterCodeEditorBreakpointContract</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+[DataContract]
+public final class MXTXppInterpreterCodeEditorBreakpointContract
+{
+    int fromLine, toLine, fromPosition, toPosition;
+    int removedFromLine, removedToLine, removedFromPosition, removedToPosition;
+
+    boolean removed, created;
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>parmCreated</Name>
+				<Source><![CDATA[
+    [DataMember("Created")]
+    public boolean parmCreated(boolean _created = created)
+    {
+        created = _created;
+        return created;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmFromLine</Name>
+				<Source><![CDATA[
+    [DataMember("FromLine")]
+    public int parmFromLine(int _fromLine = fromLine)
+    {
+        fromLine = _fromLine;
+        return fromLine;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmFromPosition</Name>
+				<Source><![CDATA[
+    [DataMember("FromPosition")]
+    public int parmFromPosition(int _fromPosition = fromPosition)
+    {
+        fromPosition = _fromPosition;
+        return fromPosition;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmToLine</Name>
+				<Source><![CDATA[
+    [DataMember("ToLine")]
+    public int parmToLine(int _toLine = toLine)
+    {
+        toLine = _toLine;
+        return toLine;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmToPosition</Name>
+				<Source><![CDATA[
+    [DataMember("ToPosition")]
+    public int parmToPosition(int _toPosition = toPosition)
+    {
+        toPosition = _toPosition;
+        return toPosition;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmRemoved</Name>
+				<Source><![CDATA[
+    [DataMember("Removed")]
+    public boolean parmRemoved(boolean _removed = removed)
+    {
+        removed = _removed;
+        return removed;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmRemovedFromLine</Name>
+				<Source><![CDATA[
+    [DataMember("RemovedFromLine")]
+    public int parmRemovedFromLine(int _removedFromLine = removedFromLine)
+    {
+        removedFromLine = _removedFromLine;
+        return removedFromLine;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmRemovedFromPosition</Name>
+				<Source><![CDATA[
+    [DataMember("RemovedFromPosition")]
+    public int parmRemovedFromPosition(int _removedFromPosition = removedFromPosition)
+    {
+        removedFromPosition = _removedFromPosition;
+        return removedFromPosition;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmRemovedToLine</Name>
+				<Source><![CDATA[
+    [DataMember("RemovedToLine")]
+    public int parmRemovedToLine(int _removedToLine = removedToLine)
+    {
+        removedToLine = _removedToLine;
+        return removedToLine;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmRemovedToPosition</Name>
+				<Source><![CDATA[
+    [DataMember("RemovedToPosition")]
+    public int parmRemovedToPosition(int _removedToPosition = removedToPosition)
+    {
+        removedToPosition = _removedToPosition;
+        return removedToPosition;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

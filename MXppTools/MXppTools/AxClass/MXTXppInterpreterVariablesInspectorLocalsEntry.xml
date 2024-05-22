@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppInterpreterVariablesInspectorLocalsEntry</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+[DataContract]
+public final class MXTXppInterpreterVariablesInspectorLocalsEntry
+{
+    str name;
+    str type;
+    str value;
+    boolean editable;
+    List subEntries;
+    System.String[] enumValues;
+    boolean changed;
+    
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>parmName</Name>
+				<Source><![CDATA[
+    [DataMember("Name")]
+    public str parmName(str _name = name)
+    {
+        name = _name;
+        return name;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmType</Name>
+				<Source><![CDATA[
+    [DataMember("Type")]
+    public str parmType(str _type = type)
+    {
+        type = _type;
+        return type;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmValue</Name>
+				<Source><![CDATA[
+    [DataMember("Value")]
+    public str parmValue(str _value = value)
+    {
+        value = _value;
+        return value;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmEditable</Name>
+				<Source><![CDATA[
+    [DataMember("Editable")]
+    public boolean parmEditable(boolean _editable = editable)
+    {
+        editable = _editable;
+        return editable;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmChanged</Name>
+				<Source><![CDATA[
+    [DataMember("HasChanged")]
+    public boolean parmChanged(boolean _changed = changed)
+    {
+        changed = _changed;
+        return changed;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmEnumValues</Name>
+				<Source><![CDATA[
+    [DataMember("EnumValues"),
+     AifCollectionType("_enumValues", Types::Class)]
+    public System.String[] parmEnumValues(System.String[] _enumValues = enumValues)
+    {
+        enumValues = _enumValues;
+        return enumValues;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmSubentries</Name>
+				<Source><![CDATA[
+    [DataMember("Subentries"),
+     AifCollectionType("_subEntries", Types::Class)]
+    public List parmSubentries(List _subEntries = subEntries)
+    {
+        subEntries = _subEntries;
+        return subEntries;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

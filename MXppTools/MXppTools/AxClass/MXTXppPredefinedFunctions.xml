@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppPredefinedFunctions</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+internal final class MXTXppPredefinedFunctions
+{
+    public static System.Type ThisType = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::GetTypeFromClassName(classStr(MXTXppPredefinedFunctions));
+    
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>conDel</Name>
+				<Source><![CDATA[
+    static System.Object conDel(container con, int start, int number)
+    {
+        return conDel(con, start, number);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>conFind</Name>
+				<Source><![CDATA[
+    static System.Object conFind(container con, System.Object value)
+    {
+        return conFind(con, value);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>conIns</Name>
+				<Source><![CDATA[
+    static System.Object conIns(container con, int start, System.Object value)
+    {
+        return conIns(con, start, value);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>conLen</Name>
+				<Source><![CDATA[
+    static int conLen(container con)
+    {
+        return conLen(con);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>conPeek</Name>
+				<Source><![CDATA[
+    static System.Object conPeek(container _container, int number)
+    {
+        return conPeek(_container, number);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>conPoke</Name>
+				<Source><![CDATA[
+    static System.Object conPoke(container con, int start, System.Object value)
+    {
+        return conPoke(con, start, value);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>strFmt</Name>
+				<Source><![CDATA[
+    static System.String strFmt(System.Object[] _parameters)
+    {
+        System.Object[] dynamicArgs = new System.Object[_parameters.Length - 1]();
+
+        for (int i = 1; i < _parameters.Length; i++)
+        {
+            dynamicArgs.SetValue(_parameters.Get(i), i - 1);
+        }
+
+        return Microsoft.Dynamics.Ax.Xpp.PredefinedFunctions::strfmt(_parameters.Get(0), dynamicArgs);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>isCustomPredefinedFunction</Name>
+				<Source><![CDATA[
+    public static boolean isCustomPredefinedFunction(str _methodName)
+    {
+        return SysDictClass::newName(classStr(MXTXppPredefinedFunctions)).hasStaticMethod(_methodName);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>callMethod</Name>
+				<Source><![CDATA[
+    public static System.Object callMethod(str _methodName, System.Object[] _parameters)
+    {
+        System.String invariantMethodName = XppInterpreter.Core.ReflectionHelper::GetMethodInvariantName(ThisType, _methodName);
+
+        // Special case...
+        if (invariantMethodName == 'strFmt')
+        {
+            System.Object[] params = new System.Object[1]();
+            params.SetValue(_parameters, 0);
+
+            return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeStaticCall(ThisType, invariantMethodName, params);
+        }
+
+        return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeStaticCall(ThisType, invariantMethodName, _parameters);
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

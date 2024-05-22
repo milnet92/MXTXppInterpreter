@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppCastingProxy</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+using XppInterpreter.Interpreter.Proxy;
+using Microsoft.Dynamics.Ax;
+
+internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Proxy.IXppCastingProxy
+{
+    private System.Type edtArrayType = System.Type::GetType("Microsoft.Dynamics.Ax.Xpp.EdtArray`1, Microsoft.Dynamics.AX.Data.Core");
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>getXppTypeByTypeName</Name>
+				<Source><![CDATA[
+    private anytype getXppTypeByTypeName(str _name)
+    {
+        // Base Enums
+        if (SysDictEnum::newName(_name) != null)
+        {
+            return Types::Enum;
+        }
+        
+        // Extended data types
+        var dictType = SysDictType::newName(_name);
+        if (dictType != null)
+        {
+            return dictType.baseType();
+        }
+
+        //Common
+        if (SysDictTable::newName(_name) != null)
+        {
+            return Types::Record;
+        }
+
+        // Classes
+        if (SysDictClass::newName(_name) != null)
+        {
+            return Types::Class;
+        }
+
+        switch(_name)
+        {
+            case 'real': return Types::Real;
+            case 'int': return Types::Integer;
+            case 'guid': return Types::Guid;
+            case 'container': return Types::Container;
+            case 'int64': return Types::Int64;
+            case 'utcdatetime': return Types::UtcDateTime;
+            case 'str': return Types::String;
+        }
+
+        return Types::void;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getILTypeFromName</Name>
+				<Source><![CDATA[
+    private System.Type getILTypeFromName(str _name)
+    {
+        // boolean is not a type for some reason
+        boolean isBoolean = _name == 'boolean';
+
+        if (isBoolean)
+            return System.Type::GetType('System.Boolean');
+
+        var xppType = this.getXppTypeByTypeName(_name);
+
+        switch (xppType)
+        {
+            case Types::Class:
+                return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::GetTypeFromClassName(_name);
+
+            case Types::Enum:
+            case Types::Record:
+                return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType(_name);
+
+            case Types::Integer:
+                return System.Type::GetType('System.Int32');
+
+            case Types::Int64:
+                return System.Type::GetType('System.Int64');
+
+            case Types::Guid:
+                return System.Type::GetType('System.Guid');
+
+            case Types::Real:
+                return System.Type::GetType('System.Decimal');
+
+            case Types::String:
+                return System.Type::GetType('System.String');
+        }
+
+        return null;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>ToBoolean</Name>
+				<Source><![CDATA[
+	public boolean ToBoolean(System.Object value)
+    {
+        return value;
+	}
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>CreateDynamicArray</Name>
+				<Source><![CDATA[
+    public System.Object CreateDynamicArray(System.String typeName)
+    {
+        System.Type type = this.getILTypeFromName(typeName);
+
+        return XppInterpreter.Core.ReflectionHelper::MakeGenericInstance(edtArrayType, type);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>CreateFixedArray</Name>
+				<Source><![CDATA[
+    public System.Object CreateFixedArray(System.String typeName, System.Int32 size)
+    {
+        System.Type type = this.getILTypeFromName(typeName);
+
+        return XppInterpreter.Core.ReflectionHelper::MakeGenericInstance(edtArrayType, type, size);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetArrayIndexValue</Name>
+				<Source><![CDATA[
+    public System.Object GetArrayIndexValue(System.Object array, System.Int32 idx)
+    {
+        if (!array.GetType().IsGenericType || array.GetType().GetGenericTypeDefinition() != edtArrayType)
+        {
+            throw Error("The array indexing can only be applied to X++ array types.");
+        }
+        else
+        {
+            return XppInterpreter.Core.ReflectionHelper::GetEdtArrayIndexerValue(array, idx);
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>SetArrayIndexValue</Name>
+				<Source><![CDATA[
+    public void SetArrayIndexValue(System.Object array, System.Int32 idx, System.Object value)
+    {
+        if (!array.GetType().IsGenericType || array.GetType().GetGenericTypeDefinition() != edtArrayType)
+        {
+            throw Error("The array indexing can only be applied to X++ array types.");
+        }
+        else
+        {
+            XppInterpreter.Core.ReflectionHelper::SetEdtArrayIndexerValue(array, idx, value);
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetDefaultValueForType</Name>
+				<Source><![CDATA[
+	public System.Object GetDefaultValueForType(System.String name)
+    {
+        if (name == 'boolean') return false;
+
+        Types types = this.getXppTypeByTypeName(name);
+        
+        switch (types)
+        {
+            case Types::Integer: return 0;
+            case Types::Real: return 0.0;
+            case Types::Container: return conNull();
+            case Types::Date: return dateNull();
+            case Types::Guid: return emptyGuid();
+            case Types::UtcDateTime: return DateTimeUtil::minValue();
+            case Types::Int64:
+                {
+                    int64 val = 0;
+                    return val;
+                }
+            case Types::String: return "";
+            case Types::Record: return DictTable::createRecord(name);
+            case Types::Enum: return SysDictEnum::newName(name).firstValue();
+        }
+
+        return null;
+	}
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

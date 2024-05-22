@@ -1,0 +1,427 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppInterpreterDebugSession</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+using XppInterpreter.Interpreter.Debug;
+using XppInterpreter.Interpreter;
+using XppInterpreter.Parser;
+using XppInterpreter.Core;
+
+using System.Linq;
+
+public class MXTXppInterpreterDebugSession
+{
+    XppInterpreter interpreter;
+    Program program;
+    str sourceCode;
+    XppDebugger debugger;
+    MXTXppInterpreterCodeEditorParseException lastParseException;
+    MXTXppInterpreterCodeEditorControl editor;
+    MXTXppInterpreterVariablesInspectorControl inspector;
+    InterpreterResult currentExecutionResult;
+    boolean executing;
+    boolean stopOnBreakpoint;
+
+    XppInterpreter.Interpreter.Proxy.XppProxy proxy = new XppInterpreter.Interpreter.Proxy.XppProxy(
+                    new MXTXppIntrinsicFunctionProvider(),
+                    new MXTXppBinaryOperationProxy(),
+                    new MXTXppCastingProxy(),
+                    new MXTXppUnaryOperationProxy(),
+                    new MXTXppDataAccessProxy(),
+                    new MXTXppReflectionProxy(),
+                    new MXTXppExceptionsProxy());
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>new</Name>
+				<Source><![CDATA[
+    public void new(MXTXppInterpreterCodeEditorControl _editor, MXTXppInterpreterVariablesInspectorControl _inspector = null)
+    {
+        editor = _editor;
+        inspector = _inspector;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>executionStarted</Name>
+				<Source><![CDATA[
+    delegate void executionStarted() {}
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>executionFinished</Name>
+				<Source><![CDATA[
+    delegate void executionFinished() {}
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>executionResumed</Name>
+				<Source><![CDATA[
+    delegate void executionResumed() {}
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>breakpointHit</Name>
+				<Source><![CDATA[
+    delegate void breakpointHit(MXTXppInterpreterCodeEditorBreakpointHitContract _hit) {}
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>isExecuting</Name>
+				<Source><![CDATA[
+    public boolean isExecuting()
+    {
+        return executing;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>isStoppedOnBreakpoint</Name>
+				<Source><![CDATA[
+    public boolean isStoppedOnBreakpoint()
+    {
+        return stopOnBreakpoint;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>execute</Name>
+				<Source><![CDATA[
+    public void execute()
+    {
+        editor.executionPhase(MXTXppInterpreterExecutionPhase::Started);
+
+        if (inspector)
+        {
+            inspector.executionPhase(MXTXppInterpreterExecutionPhase::Started);
+        }
+
+        MXTXppInterpreterParameters parameters = MXTXppInterpreterParameters::find();
+
+        // Setup options
+        XppInterpreter.Interpreter.XppInterpreterOptions options = new XppInterpreter.Interpreter.XppInterpreterOptions();
+        options.EmitGlobalTtsAbort = parameters.EmitGlobalTtsAbort;
+        options.MaxLoopIterations = parameters.MaxLoopIteratations;
+
+        interpreter = new XppInterpreter.Interpreter.XppInterpreter(proxy, options);
+        interpreter.Debugger = debugger;
+
+        this.executionStarted();
+
+        executing = true;
+
+        System.Exception ex;
+
+        try
+        {
+            currentExecutionResult = interpreter.Interpret(program);
+
+            if (currentExecutionResult.HasStopped)
+            {
+                this.hitBreakpoint(currentExecutionResult.Breakpoint);
+            }
+        }
+        catch (ex)
+        {
+            this.handleExecutionFinished();
+
+            throw ex;
+        }
+
+        if (currentExecutionResult.HasFinished)
+        {
+            this.handleExecutionFinished();
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>currentVariableState</Name>
+				<Source><![CDATA[
+    public MXTXppInterpreterVariablesInspectorLocalsEntry currentVariableState()
+    {
+        MXTXppInterpreterVariablesInspectorLocalsEntry rootEntry = new MXTXppInterpreterVariablesInspectorLocalsEntry();
+        rootEntry.parmName('ROOT');
+
+        List subentries = new List(Types::Class);
+        Set variablesInScope = new Set(Types::String);
+
+        if (currentExecutionResult != null)
+        {
+            var currentScope = currentExecutionResult.SaveState.Context.ScopeHandler.CurrentScope;
+            
+            while (currentScope != null)
+            {
+                var normalizedEntries = currentScope.GetNormalizedScopeEntries(proxy);
+                int elements = normalizedEntries.Length;
+
+                for (int i = 0; i < elements; i++)
+                {
+                    NormalizedScopeEntry scopeEntry = normalizedEntries.GetValue(i);
+
+                    if (!variablesInScope.in(scopeEntry.VariableName))
+                    {
+                        var value = scopeEntry.Value;
+
+                        // Create entry
+                        MXTXppInterpreterVariablesInspectorLocalsEntry subEntry = new MXTXppInterpreterVariablesInspectorLocalsEntry();
+
+                        subEntry.parmName(scopeEntry.VariableName);
+                        
+                        str displayValue = DebugHelper::GetDebugDisplayValue(value);
+
+                        if (typeOf(value) == Types::Record && !value)
+                        {
+                            displayValue = 'No data selected';
+                        }
+
+                        subEntry.parmValue(displayValue);
+                        subEntry.parmType(scopeEntry.TypeName);
+                        subEntry.parmEditable(scopeEntry.Editable);
+                        subEntry.parmChanged(scopeEntry.Changed);
+
+                        //TODO: subEntry.parmEnumValues(scopeEntry.EnumValues);
+
+                        subentries.addEnd(subEntry);
+
+                        variablesInScope.add(scopeEntry.VariableName);
+                    }
+                }
+
+                currentScope = currentScope.Parent;
+            }
+        }
+
+        rootEntry.parmSubentries(subEntries);
+
+        return rootEntry;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>handleExecutionFinished</Name>
+				<Source><![CDATA[
+    private void handleExecutionFinished()
+    {
+        currentExecutionResult = null;
+        executing = false;
+
+        this.executionFinished();
+
+        editor.executionPhase(MXTXppInterpreterExecutionPhase::Finished);
+        editor.breakpointHit(null);
+
+        if (inspector)
+        {
+            inspector.inspectVariables(null);
+            inspector.executionPhase(MXTXppInterpreterExecutionPhase::Finished);
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>clear</Name>
+				<Source><![CDATA[
+    public void clear()
+    {
+        debugger = null;
+        sourceCode = "";
+        program = null;
+        lastParseException = null;
+        executing = false;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>continueExecution</Name>
+				<Source><![CDATA[
+    public void continueExecution(DebugAction _debugAction)
+    {
+        if (!this.stopOnBreakpoint) return;
+
+        System.Exception ex;
+        try
+        {
+            stopOnBreakpoint = false;
+            this.executionResumed();
+
+            currentExecutionResult = interpreter.Continue(currentExecutionResult, _debugAction);
+
+            if (currentExecutionResult.HasStopped)
+            {
+                this.hitBreakpoint(currentExecutionResult.Breakpoint);
+            }
+        }
+        catch (ex)
+        {
+            this.handleExecutionFinished();
+
+            throw ex;
+        }
+
+        if (currentExecutionResult.HasFinished)
+        {
+            this.handleExecutionFinished();
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>hitBreakpoint</Name>
+				<Source><![CDATA[
+    public void hitBreakpoint(XppInterpreter.Interpreter.Debug.Breakpoint _breakpoint)
+    {
+        stopOnBreakpoint = true;
+
+        MXTXppInterpreterCodeEditorBreakpointHitContract hit = new MXTXppInterpreterCodeEditorBreakpointHitContract();
+
+        hit.parmFromLine(_breakpoint.SourceCodeMapping.From.Line);
+        hit.parmFromPosition(_breakpoint.SourceCodeMapping.From.Position);
+        hit.parmToLine(_breakpoint.SourceCodeMapping.To.Line);
+        hit.parmToPosition(_breakpoint.SourceCodeMapping.To.Position);
+        this.breakpointHit(hit);
+
+        editor.breakpointHit(hit);
+        editor.setFocus();
+
+        if (inspector)
+        {
+            inspector.inspectVariables(this.currentVariableState());
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>hasAnyBreakpoint</Name>
+				<Source><![CDATA[
+    public boolean hasAnyBreakpoint()
+    {
+        boolean ret;
+
+        if (debugger != null)
+        {
+            ret = debugger.BreakpointCount != 0;
+        }
+
+        return ret;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>tryParse</Name>
+				<Source><![CDATA[
+    public MXTXppInterpreterCodeEditorParseException tryParse(str _sourceCode)
+    {
+        MXTXppInterpreterCodeEditorParseException ex;
+
+        if (_sourceCode == sourceCode)
+        {
+            return lastParseException;
+        }
+
+        ParseException parseException;
+
+        debugger = null;
+        program = null;
+        sourceCode = _sourceCode;
+
+        try
+        {
+            program = MXTXppInterpreterExecutor::parse(_sourceCode) as Program;
+            debugger = new XppInterpreter.Interpreter.Debug.XppDebugger(program);
+            lastParseException = null;
+        }
+        catch(parseException)
+        {
+            lastParseException = new MXTXppInterpreterCodeEditorParseException(parseException.Line, parseException.Message);
+        }
+        catch
+        {
+            lastParseException = new MXTXppInterpreterCodeEditorParseException(0, "An error occurred while parsing");
+        }
+
+        return lastParseException;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>addOrRemoveBreakpoint</Name>
+				<Source><![CDATA[
+    public MXTXppINterpreterCodeEditorBreakpointContract addOrRemoveBreakpoint(int _line, int _position, str _sourceCode)
+    {
+        MXTXppINterpreterCodeEditorBreakpointContract ret;
+
+        if (this.tryParse(_sourceCode))
+            return ret;
+
+        BreakpointAction breakpointAction = debugger.TryAddBreakpoint(_line, _position);
+
+        ret = new MXTXppINterpreterCodeEditorBreakpointContract();
+
+        if (breakpointAction.NewBreakpoint != null)
+        {
+            XppInterpreter.Interpreter.Debug.Breakpoint newBreakpoint = breakpointAction.NewBreakpoint;
+
+            ret.parmCreated(true);
+            ret.parmFromLine(newBreakpoint.SourceCodeMapping.From.Line);
+            ret.parmFromPosition(newBreakpoint.SourceCodeMapping.From.Position);
+            ret.parmToLine(newBreakpoint.SourceCodeMapping.To.Line);
+            ret.parmToPosition(newBreakpoint.SourceCodeMapping.To.Position);
+        }
+
+        if (breakpointAction.RemovedBreakpoint != null)
+        {
+            XppInterpreter.Interpreter.Debug.Breakpoint removedBreakpoint = breakpointAction.RemovedBreakpoint;
+
+            ret.parmRemoved(true);
+            ret.parmRemovedFromLine(removedBreakpoint.SourceCodeMapping.From.Line);
+            ret.parmRemovedFromPosition(removedBreakpoint.SourceCodeMapping.From.Position);
+            ret.parmRemovedToLine(removedBreakpoint.SourceCodeMapping.To.Line);
+            ret.parmRemovedToPosition(removedBreakpoint.SourceCodeMapping.To.Position);
+        }
+
+        return ret;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>tryUpdateVariableValue</Name>
+				<Source><![CDATA[
+    public MXTXppInterpreterVariableEditContract tryUpdateVariableValue(str _varName, str _newValue)
+    {
+        if (!stopOnBreakpoint) return null;
+
+        VariableEditValueResponse response = currentExecutionResult.SaveState.Context.ScopeHandler.TrySetVariableValueFromString(_varName, _newValue);
+
+        MXTXppInterpreterVariableEditContract ret = new MXTXppInterpreterVariableEditContract();
+
+        ret.parmValue(response.Value);
+        ret.parmError(response.Error);
+
+        return ret;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

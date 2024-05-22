@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppInterpreterBatchContract</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+[DataContract]
+internal final class MXTXppInterpreterBatchContract
+{
+    MXTSourceCode sourceCode;
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>parmSourceCode</Name>
+				<Source><![CDATA[
+    [DataMember,
+     SysOperationControlVisibility(false)]
+    public MXTSourceCode parmSourceCode(MXTSourceCode _sourceCode = sourceCode)
+    {
+        sourceCode = _sourceCode;
+
+        return sourceCode;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>
