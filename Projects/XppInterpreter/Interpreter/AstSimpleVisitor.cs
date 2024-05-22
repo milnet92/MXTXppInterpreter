@@ -134,7 +134,7 @@ namespace XppInterpreter.Interpreter
         {
         }
 
-        public void VisitSwitch(Switch @switch)
+        public virtual void VisitSwitch(Switch @switch)
         {
             @switch.Expression.Accept(this);
 

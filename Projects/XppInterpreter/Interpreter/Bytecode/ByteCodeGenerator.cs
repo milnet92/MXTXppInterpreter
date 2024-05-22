@@ -562,7 +562,10 @@ namespace XppInterpreter.Interpreter.Bytecode
             foreach (var @case in @switch.Cases)
             {
                 CreateScope();
+                EmitDebugSymbol(@case.Key);
                 @case.Key.Accept(this);
+                // delete all debug symbols that are created by the expression itself
+                DeleteAllDebugSymbolsInScope(true); 
                 var caseExpressionScope = ReleaseScope();
 
                 CreateScope();
@@ -599,6 +602,22 @@ namespace XppInterpreter.Interpreter.Bytecode
             RecalculateLoopControlOffsets(null);
 
             Emit(new EndScope());
+        }
+
+        private void DeleteAllDebugSymbolsInScope(bool skipFirst)
+        {
+            var instructions = _ss.Peek().Instructions.Where(ins => ins is Debug).Reverse();
+            int lastIndex = skipFirst ? 1 : 0;
+
+            int total = instructions.Count();
+            foreach (var instruction in instructions)
+            {
+                total--;
+
+                if (skipFirst && total == 0) break;
+                
+                _ss.Peek().Instructions.Remove(instruction);
+            }
         }
     }
 }

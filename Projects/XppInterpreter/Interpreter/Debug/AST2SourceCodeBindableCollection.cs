@@ -243,5 +243,11 @@ namespace XppInterpreter.Interpreter.Debug
             AddToCollection(whileSelect);
             base.VisitWhileSelect(whileSelect);
         }
+
+        public override void VisitSwitch(Switch @switch)
+        {
+            AddToCollection(@switch);
+            base.VisitSwitch(@switch);
+        }
     }
 }
