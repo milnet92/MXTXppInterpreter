@@ -33,5 +33,6 @@ This tool generates bytecode that is later interpreted directly during execution
 * **Macros** usage and declarations are not supported
 * **Function declarations** and **class declarations** are not supported
 * **try**, **catch** and **finally** statements are not implemented
+* **.NET namespaces** cannot be referenced
 
  > **_IMPORTANT:_** It is **not recommended** for Production escenarios as this tool allows you to execute *any code* on the environment.
