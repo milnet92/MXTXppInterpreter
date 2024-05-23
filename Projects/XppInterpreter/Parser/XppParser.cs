@@ -749,7 +749,7 @@ namespace XppInterpreter.Parser
                    || currentToken.TokenType == TType.In) 
                     && !isParsingWhereStatement)
                 {
-                    ThrowParseException("In and Like statements can only be used in queries.");
+                    ThrowParseException("In and Like statements can only be used in queries");
                 }
 
                 var result = Match(currentToken.TokenType);
@@ -875,13 +875,14 @@ namespace XppInterpreter.Parser
             return ret;
         }
 
-        void ThrowParseException(string s)
+        void ThrowParseException(string s, bool showLine = true)
         {   
             throw new ParseException(
                 s,
                 currentToken,
                 currentScanResult.Line,
-                currentScanResult.End);
+                currentScanResult.End,
+                showLine);
         }
 
         IScanResult MatchMultiple(params TType[] ttypes)
@@ -892,7 +893,7 @@ namespace XppInterpreter.Parser
             }
             else
             {
-                ThrowParseException($"Syntax error -> {string.Join(", ", ttypes)} was expected.");
+                ThrowParseException($"Syntax error: {string.Join(", ", ttypes)} expected");
             }
 
             // Move function sets the last scan results
@@ -907,7 +908,7 @@ namespace XppInterpreter.Parser
             }
             else
             {
-                ThrowParseException($"Syntax error -> {ttype} was expected.");
+                ThrowParseException($"Syntax error: {ttype} was expected");
             }
 
             // Move function sets the last scan results
