@@ -73,7 +73,14 @@ namespace XppInterpreter.Core
 
                                 if (declarationType != null)
                                 {
-                                    entry = new VariableEntry(varName, declarationType, varValue);
+                                    if (varValue != null && varValue.GetType() != declarationType)
+                                    {
+                                        entry = new VariableEntry(varName, declarationType, Convert.ChangeType(varValue, declarationType));
+                                    }
+                                    else
+                                    {
+                                        entry = new VariableEntry(varName, declarationType, varValue);
+                                    }
                                 }
                                 else
                                 {
@@ -117,7 +124,7 @@ namespace XppInterpreter.Core
                 {
                     VariableName = variable.Name,
                     Value = variable.Value,
-                    TypeName = variable.DeclarationType is null ? variable.Value?.GetType().ToString() ?? "" : variable.DeclarationType.Name,
+                    TypeName = variable.DeclarationType is null ? variable.Value?.GetType().FullName ?? "" : variable.DeclarationType.FullName,
                 };
 
                 if (proxy != null && proxy.Reflection.IsEnum(entry.TypeName))

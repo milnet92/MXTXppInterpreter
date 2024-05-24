@@ -204,7 +204,7 @@ namespace XppInterpreter.Interpreter.Bytecode
                 access.Index.Accept(this);
             }
 
-            Emit(new Store(assignment.Assignee.Name, fromCaller, false, isArray));
+            Emit(new Store(assignment.Assignee.Name, fromCaller, false, isArray, null));
         }
 
         public void VisitBinaryOperation(BinaryOperation binaryOperation)
@@ -539,7 +539,7 @@ namespace XppInterpreter.Interpreter.Bytecode
                     Emit(new DefaultValue(variableDeclarations.VariableType.Lexeme));
                 }
 
-                Emit(new Store(declaration.Key.Lexeme, false, true, false));
+                Emit(new Store(declaration.Key.Lexeme, false, true, false, variableDeclarations.VariableType.Lexeme));
             }
         }
 

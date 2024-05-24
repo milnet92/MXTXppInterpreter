@@ -52,6 +52,7 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
             case 'int64': return Types::Int64;
             case 'utcdatetime': return Types::UtcDateTime;
             case 'str': return Types::String;
+            case 'date': return Types::Date;
         }
 
         return Types::void;
@@ -95,6 +96,12 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 
             case Types::String:
                 return System.Type::GetType('System.String');
+
+            case Types::UtcDateTime:
+                return System.Type::GetType('System.DateTime');
+
+            case Types::Date:
+                return System.Type::GetType("Microsoft.Dynamics.Ax.Xpp.AxShared.Date, Microsoft.Dynamics.Ax.Xpp.AxShared");
         }
 
         return null;

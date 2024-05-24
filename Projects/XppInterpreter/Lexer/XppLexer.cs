@@ -489,9 +489,7 @@ namespace XppInterpreter.Lexer
                 }
                 else
                 {
-                    Word w = new Word(s, TType.Id);
-                    Keywords[s] = w;
-                    return ScanResult(w);
+                    return ScanResult(new Word(s, TType.Id));
                 }
             }
 

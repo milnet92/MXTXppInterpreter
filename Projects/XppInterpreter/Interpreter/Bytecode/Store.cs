@@ -20,13 +20,15 @@ namespace XppInterpreter.Interpreter.Bytecode
         public bool Top { get; }
         public bool FromStack { get; }
         public bool IsArray { get; }
+        public string TypeName { get; }
 
-        public Store(string name, bool fromStack, bool top, bool isArray)
+        public Store(string name, bool fromStack, bool top, bool isArray, string typeName)
         {
             Name = name;
             Top = top;
             FromStack = fromStack;
             IsArray = isArray;
+            TypeName = typeName;
         }
 
         public void Execute(RuntimeContext context)
@@ -60,8 +62,18 @@ namespace XppInterpreter.Interpreter.Bytecode
                 }
                 else
                 {
-                    bool declaration = Top;
-                    context.ScopeHandler.CurrentScope.SetVar(Name, value, declaration, Top);
+                    bool declaration = Top; // for the sake of clarity
+
+                    if (declaration)
+                    {
+                        Type declarationType = context.Proxy.Casting.GetDefaultValueForType(TypeName)?.GetType();
+
+                        context.ScopeHandler.CurrentScope.SetVar(Name, value, declaration, Top, declarationType);
+                    }
+                    else
+                    {
+                        context.ScopeHandler.CurrentScope.SetVar(Name, value, false);
+                    }
                 }
             }
         }

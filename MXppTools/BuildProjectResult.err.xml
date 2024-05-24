@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Diagnostics
+  GenerationTime="2024-05-24T10:34:09.87773+02:00">
+  <Items>
+    <Diagnostic>
+      <DiagnosticType>Compile</DiagnosticType>
+      <Severity>Error</Severity>
+      <Path>dynamics://Class/MXTXppCastingProxy/Method/Cast</Path>
+      <ElementType>Class Method</ElementType>
+      <Moniker>ClrMethodNotFound</Moniker>
+      <Line>12</Line>
+      <Column>20</Column>
+      <EndLine>12</EndLine>
+      <EndColumn>106</EndColumn>
+      <Message>Method 'ConvertValue(System.Type, System.Type, System.Object)' is not found on type 'Microsoft.Dynamics.Ax.Xpp.CastHelper'.</Message>
+    </Diagnostic>
+    <Diagnostic>
+      <DiagnosticType>Compile</DiagnosticType>
+      <Severity>Error</Severity>
+      <Path>dynamics://Class/MXTXppCastingProxy/Method/getILTypeFromName</Path>
+      <ElementType>Class Method</ElementType>
+      <Moniker>ClrMethodNotFound</Moniker>
+      <Line>98</Line>
+      <Column>24</Column>
+      <EndLine>98</EndLine>
+      <EndColumn>125</EndColumn>
+      <Message>Method 'GetType(System.String, System.String)' is not found on type 'System.Type'.</Message>
+    </Diagnostic>
+  </Items>
+  <Aliases />
+</Diagnostics>
