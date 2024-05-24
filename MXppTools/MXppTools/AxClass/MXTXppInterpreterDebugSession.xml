@@ -369,7 +369,7 @@ public class MXTXppInterpreterDebugSession
     {
         MXTXppINterpreterCodeEditorBreakpointContract ret;
 
-        if (this.tryParse(_sourceCode))
+        if (_sourceCode == '' || this.tryParse(_sourceCode))
             return ret;
 
         BreakpointAction breakpointAction = debugger.TryAddBreakpoint(_line, _position);
