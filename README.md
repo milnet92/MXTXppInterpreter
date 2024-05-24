@@ -6,9 +6,6 @@ This tool allows you to write, execute and debug X++ code directly in the browse
 1. Download and install the Deployable Package from the releases. You can also clone the repo and compile the model by yourself.
 2. Navigate to **https://[YOU_ENVIRONMENT]/?mi=MXTXppInterpreterRunner** and start writing!
 
-# Motivation
-Every time we want to execute a small piece of code for whatever reason, we need to modify the source, compile and wait for all the required services to restart. This, depending on the VM configuration adds up to lots of wasted minutes just... waiting.
-
 # Interpreter
 This tool generates bytecode that is later interpreted directly during execution. The instructions that are interpreted are executed in native code using a series of proxies written in X++. That allows to simulate the execution *almost* exactly as native code would do it, without the need to compile.
 
