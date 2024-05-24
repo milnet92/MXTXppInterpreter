@@ -18,7 +18,7 @@ This tool generates bytecode that is later interpreted directly during execution
 <img width="400" src="https://github.com/milnet92/MXTXppInterpreter/assets/10449294/7440d562-db83-4972-b07b-97b9acdd05c9"/>
 
 <p>The variable inspector will allow you to take a look to the variables that are currently on scope and will let you modify the values for primitive types.</p>
-<img width="700" src="https://github.com/milnet92/MXTXppInterpreter/assets/10449294/6d4e47ea-1593-4aa3-8afc-b4b6cfb5e6d3"/>
+<img width="700" src="https://github.com/milnet92/MXTXppInterpreter/assets/10449294/66b815ea-169a-4366-a1f0-1cac12b39fa7"/>
 
 # Use cases
 * Execute, modify and save X++ scripts
