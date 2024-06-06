@@ -17,6 +17,9 @@ namespace XppInterpreter.Interpreter.Proxy
         bool IsInstantiable(string name);
         object CallGlobalOrPredefinedFunction(string functionName, object[] parameters);
         bool IsEnum(string name);
+        bool IsCommon(object instance);
+        bool IsCommonType(Type type);
+        void ClearCommon(object common);
         object GetEnumValue(string enumType, string enumValue);
         string[] GetAllEnumValues(string enumType);
     }

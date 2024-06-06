@@ -66,13 +66,31 @@ namespace XppInterpreter.Interpreter.Bytecode
 
                     if (declaration)
                     {
-                        Type declarationType = context.Proxy.Casting.GetDefaultValueForType(TypeName)?.GetType();
+                        var defaultValue = context.Proxy.Casting.GetDefaultValueForType(TypeName);
+                        Type declarationType = defaultValue?.GetType();
 
-                        context.ScopeHandler.CurrentScope.SetVar(Name, value, declaration, Top, declarationType);
+                        if (value is null && context.Proxy.Reflection.IsCommonType(declarationType))
+                        {
+                            context.ScopeHandler.CurrentScope.SetVar(Name, defaultValue, declaration, Top, declarationType);
+                        }
+                        else
+                        {
+                            context.ScopeHandler.CurrentScope.SetVar(Name, value, declaration, Top, declarationType);
+                        }
                     }
                     else
                     {
-                        context.ScopeHandler.CurrentScope.SetVar(Name, value, false);
+                        var currentValue = context.ScopeHandler.CurrentScope.GetVar(Name);
+                        var type = currentValue?.GetType();
+
+                        if (value is null && context.Proxy.Reflection.IsCommonType(type))
+                        {
+                            context.Proxy.Reflection.ClearCommon(currentValue);
+                        }
+                        else
+                        { 
+                            context.ScopeHandler.CurrentScope.SetVar(Name, value, false);
+                        }
                     }
                 }
             }

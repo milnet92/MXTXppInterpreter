@@ -35,6 +35,18 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 ]]></Source>
 			</Method>
 			<Method>
+				<Name>ClearCommon</Name>
+				<Source><![CDATA[
+    public void ClearCommon(System.Object _common)
+    {
+        Common common = _common;
+
+        common.clear();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>CallInstanceFunction</Name>
 				<Source><![CDATA[
     public System.Object CallInstanceFunction(System.Object _instance, System.String _functionName, System.Object[] _parameters)
@@ -108,13 +120,25 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 ]]></Source>
 			</Method>
 			<Method>
-				<Name>isCommon</Name>
+				<Name>IsCommon</Name>
 				<Source><![CDATA[
-    private boolean isCommon(System.Object _instance)
+    public boolean IsCommon(System.Object _instance)
     {
         System.Type type = _instance.GetType();
 
-        return type.BaseType == Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType("Common");
+        return this.IsCommonType(type);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>IsCommonType</Name>
+				<Source><![CDATA[
+    public boolean IsCommonType(System.Type _type)
+    {
+        if (_type == null) return false;
+
+        return _type.BaseType == Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType("Common");
     }
 
 ]]></Source>
@@ -124,7 +148,7 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 				<Source><![CDATA[
     public void SetInstanceProperty(System.Object _instance, System.String _propertyName, System.Object _value)
     {
-        if (this.isCommon(_instance))
+        if (this.IsCommon(_instance))
         {
             Microsoft.Dynamics.Ax.Xpp.Common common = _instance;
             common.setFieldValue(_propertyName, _value);
