@@ -399,3 +399,6 @@ FodyWeavers.xsd
 /MXppTools/XppMetadata/MXppTools
 /MXppTools/Resources
 /MXppTools/BuildProjectResult.xml
+/MXppTools/MXppTools.xref
+/MXppTools/CompileLabels.xml
+/MXppTools/BuildModelResult.xml

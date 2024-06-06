@@ -331,7 +331,7 @@ public class MXTXppInterpreterDebugSession
     {
         MXTXppInterpreterCodeEditorParseException ex;
 
-        if (_sourceCode == sourceCode)
+        if (System.String::Compare(_sourceCode, sourceCode, false) == 0)
         {
             return lastParseException;
         }

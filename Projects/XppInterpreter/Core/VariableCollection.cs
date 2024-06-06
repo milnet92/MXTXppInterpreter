@@ -9,7 +9,7 @@ namespace XppInterpreter.Core
 {
     public class VariableCollection : IEnumerable
     {
-        private Dictionary<string, VariableEntry> _var = new Dictionary<string, VariableEntry>();
+        private Dictionary<string, VariableEntry> _var = new Dictionary<string, VariableEntry>(StringComparer.InvariantCultureIgnoreCase);
 
         public VariableEntry this[string key] { get => _var[key]; set => _var[key] = value; }
 
