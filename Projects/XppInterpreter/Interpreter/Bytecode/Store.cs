@@ -67,7 +67,7 @@ namespace XppInterpreter.Interpreter.Bytecode
                     if (declaration)
                     {
                         var defaultValue = context.Proxy.Casting.GetDefaultValueForType(TypeName);
-                        Type declarationType = defaultValue?.GetType();
+                        Type declarationType = context.Proxy.Casting.GetSystemTypeFromTypeName(TypeName);
 
                         if (value is null && context.Proxy.Reflection.IsCommonType(declarationType))
                         {

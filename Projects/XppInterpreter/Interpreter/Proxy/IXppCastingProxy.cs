@@ -14,5 +14,6 @@ namespace XppInterpreter.Interpreter.Proxy
         object CreateFixedArray(string typeName, int size);
         object GetArrayIndexValue(object array, int index);
         void SetArrayIndexValue(object array, int index, object value);
+        Type GetSystemTypeFromTypeName(string typeName);
     }
 }

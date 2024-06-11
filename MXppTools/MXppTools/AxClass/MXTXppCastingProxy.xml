@@ -61,26 +61,26 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 ]]></Source>
 			</Method>
 			<Method>
-				<Name>getILTypeFromName</Name>
+				<Name>GetSystemTypeFromTypeName</Name>
 				<Source><![CDATA[
-    private System.Type getILTypeFromName(str _name)
+    public System.Type GetSystemTypeFromTypeName(str _typeName)
     {
         // boolean is not a type for some reason
-        boolean isBoolean = _name == 'boolean';
+        boolean isBoolean = _typeName == 'boolean';
 
         if (isBoolean)
             return System.Type::GetType('System.Boolean');
 
-        var xppType = this.getXppTypeByTypeName(_name);
+        var xppType = this.getXppTypeByTypeName(_typeName);
 
         switch (xppType)
         {
             case Types::Class:
-                return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::GetTypeFromClassName(_name);
+                return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::GetTypeFromClassName(_typeName);
 
             case Types::Enum:
             case Types::Record:
-                return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType(_name);
+                return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType(_typeName);
 
             case Types::Integer:
                 return System.Type::GetType('System.Int32');
@@ -124,7 +124,7 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 				<Source><![CDATA[
     public System.Object CreateDynamicArray(System.String typeName)
     {
-        System.Type type = this.getILTypeFromName(typeName);
+        System.Type type = this.GetSystemTypeFromTypeName(typeName);
 
         return XppInterpreter.Core.ReflectionHelper::MakeGenericInstance(edtArrayType, type);
     }
@@ -136,7 +136,7 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 				<Source><![CDATA[
     public System.Object CreateFixedArray(System.String typeName, System.Int32 size)
     {
-        System.Type type = this.getILTypeFromName(typeName);
+        System.Type type = this.GetSystemTypeFromTypeName(typeName);
 
         return XppInterpreter.Core.ReflectionHelper::MakeGenericInstance(edtArrayType, type, size);
     }
