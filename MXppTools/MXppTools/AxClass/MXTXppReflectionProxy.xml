@@ -151,7 +151,8 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
         if (this.IsCommon(_instance))
         {
             Microsoft.Dynamics.Ax.Xpp.Common common = _instance;
-            common.setFieldValue(_propertyName, _value);
+            
+            this.setCommonFieldValue(common, _propertyName, _value);
         }
         else
         {
@@ -241,6 +242,18 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
         }
 
         return ret;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>setCommonFieldValue</Name>
+				<Source><![CDATA[
+    private void setCommonFieldValue(Common _common, str _fieldName, anytype _value)
+    {
+        SysDictField dictField = SysDictField::newName(tableId2Name(_common.TableId), _fieldName);
+
+        _common.(dictField.id()) = _value;
     }
 
 ]]></Source>
