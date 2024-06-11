@@ -45,7 +45,7 @@ namespace XppInterpreter.Lexer
     /// </summary>
     public class Int64 : BaseType
     {
-        public Int64(long value) : base(value, TType.Int32) { }
+        public Int64(long value) : base(value, TType.Int64) { }
     }
 
     public class Real : BaseType
