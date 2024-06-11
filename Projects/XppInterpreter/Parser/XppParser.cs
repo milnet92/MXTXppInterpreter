@@ -512,11 +512,20 @@ namespace XppInterpreter.Parser
                 case TType.Id:
                     {
                         // Check if the next token is an Id
-                        var nextToken = AdvancePeek(true).Token;
+                        var nextToken = AdvancePeek(false).Token;
                         if (nextToken.TokenType == TType.Id)
-                            return VariableDeclaration(matchSemicolon);
+                        {
+                            nextToken = AdvancePeek(true).Token;
+                            if (nextToken.TokenType == TType.LeftParenthesis)
+                                return FunctionDeclaration();
+                            else
+                                return VariableDeclaration(matchSemicolon);
+                        }
                         else
+                        {
+                            ResetPeek();
                             return Assignment(matchSemicolon);
+                        }
                     }
                 case TType.Breakpoint: return Breakpoint();
                 case TType.Throw: return Throw();
@@ -554,13 +563,85 @@ namespace XppInterpreter.Parser
                 case TType.TypeReal:
                 case TType.TypeInt32:
                 case TType.TypeInt64:
-                    return VariableDeclaration(matchSemicolon);
+                    {
+                        // We advance twice because we want to check for the next token after the Id
+                        AdvancePeek(false);
+                        var nextToken = AdvancePeek(true).Token;
+
+                        if (nextToken.TokenType == TType.LeftParenthesis)
+                            return FunctionDeclaration();
+                        else
+                            return VariableDeclaration(matchSemicolon);
+                    }
                 default:
                     {
                         ThrowParseException("Invalid syntax.");
                         return null;
                     }
             }
+        }
+
+        internal FunctionDeclaration FunctionDeclaration()
+        {
+            var start = MatchMultiple(
+                TType.Id,
+                TType.TypeAnytype,
+                TType.TypeBoolean,
+                TType.TypeContainer,
+                TType.TypeInt32,
+                TType.TypeInt64,
+                TType.TypeGuid,
+                TType.TypeReal,
+                TType.TypeStr,
+                TType.TypeTimeOfDay,
+                TType.TypeDatetime,
+                TType.Var,
+                TType.Void);
+
+            var funcNameToken = Match(TType.Id).Token;
+            Match(TType.LeftParenthesis);
+
+            List<FunctionDeclarationParameter> parameters = new List<FunctionDeclarationParameter>();
+
+            while (currentToken.TokenType != TType.RightParenthesis)
+            {
+                parameters.Add(FunctionDeclarationParameter());
+
+                if (currentToken.TokenType != TType.RightParenthesis)
+                {
+                    Match(TType.Comma);
+                }
+            }
+
+            Match(TType.RightParenthesis);
+            var block = Block();
+
+            return new FunctionDeclaration(
+                ((Word)funcNameToken).Lexeme, 
+                start.Token, 
+                parameters,
+                block,
+                SourceCodeBinding(start, lastScanResult));
+        }
+
+        FunctionDeclarationParameter FunctionDeclarationParameter()
+        {
+            var start = MatchMultiple(
+                TType.Id,
+                TType.TypeAnytype,
+                TType.TypeBoolean,
+                TType.TypeContainer,
+                TType.TypeInt32,
+                TType.TypeInt64,
+                TType.TypeGuid,
+                TType.TypeReal,
+                TType.TypeStr,
+                TType.TypeTimeOfDay,
+                TType.TypeDatetime);
+
+            var id = Match(TType.Id).Token;
+
+            return new FunctionDeclarationParameter(start.Token, ((Word)id).Lexeme, SourceCodeBinding(start, lastScanResult));
         }
 
         internal ChangeCompany ChangeCompany()

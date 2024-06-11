@@ -1,0 +1,20 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using XppInterpreter.Parser;
+
+namespace XppInterpreter.Interpreter.Bytecode
+{
+    public class RefFunction
+    {
+        public FunctionDeclaration Declaration;
+        public List<IInstruction> Instructions = new List<IInstruction>();
+
+        public RefFunction(FunctionDeclaration declaration)
+        {
+            Declaration = declaration;
+        }
+    }
+}

@@ -12,19 +12,20 @@ namespace XppInterpreter.Parser
     {
         public Token ReturnType { get; }
         public string Name { get; }
-        public List<FunctionParameter> Parameters { get; }
+        public List<FunctionDeclarationParameter> Parameters { get; }
+        public Block Block { get; }
 
-        public FunctionDeclaration(string name, Token returnType, List<FunctionParameter> parameters, SourceCodeBinding sourceCodeBinding) : base(sourceCodeBinding, sourceCodeBinding)
+        public FunctionDeclaration(string name, Token returnType, List<FunctionDeclarationParameter> parameters, Block block, SourceCodeBinding sourceCodeBinding) : base(sourceCodeBinding, null)
         {
             ReturnType = returnType;
             Name = name;
             Parameters = parameters;
+            Block = block;
         }
 
         public override void Accept(IAstVisitor interpreter)
         {
-            // TODO: Implement interpreter
-            throw new NotImplementedException();
+            interpreter.VisitFunctionDeclaration(this);
         }
     }
 }

@@ -13,6 +13,7 @@ namespace XppInterpreter.Interpreter.Bytecode
     {
         private readonly ByteCodeGenerationContext _generationContext = new ByteCodeGenerationContext();
         private readonly Stack<ByteCodeGenerationScope> _ss = new Stack<ByteCodeGenerationScope>();
+        private readonly List<RefFunction> _declaredFunctions = new List<RefFunction>();
         private bool _generateDebugInfo;
         private bool _hasMaxIterations;
 
@@ -618,6 +619,18 @@ namespace XppInterpreter.Interpreter.Bytecode
                 
                 _ss.Peek().Instructions.Remove(instruction);
             }
+        }
+
+        public void VisitFunctionDeclaration(FunctionDeclaration functionDeclaration)
+        {
+            CreateScope();
+            functionDeclaration.Block.Accept(this);
+            var blockScope = ReleaseScope();
+
+            Emit(new DeclaredFunctionCall(new RefFunction(functionDeclaration)
+            {
+                Instructions = blockScope.Instructions
+            }));
         }
     }
 }

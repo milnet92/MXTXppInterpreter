@@ -13,7 +13,7 @@ namespace XppInterpreter.Interpreter.Bytecode
         public override object MakeCall(RuntimeContext context, object[] arguments)
         {
             var instance = context.Stack.Pop();
-            arguments = GetParameters(context);
+            arguments = GetParametersFromStack(context.Stack);
             return context.Proxy.Reflection.CallInstanceFunction(instance, Name, arguments);
         }
     }

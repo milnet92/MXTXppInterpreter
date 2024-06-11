@@ -90,6 +90,7 @@
     <Compile Include="Interpreter\Bytecode\ChangeCompanyDispose.cs" />
     <Compile Include="Interpreter\Bytecode\Container.cs" />
     <Compile Include="Interpreter\Bytecode\Debug.cs" />
+    <Compile Include="Interpreter\Bytecode\DeclaredFunctionCall.cs" />
     <Compile Include="Interpreter\Bytecode\DefaultValue.cs" />
     <Compile Include="Interpreter\Bytecode\DefaultValueArray.cs" />
     <Compile Include="Interpreter\Bytecode\DeleteQuery.cs" />
@@ -109,6 +110,7 @@
     <Compile Include="Interpreter\Bytecode\BeginScope.cs" />
     <Compile Include="Interpreter\Bytecode\Next.cs" />
     <Compile Include="Interpreter\Bytecode\Push.cs" />
+    <Compile Include="Interpreter\Bytecode\RefFunction.cs" />
     <Compile Include="Interpreter\Bytecode\SelectQuery.cs" />
     <Compile Include="Interpreter\Bytecode\StaticFunctionCall.cs" />
     <Compile Include="Interpreter\Bytecode\StaticLoad.cs" />
@@ -175,7 +177,7 @@
     <Compile Include="Parser\Data\Setting.cs" />
     <Compile Include="Parser\DeleteFrom.cs" />
     <Compile Include="Parser\FunctionDeclaration.cs" />
-    <Compile Include="Parser\FunctionParameter.cs" />
+    <Compile Include="Parser\FunctionDeclarationParameter.cs" />
     <Compile Include="Parser\InsertRecordset.cs" />
     <Compile Include="Parser\ParseContext.cs" />
     <Compile Include="Parser\ParseContextStack.cs" />

@@ -98,6 +98,11 @@ namespace XppInterpreter.Interpreter
             }
         }
 
+        public void VisitFunctionDeclaration(FunctionDeclaration functionDeclaration)
+        {
+            functionDeclaration.Block.Accept(this);
+        }
+
         public virtual void VisitIf(If @if)
         {
             @if.Expression?.Accept(this);

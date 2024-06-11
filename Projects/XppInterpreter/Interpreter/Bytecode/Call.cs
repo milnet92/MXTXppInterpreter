@@ -23,13 +23,13 @@ namespace XppInterpreter.Interpreter.Bytecode
             ProcessParameters = processParameters;
         }
 
-        protected object[] GetParameters(RuntimeContext context)
+        protected object[] GetParametersFromStack(Stack<object> stack)
         {
             object[] arguments = new object[NArgs];
 
             for (int narg = 0; narg < NArgs; narg++)
             {
-                arguments[narg] = context.Stack.Pop();
+                arguments[narg] = stack.Pop();
             }
 
             return arguments;
@@ -37,11 +37,11 @@ namespace XppInterpreter.Interpreter.Bytecode
 
         public void Execute(RuntimeContext context)
         {
-            object returnValue = null;
+            object returnValue;
 
             if (ProcessParameters)
             {
-                var arguments = GetParameters(context);
+                var arguments = GetParametersFromStack(context.Stack);
                 returnValue = MakeCall(context, arguments);
             }
             else
