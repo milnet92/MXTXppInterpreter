@@ -10,7 +10,7 @@ namespace XppInterpreter.Interpreter.Bytecode
     {
         private RefFunction _ref;
 
-        public DeclaredFunctionCall(RefFunction refFunction) : base(refFunction.FunctionName, refFunction.NArgs, false, true)
+        public DeclaredFunctionCall(RefFunction refFunction) : base(refFunction.Declaration.Name, refFunction.Declaration.Parameters.Count, false, true)
         {
             _ref = refFunction;
         }
