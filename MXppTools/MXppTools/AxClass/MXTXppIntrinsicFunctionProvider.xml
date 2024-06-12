@@ -3,6 +3,8 @@
 	<Name>MXTXppIntrinsicFunctionProvider</Name>
 	<SourceCode>
 		<Declaration><![CDATA[
+using Microsoft.Dynamics.Ax.Xpp;
+
 internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.Interpreter.Proxy.IIntrinsicFunctionProvider
 {
 }
@@ -174,6 +176,619 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
     public int enumNum(System.String enumName)
     {
         return enumName2Id(enumName);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>configurationKeyNum</Name>
+				<Source><![CDATA[
+    public int configurationKeyNum(System.String keyName)
+    {
+        return configurationKeyName2Id(keyName);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>configurationKeyStr</Name>
+				<Source><![CDATA[
+    public str configurationKeyStr(System.String keyName)
+    {
+        return keyName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>dataEntityDataSourceStr</Name>
+				<Source><![CDATA[
+    public str dataEntityDataSourceStr(System.String dataEntity, System.String dataSource)
+    {
+        return dataSource;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>delegateStr</Name>
+				<Source><![CDATA[
+    public str delegateStr(System.String className, System.String instanceDelegate)
+    {
+        return instanceDelegate;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>dimensionHierarchyLevelStr</Name>
+				<Source><![CDATA[
+    public str dimensionHierarchyLevelStr(System.String dimensionHierarchyLevel)
+    {
+        return dimensionHierarchyLevel;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>dimensionHierarchyStr</Name>
+				<Source><![CDATA[
+    public str dimensionHierarchyStr(System.String dimensionHierarchy)
+    {
+        return dimensionHierarchy;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>dimensionReferenceStr</Name>
+				<Source><![CDATA[
+    public str dimensionReferenceStr(System.String dimensionReference)
+    {
+        return dimensionReference;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>dutyStr</Name>
+				<Source><![CDATA[
+    public str dutyStr(System.String securityDuty)
+    {
+        return securityDuty;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>enumCnt</Name>
+				<Source><![CDATA[
+    public int enumCnt(System.String enumType)
+    {
+        return SysDictEnum::newName(enumType).values();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>enumLiteralStr</Name>
+				<Source><![CDATA[
+    public str enumLiteralStr(System.String enumName, System.String literal)
+    {
+        return literal;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>enumStr</Name>
+				<Source><![CDATA[
+    public str enumStr(System.String enumName)
+    {
+        return enumName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>extendedTypeNum</Name>
+				<Source><![CDATA[
+    public int extendedTypeNum(System.String enumName)
+    {
+        return extendedTypeName2Id(enumName);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>fieldNum</Name>
+				<Source><![CDATA[
+    public int fieldNum(System.String tableName, System.String fieldName)
+    {
+        return fieldName2Id(tableName2Id(tableName), fieldName);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>fieldPName</Name>
+				<Source><![CDATA[
+    public str fieldPName(System.String tableName, System.String fieldName)
+    {
+        int tableId = tableName2Id(tableName);
+
+        return fieldId2PName(tableId, fieldName2Id(tableId, fieldName));
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>fieldStr</Name>
+				<Source><![CDATA[
+    public str fieldStr(System.String talbeName, System.String fieldName)
+    {
+        return fieldName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>formControlStr</Name>
+				<Source><![CDATA[
+    public str formControlStr(System.String formName, System.String controlName)
+    {
+        return controlName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>formDataFieldStr</Name>
+				<Source><![CDATA[
+    public str formDataFieldStr(System.String formName, System.String dataSourceName, System.String dataFieldName)
+    {
+        return dataFieldName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>formDataSourceStr</Name>
+				<Source><![CDATA[
+    public str formDataSourceStr(System.String formName, System.String dataSourceName)
+    {
+        return dataSourceName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>formMethodStr</Name>
+				<Source><![CDATA[
+    public str formMethodStr(System.String formName, System.String methodName)
+    {
+        return methodName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>identifierStr</Name>
+				<Source><![CDATA[
+    public str identifierStr(System.String identifierName)
+    {
+        return identifierName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>indexNum</Name>
+				<Source><![CDATA[
+    public int indexNum(System.String tableName, System.String indexName)
+    {
+        return indexName2Id(tableName2Id(tableName), indexName);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>indexStr</Name>
+				<Source><![CDATA[
+    public str indexStr(System.String talbeName, System.String indexName)
+    {
+        return indexName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>licenseCodeNum</Name>
+				<Source><![CDATA[
+    public int licenseCodeNum(System.String licenseCodeName)
+    {
+        return 0;
+        //return Licensecodename2id(licenseCodeName);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>licenseCodeStr</Name>
+				<Source><![CDATA[
+    public str licenseCodeStr(System.String licenseCodeName)
+    {
+        return licenseCodeName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>literalStr</Name>
+				<Source><![CDATA[
+    public str literalStr(System.String literal)
+    {
+        return literal;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>measurementStr</Name>
+				<Source><![CDATA[
+    public str measurementStr(System.String measurementName)
+    {
+        return measurementName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>measureStr</Name>
+				<Source><![CDATA[
+    public str measureStr(System.String measureName)
+    {
+        return measureName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>menuStr</Name>
+				<Source><![CDATA[
+    public str menuStr(System.String menuName)
+    {
+        return menuName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>privilegeStr</Name>
+				<Source><![CDATA[
+    public str privilegeStr(System.String privilegeName)
+    {
+        return privilegeName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>queryDatasourceStr</Name>
+				<Source><![CDATA[
+    public str queryDatasourceStr(System.String queyrName, System.String dataSourceName)
+    {
+        return dataSourceName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>queryMethodStr</Name>
+				<Source><![CDATA[
+    public str queryMethodStr(System.String queryName, System.String methodName)
+    {
+        return methodName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>queryStr</Name>
+				<Source><![CDATA[
+    public str queryStr(System.String queryName)
+    {
+        return queryName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>reportStr</Name>
+				<Source><![CDATA[
+    public str reportStr(System.String reportName)
+    {
+        return reportName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>resourceStr</Name>
+				<Source><![CDATA[
+    public str resourceStr(System.String resourceName)
+    {
+        return resourceName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>roleStr</Name>
+				<Source><![CDATA[
+    public str roleStr(System.String roleName)
+    {
+        return roleName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>ssrsReportStr</Name>
+				<Source><![CDATA[
+    public str ssrsReportStr(System.String reportName, System.String designName)
+    {
+        return strFmt("%1.%2", reportName, designName);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>staticDelegateStr</Name>
+				<Source><![CDATA[
+    public str staticDelegateStr(System.String className, System.String delegateName)
+    {
+        return delegateName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>tableCollectionStr</Name>
+				<Source><![CDATA[
+    public str tableCollectionStr(System.String tableCollectionName)
+    {
+        return tableCollectionName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>tableFieldGroupStr</Name>
+				<Source><![CDATA[
+    public str tableFieldGroupStr(System.String talbeName, System.String fieldGroupName)
+    {
+        return fieldGroupName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>tableMethodStr</Name>
+				<Source><![CDATA[
+    public str tableMethodStr(System.String tableName, System.String methodName)
+    {
+        return methodName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>tablePName</Name>
+				<Source><![CDATA[
+    public str tablePName(System.String tableName)
+    {
+        return tableName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>tableStaticMethodStr</Name>
+				<Source><![CDATA[
+    public str tableStaticMethodStr(System.String tableName, System.String methodName)
+    {
+        return methodName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>tileStr</Name>
+				<Source><![CDATA[
+    public str tileStr(System.String tileName)
+    {
+        return tileName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>varStr</Name>
+				<Source><![CDATA[
+    public str varStr(System.String varName)
+    {
+        return varName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>webActionItemStr</Name>
+				<Source><![CDATA[
+    public str webActionItemStr(System.String webActionItemName)
+    {
+        return webActionItemName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>webDisplayContentItemStr</Name>
+				<Source><![CDATA[
+    public str webDisplayContentItemStr(System.String webDisplayContentItemName)
+    {
+        return webDisplayContentItemName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>webOutputContentItemStr</Name>
+				<Source><![CDATA[
+    public str webOutputContentItemStr(System.String webOutputContentItemName)
+    {
+        return webOutputContentItemName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>webFormStr</Name>
+				<Source><![CDATA[
+    public str webFormStr(System.String webFormName)
+    {
+        return webFormName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>webletItemStr</Name>
+				<Source><![CDATA[
+    public str webletItemStr(System.String webletItemName)
+    {
+        return webletItemName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>webMenuStr</Name>
+				<Source><![CDATA[
+    public str webMenuStr(System.String webMenuName)
+    {
+        return webMenuName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>webpageDefStr</Name>
+				<Source><![CDATA[
+    public str webpageDefStr(System.String webpageDefName)
+    {
+        return webpageDefName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>webReportStr</Name>
+				<Source><![CDATA[
+    public str webReportStr(System.String webReportName)
+    {
+        return webReportName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>websiteDefStr</Name>
+				<Source><![CDATA[
+    public str websiteDefStr(System.String websiteDefName)
+    {
+        return websiteDefName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>webSiteTempStr</Name>
+				<Source><![CDATA[
+    public str webSiteTempStr(System.String webSiteTempName)
+    {
+        return webSiteTempName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>webStaticFileStr</Name>
+				<Source><![CDATA[
+    public str webStaticFileStr(System.String webStaticFileName)
+    {
+        return webStaticFileName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>webUrlItemStr</Name>
+				<Source><![CDATA[
+    public str webUrlItemStr(System.String webUrlItemName)
+    {
+        return webUrlItemName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>webWebPartStr</Name>
+				<Source><![CDATA[
+    public str webWebPartStr(System.String webWebPartName)
+    {
+        return webWebPartName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>workflowapprovalstr</Name>
+				<Source><![CDATA[
+    public str workflowapprovalstr(System.String workflowapprovalName)
+    {
+        return workflowapprovalName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>workflowCategoryStr</Name>
+				<Source><![CDATA[
+    public str workflowCategoryStr(System.String workflowCategoryName)
+    {
+        return workflowCategoryName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>workflowTaskStr</Name>
+				<Source><![CDATA[
+    public str workflowTaskStr(System.String workflowTaskName)
+    {
+        return workflowTaskName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>workflowTypeStr</Name>
+				<Source><![CDATA[
+    public str workflowTypeStr(System.String workflowTypeName)
+    {
+        return workflowTypeName;
     }
 
 ]]></Source>
