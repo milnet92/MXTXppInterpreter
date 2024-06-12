@@ -11,9 +11,8 @@ namespace XppInterpreter.Core
     public class Scope
     {
         internal readonly NormalizedScopeEntryHash _hash = new NormalizedScopeEntryHash();
-
         internal VariableCollection VariableCollection = new VariableCollection();
-        //public Dictionary<DeclaredVariable, object> Variables = new Dictionary<DeclaredVariable, object>();
+
         public Stack<object> Stack = new Stack<object>();
         public Scope Parent { get; set; }
 
@@ -65,7 +64,7 @@ namespace XppInterpreter.Core
                         {
                             if (declarationType is null && varValue is null)
                             {
-                                throw new Exception($"Cannot declare an untyped variable without inisialisation");
+                                throw new Exception($"Cannot declare an untyped variable without initialization.");
                             }
                             else
                             {
