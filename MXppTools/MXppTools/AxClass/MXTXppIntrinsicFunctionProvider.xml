@@ -3,8 +3,6 @@
 	<Name>MXTXppIntrinsicFunctionProvider</Name>
 	<SourceCode>
 		<Declaration><![CDATA[
-using Microsoft.Dynamics.Ax.Xpp;
-
 internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.Interpreter.Proxy.IIntrinsicFunctionProvider
 {
 }
@@ -407,8 +405,7 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public int licenseCodeNum(System.String licenseCodeName)
     {
-        return 0;
-        //return Licensecodename2id(licenseCodeName);
+        return new Microsoft.Dynamics.Ax.Xpp.Dictionary().Licensecodename2id(licenseCodeName);
     }
 
 ]]></Source>
