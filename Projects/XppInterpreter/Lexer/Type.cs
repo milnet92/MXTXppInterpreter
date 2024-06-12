@@ -18,7 +18,7 @@ namespace XppInterpreter.Lexer
         public static readonly Type Real = new Type("real", TType.TypeReal);
         public static readonly Type DateTime = new Type("utcdatetime", TType.TypeDatetime);
         public static readonly Type TimeOfDay = new Type("timeofday", TType.TypeTimeOfDay);
-        public static readonly Type Str = new Type("string", TType.TypeStr);
+        public static readonly Type Str = new Type("str", TType.TypeStr);
         public static readonly Type Var = new Type("var", TType.Var);
 
         public Type(string lexeme, TType tokenType) : base(lexeme, tokenType)
