@@ -63,6 +63,7 @@ var keywords = [
     "date",
     "utcdatetime",
     "int",
+    "int64",
     "real",
     "str",
     "boolean",
