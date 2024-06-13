@@ -31,7 +31,10 @@ namespace XppInterpreter.Lexer
         {
             _sourceCode = source;
             reader = new StringReader(_sourceCode);
+        }
 
+        static XppLexer()
+        {
             ReserveKeywords();
         }
 
