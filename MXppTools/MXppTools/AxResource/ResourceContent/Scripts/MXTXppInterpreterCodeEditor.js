@@ -124,7 +124,8 @@
         var change_timer;
 
         editor.commands.addCommand(command);
-
+        editor.setShowFoldWidgets(true);
+        editor.setOption("enableLiveAutoCompletion", true);
         editor.session.setMode($dyn.value(this.Mode));
         editor.session.setValue($dyn.value(this.SourceCode));
         editor.setShowPrintMargin(false);
@@ -146,9 +147,9 @@
                         if (value !== null && typeof value !== 'undefined') {
                             editor.session.setAnnotations([{
                                 row: value.Line,
-                                column: 0,
+                                column: value.Column,
                                 text: value.Name,
-                                type: "error" // also warning and information
+                                type: "error"
                             }]);
                         }
                     });
@@ -189,7 +190,7 @@
             if (value !== null) {
                 editor.session.setAnnotations([{
                     row: value.Line,
-                    column: 0,
+                    column: value.Column,
                     text: value.Name,
                     type: "error" // also warning and information
                 }]);

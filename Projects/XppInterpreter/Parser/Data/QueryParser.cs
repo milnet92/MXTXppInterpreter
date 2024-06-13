@@ -172,7 +172,7 @@ namespace XppInterpreter.Parser
                     Match(TType.Star);
 
                     if (ret.Count > 0)
-                        ThrowParseException("Invalid selection fields");
+                        ThrowParseException("Invalid selection fields.");
 
                     break;
                 }
@@ -184,7 +184,7 @@ namespace XppInterpreter.Parser
                 else if (currentToken.TokenType != TType.From && ret.Count != 0 ||
                          (currentToken.TokenType == TType.From && ret.Count == 0 && !selectAll))
                 {
-                    ThrowParseException("Invalid selection fields");
+                    ThrowParseException("Invalid selection fields.");
                 }
                 else
                 {
@@ -430,7 +430,7 @@ namespace XppInterpreter.Parser
             }
             else if (selectionFields.Count > 0)
             {
-                ThrowParseException("Invalid selection field");
+                ThrowParseException("Invalid selection field.");
             }
 
             var tableVarName = (Word)Match(TType.Id).Token;
@@ -451,7 +451,7 @@ namespace XppInterpreter.Parser
                 {
                     if (groupBy != null)
                     {
-                        ThrowParseException("Multiple group by stataments");
+                        ThrowParseException("Multiple group by stataments.");
                     }
 
                     groupBy = GroupBy();
@@ -460,7 +460,7 @@ namespace XppInterpreter.Parser
                 {
                     if (orderBy != null)
                     {
-                        ThrowParseException("Multiple order by stataments");
+                        ThrowParseException("Multiple order by stataments.");
                     }
 
                     orderBy = OrderBy();

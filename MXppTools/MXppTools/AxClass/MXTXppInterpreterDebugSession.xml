@@ -350,11 +350,11 @@ public class MXTXppInterpreterDebugSession
         }
         catch(parseException)
         {
-            lastParseException = new MXTXppInterpreterCodeEditorParseException(parseException.Line, parseException.Message);
+            lastParseException = new MXTXppInterpreterCodeEditorParseException(parseException.Message, parseException.Line, parseException.Position );
         }
         catch
         {
-            lastParseException = new MXTXppInterpreterCodeEditorParseException(0, "An error occurred while parsing");
+            lastParseException = new MXTXppInterpreterCodeEditorParseException("An error occurred while parsing", 0, 0);
         }
 
         return lastParseException;

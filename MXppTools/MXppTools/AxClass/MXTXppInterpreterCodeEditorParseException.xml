@@ -8,6 +8,7 @@ public final class MXTXppInterpreterCodeEditorParseException
 {
     str errorMessage;
     int line;
+    int column;
 
 }
 ]]></Declaration>
@@ -15,10 +16,11 @@ public final class MXTXppInterpreterCodeEditorParseException
 			<Method>
 				<Name>new</Name>
 				<Source><![CDATA[
-    public void new(int _line, str _errorMessage)
+    public void new(str _errorMessage, int _line, int _column = 0)
     {
         line = _line;
         errorMessage = _errorMessage;
+        column = _column;
     }
 
 ]]></Source>
@@ -43,6 +45,18 @@ public final class MXTXppInterpreterCodeEditorParseException
     {
         line = _line;
         return line;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmColumn</Name>
+				<Source><![CDATA[
+    [DataMember("Column")]
+    public int parmColumn(int _column = column)
+    {
+        column = _column;
+        return column;
     }
 
 ]]></Source>

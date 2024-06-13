@@ -165,7 +165,7 @@ namespace XppInterpreter.Parser
             else if (result is string strValue) ret = new Constant(strValue, binding);
             else if (result is object[] conValue) ret = new Constant(conValue, binding);
             else if (result != null) ret = new Constant(result, binding);
-            else ThrowParseException($"Unexpected compile-time function {functionName} result");
+            else ThrowParseException($"Unexpected compile-time function {functionName} result.");
 
             return ret;
         }
@@ -303,11 +303,11 @@ namespace XppInterpreter.Parser
                 {
                     if (currentToken.TokenType == TType.Case)
                     {
-                        ThrowParseException("Default part must be the last case in switch statement");
+                        ThrowParseException("Default part must be the last case in switch statement.");
                     }
                     else if (currentToken.TokenType == TType.Default)
                     {
-                        ThrowParseException("Switch statements may not have multie default parts");
+                        ThrowParseException("Switch statements may not have multie default parts.");
                     }
                 }
 
@@ -877,7 +877,7 @@ namespace XppInterpreter.Parser
                    || currentToken.TokenType == TType.In) 
                     && !isParsingWhereStatement)
                 {
-                    ThrowParseException("In and Like statements can only be used in queries");
+                    ThrowParseException("In and Like statements can only be used in queries.");
                 }
 
                 var result = Match(currentToken.TokenType);
@@ -893,7 +893,7 @@ namespace XppInterpreter.Parser
                    (binaryExpr.LeftOperand.GetType() != typeof(Variable) || 
                     binaryExpr.RightOperand.GetType() != typeof(Variable)))
                 {
-                    ThrowParseException("In statement can only be compared to a container variable");
+                    ThrowParseException("In statement can only be compared to a container variable.");
                 }
             }
 
@@ -978,7 +978,7 @@ namespace XppInterpreter.Parser
                         }
                         else
                         {
-                            ThrowParseException("Syntax error");
+                            ThrowParseException("Syntax error.");
                         }
                     }
                     break;
@@ -1003,7 +1003,7 @@ namespace XppInterpreter.Parser
             return ret;
         }
 
-        void ThrowParseException(string s, bool showLine = true)
+        void ThrowParseException(string s, bool showLine = false)
         {   
             throw new ParseException(
                 s,
@@ -1021,7 +1021,7 @@ namespace XppInterpreter.Parser
             }
             else
             {
-                ThrowParseException($"Syntax error: {string.Join(", ", ttypes)} expected");
+                ThrowParseException($"Syntax error: {string.Join(", ", ttypes)} expected.");
             }
 
             // Move function sets the last scan results
@@ -1036,7 +1036,7 @@ namespace XppInterpreter.Parser
             }
             else
             {
-                ThrowParseException($"Syntax error: {ttype} was expected");
+                ThrowParseException($"Syntax error: {ttype} was expected.");
             }
 
             // Move function sets the last scan results

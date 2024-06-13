@@ -257,7 +257,7 @@ namespace XppInterpreter.Lexer
                 }
                 else if (peek == char.MaxValue)
                 {
-                    throw new ParseException("String not finalized", new Token(TType.String), line, positionEnd);
+                    throw new ParseException("String not finalized.", new Token(TType.String), line, positionEnd);
                 }
 
                 builder.Append(peek);
@@ -493,7 +493,7 @@ namespace XppInterpreter.Lexer
                 }
             }
 
-            throw new ParseException("Character not recognized", new Token(TType.Invalid), line, previousPositionEnd);
+            throw new ParseException("Character not recognized.", new Token(TType.Invalid), line, previousPositionEnd);
         }
 
         /// <summary>
