@@ -52,4 +52,14 @@ namespace XppInterpreter.Lexer
     {
         public Real(decimal value) : base(value, TType.Real) { }
     }
+
+    public class Container : BaseType
+    {
+        public Container(object[] container) : base(container, TType.Container) { }
+    }
+
+    public class Date : BaseType
+    {
+        public Date(object date) : base(date, TType.Date) { }
+    }
 }

@@ -18,7 +18,7 @@ namespace XppInterpreter.Parser
         private int currentPeekOffset = -1;
         private readonly ILexer _lexer;
         private readonly ParseContext _parseContext = new ParseContext();
-
+        private readonly Interpreter.Proxy.IIntrinsicFunctionProvider _intrinsicFunctionProvider;
         IScanResult AdvancePeek(bool reset = false)
         {
             currentPeekOffset++;
@@ -35,9 +35,10 @@ namespace XppInterpreter.Parser
             currentPeekOffset = -1;
         }
 
-        public XppParser(ILexer lexer)
+        public XppParser(ILexer lexer, Interpreter.Proxy.IIntrinsicFunctionProvider intrinsicFunctionProvider)
         {
             this._lexer = lexer;
+            this._intrinsicFunctionProvider = intrinsicFunctionProvider;
         }
 
         public IAstNode Parse()
@@ -91,15 +92,21 @@ namespace XppInterpreter.Parser
                 SourceCodeBinding(start, lastScanResult));
         }
 
-        internal List<Expression> IntrinsicParameters()
+        internal List<string> IntrinsicParameters(string functionName)
         {
-            List<Expression> parameters = new List<Expression>();
+            List<string> literalParameters = new List<string>();
             Match(TType.LeftParenthesis);
 
             while (currentToken.TokenType != TType.RightParenthesis)
             {
-                Match(TType.Id);
-                parameters.Add(new Constant((lastScanResult.Token as Word).Lexeme, SourceCodeBinding(lastScanResult)));
+                var parameter = MatchMultiple(TType.Id, TType.String).Token;
+
+                string literalValue = string.Empty;
+
+                if (parameter is Word word) literalValue = word.Lexeme;
+                else if (parameter is Lexer.String str) literalValue = (string)str.Value;
+
+                literalParameters.Add(literalValue);
 
                 if (currentToken.TokenType != TType.RightParenthesis)
                 {
@@ -108,7 +115,8 @@ namespace XppInterpreter.Parser
             }
 
             Match(TType.RightParenthesis);
-            return parameters;
+
+            return literalParameters;
         }
 
         internal List<Expression> Parameters()
@@ -132,10 +140,40 @@ namespace XppInterpreter.Parser
             return parameters;
         }
 
-        internal Variable Variable(Expression caller = null, bool staticCall = false)
+        internal Expression IntrinsicFunction(string functionName)
+        {
+            var start = lastScanResult;
+            var parameters = IntrinsicParameters(functionName);
+            object result = null;
+            Expression ret = null;
+
+            try
+            {
+                // Call intrinsic function
+                result = Interpreter.Proxy.XppProxyHelper.CallIntrinsicFunction(_intrinsicFunctionProvider, functionName, parameters.ToArray<object>());
+            }
+            catch (Exception ex)
+            {
+                string message = ex.Message;
+                if (ex.InnerException != null) message = ex.InnerException.Message;
+                ThrowParseException(message, false);
+            }
+
+            var binding = SourceCodeBinding(start, lastScanResult);
+
+            if (result is int intValue) ret = new Constant(intValue, binding);
+            else if (result is string strValue) ret = new Constant(strValue, binding);
+            else if (result is object[] conValue) ret = new Constant(conValue, binding);
+            else if (result != null) ret = new Constant(result, binding);
+            else ThrowParseException($"Unexpected compile-time function {functionName} result");
+
+            return ret;
+        }
+
+        internal Expression Variable(Expression caller = null, bool staticCall = false)
         {
             var identifier = Match(TType.Id);
-            Variable ret;
+            Expression ret;
             SourceCodeBinding debuggeableStartBinding = caller?.SourceCodeBinding ?? new SourceCodeBinding(identifier.Line, identifier.Start, 0, 0);
 
             if (caller is Interpreter.Debug.IDebuggeable debuggeable)
@@ -149,20 +187,29 @@ namespace XppInterpreter.Parser
 
                 _parseContext.CallFunctionScope.New();
 
-                string name = (identifier.Token as Word).Lexeme;
+                string functionName = (identifier.Token as Word).Lexeme;
 
-                bool intrinsical = caller is null && Interpreter.Proxy.XppProxyHelper.IsIntrinsicFunction(name);
-                var parameters = intrinsical ? IntrinsicParameters() : Parameters();
+                bool intrinsical = caller is null && Interpreter.Proxy.XppProxyHelper.IsIntrinsicFunction(functionName);
 
-                ret = new FunctionCall(
-                    (Word)identifier.Token, 
-                    parameters, 
-                    caller, 
-                    staticCall, 
-                    intrinsical, 
-                    SourceCodeBinding(identifier, lastScanResult),
-                    isInsideFunctionScope ? SourceCodeBinding(debuggeableStartBinding, lastScanResult) : null);
+                if (intrinsical)
+                {
+                    ret = IntrinsicFunction(functionName);
+                }
+                else
+                {
 
+                    var parameters = Parameters();
+
+                    ret = new FunctionCall(
+                        (Word)identifier.Token,
+                        parameters,
+                        caller,
+                        staticCall,
+                        false,
+                        SourceCodeBinding(identifier, lastScanResult),
+                        isInsideFunctionScope ? SourceCodeBinding(debuggeableStartBinding, lastScanResult) : null);
+
+                }
                 _parseContext.CallFunctionScope.Release();
             }
             else
@@ -891,7 +938,7 @@ namespace XppInterpreter.Parser
         internal Statement Assignment(bool matchSemicolon = true)
         {
             var start = currentScanResult;
-            Variable assignee = Variable();
+            Variable assignee = (Variable)Variable();
             Token operand = currentToken;
             Statement ret = null;
             switch (currentToken.TokenType)

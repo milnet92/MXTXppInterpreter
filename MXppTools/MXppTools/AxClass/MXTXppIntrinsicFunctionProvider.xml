@@ -13,6 +13,8 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
 	public int classNum(str name)
     {
+        MXTXppIntrinsicFunctionHelper::validateClassName(name);
+
         return className2Id(name);
 	}
 
@@ -23,7 +25,7 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public str classStr(str name)
     {
-        return name;
+        return classId2Name(this.classNum(name));
     }
 
 ]]></Source>
@@ -33,6 +35,8 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public str formStr(str name)
     {
+        MXTXppIntrinsicFunctionHelper::validateFormName(name);
+
         return name;
     }
 
@@ -43,6 +47,8 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public int tableNum(str name)
     {
+        MXTXppIntrinsicFunctionHelper::validateTableName(name);
+
         return tableName2Id(name);
     }
 
@@ -53,7 +59,7 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public str tableStr(str name)
     {
-        return name;
+        return tableId2Name(this.tableNum(name));
     }
 
 ]]></Source>
@@ -93,7 +99,7 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public str extendedTypeStr(System.String name)
     {
-        return name;
+        return extendedTypeId2name(this.extendedTypeNum(name));
     }
 
 ]]></Source>
@@ -103,6 +109,8 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public str menuItemActionStr(System.String name)
     {
+        MXTXppIntrinsicFunctionHelper::validateMenuItem(name, MenuItemType::Action);
+
         return name;
     }
 
@@ -113,6 +121,8 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public str menuItemDisplayStr(System.String name)
     {
+        MXTXppIntrinsicFunctionHelper::validateMenuItem(name, MenuItemType::Display);
+
         return name;
     }
 
@@ -123,6 +133,8 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public str menuItemOutputStr(System.String name)
     {
+        MXTXppIntrinsicFunctionHelper::validateMenuItem(name, MenuItemType::Output);
+
         return name;
     }
 
@@ -133,6 +145,8 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public str methodStr(System.String className, System.String methodName)
     {
+        MXTXppIntrinsicFunctionHelper::validateInstanceMethod(className, methodName);
+
         return methodName;
     }
 
@@ -143,6 +157,8 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public str staticMethodStr(System.String className, System.String methodName)
     {
+        MXTXppIntrinsicFunctionHelper::validateStaticMethod(className, methodName);
+
         return methodName;
     }
 
@@ -173,6 +189,8 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public int enumNum(System.String enumName)
     {
+        MXTXppIntrinsicFunctionHelper::validateEnumName(enumName);
+
         return enumName2Id(enumName);
     }
 
@@ -183,6 +201,8 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public int configurationKeyNum(System.String keyName)
     {
+        MXTXppIntrinsicFunctionHelper::validateConfigurationKeyName(keyName);
+
         return configurationKeyName2Id(keyName);
     }
 
@@ -193,7 +213,7 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public str configurationKeyStr(System.String keyName)
     {
-        return keyName;
+        return configurationkeyId2Name(this.configurationKeyNum(keyName));
     }
 
 ]]></Source>
@@ -263,7 +283,7 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public int enumCnt(System.String enumType)
     {
-        return SysDictEnum::newName(enumType).values();
+        return SysDictEnum::newName(this.enumStr(enumType)).values();
     }
 
 ]]></Source>
@@ -273,6 +293,8 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public str enumLiteralStr(System.String enumName, System.String literal)
     {
+        MXTXppIntrinsicFunctionHelper::validateEnumValue(enumName, literal);
+
         return literal;
     }
 
@@ -283,7 +305,7 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public str enumStr(System.String enumName)
     {
-        return enumName;
+        return enumId2Name(this.enumNum(enumName));
     }
 
 ]]></Source>
@@ -291,9 +313,10 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 			<Method>
 				<Name>extendedTypeNum</Name>
 				<Source><![CDATA[
-    public int extendedTypeNum(System.String enumName)
+    public int extendedTypeNum(System.String edtName)
     {
-        return extendedTypeName2Id(enumName);
+        MXTXppIntrinsicFunctionHelper::validateEDTName(edtName);
+        return extendedTypeName2Id(edtName);
     }
 
 ]]></Source>
@@ -303,6 +326,8 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public int fieldNum(System.String tableName, System.String fieldName)
     {
+        MXTXppIntrinsicFunctionHelper::validateFieldName(tableName, fieldName);
+
         return fieldName2Id(tableName2Id(tableName), fieldName);
     }
 
@@ -313,9 +338,7 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public str fieldPName(System.String tableName, System.String fieldName)
     {
-        int tableId = tableName2Id(tableName);
-
-        return fieldId2PName(tableId, fieldName2Id(tableId, fieldName));
+        return fieldId2PName(tableName2Id(tableName), this.fieldNum(tableName, fieldName));
     }
 
 ]]></Source>
@@ -323,9 +346,9 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 			<Method>
 				<Name>fieldStr</Name>
 				<Source><![CDATA[
-    public str fieldStr(System.String talbeName, System.String fieldName)
+    public str fieldStr(System.String tableName, System.String fieldName)
     {
-        return fieldName;
+        return fieldId2Name(tableName2Id(tableName), this.fieldNum(tableName, fieldName));
     }
 
 ]]></Source>
@@ -525,6 +548,8 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public str roleStr(System.String roleName)
     {
+        MXTXppIntrinsicFunctionHelper::validateRoleName(roleName);
+
         return roleName;
     }
 

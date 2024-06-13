@@ -15,7 +15,9 @@ namespace XppInterpreter.Interpreter.Proxy
 
         public static object CallIntrinsicFunction(IIntrinsicFunctionProvider provider, string name, object[] parameters)
         {
-            return provider.GetType().GetMethod(name).Invoke(provider, parameters);
+            var method = provider.GetType().GetMethods().FirstOrDefault(m => m.Name.ToLowerInvariant() == name.ToLowerInvariant());
+
+            return method.Invoke(provider, parameters);
         }
     }
 }

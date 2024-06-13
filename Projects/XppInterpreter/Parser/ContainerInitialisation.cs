@@ -13,7 +13,7 @@ namespace XppInterpreter.Parser
 
         public ContainerInitialisation(List<Expression> elements, SourceCodeBinding sourceCodeBinding) : base(new Lexer.Token(Lexer.TType.Container), sourceCodeBinding)
         {
-            Elements = elements;
+            Elements = elements ?? new List<Expression>();
         }
 
         public override void Accept(IAstVisitor interpreter)

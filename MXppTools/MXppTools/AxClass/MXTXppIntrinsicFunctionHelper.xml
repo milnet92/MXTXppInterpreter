@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppIntrinsicFunctionHelper</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+internal final class MXTXppIntrinsicFunctionHelper
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>throwArgumentException</Name>
+				<Source><![CDATA[
+    private static void throwArgumentException(str _argValue, str _expectedType)
+    {
+        throw new System.Exception(strFmt("'%1' argument does not specify a known %2.", _argValue, _expectedType));
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateClassName</Name>
+				<Source><![CDATA[
+	public static void validateClassName(str _className)
+    {
+        if (className2Id(_className) == 0)
+        {
+            MXTXppIntrinsicFunctionHelper::throwArgumentException(_className, 'class');
+        }
+	}
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateFormName</Name>
+				<Source><![CDATA[
+    public static void validateFormName(str _formName)
+    {
+        if (Microsoft.Dynamics.Ax.Xpp.MetadataSupport::GetForm(_formName) == null)
+        {
+            throw new System.Exception(strFmt("Form '%1' is not found.", _formName));
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateTableName</Name>
+				<Source><![CDATA[
+    public static void validateTableName(str _tableName)
+    {
+        if (tableName2Id(_tableName) == 0)
+        {
+            MXTXppIntrinsicFunctionHelper::throwArgumentException(_tableName, 'table/map/view/data entity');
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateFieldName</Name>
+				<Source><![CDATA[
+    public static void validateFieldName(str _tableName, str _fieldName)
+    {
+        MXTXppIntrinsicFunctionHelper::validateTableName(_tableName);
+
+        if (fieldName2Id(tableName2Id(_tableName), _fieldName) == 0)
+        {
+            throw new System.Exception(strFmt("Table '%1' does not contain a field named '%2'.", _tableName, _fieldName));
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateEDTName</Name>
+				<Source><![CDATA[
+    public static void validateEDTName(str _edtName)
+    {
+        if (extendedTypeName2Id(_edtName) == 0)
+        {
+            MXTXppIntrinsicFunctionHelper::throwArgumentException(_edtName, 'extended data type');
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateMenuItem</Name>
+				<Source><![CDATA[
+    public static void validateMenuItem(str _menuItemName, MenuItemType _type)
+    {
+        switch (_type)
+        {
+            case MenuItemType::Action:
+                if (Microsoft.Dynamics.Ax.Xpp.MetadataSupport::GetMenuItemAction(_menuItemName) == null)
+                {
+                    MXTXppIntrinsicFunctionHelper::throwArgumentException(_menuItemName, 'menu item action');
+                }
+
+            case MenuItemType::Display:
+                if (Microsoft.Dynamics.Ax.Xpp.MetadataSupport::GetMenuItemDisplay(_menuItemName) == null)
+                {
+                    MXTXppIntrinsicFunctionHelper::throwArgumentException(_menuItemName, 'menu item display');
+                }
+            
+            case MenuItemType::Output:
+                if (Microsoft.Dynamics.Ax.Xpp.MetadataSupport::GetMenuItemOutput(_menuItemName) == null)
+                {
+                    MXTXppIntrinsicFunctionHelper::throwArgumentException(_menuItemName, 'menu item output');
+                }
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateInstanceMethod</Name>
+				<Source><![CDATA[
+    public static void validateInstanceMethod(str _className, str _methodName)
+    {
+        MXTXppIntrinsicFunctionHelper::validateClassName(_className);
+        
+        SysDictClass dictClass = new SysDictClass(className2Id(_className));
+
+        if (!dictClass.hasObjectMethod(_methodName))
+        {
+            throw new System.Exception(strFmt("The instance method designated by argument '%1' dos not exist.", _methodName));
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateStaticMethod</Name>
+				<Source><![CDATA[
+    public static void validateStaticMethod(str _className, str _methodName)
+    {
+        MXTXppIntrinsicFunctionHelper::validateClassName(_className);
+        
+        SysDictClass dictClass = new SysDictClass(className2Id(_className));
+
+        if (!dictClass.hasStaticMethod(_methodName))
+        {
+            throw new System.Exception(strFmt("The static method designated by argument '%1' dos not exist.", _methodName));
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateEnumName</Name>
+				<Source><![CDATA[
+    public static void validateEnumName(str _enumName)
+    {
+        if (enumName2Id(_enumName) == 0)
+        {
+            MXTXppIntrinsicFunctionHelper::throwArgumentException(_enumName, 'enumeration');
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateEnumValue</Name>
+				<Source><![CDATA[
+    public static void validateEnumValue(str _enumName, str _enumValue)
+    {
+        MXTXppIntrinsicFunctionHelper::validateEnumName(_enumName);
+
+        var sysDictEnum = new SysDictEnum(enumName2Id(_enumName));
+        for(int i = 0 ; i <= sysDictEnum.values() ; i++)
+        {
+            if(sysDictEnum.index2Name(i) == _enumValue)
+            {
+                return;
+            }
+        }
+
+        throw new System.Exception(strFmt("Enumerable '%1' does not contain a value named '%2'.", _enumName, _enumValue));
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateConfigurationKeyName</Name>
+				<Source><![CDATA[
+    public static void validateConfigurationKeyName(str _configurationKeyName)
+    {
+        if (configurationKeyName2Id(_configurationKeyName) == 0)
+        {
+            MXTXppIntrinsicFunctionHelper::throwArgumentException(_configurationKeyName, 'configuration key');
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateDataEntityName</Name>
+				<Source><![CDATA[
+    public static void validateDataEntityName(str _dataEntityName)
+    {
+        if (Microsoft.Dynamics.Ax.Xpp.MetadataSupport::GetDataEntity(_dataEntityName) == null)
+        {
+            throw new System.Exception(strFmt("Data entity '%1' is not found.", _dataEntityName));
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateRoleName</Name>
+				<Source><![CDATA[
+    public static void validateRoleName(str _roleName)
+    {
+        if (Microsoft.Dynamics.Ax.Xpp.MetadataSupport::GetSecurityRole(_roleName) == null)
+        {
+            throw new System.Exception(strFmt("Security role '%1' is not found.", _roleName));
+        }
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

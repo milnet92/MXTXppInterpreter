@@ -93,6 +93,7 @@ namespace XppInterpreter.Lexer
         Int32,
         Int64,
         Container,
+        Date,
         Long,
         Star,
         Division,

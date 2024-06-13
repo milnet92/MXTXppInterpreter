@@ -46,7 +46,7 @@ internal final class MXTXppInterpreterExecutor
     public static XppInterpreter.Parser.Program parse(str _sourceCode)
     {
         XppInterpreter.Lexer.XppLexer lexer = new XppInterpreter.Lexer.XppLexer(_sourceCode);
-        XppInterpreter.Parser.XppParser parser = new XppInterpreter.Parser.XppParser(lexer);
+        XppInterpreter.Parser.XppParser parser = new XppInterpreter.Parser.XppParser(lexer, new MXTXppIntrinsicFunctionProvider());
         
         return parser.Parse() as XppInterpreter.Parser.Program;
     }

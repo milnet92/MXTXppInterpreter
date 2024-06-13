@@ -9,7 +9,7 @@ using XppInterpreter.Parser;
 namespace XppInterpreter.Interpreter
 {
     /// <summary>
-    /// Abstract object tree visitor interface
+    /// Abstract syntax tree visitor interface
     /// </summary>
     public interface IAstVisitor
     {

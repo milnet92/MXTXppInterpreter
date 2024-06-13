@@ -139,7 +139,6 @@
             self.SourceCode(sc);
 
             // Set source code back to X++ contorl
-
             if (sc !== '') {
                 clearTimeout(change_timer);
                 change_timer = setTimeout(function () {
