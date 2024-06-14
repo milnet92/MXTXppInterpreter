@@ -125,7 +125,6 @@
 
         editor.commands.addCommand(command);
         editor.setShowFoldWidgets(true);
-        editor.setOption("enableLiveAutoCompletion", true);
         editor.session.setMode($dyn.value(this.Mode));
         editor.session.setValue($dyn.value(this.SourceCode));
         editor.setShowPrintMargin(false);
