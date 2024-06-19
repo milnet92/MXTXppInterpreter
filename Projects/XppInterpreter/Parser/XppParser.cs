@@ -566,14 +566,33 @@ namespace XppInterpreter.Parser
             return new Return(expression, SourceCodeBinding(start, lastScanResult));
         }
 
+        internal Print Print()
+        {
+            var start = currentScanResult;
+
+            Match(TType.Print);
+            List<Expression> parameters = new List<Expression>();
+
+            do
+            {
+                if (currentToken.TokenType == TType.Comma)
+                    Match(TType.Comma);
+
+                parameters.Add(Expression());
+            } while (currentToken.TokenType == TType.Comma);
+
+            Match(TType.Semicolon);
+
+            return new Print(parameters, SourceCodeBinding(start, lastScanResult), SourceCodeBinding(start, lastScanResult));
+        }
+
         internal Statement Statement(bool matchSemicolon = true)
         {
             switch (currentToken.TokenType)
             {
-                case TType.Return:
-                    return Return();
+                case TType.Print: return Print();
+                case TType.Return: return Return();
                 case TType.LeftBrace: return Block();
-
                 case TType.Void: 
                 case TType.Id:
                     {
@@ -617,8 +636,7 @@ namespace XppInterpreter.Parser
                 case TType.Break:
                 case TType.Continue:
                     return LoopControl();
-                case TType.Switch:
-                    return Switch();
+                case TType.Switch: return Switch();
                 case TType.ChangeCompany: return ChangeCompany();
                 case TType.Var:
                 case TType.TypeStr:

@@ -183,6 +183,7 @@
     <Compile Include="Parser\InsertRecordset.cs" />
     <Compile Include="Parser\ParseContext.cs" />
     <Compile Include="Parser\ParseContextStack.cs" />
+    <Compile Include="Parser\Print.cs" />
     <Compile Include="Parser\Return.cs" />
     <Compile Include="Parser\Switch.cs" />
     <Compile Include="Parser\UpdateRecordset.cs" />

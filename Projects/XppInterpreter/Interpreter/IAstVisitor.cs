@@ -13,6 +13,7 @@ namespace XppInterpreter.Interpreter
     /// </summary>
     public interface IAstVisitor
     {
+        void VisitPrint(Print print);
         void VisitReturn(Return @return);
         void VisitFunctionDeclaration(FunctionDeclaration functionDeclaration);
         void VisitBreakpoint(Breakpoint breakpoint);

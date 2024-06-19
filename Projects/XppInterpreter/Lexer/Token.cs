@@ -107,7 +107,6 @@ namespace XppInterpreter.Lexer
         CommandValue,
         Semicolon,
         Comma,
-        Func,
         LeftParenthesis,
         RightParenthesis,
         BinaryOr,
@@ -142,6 +141,7 @@ namespace XppInterpreter.Lexer
         Switch,
         Case,
         Default,
+        Print,
 
         #region Type identification
         TypeAnytype,

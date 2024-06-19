@@ -7,6 +7,7 @@ var keywords = [
     "break",
     "breakpoint",
     "continue",
+    "print",
     "null",
     "throw",
     "switch",

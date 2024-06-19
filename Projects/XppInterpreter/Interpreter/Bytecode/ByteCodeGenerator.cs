@@ -651,5 +651,25 @@ namespace XppInterpreter.Interpreter.Bytecode
             @return.Expression.Accept(this);
             Emit(new Return());
         }
+
+        public void VisitPrint(Print print)
+        {
+            EmitDebugSymbol(print);
+
+            // Print call is translated into strFmt and info calls
+            StringBuilder sb = new StringBuilder();
+            for (var narg = print.Parameters.Count - 1; narg >= 0; narg--)
+            {
+                if (narg != print.Parameters.Count - 1)
+                    sb.Append(' ');
+                
+                sb.Append($"%{print.Parameters.Count - narg}");
+                print.Parameters[narg].Accept(this);
+            }
+
+            Emit(new Push(sb.ToString()));
+            Emit(new StaticFunctionCall("strFmt", print.Parameters.Count + 1, true));
+            Emit(new StaticFunctionCall("info", 1, false));
+        }
     }
 }

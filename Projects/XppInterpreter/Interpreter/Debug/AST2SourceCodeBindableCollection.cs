@@ -254,5 +254,11 @@ namespace XppInterpreter.Interpreter.Debug
             AddToCollection(@switch);
             base.VisitSwitch(@switch);
         }
+
+        public override void VisitPrint(Print print)
+        {
+            AddToCollection(print);
+            base.VisitPrint(print);
+        }
     }
 }

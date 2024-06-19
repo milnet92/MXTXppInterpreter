@@ -530,6 +530,7 @@ namespace XppInterpreter.Lexer
             Reserve(Word.And);
             Reserve(Word.Switch);
             Reserve(Word.Case);
+            Reserve(Word.Print);
             Reserve(Word.Default);
             Reserve(Word.TtsCommit);
             Reserve(Word.TtsAbort);

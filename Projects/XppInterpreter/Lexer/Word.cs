@@ -49,6 +49,7 @@ namespace XppInterpreter.Lexer
         public static readonly Word Default = new Word("default", TType.Default);
         public static readonly Word Case = new Word("case", TType.Case);
         public static readonly Word New = new Word("new", TType.New);
+        public static readonly Word Print = new Word("print", TType.Print);
         #endregion
 
         #region Data and query tokens
