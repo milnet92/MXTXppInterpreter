@@ -94,7 +94,9 @@
     <Compile Include="Interpreter\Bytecode\DefaultValueArray.cs" />
     <Compile Include="Interpreter\Bytecode\DeleteQuery.cs" />
     <Compile Include="Interpreter\Bytecode\EndScope.cs" />
+    <Compile Include="Interpreter\Bytecode\ICall.cs" />
     <Compile Include="Interpreter\Bytecode\IInstruction.cs" />
+    <Compile Include="Interpreter\Bytecode\IInterpretableInstruction.cs" />
     <Compile Include="Interpreter\Bytecode\InserQuery.cs" />
     <Compile Include="Interpreter\Bytecode\InstanceFunctionCall.cs" />
     <Compile Include="Interpreter\Bytecode\InstanceLoad.cs" />
@@ -110,6 +112,7 @@
     <Compile Include="Interpreter\Bytecode\Next.cs" />
     <Compile Include="Interpreter\Bytecode\Push.cs" />
     <Compile Include="Interpreter\Bytecode\RefFunction.cs" />
+    <Compile Include="Interpreter\Bytecode\Return.cs" />
     <Compile Include="Interpreter\Bytecode\SelectQuery.cs" />
     <Compile Include="Interpreter\Bytecode\StaticFunctionCall.cs" />
     <Compile Include="Interpreter\Bytecode\StaticLoad.cs" />
@@ -180,6 +183,7 @@
     <Compile Include="Parser\InsertRecordset.cs" />
     <Compile Include="Parser\ParseContext.cs" />
     <Compile Include="Parser\ParseContextStack.cs" />
+    <Compile Include="Parser\Return.cs" />
     <Compile Include="Parser\Switch.cs" />
     <Compile Include="Parser\UpdateRecordset.cs" />
     <Compile Include="Parser\Data\Join.cs" />

@@ -52,6 +52,11 @@ namespace XppInterpreter.Interpreter.Debug
             if (obj != null && obj is IDebuggeable debuggeable && debuggeable.DebuggeableBinding != null && _functionStackScope.Count == 0)
                 _bindings.Add((IDebuggeable)obj);
         }
+        public override void VisitReturn(Return @return)
+        {
+            AddToCollection(@return);
+            base.VisitReturn(@return);
+        }
 
         public override void VisitAssignment(Assignment assignment)
         {

@@ -35,13 +35,19 @@ namespace XppInterpreter.Interpreter.Bytecode
 
             VisitProgram(program);
 
-            return new ByteCode(_ss.Pop().Instructions);
+            return new ByteCode(_ss.Pop().Instructions)
+            {
+                DeclaredFunctions = _declaredFunctions
+            };
 
         }
 
         public ByteCode GetProgram()
         {
-            return new ByteCode(_ss.Pop().Instructions);
+            return new ByteCode(_ss.Pop().Instructions)
+            {
+                DeclaredFunctions = _declaredFunctions
+            };
         }
 
         public void Emit(IInstruction instruction, IDebuggeable debuggeable = null)
@@ -439,7 +445,12 @@ namespace XppInterpreter.Interpreter.Bytecode
 
             int nArgs = functionCall.Parameters.Count;
 
-            if (functionCall.Intrinsical)
+            if (_declaredFunctions.Exists(f => f.Declaration.Name.ToLowerInvariant() == functionCall.Name.ToLowerInvariant()) && functionCall.Caller is null)
+            {
+                var declaredFunctionRef = _declaredFunctions.First(f => f.Declaration.Name.ToLowerInvariant() == functionCall.Name.ToLowerInvariant());
+                Emit(new DeclaredFunctionCall(declaredFunctionRef));
+            }
+            else if (functionCall.Intrinsical)
             {
                 Emit(new IntrinsicCall(functionCall.Name, nArgs, allocate));
             }
@@ -623,14 +634,22 @@ namespace XppInterpreter.Interpreter.Bytecode
 
         public void VisitFunctionDeclaration(FunctionDeclaration functionDeclaration)
         {
+            // Create dummy function
+            RefFunction refFunction = new RefFunction(functionDeclaration);
+            _declaredFunctions.Add(refFunction);
+
             CreateScope();
             functionDeclaration.Block.Accept(this);
             var blockScope = ReleaseScope();
 
-            Emit(new DeclaredFunctionCall(new RefFunction(functionDeclaration)
-            {
-                Instructions = blockScope.Instructions
-            }));
+            refFunction.Instructions = blockScope.Instructions;
+        }
+
+        public void VisitReturn(Parser.Return @return)
+        {
+            EmitDebugSymbol(@return);
+            @return.Expression.Accept(this);
+            Emit(new Return());
         }
     }
 }

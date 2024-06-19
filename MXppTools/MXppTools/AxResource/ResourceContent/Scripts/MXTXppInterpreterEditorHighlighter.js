@@ -68,7 +68,9 @@ var keywords = [
     "str",
     "boolean",
     "in",
-    "like"
+    "like",
+    "void",
+    "return"
 ];
 
 var intrinsicFunctions = [

@@ -25,7 +25,7 @@ namespace XppInterpreter.Interpreter
             Options = options;
         }
 
-        public InterpreterResult Continue(InterpreterResult interpreterResult, DebugAction debugAction)
+        public InterpreterResult Continue(ByteCode byteCode, RuntimeContext context, DebugAction debugAction)
         {
             _isActionDefault = false;
             _nextAction = debugAction;
@@ -35,7 +35,7 @@ namespace XppInterpreter.Interpreter
             InterpreterResult ret = null;
             try
             {
-                ret = Interpret(interpreterResult.SaveState.ByteCode, interpreterResult.SaveState.Context);
+                ret = Interpret(byteCode, context);
             }
             finally
             {
@@ -46,11 +46,23 @@ namespace XppInterpreter.Interpreter
             return ret;
         }
 
-        public InterpreterResult Interpret(ByteCode byteCode, RuntimeContext context = null, bool reuseCounter = true)
+        public InterpreterResult Continue(InterpreterResult interpreterResult, DebugAction debugAction)
         {
+            return Continue(interpreterResult.SaveState.ByteCode, interpreterResult.SaveState.Context, debugAction);
+        }
+
+        public InterpreterResult Interpret(ByteCode byteCode, RuntimeContext context = null, bool reuseCounter = true, DebugAction nextAction = DebugAction.None)
+        {
+            if (nextAction != DebugAction.None)
+                _nextAction = nextAction;
+
             RuntimeContext c =  context != null ? 
-                reuseCounter ? context : new RuntimeContext(context.Proxy, byteCode, context.ScopeHandler, 0) 
+                reuseCounter ? context : new RuntimeContext(context.Proxy, byteCode, context.ScopeHandler) 
                 : new RuntimeContext(_proxy, byteCode);
+
+            c.NextAction = _nextAction;
+            c.InnerContext = context?.InnerContext;
+            c.Interpreter = this;
 
             if (_nextAction == DebugAction.CancelExecution) return InterpreterResult.Finished;
 
@@ -88,7 +100,36 @@ namespace XppInterpreter.Interpreter
                 isFirst = false;
 
                 int pc = c.Counter;
+
                 instruction.Execute(c);
+
+                if (c.Returned)
+                {
+                    c.InnerContext = null;
+
+                    if (context != null)
+                    {
+                        context.Returned = true;
+                        context.InnerContext = null;
+                    }
+
+                    break;
+                }
+
+                if (instruction is IInterpretableInstruction interpretable)
+                {
+                    if (!interpretable.LastResult.HasFinished)
+                    {
+                        return new InterpreterResult(interpretable.LastResult.Breakpoint, new InterpreterSaveState(c, byteCode));
+                    }
+                    else
+                    {
+                        c.InnerContext = null;
+                        
+                        if (context != null)
+                            context.InnerContext = null;
+                    }
+                }
 
                 // If no jump was executed, then increment the counter
                 if (pc == c.Counter)

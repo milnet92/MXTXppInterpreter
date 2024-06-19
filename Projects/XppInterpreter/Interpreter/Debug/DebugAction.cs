@@ -12,9 +12,10 @@ namespace XppInterpreter.Interpreter.Debug
     /// </summary>
     public enum DebugAction
     {
-        Continue = 0,
-        StepOver = 1,
-        StopDebugging = 2,
-        CancelExecution = 3
+        None,
+        Continue,
+        StepOver,
+        StopDebugging,
+        CancelExecution,
     }
 }

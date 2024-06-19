@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace XppInterpreter.Interpreter.Bytecode
 {
-    abstract class Call : IInstruction
+    abstract class Call : ICall, IInstruction
     {
         public virtual string OperationCode => $"CALL {Name} {NArgs}" + (Alloc ? "(alloc)" : "(no alloc)");
 

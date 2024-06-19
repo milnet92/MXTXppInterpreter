@@ -550,12 +550,31 @@ namespace XppInterpreter.Parser
             return new TtsBegin(SourceCodeBinding(start, lastScanResult));
         }
 
+        internal Return Return()
+        {
+            if (_parseContext.FunctionDeclarationStack.Empty)
+            {
+                ThrowParseException("Return statement can only be used inside function declarations.");
+            }
+
+            var start = currentScanResult;
+
+            Match(TType.Return);
+            var expression = Expression();
+            Match(TType.Semicolon);
+
+            return new Return(expression, SourceCodeBinding(start, lastScanResult));
+        }
+
         internal Statement Statement(bool matchSemicolon = true)
         {
             switch (currentToken.TokenType)
             {
-                case TType.Void: 
+                case TType.Return:
+                    return Return();
                 case TType.LeftBrace: return Block();
+
+                case TType.Void: 
                 case TType.Id:
                     {
                         // Check if the next token is an Id
@@ -630,6 +649,8 @@ namespace XppInterpreter.Parser
 
         internal FunctionDeclaration FunctionDeclaration()
         {
+            _parseContext.FunctionDeclarationStack.New();
+
             var start = MatchMultiple(
                 TType.Id,
                 TType.TypeAnytype,
@@ -662,6 +683,8 @@ namespace XppInterpreter.Parser
 
             Match(TType.RightParenthesis);
             var block = Block();
+
+            _parseContext.FunctionDeclarationStack.Release();
 
             return new FunctionDeclaration(
                 ((Word)funcNameToken).Lexeme, 

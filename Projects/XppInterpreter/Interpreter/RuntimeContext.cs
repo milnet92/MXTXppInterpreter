@@ -22,6 +22,11 @@ namespace XppInterpreter.Interpreter
         public readonly XppProxy Proxy;
         public readonly ByteCode ByteCode;
 
+        public bool Returned;
+        public RuntimeContext InnerContext;
+        public XppInterpreter Interpreter;
+        public DebugAction NextAction;
+
         public RuntimeContext(XppProxy proxy, ByteCode bytecode)
         {
             Proxy = proxy;

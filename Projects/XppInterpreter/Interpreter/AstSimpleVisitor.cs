@@ -12,6 +12,11 @@ namespace XppInterpreter.Interpreter
     /// </summary>
     public class AstSimpleVisitor : IAstVisitor
     {
+        public virtual void VisitReturn(Return @return)
+        {
+            @return.Expression?.Accept(this);
+        }
+
         public virtual void VisitAssignment(Assignment assignment)
         {
             assignment.Assignee?.Accept(this);

@@ -9,5 +9,6 @@ namespace XppInterpreter.Parser
     internal class ParseContext
     {
         public ParseContextStack CallFunctionScope = new ParseContextStack();
+        public ParseContextStack FunctionDeclarationStack = new ParseContextStack();
     }
 }

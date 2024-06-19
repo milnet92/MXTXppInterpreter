@@ -147,6 +147,23 @@ public class MXTXppInterpreterDebugSession
 ]]></Source>
 			</Method>
 			<Method>
+				<Name>getCurrentScopeHandler</Name>
+				<Source><![CDATA[
+    private ScopeHandler getCurrentScopeHandler(RuntimeContext _context)
+    {
+        RuntimeContext  currentContext = _context;
+
+        while (currentContext.InnerContext != null)
+        {
+            currentContext = currentContext.InnerContext;
+        }
+
+        return currentContext.ScopeHandler;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>currentVariableState</Name>
 				<Source><![CDATA[
     public MXTXppInterpreterVariablesInspectorLocalsEntry currentVariableState()
@@ -159,7 +176,7 @@ public class MXTXppInterpreterDebugSession
 
         if (currentExecutionResult != null)
         {
-            var currentScope = currentExecutionResult.SaveState.Context.ScopeHandler.CurrentScope;
+            var currentScope = this.getCurrentScopeHandler(currentExecutionResult.SaveState.Context).CurrentScope;
             
             while (currentScope != null)
             {
@@ -410,7 +427,7 @@ public class MXTXppInterpreterDebugSession
     {
         if (!stopOnBreakpoint) return null;
 
-        VariableEditValueResponse response = currentExecutionResult.SaveState.Context.ScopeHandler.TrySetVariableValueFromString(_varName, _newValue);
+        VariableEditValueResponse response = this.getCurrentScopeHandler(currentExecutionResult.SaveState.Context).TrySetVariableValueFromString(_varName, _newValue);
 
         MXTXppInterpreterVariableEditContract ret = new MXTXppInterpreterVariableEditContract();
 

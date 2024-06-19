@@ -13,6 +13,7 @@ namespace XppInterpreter.Interpreter
     /// </summary>
     public interface IAstVisitor
     {
+        void VisitReturn(Return @return);
         void VisitFunctionDeclaration(FunctionDeclaration functionDeclaration);
         void VisitBreakpoint(Breakpoint breakpoint);
         void VisitInsertRecordset(InsertRecordset insertRecordset);
