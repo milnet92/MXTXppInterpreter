@@ -396,7 +396,7 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
-/MXppTools/XppMetadata/MXppTools
+/MXppTools/XppMetadata
 /MXppTools/Resources
 /MXppTools/BuildProjectResult.xml
 /MXppTools/MXppTools.xref
