@@ -28,7 +28,7 @@ This tool generates bytecode that is later interpreted directly during execution
 
 ## Limitations
 * **Macros** usage and declarations are not supported
-* **Function declarations** and **class declarations** are not supported
+* **Class declarations** are not supported
 * **try**, **catch** and **finally** statements are not implemented
 * **.NET namespaces** cannot be referenced
 
