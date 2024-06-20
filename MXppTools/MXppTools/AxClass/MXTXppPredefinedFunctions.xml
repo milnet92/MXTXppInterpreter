@@ -11,6 +11,16 @@ internal final class MXTXppPredefinedFunctions
 ]]></Declaration>
 		<Methods>
 			<Method>
+				<Name>curUserId</Name>
+				<Source><![CDATA[
+    static str curUserId()
+    {
+        return curUserId();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>conDel</Name>
 				<Source><![CDATA[
     static System.Object conDel(container con, int start, int number)
