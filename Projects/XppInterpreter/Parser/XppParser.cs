@@ -18,7 +18,8 @@ namespace XppInterpreter.Parser
         private int currentPeekOffset = -1;
         private readonly ILexer _lexer;
         private readonly ParseContext _parseContext = new ParseContext();
-        private readonly Interpreter.Proxy.IIntrinsicFunctionProvider _intrinsicFunctionProvider;
+        private readonly Interpreter.Proxy.XppProxy _proxy;
+
         IScanResult AdvancePeek(bool reset = false)
         {
             currentPeekOffset++;
@@ -35,10 +36,10 @@ namespace XppInterpreter.Parser
             currentPeekOffset = -1;
         }
 
-        public XppParser(ILexer lexer, Interpreter.Proxy.IIntrinsicFunctionProvider intrinsicFunctionProvider)
+        public XppParser(ILexer lexer, Interpreter.Proxy.XppProxy xppProxy)
         {
             this._lexer = lexer;
-            this._intrinsicFunctionProvider = intrinsicFunctionProvider;
+            this._proxy = xppProxy;
         }
 
         public IAstNode Parse()
@@ -150,7 +151,7 @@ namespace XppInterpreter.Parser
             try
             {
                 // Call intrinsic function
-                result = Interpreter.Proxy.XppProxyHelper.CallIntrinsicFunction(_intrinsicFunctionProvider, functionName, parameters.ToArray<object>());
+                result = Interpreter.Proxy.XppProxyHelper.CallIntrinsicFunction(_proxy.Intrinsic, functionName, parameters.ToArray<object>());
             }
             catch (Exception ex)
             {

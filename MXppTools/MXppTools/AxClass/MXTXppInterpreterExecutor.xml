@@ -5,9 +5,28 @@
 		<Declaration><![CDATA[
 internal final class MXTXppInterpreterExecutor
 {
+    private static XppInterpreter.Interpreter.Proxy.XppProxy proxy;
+
 }
 ]]></Declaration>
 		<Methods>
+			<Method>
+				<Name>TypeNew</Name>
+				<Source><![CDATA[
+    static void TypeNew()
+    {
+        proxy = new XppInterpreter.Interpreter.Proxy.XppProxy(
+            new MXTXppIntrinsicFunctionProvider(),
+            new MXTXppBinaryOperationProxy(),
+            new MXTXppCastingProxy(),
+            new MXTXppUnaryOperationProxy(),
+            new MXTXppDataAccessProxy(),
+            new MXTXppReflectionProxy(),
+            new MXTXppExceptionsProxy());
+    }
+
+]]></Source>
+			</Method>
 			<Method>
 				<Name>base64Encode</Name>
 				<Source><![CDATA[
@@ -46,7 +65,7 @@ internal final class MXTXppInterpreterExecutor
     public static XppInterpreter.Parser.Program parse(str _sourceCode)
     {
         XppInterpreter.Lexer.XppLexer lexer = new XppInterpreter.Lexer.XppLexer(_sourceCode);
-        XppInterpreter.Parser.XppParser parser = new XppInterpreter.Parser.XppParser(lexer, new MXTXppIntrinsicFunctionProvider());
+        XppInterpreter.Parser.XppParser parser = new XppInterpreter.Parser.XppParser(lexer, proxy);
         
         return parser.Parse() as XppInterpreter.Parser.Program;
     }
@@ -60,16 +79,6 @@ internal final class MXTXppInterpreterExecutor
     {
         MXTXppInterpreterParameters parameters = MXTXppInterpreterParameters::find();
         
-        // Add X++ proxy classes
-        XppInterpreter.Interpreter.Proxy.XppProxy proxy = new XppInterpreter.Interpreter.Proxy.XppProxy(
-                    new MXTXppIntrinsicFunctionProvider(),
-                    new MXTXppBinaryOperationProxy(),
-                    new MXTXppCastingProxy(),
-                    new MXTXppUnaryOperationProxy(),
-                    new MXTXppDataAccessProxy(),
-                    new MXTXppReflectionProxy(),
-                    new MXTXppExceptionsProxy());
-
         // Setup options
         XppInterpreter.Interpreter.XppInterpreterOptions options = new XppInterpreter.Interpreter.XppInterpreterOptions();
         options.EmitGlobalTtsAbort = parameters.EmitGlobalTtsAbort;
