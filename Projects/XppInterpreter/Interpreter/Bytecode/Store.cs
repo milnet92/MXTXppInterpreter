@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace XppInterpreter.Interpreter.Bytecode
 {
@@ -88,7 +84,7 @@ namespace XppInterpreter.Interpreter.Bytecode
                             context.Proxy.Reflection.ClearCommon(currentValue);
                         }
                         else
-                        { 
+                        {
                             context.ScopeHandler.CurrentScope.SetVar(Name, value, false);
                         }
                     }

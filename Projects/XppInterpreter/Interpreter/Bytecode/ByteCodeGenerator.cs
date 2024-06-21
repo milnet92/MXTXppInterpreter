@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using XppInterpreter.Interpreter.Debug;
 using XppInterpreter.Lexer;
 using XppInterpreter.Parser;
@@ -147,7 +145,7 @@ namespace XppInterpreter.Interpreter.Bytecode
 
         public void VisitContainerInitialisation(ContainerInitialisation containerInitialisation)
         {
-            for (int nElement = containerInitialisation.Elements.Count - 1; nElement >= 0; nElement --)
+            for (int nElement = containerInitialisation.Elements.Count - 1; nElement >= 0; nElement--)
             {
                 containerInitialisation.Elements[nElement].Accept(this);
             }
@@ -181,7 +179,7 @@ namespace XppInterpreter.Interpreter.Bytecode
 
         public void VisitConstructor(Constructor constructor)
         {
-            for (var narg = constructor.Parameters.Count - 1; narg >= 0; narg --)
+            for (var narg = constructor.Parameters.Count - 1; narg >= 0; narg--)
             {
                 constructor.Parameters[narg].Accept(this);
             }
@@ -276,7 +274,7 @@ namespace XppInterpreter.Interpreter.Bytecode
             @do.Block.Accept(this);
             @do.Expression.Accept(this);
             var scope = ReleaseScope();
-            
+
             EmitScope(scope);
             Emit(new JumpIfTrue(-(scope.Count)));
         }
@@ -321,7 +319,7 @@ namespace XppInterpreter.Interpreter.Bytecode
             EmitScope(maxLoopScope);
             EmitScope(blockScope);
             EmitScope(loopScope);
-            Emit(new Jump(- (maxLoopScope.Count + blockScope.Count + loopScope.Count + forScope.Count + 1)));
+            Emit(new Jump(-(maxLoopScope.Count + blockScope.Count + loopScope.Count + forScope.Count + 1)));
 
             RecalculateLoopControlOffsets(loopScope.Instructions.First());
 
@@ -474,7 +472,7 @@ namespace XppInterpreter.Interpreter.Bytecode
         {
             EmitDebugSymbol(ternary);
             ternary.Condition.Accept(this);
-            
+
             CreateScope();
             ternary.Left.Accept(this);
             var leftScope = ReleaseScope();
@@ -577,7 +575,7 @@ namespace XppInterpreter.Interpreter.Bytecode
                 EmitDebugSymbol(@case.Key);
                 @case.Key.Accept(this);
                 // delete all debug symbols that are created by the expression itself
-                DeleteAllDebugSymbolsInScope(true); 
+                DeleteAllDebugSymbolsInScope(true);
                 var caseExpressionScope = ReleaseScope();
 
                 CreateScope();
@@ -627,7 +625,7 @@ namespace XppInterpreter.Interpreter.Bytecode
                 total--;
 
                 if (skipFirst && total == 0) break;
-                
+
                 _ss.Peek().Instructions.Remove(instruction);
             }
         }
@@ -662,7 +660,7 @@ namespace XppInterpreter.Interpreter.Bytecode
             {
                 if (narg != print.Parameters.Count - 1)
                     sb.Append(' ');
-                
+
                 sb.Append($"%{print.Parameters.Count - narg}");
                 print.Parameters[narg].Accept(this);
             }

@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace XppInterpreter.Interpreter.Bytecode
+﻿namespace XppInterpreter.Interpreter.Bytecode
 {
     class DefaultValueArray : DefaultValue
     {
         public override string OperationCode => $"PUSH_DEFAULT_A";
         public bool FixedSize { get; }
-        
+
         public DefaultValueArray(string typeName, bool fixedSize) : base(typeName)
         {
             FixedSize = fixedSize;
@@ -26,7 +20,7 @@ namespace XppInterpreter.Interpreter.Bytecode
                 defaultValue = context.Proxy.Casting.CreateFixedArray(TypeName, size);
             }
             else
-            { 
+            {
                 defaultValue = context.Proxy.Casting.CreateDynamicArray(TypeName);
             }
 

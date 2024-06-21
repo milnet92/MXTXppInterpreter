@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace XppInterpreter.Interpreter.Bytecode
+﻿namespace XppInterpreter.Interpreter.Bytecode
 {
     class JumpIfTrue : Jump
     {
         public override string OperationCode => $"JUMP_IF_TRUE {Offset}";
 
-        public JumpIfTrue (int offset) : base(offset) { }
+        public JumpIfTrue(int offset) : base(offset) { }
 
         public override void Execute(RuntimeContext context)
         {

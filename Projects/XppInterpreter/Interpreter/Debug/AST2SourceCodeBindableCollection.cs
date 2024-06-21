@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using XppInterpreter.Parser;
 
 namespace XppInterpreter.Interpreter.Debug
@@ -40,7 +36,7 @@ namespace XppInterpreter.Interpreter.Debug
 
             return _bindings;
         }
-        
+
         /// <summary>
         /// Tries to add an element to the generation list based on the type and scope
         /// </summary>
@@ -95,7 +91,7 @@ namespace XppInterpreter.Interpreter.Debug
         }
 
         public override void VisitContainerInitialisation(ContainerInitialisation containerInitialisation)
-        {  
+        {
             AddToCollection(containerInitialisation);
             base.VisitContainerInitialisation(containerInitialisation);
         }

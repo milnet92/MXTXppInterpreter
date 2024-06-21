@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace XppInterpreter.Parser
+﻿namespace XppInterpreter.Parser
 {
     internal class ParseContext
     {
-        public ParseContextStack CallFunctionScope = new ParseContextStack();
-        public ParseContextStack FunctionDeclarationStack = new ParseContextStack();
+        public ParseContextStack CallFunctionScope { get; } = new ParseContextStack();
+        public ParseContextStack FunctionDeclarationStack { get; } = new ParseContextStack();
     }
 }

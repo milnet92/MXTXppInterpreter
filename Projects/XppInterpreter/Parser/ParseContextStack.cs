@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace XppInterpreter.Parser
 {
     class ParseContextStack
     {
-        private Stack<bool> _stack = new Stack<bool>();
+        private readonly Stack<bool> _stack = new Stack<bool>();
+
         public bool Empty => _stack.Count == 0;
 
         public void New()

@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 using XppInterpreter.Interpreter;
-using XppInterpreter.Interpreter.Debug;
 
 namespace XppInterpreter.Parser
 {
@@ -17,6 +12,7 @@ namespace XppInterpreter.Parser
             Expression = expression;
         }
 
+        [DebuggerHidden]
         public override void Accept(IAstVisitor interpreter)
         {
             interpreter.VisitWhile(this);

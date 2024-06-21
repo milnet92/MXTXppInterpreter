@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 using XppInterpreter.Interpreter;
 using XppInterpreter.Interpreter.Debug;
 
@@ -15,9 +11,9 @@ namespace XppInterpreter.Parser
         public If Else { get; }
 
         public If(
-            Expression expression, 
-            Statement statement, 
-            If @else, 
+            Expression expression,
+            Statement statement,
+            If @else,
             SourceCodeBinding sourceCodeBinding,
             SourceCodeBinding debuggeableBinding) : base(sourceCodeBinding, debuggeableBinding)
         {
@@ -26,6 +22,7 @@ namespace XppInterpreter.Parser
             Else = @else;
         }
 
+        [DebuggerHidden]
         public override void Accept(IAstVisitor interpreter)
         {
             interpreter.VisitIf(this);

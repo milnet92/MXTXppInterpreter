@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using XppInterpreter.Lexer;
 
 namespace XppInterpreter.Interpreter.Bytecode
@@ -11,7 +8,7 @@ namespace XppInterpreter.Interpreter.Bytecode
     {
         public override string OperationCode => TokenType == TType.Break ? $"BREAK {Offset}" : $"CONTINUE {Offset}";
         public TType TokenType { get; }
-        public bool IsDirty { get; private set;}
+        public bool IsDirty { get; private set; }
 
         public LoopControl(int offset, TType tokenType, bool isDirty) : base(offset)
         {

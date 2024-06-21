@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 using XppInterpreter.Interpreter;
 
 namespace XppInterpreter.Parser
@@ -11,6 +7,7 @@ namespace XppInterpreter.Parser
     {
         public TtsBegin(SourceCodeBinding sourceCodeBinding) : base(sourceCodeBinding, sourceCodeBinding) { }
 
+        [DebuggerHidden]
         public override void Accept(IAstVisitor interpreter)
         {
             interpreter.VisitTtsBegin(this);

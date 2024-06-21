@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using XppInterpreter.Core;
+﻿using XppInterpreter.Core;
 using XppInterpreter.Interpreter.Bytecode;
 using XppInterpreter.Interpreter.Debug;
 using XppInterpreter.Interpreter.Proxy;
@@ -56,8 +51,8 @@ namespace XppInterpreter.Interpreter
             if (nextAction != DebugAction.None)
                 _nextAction = nextAction;
 
-            RuntimeContext c =  context != null ? 
-                reuseCounter ? context : new RuntimeContext(context.Proxy, byteCode, context.ScopeHandler) 
+            RuntimeContext c = context != null ?
+                reuseCounter ? context : new RuntimeContext(context.Proxy, byteCode, context.ScopeHandler)
                 : new RuntimeContext(_proxy, byteCode);
 
             c.NextAction = _nextAction;
@@ -73,13 +68,13 @@ namespace XppInterpreter.Interpreter
                 var instruction = byteCode.Instructions[c.Counter];
 
                 if (instruction is Bytecode.Debug debug && (!isFirst || _isActionDefault))
-                { 
+                {
                     if (debug.Always && _nextAction != DebugAction.CancelExecution && _nextAction != DebugAction.StopDebugging)
                     {
                         return new InterpreterResult(new Debug.Breakpoint(debug.Debuggeable.DebuggeableBinding, debug.Debuggeable), new InterpreterSaveState(c, byteCode));
                     }
                     else if (_nextAction == DebugAction.Continue)
-                    { 
+                    {
                         var breakpointHit = TryBreakpointHit(debug.Debuggeable);
 
                         if (breakpointHit != null)
@@ -125,7 +120,7 @@ namespace XppInterpreter.Interpreter
                     else
                     {
                         c.InnerContext = null;
-                        
+
                         if (context != null)
                             context.InnerContext = null;
                     }

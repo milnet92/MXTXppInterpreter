@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using XppInterpreter.Interpreter.Proxy;
+﻿using XppInterpreter.Interpreter.Proxy;
 
 namespace XppInterpreter.Interpreter.Bytecode
 {

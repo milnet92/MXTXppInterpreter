@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace XppInterpreter.Interpreter.Bytecode
+﻿namespace XppInterpreter.Interpreter.Bytecode
 {
     public static class Label
     {
@@ -12,7 +6,7 @@ namespace XppInterpreter.Interpreter.Bytecode
 
         public static string NewLabel()
         {
-            _cnt ++;
+            _cnt++;
             return $"L{_cnt}";
         }
     }

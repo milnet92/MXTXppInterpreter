@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using XppInterpreter.Interpreter.Debug;
 
 namespace XppInterpreter.Core
@@ -81,7 +78,7 @@ namespace XppInterpreter.Core
 
             switch (foundEntry.TypeName)
             {
-                case "System.Int32": 
+                case "System.Int32":
                     if (int.TryParse(value, out int parsedInt))
                     {
                         parsedValue = parsedInt;

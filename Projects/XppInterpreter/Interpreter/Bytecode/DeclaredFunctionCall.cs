@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using XppInterpreter.Lexer;
-using DebugAction = XppInterpreter.Interpreter.Debug.DebugAction;
 
 namespace XppInterpreter.Interpreter.Bytecode
 {
@@ -84,14 +79,14 @@ namespace XppInterpreter.Interpreter.Bytecode
 
                 newContext.Interpreter = interpreter;
                 context.InnerContext = newContext;
-                
+
             }
 
             InterpreterResult result = null;
 
             // Actual interpretation
             if (firstTime)
-            { 
+            {
                 result = interpreter.Interpret(newContext.ByteCode, newContext, nextAction: context.NextAction);
             }
             else

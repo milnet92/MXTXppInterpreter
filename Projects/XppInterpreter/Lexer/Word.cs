@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace XppInterpreter.Lexer
 {
@@ -129,5 +125,5 @@ namespace XppInterpreter.Lexer
         {
             return string.Compare(Lexeme, other, true);
         }
-    }   
+    }
 }

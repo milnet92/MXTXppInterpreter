@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 
 namespace XppInterpreter.Parser
 {
     public class SourceCodeBinding
     {
-        public readonly int FromLine;
-        public readonly int ToLine;
-        public readonly int FromPosition;
-        public readonly int ToPosition;
+        public int FromLine { get; }
+        public int ToLine { get; }
+        public int FromPosition { get; }
+        public int ToPosition { get; }
 
         public SourceCodeBinding(int fromLine, int fromPosition, int toLine, int toPosition)
         {

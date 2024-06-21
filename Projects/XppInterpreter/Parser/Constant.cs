@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 using XppInterpreter.Interpreter;
 using XppInterpreter.Lexer;
 
@@ -19,6 +15,7 @@ namespace XppInterpreter.Parser
         public Constant(object date, SourceCodeBinding sourceCodeBinding) : base(new Lexer.Date(date), sourceCodeBinding) { }
         public Constant(object[] container, SourceCodeBinding sourceCodeBinding) : base(new Lexer.Container(container), sourceCodeBinding) { }
 
+        [DebuggerHidden]
         public override void Accept(IAstVisitor interpreter)
         {
             interpreter.VisitConstant(this);

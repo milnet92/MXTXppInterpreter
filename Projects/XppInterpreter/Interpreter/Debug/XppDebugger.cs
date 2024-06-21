@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using XppInterpreter.Parser;
 
 namespace XppInterpreter.Interpreter.Debug
@@ -80,8 +77,8 @@ namespace XppInterpreter.Interpreter.Debug
         internal Breakpoint TryRemoveBreakpoint(int line, int position)
         {
             Breakpoint existingBreakpoint = _breakpoints.FirstOrDefault(
-                bp => 
-                bp.SourceCodeMapping.From.Line <= line && 
+                bp =>
+                bp.SourceCodeMapping.From.Line <= line &&
                 bp.SourceCodeMapping.To.Line >= line);
 
             if (existingBreakpoint != null)
@@ -91,7 +88,7 @@ namespace XppInterpreter.Interpreter.Debug
 
             return existingBreakpoint;
         }
-        
+
         /// <summary>
         /// Tries to add a breakpoint priorizing the first element of a line
         /// </summary>
@@ -114,7 +111,7 @@ namespace XppInterpreter.Interpreter.Debug
 
                 var binding = bindableElement.DebuggeableBinding;
 
-                if (binding.FromPosition <= position && 
+                if (binding.FromPosition <= position &&
                     ((binding.ToLine == line && binding.ToPosition >= position) ||
                      (binding.ToLine > line)))
                 {
@@ -150,7 +147,7 @@ namespace XppInterpreter.Interpreter.Debug
             Breakpoint breakpoint = null;
 
             foreach (var debuggeableElementByLine in _bindableElements.Where(
-                element => 
+                element =>
                 element.DebuggeableBinding.FromLine <= line &&
                 element.DebuggeableBinding.ToLine >= line))
             {

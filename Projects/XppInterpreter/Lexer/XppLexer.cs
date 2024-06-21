@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using XppInterpreter.Core;
 
 namespace XppInterpreter.Lexer
@@ -76,7 +75,7 @@ namespace XppInterpreter.Lexer
         {
             string[] splitted = sourceCode.Split('\n');
             int total = 0;
-            for (int i = 0; i <= location.Line;i++)
+            for (int i = 0; i <= location.Line; i++)
             {
                 // Add the carry we removed by splitting
                 if (i != 0)
@@ -157,7 +156,7 @@ namespace XppInterpreter.Lexer
 
             if (positionEnd == 0)
             {
-                resultLine --;
+                resultLine--;
                 resultPositionEnd = previousPositionEnd;
                 resultPositionStart = previousPositionStart;
             }
@@ -300,7 +299,7 @@ namespace XppInterpreter.Lexer
 
             return false;
         }
-        
+
         /// <summary>
         /// Actual method to read the next token
         /// </summary>
@@ -368,11 +367,11 @@ namespace XppInterpreter.Lexer
                     }
                 case '<':
                     {
-                        if (ReadChar('=')) 
+                        if (ReadChar('='))
                         {
                             ReadChar();
                             return ScanResult(Word.LessOrEqual);
-                        } 
+                        }
                         else return ScanResult(new Token(TType.Smaller));
                     }
                 case '>':
@@ -387,7 +386,7 @@ namespace XppInterpreter.Lexer
                 case '+':
                     {
                         char found = ReadChar('+', '=');
-                        
+
                         if (found != '\0')
                         {
                             ReadChar();
@@ -414,7 +413,7 @@ namespace XppInterpreter.Lexer
 
                 case ':':
                     {
-                        if (ReadChar(':')) 
+                        if (ReadChar(':'))
                         {
                             ReadChar();
 

@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using XppInterpreter.Core;
 using XppInterpreter.Parser;
 using XppInterpreter.Parser.Data;
 
@@ -33,7 +29,7 @@ namespace XppInterpreter.Interpreter.Query
         {
             switch (join.JoinType)
             {
-                case Parser.Data.JoinType.Regular : return Dynamics.AX.Application.SysDaJoinKind.InnerJoin;
+                case Parser.Data.JoinType.Regular: return Dynamics.AX.Application.SysDaJoinKind.InnerJoin;
                 case Parser.Data.JoinType.Outer: return Dynamics.AX.Application.SysDaJoinKind.OuterJoin;
                 case Parser.Data.JoinType.Exists: return Dynamics.AX.Application.SysDaJoinKind.ExistsJoin;
                 case Parser.Data.JoinType.NotExists: return Dynamics.AX.Application.SysDaJoinKind.NotExistsJoin;

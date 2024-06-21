@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using XppInterpreter.Parser;
+﻿using XppInterpreter.Parser;
 
 namespace XppInterpreter.Interpreter
 {
@@ -183,7 +178,7 @@ namespace XppInterpreter.Interpreter
             ternary.Condition?.Accept(this);
             ternary.Left?.Accept(this);
             ternary.Right?.Accept(this);
-            
+
         }
 
         public virtual void VisitThrow(Throw @throw)

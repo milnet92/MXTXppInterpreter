@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using XppInterpreter.Core;
 using XppInterpreter.Interpreter.Bytecode;
 using XppInterpreter.Interpreter.Debug;
@@ -50,7 +47,7 @@ namespace XppInterpreter.Interpreter
         {
             if (_pc + offset < 0)
                 throw new Exception("Program counter cannot be negative.");
-            
+
             _pc += offset;
         }
 

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace XppInterpreter.Lexer
+﻿namespace XppInterpreter.Lexer
 {
     /// <summary>
     /// Represents a token related to a type (int, string, etc.) used

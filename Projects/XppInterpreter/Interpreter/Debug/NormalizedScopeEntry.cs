@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace XppInterpreter.Interpreter.Debug
 {
@@ -16,9 +13,9 @@ namespace XppInterpreter.Interpreter.Debug
         /// Base types that can be edited
         /// </summary>
         private readonly static Type[] _editableTypes = new Type[] {
-            typeof(int), 
-            typeof(string), 
-            typeof(long), 
+            typeof(int),
+            typeof(string),
+            typeof(long),
             typeof(decimal),
             typeof(bool)};
 

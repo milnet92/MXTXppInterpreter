@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using XppInterpreter.Lexer;
 
 namespace XppInterpreter.Parser.Data
@@ -11,7 +8,7 @@ namespace XppInterpreter.Parser.Data
     {
         public ValidTimeState ValidTimeState { get; set; }
         public CrossCompany CrossCompany { get; set; }
-        public List<TType> Flags { get;} = new List<TType>();
+        public List<TType> Flags { get; } = new List<TType>();
 
         public bool FirstFast => Flags.Contains(TType.FirstFast);
         public bool ForUpdate => Flags.Contains(TType.ForUpdate);

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 using XppInterpreter.Interpreter;
 using XppInterpreter.Lexer;
 
@@ -20,6 +16,7 @@ namespace XppInterpreter.Parser
             StaticCall = staticCall;
         }
 
+        [DebuggerHidden]
         public override void Accept(IAstVisitor interpreter)
         {
             interpreter.VisitVariable(this);

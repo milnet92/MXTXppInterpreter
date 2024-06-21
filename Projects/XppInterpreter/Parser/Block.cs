@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using XppInterpreter.Interpreter;
 
 namespace XppInterpreter.Parser
@@ -16,6 +13,7 @@ namespace XppInterpreter.Parser
             Statements = statements;
         }
 
+        [DebuggerHidden]
         public override void Accept(IAstVisitor interpreter)
         {
             interpreter.VisitBlock(this);

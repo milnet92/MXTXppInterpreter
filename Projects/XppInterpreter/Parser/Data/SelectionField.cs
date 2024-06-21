@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using XppInterpreter.Lexer;
 
 namespace XppInterpreter.Parser.Data
@@ -32,7 +28,7 @@ namespace XppInterpreter.Parser.Data
         {
             Field = field;
 
-            switch(ttypeAggregateFunction)
+            switch (ttypeAggregateFunction)
             {
                 case TType.Sum:
                     AggregateFunction = AggregateFunction.Sum;

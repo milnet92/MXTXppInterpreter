@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 using XppInterpreter.Interpreter;
 using XppInterpreter.Parser.Data;
 
@@ -19,6 +15,7 @@ namespace XppInterpreter.Parser
             TableVariableName = tableVariableName;
         }
 
+        [DebuggerHidden]
         public override void Accept(IAstVisitor interpreter)
         {
             interpreter.VisitDeleteFrom(this);

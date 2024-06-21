@@ -482,10 +482,10 @@ namespace XppInterpreter.Parser
             {
                 switch (currentToken.TokenType)
                 {
-                    case TType.Join: join  = Join(JoinType.Regular); break;
-                    case TType.Outer: join  = OuterJoin(); break;
-                    case TType.Exists: join  = ExistsJoin(); break;
-                    case TType.NotExists: join  = NotExistsJoin(); break;
+                    case TType.Join: join = Join(JoinType.Regular); break;
+                    case TType.Outer: join = OuterJoin(); break;
+                    case TType.Exists: join = ExistsJoin(); break;
+                    case TType.NotExists: join = NotExistsJoin(); break;
                 }
             }
 

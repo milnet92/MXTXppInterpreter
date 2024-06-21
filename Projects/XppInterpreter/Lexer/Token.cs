@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace XppInterpreter.Lexer
 {
@@ -23,7 +20,7 @@ namespace XppInterpreter.Lexer
             return $"{TagHelper.GetChar(TokenType).ToString()} [{TokenType}]";
         }
 
-        
+
         public static class TagHelper
         {
             private static readonly Dictionary<char, TType> Char2TokenType = new Dictionary<char, TType>()

@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Diagnostics;
 using Z.Expressions;
 
 namespace XppInterpreter.Interpreter.Debug
@@ -17,7 +14,7 @@ namespace XppInterpreter.Interpreter.Debug
             if (instance.GetType().GetCustomAttributes(typeof(DebuggerDisplayAttribute), true).Any())
             {
                 var displayAttribute = (DebuggerDisplayAttribute)instance.GetType().GetCustomAttributes(typeof(DebuggerDisplayAttribute), true).First();
-                
+
                 try
                 {
                     return Eval.Execute<string>($"$\"{displayAttribute.Value}\"", instance);
@@ -32,7 +29,7 @@ namespace XppInterpreter.Interpreter.Debug
                 StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.Append("[");
 
-                int cnt  = 0;
+                int cnt = 0;
                 for (cnt = 0; cnt < 3 && cnt < objArray.Length; cnt++) // Max to 3 elements
                 {
                     if (cnt != 0)

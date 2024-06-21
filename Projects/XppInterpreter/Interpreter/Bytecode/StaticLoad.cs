@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using XppInterpreter.Core;
-
-namespace XppInterpreter.Interpreter.Bytecode
+﻿namespace XppInterpreter.Interpreter.Bytecode
 {
     class StaticLoad : Load
     {
@@ -20,7 +13,7 @@ namespace XppInterpreter.Interpreter.Bytecode
         {
             if (context.Proxy.Reflection.IsEnum(CallerName))
                 return context.Proxy.Reflection.GetEnumValue(CallerName, Name);
-            else 
+            else
                 return context.Proxy.Reflection.GetStaticProperty(CallerName, Name);
         }
 

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using XppInterpreter.Core;
 using XppInterpreter.Lexer;
 
@@ -38,8 +36,8 @@ namespace XppInterpreter.Parser
 
         public XppParser(ILexer lexer, Interpreter.Proxy.XppProxy xppProxy)
         {
-            this._lexer = lexer;
-            this._proxy = xppProxy;
+            _lexer = lexer;
+            _proxy = xppProxy;
         }
 
         public IAstNode Parse()
@@ -85,10 +83,10 @@ namespace XppInterpreter.Parser
             Word identifier = (Word)Match(TType.Id).Token;
 
             return new Constructor(
-                identifier, 
-                Parameters(), 
-                null, 
-                false, 
+                identifier,
+                Parameters(),
+                null,
+                false,
                 SourceCodeBinding(start, lastScanResult),
                 SourceCodeBinding(start, lastScanResult));
         }
@@ -229,11 +227,11 @@ namespace XppInterpreter.Parser
                         SourceCodeBinding(identifier, lastScanResult));
                 }
                 else
-                { 
+                {
                     ret = new Variable(
-                        (Word)identifier.Token, 
-                        caller, 
-                        staticCall, 
+                        (Word)identifier.Token,
+                        caller,
+                        staticCall,
                         SourceCodeBinding(identifier, lastScanResult));
                 }
             }
@@ -327,9 +325,9 @@ namespace XppInterpreter.Parser
             Match(TType.RightBrace);
 
             return new Switch(
-                expression, 
-                cases, 
-                defaultStatements, 
+                expression,
+                cases,
+                defaultStatements,
                 SourceCodeBinding(switchResult, lastScanResult),
                 SourceCodeBinding(switchResult, switchResultEnd));
         }
@@ -359,16 +357,16 @@ namespace XppInterpreter.Parser
                 else
                 {
                     @else = new Else(
-                        Statement(), 
+                        Statement(),
                         SourceCodeBinding(elseResult, lastScanResult),
                         DebuggeableBinding(elseResult));
                 }
             }
 
             return new If(
-                expression, 
-                block, 
-                @else, 
+                expression,
+                block,
+                @else,
                 SourceCodeBinding(ifResult, block.SourceCodeBinding),
                 SourceCodeBinding(debuggeableStartResult, endIfResult));
         }
@@ -382,7 +380,7 @@ namespace XppInterpreter.Parser
 
             var bindingEnds = Match(TType.RightParenthesis);
 
-            return new While(condition, Block(), 
+            return new While(condition, Block(),
                 SourceCodeBinding(bindingStart, lastScanResult),
                 SourceCodeBinding(bindingStart, bindingEnds));
         }
@@ -421,9 +419,9 @@ namespace XppInterpreter.Parser
 
             Token type = currentToken;
             var start = MatchMultiple(
-                TType.Id, 
-                TType.TypeAnytype, 
-                TType.TypeBoolean, 
+                TType.Id,
+                TType.TypeAnytype,
+                TType.TypeBoolean,
                 TType.TypeContainer,
                 TType.TypeInt32,
                 TType.TypeInt64,
@@ -488,7 +486,7 @@ namespace XppInterpreter.Parser
             Match(TType.Semicolon);
 
             return new LoopControl(
-                loopControlToken, 
+                loopControlToken,
                 SourceCodeBinding(start, lastScanResult));
         }
 
@@ -594,7 +592,7 @@ namespace XppInterpreter.Parser
                 case TType.Print: return Print();
                 case TType.Return: return Return();
                 case TType.LeftBrace: return Block();
-                case TType.Void: 
+                case TType.Void:
                 case TType.Id:
                     {
                         // Check if the next token is an Id
@@ -706,8 +704,8 @@ namespace XppInterpreter.Parser
             _parseContext.FunctionDeclarationStack.Release();
 
             return new FunctionDeclaration(
-                ((Word)funcNameToken).Lexeme, 
-                start.Token, 
+                ((Word)funcNameToken).Lexeme,
+                start.Token,
                 parameters,
                 block,
                 SourceCodeBinding(start, lastScanResult));
@@ -752,7 +750,7 @@ namespace XppInterpreter.Parser
         internal ContainerInitialisation ContainerInitialisation()
         {
             var start = currentScanResult;
-            
+
             Match(TType.LeftBracket);
 
             List<Expression> elements = new List<Expression>();
@@ -837,9 +835,9 @@ namespace XppInterpreter.Parser
         {
             Expression expr = Primary();
 
-            while (currentToken.TokenType == TType.Star 
-                || currentToken.TokenType == TType.Division 
-                || currentToken.TokenType == TType.Mod 
+            while (currentToken.TokenType == TType.Star
+                || currentToken.TokenType == TType.Division
+                || currentToken.TokenType == TType.Mod
                 || currentToken.TokenType == TType.IntegerDivision)
             {
                 var result = Match(currentToken.TokenType);
@@ -910,13 +908,13 @@ namespace XppInterpreter.Parser
             var start = currentScanResult;
             Expression expr = Comparison();
 
-            while (currentToken.TokenType == TType.Equal 
-                || currentToken.TokenType == TType.NotEqual 
-                || currentToken.TokenType == TType.In 
+            while (currentToken.TokenType == TType.Equal
+                || currentToken.TokenType == TType.NotEqual
+                || currentToken.TokenType == TType.In
                 || currentToken.TokenType == TType.Like)
             {
-                if ((currentToken.TokenType == TType.Like 
-                   || currentToken.TokenType == TType.In) 
+                if ((currentToken.TokenType == TType.Like
+                   || currentToken.TokenType == TType.In)
                     && !isParsingWhereStatement)
                 {
                     ThrowParseException("In and Like statements can only be used in queries.");
@@ -931,8 +929,8 @@ namespace XppInterpreter.Parser
 
                 expr = binaryExpr;
 
-                if (currentToken.TokenType == TType.In && 
-                   (binaryExpr.LeftOperand.GetType() != typeof(Variable) || 
+                if (currentToken.TokenType == TType.In &&
+                   (binaryExpr.LeftOperand.GetType() != typeof(Variable) ||
                     binaryExpr.RightOperand.GetType() != typeof(Variable)))
                 {
                     ThrowParseException("In statement can only be compared to a container variable.");
@@ -994,7 +992,7 @@ namespace XppInterpreter.Parser
 
                 case TType.Increment:
                 case TType.Decrement:
-                    {   
+                    {
                         Match(currentToken.TokenType);
                         ret = new Assignment(assignee, new BinaryOperation(assignee, new Constant(1, null), operand, null), SourceCodeBinding(start, lastScanResult));
                     }
@@ -1006,7 +1004,7 @@ namespace XppInterpreter.Parser
                         Match(currentToken.TokenType);
                         var binding = SourceCodeBinding(start, currentScanResult);
                         ret = new Assignment(
-                            assignee, 
+                            assignee,
                             new BinaryOperation(assignee, Expression(), operand, SourceCodeBinding(start, currentScanResult)),
                             binding);
                     }
@@ -1033,7 +1031,7 @@ namespace XppInterpreter.Parser
                 if (ret.DebuggeableBinding != null)
                 {
                     var newBinding = new SourceCodeBinding(
-                        ret.DebuggeableBinding.FromLine, 
+                        ret.DebuggeableBinding.FromLine,
                         ret.DebuggeableBinding.FromPosition,
                         end.Line,
                         end.End);
@@ -1046,7 +1044,7 @@ namespace XppInterpreter.Parser
         }
 
         void ThrowParseException(string s, bool showLine = false)
-        {   
+        {
             throw new ParseException(
                 s,
                 currentToken,
