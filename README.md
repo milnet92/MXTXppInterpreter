@@ -1,5 +1,7 @@
 <h1 align="center">MXT - X++ Interpreter (preview)</h1>
 
+ > **_IMPORTANT:_** It is **not recommended** for Production escenarios as this tool allows you to execute code without no guarantee.
+
 This tool allows you to write, execute and debug X++ code directly in the browser, without the need to compile or wait for service restart.
 
 ## Getting started
@@ -36,5 +38,3 @@ This tool generates bytecode that is later interpreted directly during execution
 * **Class declarations** are not supported
 * **try**, **catch** and **finally** statements are not implemented
 * **.NET namespaces** cannot be referenced
-
- > **_IMPORTANT:_** It is **not recommended** for Production escenarios as this tool allows you to execute *any code* on the environment.
