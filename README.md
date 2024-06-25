@@ -1,6 +1,6 @@
 <h1 align="center">MXT - X++ Interpreter (preview)</h1>
 
- > **_IMPORTANT:_** It is **not recommended** for Production escenarios as this tool allows you to execute code without no guarantee.
+ > **_IMPORTANT:_** It is **not recommended** for Production escenarios as this tool allows you to execute code without guarantee.
 
 This tool allows you to write, execute and debug X++ code directly in the browser, without the need to compile or wait for service restart.
 
