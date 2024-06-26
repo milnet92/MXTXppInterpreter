@@ -1,10 +1,13 @@
 <h1 align="center">MXT - X++ Interpreter (preview)</h1>
 
+ > **_IMPORTANT:_** It is **not recommended** for Production escenarios as this tool allows you to execute code without guarantee.
+
 This tool allows you to write, execute and debug X++ code directly in the browser, without the need to compile or wait for service restart.
 
 ## Getting started
-1. Download and install the Deployable Package from the releases. You can also clone the repo and compile the model by yourself.
-2. Navigate to **https://[YOU_ENVIRONMENT]/?mi=MXTXppInterpreterRunner** and start writing!
+1. Clone the repo
+2. Build the **MXppTools** package included and apply it to your environment
+3. Navigate to https://[YOU_ENVIRONMENT]/?mi=**MXTXppInterpreterRunner** and start writing your code
 
 # Interpreter
 This tool generates bytecode that is later interpreted directly during execution. The instructions that are interpreted are executed in native code using a series of proxies written in X++. That allows to simulate the execution *almost* exactly as native code would do it, without the need to compile.
@@ -20,6 +23,10 @@ This tool generates bytecode that is later interpreted directly during execution
 <p>The variable inspector will allow you to take a look to the variables that are currently on scope and will let you modify the values for primitive types.</p>
 <img width="700" src="https://github.com/milnet92/MXTXppInterpreter/assets/10449294/66b815ea-169a-4366-a1f0-1cac12b39fa7"/>
 
+### Script repository
+<p>You can save X++ scripts into the built-in repository to later execute them.</p>
+<img width="400" src="https://github.com/milnet92/MXTXppInterpreter/assets/10449294/dab3be52-5c99-4b57-932d-d298771793c3"/>
+
 # Use cases
 * Execute, modify and save X++ scripts
 * Experiment with unknown or new functionality
@@ -31,5 +38,3 @@ This tool generates bytecode that is later interpreted directly during execution
 * **Class declarations** are not supported
 * **try**, **catch** and **finally** statements are not implemented
 * **.NET namespaces** cannot be referenced
-
- > **_IMPORTANT:_** It is **not recommended** for Production escenarios as this tool allows you to execute *any code* on the environment.
