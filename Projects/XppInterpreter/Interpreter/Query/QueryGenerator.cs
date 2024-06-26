@@ -18,10 +18,23 @@ namespace XppInterpreter.Interpreter.Query
 
         Dynamics.AX.Application.SysDaFirstOnlyHint GetFirstOnlyHint(Parser.Data.Query query)
         {
-            if (query.FirstOnly) return Dynamics.AX.Application.SysDaFirstOnlyHint.FirstOnly1;
-            else if (query.FirstOnly10) return Dynamics.AX.Application.SysDaFirstOnlyHint.FirstOnly10;
-            else if (query.FirstOnly100) return Dynamics.AX.Application.SysDaFirstOnlyHint.FirstOnly100;
-            else if (query.FirstOnly1000) return Dynamics.AX.Application.SysDaFirstOnlyHint.FirstOnly1000;
+            if (query.FirstOnly)
+            {
+                return Dynamics.AX.Application.SysDaFirstOnlyHint.FirstOnly1;
+            }
+            else if (query.FirstOnly10)
+            {
+                return Dynamics.AX.Application.SysDaFirstOnlyHint.FirstOnly10;
+            }
+            else if (query.FirstOnly100)
+            {
+                return Dynamics.AX.Application.SysDaFirstOnlyHint.FirstOnly100;
+            }
+            else if (query.FirstOnly1000)
+            {
+                return Dynamics.AX.Application.SysDaFirstOnlyHint.FirstOnly1000;
+            }
+
             return Dynamics.AX.Application.SysDaFirstOnlyHint.None;
         }
 
@@ -242,9 +255,13 @@ namespace XppInterpreter.Interpreter.Query
                 foreach (var field in query.OrderFields)
                 {
                     if (field.OrderByDirection == OrderByType.Ascending || field.OrderByDirection == OrderByType.Unespecified)
+                    {
                         sysDaQuery.orderByClause().add(field.Name);
+                    }
                     else
+                    {
                         sysDaQuery.orderByClause().addDescending(field.Name);
+                    }
                 }
             }
 

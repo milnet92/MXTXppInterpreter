@@ -9,7 +9,10 @@ namespace XppInterpreter.Interpreter.Debug
     {
         public static string GetDebugDisplayValue(object instance)
         {
-            if (instance is null) return "null";
+            if (instance is null)
+            {
+                return "null";
+            }
 
             if (instance.GetType().GetCustomAttributes(typeof(DebuggerDisplayAttribute), true).Any())
             {
@@ -33,13 +36,17 @@ namespace XppInterpreter.Interpreter.Debug
                 for (cnt = 0; cnt < 3 && cnt < objArray.Length; cnt++) // Max to 3 elements
                 {
                     if (cnt != 0)
+                    {
                         stringBuilder.Append(", ");
+                    }
 
                     stringBuilder.Append(objArray[cnt]);
                 }
 
                 if (cnt < objArray.Length)
+                {
                     stringBuilder.Append(" ... ");
+                }
 
                 stringBuilder.Append("]");
 

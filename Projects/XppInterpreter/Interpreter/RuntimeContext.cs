@@ -46,7 +46,9 @@ namespace XppInterpreter.Interpreter
         public void moveCounter(int offset)
         {
             if (_pc + offset < 0)
+            {
                 throw new Exception("Program counter cannot be negative.");
+            }
 
             _pc += offset;
         }
@@ -54,7 +56,9 @@ namespace XppInterpreter.Interpreter
         public void setCounter(int counter)
         {
             if (counter < 0)
+            {
                 throw new Exception("Program counter cannot be negative.");
+            }
 
             _pc = counter;
         }

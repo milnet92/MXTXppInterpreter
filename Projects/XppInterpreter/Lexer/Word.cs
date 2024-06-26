@@ -116,7 +116,10 @@ namespace XppInterpreter.Lexer
 
         public int CompareTo(Word other)
         {
-            if (other is null) return 0;
+            if (other is null)
+            {
+                return 0;
+            }
 
             return string.Compare(Lexeme, other.Lexeme, true);
         }

@@ -102,8 +102,14 @@ namespace XppInterpreter.Parser
 
                 string literalValue = string.Empty;
 
-                if (parameter is Word word) literalValue = word.Lexeme;
-                else if (parameter is Lexer.String str) literalValue = (string)str.Value;
+                if (parameter is Word word)
+                {
+                    literalValue = word.Lexeme;
+                }
+                else if (parameter is Lexer.String str)
+                {
+                    literalValue = (string)str.Value;
+                }
 
                 literalParameters.Add(literalValue);
 
@@ -154,17 +160,36 @@ namespace XppInterpreter.Parser
             catch (Exception ex)
             {
                 string message = ex.Message;
-                if (ex.InnerException != null) message = ex.InnerException.Message;
+                if (ex.InnerException != null)
+                {
+                    message = ex.InnerException.Message;
+                }
+
                 ThrowParseException(message, false);
             }
 
             var binding = SourceCodeBinding(start, lastScanResult);
 
-            if (result is int intValue) ret = new Constant(intValue, binding);
-            else if (result is string strValue) ret = new Constant(strValue, binding);
-            else if (result is object[] conValue) ret = new Constant(conValue, binding);
-            else if (result != null) ret = new Constant(result, binding);
-            else ThrowParseException($"Unexpected compile-time function {functionName} result.");
+            if (result is int intValue)
+            {
+                ret = new Constant(intValue, binding);
+            }
+            else if (result is string strValue)
+            {
+                ret = new Constant(strValue, binding);
+            }
+            else if (result is object[] conValue)
+            {
+                ret = new Constant(conValue, binding);
+            }
+            else if (result != null)
+            {
+                ret = new Constant(result, binding);
+            }
+            else
+            {
+                ThrowParseException($"Unexpected compile-time function {functionName} result.");
+            }
 
             return ret;
         }
@@ -312,7 +337,10 @@ namespace XppInterpreter.Parser
 
                 if (currentToken.TokenType == TType.Case)
                 {
-                    if (cases is null) cases = new Dictionary<Expression, List<Statement>>();
+                    if (cases is null)
+                    {
+                        cases = new Dictionary<Expression, List<Statement>>();
+                    }
 
                     cases.Add(Case());
                 }
@@ -469,12 +497,18 @@ namespace XppInterpreter.Parser
 
 
             if (matchSemicolon)
+            {
                 Match(TType.Semicolon);
+            }
 
             if (isArray)
+            {
                 return new VariableArrayDeclaration((Word)type, arrayIdentifier, arraySize, SourceCodeBinding(start, lastScanResult));
+            }
             else
+            {
                 return new VariableDeclarations((Word)type, declarations, SourceCodeBinding(start, lastScanResult));
+            }
         }
 
         internal LoopControl LoopControl()
@@ -575,7 +609,9 @@ namespace XppInterpreter.Parser
             do
             {
                 if (currentToken.TokenType == TType.Comma)
+                {
                     Match(TType.Comma);
+                }
 
                 parameters.Add(Expression());
             } while (currentToken.TokenType == TType.Comma);
@@ -601,9 +637,13 @@ namespace XppInterpreter.Parser
                         {
                             nextToken = AdvancePeek(true).Token;
                             if (nextToken.TokenType == TType.LeftParenthesis)
+                            {
                                 return FunctionDeclaration();
+                            }
                             else
+                            {
                                 return VariableDeclaration(matchSemicolon);
+                            }
                         }
                         else
                         {
@@ -626,9 +666,13 @@ namespace XppInterpreter.Parser
                     {
                         var nextToken = AdvancePeek(true).Token;
                         if (nextToken.TokenType == TType.Select)
+                        {
                             return WhileSelect();
+                        }
                         else
+                        {
                             return While();
+                        }
                     }
                 case TType.For: return For();
                 case TType.Do: return Do();
@@ -652,9 +696,13 @@ namespace XppInterpreter.Parser
                         var nextToken = AdvancePeek(true).Token;
 
                         if (nextToken.TokenType == TType.LeftParenthesis)
+                        {
                             return FunctionDeclaration();
+                        }
                         else
+                        {
                             return VariableDeclaration(matchSemicolon);
+                        }
                     }
                 default:
                     {

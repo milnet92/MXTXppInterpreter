@@ -35,7 +35,9 @@ namespace XppInterpreter.Interpreter
             finally
             {
                 if (ret?.HasFinished ?? true && globalTtsAbort)
+                {
                     _proxy.Data.TtsAbort();
+                }
             }
 
             return ret;
@@ -49,7 +51,9 @@ namespace XppInterpreter.Interpreter
         public InterpreterResult Interpret(ByteCode byteCode, RuntimeContext context = null, bool reuseCounter = true, DebugAction nextAction = DebugAction.None)
         {
             if (nextAction != DebugAction.None)
+            {
                 _nextAction = nextAction;
+            }
 
             RuntimeContext c = context != null ?
                 reuseCounter ? context : new RuntimeContext(context.Proxy, byteCode, context.ScopeHandler)
@@ -59,7 +63,10 @@ namespace XppInterpreter.Interpreter
             c.InnerContext = context?.InnerContext;
             c.Interpreter = this;
 
-            if (_nextAction == DebugAction.CancelExecution) return InterpreterResult.Finished;
+            if (_nextAction == DebugAction.CancelExecution)
+            {
+                return InterpreterResult.Finished;
+            }
 
             bool isFirst = true;
 
@@ -122,7 +129,9 @@ namespace XppInterpreter.Interpreter
                         c.InnerContext = null;
 
                         if (context != null)
+                        {
                             context.InnerContext = null;
+                        }
                     }
                 }
 
@@ -151,7 +160,9 @@ namespace XppInterpreter.Interpreter
             bool globalTtsAbort = Options?.EmitGlobalTtsAbort ?? false;
 
             if (globalTtsAbort)
+            {
                 _proxy.Data.TtsBegin();
+            }
 
             InterpreterResult ret = null;
 
@@ -162,7 +173,9 @@ namespace XppInterpreter.Interpreter
             finally
             {
                 if (ret?.HasFinished ?? true && globalTtsAbort)
+                {
                     _proxy.Data.TtsAbort();
+                }
             }
 
             return ret;

@@ -73,7 +73,6 @@
     <Compile Include="Core\Scope.cs" />
     <Compile Include="Core\ScopeHandler.cs" />
     <Compile Include="Core\SourceCodeRange.cs" />
-    <Compile Include="Core\ValueTypeHelper.cs" />
     <Compile Include="Core\VariableCollection.cs" />
     <Compile Include="Core\VariableEditValueResponse.cs" />
     <Compile Include="Core\VariableEntry.cs" />

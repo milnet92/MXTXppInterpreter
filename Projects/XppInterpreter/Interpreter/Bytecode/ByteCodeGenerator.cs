@@ -27,7 +27,9 @@ namespace XppInterpreter.Interpreter.Bytecode
         public ByteCode Generate(Program program, bool generateDebugInfo)
         {
             if (_ss.Count == 0)
+            {
                 _ss.Push(new ByteCodeGenerationScope());
+            }
 
             _generateDebugInfo = generateDebugInfo;
 
@@ -231,9 +233,13 @@ namespace XppInterpreter.Interpreter.Bytecode
                 var scope = ReleaseScope();
 
                 if (tokenType == TType.And)
+                {
                     Emit(new JumpIfFalse(scope.Count + 1));
+                }
                 else
+                {
                     Emit(new JumpIfTrue(scope.Count + 1));
+                }
 
                 EmitScope(scope);
             }
@@ -257,11 +263,17 @@ namespace XppInterpreter.Interpreter.Bytecode
             object value = null;
 
             if (constant.Token is BaseType baseType)
+            {
                 value = baseType.Value;
+            }
             else if (constant.Token.TokenType == TType.True)
+            {
                 value = true;
+            }
             else if (constant.Token.TokenType == TType.False)
+            {
                 value = false;
+            }
 
             Emit(new Push(value));
         }
@@ -308,11 +320,16 @@ namespace XppInterpreter.Interpreter.Bytecode
 
             CreateScope();
             if (_hasMaxIterations)
+            {
                 Emit(new MaxLoopThrow());
+            }
+
             var maxLoopScope = ReleaseScope();
 
             if (_hasMaxIterations)
+            {
                 Emit(new Push(Options.MaxLoopIterations));
+            }
 
             EmitScope(forScope);
             Emit(new JumpIfFalse(maxLoopScope.Count + blockScope.Count + loopScope.Count + 1 + 1 /* Jump instruction */));
@@ -395,11 +412,16 @@ namespace XppInterpreter.Interpreter.Bytecode
 
             CreateScope();
             if (_hasMaxIterations)
+            {
                 Emit(new MaxLoopThrow());
+            }
+
             var loopCheckScope = ReleaseScope();
 
             if (_hasMaxIterations)
+            {
                 Emit(new Push(Options.MaxLoopIterations));
+            }
 
             EmitScope(expressionScope);
             Emit(new JumpIfFalse(loopCheckScope.Count + blockScope.Count + 1 + 1 /*Jump instruction*/));
@@ -624,7 +646,10 @@ namespace XppInterpreter.Interpreter.Bytecode
             {
                 total--;
 
-                if (skipFirst && total == 0) break;
+                if (skipFirst && total == 0)
+                {
+                    break;
+                }
 
                 _ss.Peek().Instructions.Remove(instruction);
             }
@@ -659,7 +684,9 @@ namespace XppInterpreter.Interpreter.Bytecode
             for (var narg = print.Parameters.Count - 1; narg >= 0; narg--)
             {
                 if (narg != print.Parameters.Count - 1)
+                {
                     sb.Append(' ');
+                }
 
                 sb.Append($"%{print.Parameters.Count - narg}");
                 print.Parameters[narg].Accept(this);

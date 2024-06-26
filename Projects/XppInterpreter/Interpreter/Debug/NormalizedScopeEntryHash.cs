@@ -28,7 +28,10 @@ namespace XppInterpreter.Interpreter.Debug
 
         public bool HasChanged(string variableName, object value)
         {
-            if (!_table.ContainsKey(variableName)) return false;
+            if (!_table.ContainsKey(variableName))
+            {
+                return false;
+            }
 
             return _table[variableName] != DebugHelper.GetDebugDisplayValue(value);
         }

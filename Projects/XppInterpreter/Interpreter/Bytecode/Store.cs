@@ -9,8 +9,14 @@ namespace XppInterpreter.Interpreter.Bytecode
         {
             get
             {
-                if (FromStack) return $"STORE_PROP {Name}";
-                else return $"STORE {Name}";
+                if (FromStack)
+                {
+                    return $"STORE_PROP {Name}";
+                }
+                else
+                {
+                    return $"STORE {Name}";
+                }
             }
         }
         public bool Top { get; }

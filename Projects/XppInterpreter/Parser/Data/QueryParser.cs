@@ -172,7 +172,9 @@ namespace XppInterpreter.Parser
                     Match(TType.Star);
 
                     if (ret.Count > 0)
+                    {
                         ThrowParseException("Invalid selection fields.");
+                    }
 
                     break;
                 }

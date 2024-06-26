@@ -11,9 +11,13 @@
         public override object MakeCall(RuntimeContext context, object[] arguments)
         {
             if (string.IsNullOrEmpty(ClassName))
+            {
                 return context.Proxy.Reflection.CallGlobalOrPredefinedFunction(Name, arguments);
+            }
             else
+            {
                 return context.Proxy.Reflection.CallStaticFunction(ClassName, Name, arguments);
+            }
         }
     }
 }

@@ -13,7 +13,9 @@ namespace XppInterpreter.Interpreter.Bytecode
         public Arithmetic(TType tokenType)
         {
             if (!_arithmeticOpCodes.ContainsKey(tokenType))
+            {
                 throw new ArgumentException($"{tokenType} is invalid");
+            }
 
             TokenType = tokenType;
 

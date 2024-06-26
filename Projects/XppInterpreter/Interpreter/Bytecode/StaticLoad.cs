@@ -12,9 +12,13 @@
         public override object MakeLoad(RuntimeContext context)
         {
             if (context.Proxy.Reflection.IsEnum(CallerName))
+            {
                 return context.Proxy.Reflection.GetEnumValue(CallerName, Name);
+            }
             else
+            {
                 return context.Proxy.Reflection.GetStaticProperty(CallerName, Name);
+            }
         }
 
         public override object MakeLoadFromArray(RuntimeContext context, int index)

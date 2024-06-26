@@ -11,7 +11,9 @@
             var value = context.Stack.Pop();
 
             if (!context.Proxy.Casting.ToBoolean(value))
+            {
                 base.Execute(context);
+            }
 
             //context.Stack.Push(value);
         }

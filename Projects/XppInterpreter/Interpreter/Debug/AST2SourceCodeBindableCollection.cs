@@ -43,10 +43,15 @@ namespace XppInterpreter.Interpreter.Debug
         /// <param name="obj">Object to add</param>
         private void AddToCollection(object obj)
         {
-            if (_hasBeenGeneratd) return;
+            if (_hasBeenGeneratd)
+            {
+                return;
+            }
 
             if (obj != null && obj is IDebuggeable debuggeable && debuggeable.DebuggeableBinding != null && _functionStackScope.Count == 0)
+            {
                 _bindings.Add((IDebuggeable)obj);
+            }
         }
         public override void VisitReturn(Return @return)
         {

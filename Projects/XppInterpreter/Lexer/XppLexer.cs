@@ -349,7 +349,10 @@ namespace XppInterpreter.Lexer
                             ReadChar();
                             return ScanResult(Word.Equal);
                         }
-                        else return ScanResult(new Token(TType.Assign));
+                        else
+                        {
+                            return ScanResult(new Token(TType.Assign));
+                        }
                     }
                 case '!':
                     {
@@ -358,7 +361,10 @@ namespace XppInterpreter.Lexer
                             ReadChar();
                             return ScanResult(Word.NotEqual);
                         }
-                        else return ScanResult(new Token(TType.Negation));
+                        else
+                        {
+                            return ScanResult(new Token(TType.Negation));
+                        }
                     }
                 case '"':
                 case '\'':
@@ -372,7 +378,10 @@ namespace XppInterpreter.Lexer
                             ReadChar();
                             return ScanResult(Word.LessOrEqual);
                         }
-                        else return ScanResult(new Token(TType.Smaller));
+                        else
+                        {
+                            return ScanResult(new Token(TType.Smaller));
+                        }
                     }
                 case '>':
                     {
@@ -381,7 +390,10 @@ namespace XppInterpreter.Lexer
                             ReadChar();
                             return ScanResult(Word.GreaterOrEqual);
                         }
-                        else return ScanResult(new Token(TType.Greater));
+                        else
+                        {
+                            return ScanResult(new Token(TType.Greater));
+                        }
                     }
                 case '+':
                     {
@@ -391,8 +403,14 @@ namespace XppInterpreter.Lexer
                         {
                             ReadChar();
 
-                            if (found == '+') return ScanResult(Word.Increment);
-                            else if (found == '=') return ScanResult(Word.PlusAssignment);
+                            if (found == '+')
+                            {
+                                return ScanResult(Word.Increment);
+                            }
+                            else if (found == '=')
+                            {
+                                return ScanResult(Word.PlusAssignment);
+                            }
                         }
 
                         return ScanResult(new Token(TType.Plus));
@@ -405,8 +423,14 @@ namespace XppInterpreter.Lexer
                         {
                             ReadChar();
 
-                            if (found == '-') return ScanResult(new Token(TType.Decrement));
-                            else if (found == '=') return ScanResult(new Token(TType.MinusAssignment));
+                            if (found == '-')
+                            {
+                                return ScanResult(new Token(TType.Decrement));
+                            }
+                            else if (found == '=')
+                            {
+                                return ScanResult(new Token(TType.MinusAssignment));
+                            }
                         }
                         return ScanResult(new Token(TType.Minus));
                     }
@@ -419,7 +443,10 @@ namespace XppInterpreter.Lexer
 
                             return ScanResult(new Token(TType.StaticDoubleDot));
                         }
-                        else return ScanResult(new Token(TType.DoubleDot));
+                        else
+                        {
+                            return ScanResult(new Token(TType.DoubleDot));
+                        }
                     }
                 case '&':
                     {
@@ -456,16 +483,24 @@ namespace XppInterpreter.Lexer
                 if (peek != '.')
                 {
                     if (value > int.MaxValue)
+                    {
                         return ScanResult(new Int64(value));
+                    }
                     else
+                    {
                         return ScanResult(new Int32((int)value));
+                    }
                 }
 
                 decimal x = value, d = 10;
                 while (true)
                 {
                     ReadChar();
-                    if (!char.IsDigit(peek)) break;
+                    if (!char.IsDigit(peek))
+                    {
+                        break;
+                    }
+
                     x += (peek - '0') / d;
                     d *= 10;
                 }

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using XppInterpreter.Interpreter;
+﻿using XppInterpreter.Interpreter;
 using XppInterpreter.Interpreter.Debug;
 
 namespace XppInterpreter.Parser

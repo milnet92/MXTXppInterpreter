@@ -42,7 +42,9 @@ namespace XppInterpreter.Core
         public void EndScope()
         {
             if (CurrentScope.Parent != null)
+            {
                 CurrentScope = CurrentScope.End();
+            }
         }
 
         public VariableEditValueResponse TrySetVariableValueFromString(string name, string value)
@@ -57,12 +59,18 @@ namespace XppInterpreter.Core
 
                 foundEntry = entries.FirstOrDefault(e => e.VariableName == name);
 
-                if (foundEntry != null) break;
+                if (foundEntry != null)
+                {
+                    break;
+                }
 
                 currentScope = currentScope.Parent;
             }
 
-            if (foundEntry is null) throw new Exception($"Variable {name} was not found.");
+            if (foundEntry is null)
+            {
+                throw new Exception($"Variable {name} was not found.");
+            }
 
             if (!foundEntry.Editable)
             {

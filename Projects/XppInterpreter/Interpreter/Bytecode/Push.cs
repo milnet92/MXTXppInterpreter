@@ -7,8 +7,14 @@
         {
             get
             {
-                if (Value is string) return $"PUSH \"{Value}\"";
-                else return $"PUSH {Value}";
+                if (Value is string)
+                {
+                    return $"PUSH \"{Value}\"";
+                }
+                else
+                {
+                    return $"PUSH {Value}";
+                }
             }
         }
 

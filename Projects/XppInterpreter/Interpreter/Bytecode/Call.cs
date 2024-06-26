@@ -46,7 +46,9 @@ namespace XppInterpreter.Interpreter.Bytecode
             }
 
             if (Alloc)
+            {
                 context.Stack.Push(returnValue);
+            }
         }
 
         public abstract object MakeCall(RuntimeContext context, object[] arguments);
