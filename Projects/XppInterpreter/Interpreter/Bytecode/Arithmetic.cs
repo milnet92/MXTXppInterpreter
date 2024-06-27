@@ -91,7 +91,7 @@ namespace XppInterpreter.Interpreter.Bytecode
             return _arithmeticOpCodes.ContainsKey(tokenType);
         }
 
-        private static Dictionary<TType, string> _arithmeticOpCodes = new Dictionary<TType, string>()
+        private readonly static Dictionary<TType, string> _arithmeticOpCodes = new Dictionary<TType, string>()
         {
             { TType.Plus, "ADD" },
             { TType.PlusAssignment, "ADD" },

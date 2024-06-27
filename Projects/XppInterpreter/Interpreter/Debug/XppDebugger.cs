@@ -10,8 +10,8 @@ namespace XppInterpreter.Interpreter.Debug
     public class XppDebugger : IDebugger
     {
         private List<IDebuggeable> _bindableElements;
-        private AST2SourceCodeBindableCollection _bindableCollection;
-        private List<Breakpoint> _breakpoints = new List<Breakpoint>();
+        private readonly AST2SourceCodeBindableCollection _bindableCollection;
+        private readonly List<Breakpoint> _breakpoints = new List<Breakpoint>();
         public int BreakpointCount => _breakpoints.Count;
 
         public XppDebugger(Program program)
@@ -37,7 +37,7 @@ namespace XppInterpreter.Interpreter.Debug
         public BreakpointAction TryAddBreakpoint(int line, int position)
         {
             // Try first to remove at position
-            Breakpoint removedBreakpoint = this.TryRemoveBreakpoint(line, position);
+            Breakpoint removedBreakpoint = this.TryRemoveBreakpointAtLine(line);
 
             // Try to created by line
             Breakpoint newBreakpoint = this.TryAddBreakpointAtLine(line, position);
@@ -74,7 +74,7 @@ namespace XppInterpreter.Interpreter.Debug
         /// <param name="line">Source code line</param>
         /// <param name="position">Source code position</param>
         /// <returns>An instance of <see cref="Breakpoint"/>. If no breakpoints was found, returns <c>null</c>.</returns>
-        internal Breakpoint TryRemoveBreakpoint(int line, int position)
+        internal Breakpoint TryRemoveBreakpointAtLine(int line)
         {
             Breakpoint existingBreakpoint = _breakpoints.FirstOrDefault(
                 bp =>

@@ -8,7 +8,7 @@ namespace XppInterpreter.Interpreter
 {
     public class XppInterpreter
     {
-        private XppProxy _proxy;
+        private readonly XppProxy _proxy;
         private DebugAction _nextAction = DebugAction.Continue;
         private bool _isActionDefault = true;
 

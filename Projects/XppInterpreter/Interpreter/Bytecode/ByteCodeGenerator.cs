@@ -12,15 +12,15 @@ namespace XppInterpreter.Interpreter.Bytecode
         private readonly ByteCodeGenerationContext _generationContext = new ByteCodeGenerationContext();
         private readonly Stack<ByteCodeGenerationScope> _ss = new Stack<ByteCodeGenerationScope>();
         private readonly List<RefFunction> _declaredFunctions = new List<RefFunction>();
+        private readonly bool _hasMaxIterations;
         private bool _generateDebugInfo;
-        private bool _hasMaxIterations;
 
         public XppInterpreterOptions Options { get; }
         public ByteCodeGenerator(XppInterpreterOptions options = null)
         {
             _ss.Push(new ByteCodeGenerationScope());
-            Options = options;
 
+            Options = options;
             _hasMaxIterations = Options != null && Options.MaxLoopIterations > 0;
         }
 
@@ -50,12 +50,12 @@ namespace XppInterpreter.Interpreter.Bytecode
             };
         }
 
-        public void Emit(IInstruction instruction, IDebuggeable debuggeable = null)
+        public void Emit(IInstruction instruction)
         {
             _ss.Peek().Instructions.Add(instruction);
         }
 
-        public void EmitScope(ByteCodeGenerationScope scope, IDebuggeable debuggeable = null)
+        public void EmitScope(ByteCodeGenerationScope scope)
         {
             _ss.Peek().Instructions.AddRange(scope.Instructions);
         }

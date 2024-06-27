@@ -32,7 +32,7 @@ namespace XppInterpreter.Interpreter.Debug
                 StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.Append("[");
 
-                int cnt = 0;
+                int cnt;
                 for (cnt = 0; cnt < 3 && cnt < objArray.Length; cnt++) // Max to 3 elements
                 {
                     if (cnt != 0)

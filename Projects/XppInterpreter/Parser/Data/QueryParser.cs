@@ -167,8 +167,6 @@ namespace XppInterpreter.Parser
                 }
                 else if (currentToken.TokenType == TType.Star)
                 {
-                    selectAll = true;
-
                     Match(TType.Star);
 
                     if (ret.Count > 0)
@@ -421,7 +419,7 @@ namespace XppInterpreter.Parser
             return (Match(TType.Id).Token as Word).Lexeme;
         }
 
-        Query Query(bool _isInsertRecordset = false)
+        Query Query()
         {
             var modifiersCollection = QueryModifiers();
             var selectionFields = SelectionFields();

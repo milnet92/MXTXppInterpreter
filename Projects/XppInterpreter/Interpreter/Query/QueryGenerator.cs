@@ -7,7 +7,7 @@ namespace XppInterpreter.Interpreter.Query
 {
     public class QueryGenerator
     {
-        private List<string> _tablesInQuery = new List<string>();
+        private readonly List<string> _tablesInQuery = new List<string>();
         private readonly RuntimeContext _context;
         private readonly QueryGenerationHelper _helper;
         public QueryGenerator(RuntimeContext runtimeContext)

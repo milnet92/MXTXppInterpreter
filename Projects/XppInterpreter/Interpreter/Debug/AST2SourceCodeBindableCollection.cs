@@ -9,10 +9,9 @@ namespace XppInterpreter.Interpreter.Debug
     /// </summary>
     public class AST2SourceCodeBindableCollection : AstSimpleVisitor
     {
-        private List<IDebuggeable> _bindings = new List<IDebuggeable>();
+        private readonly List<IDebuggeable> _bindings = new List<IDebuggeable>();
+        private readonly Stack<bool> _functionStackScope = new Stack<bool>();
         private bool _hasBeenGeneratd = false;
-
-        private Stack<bool> _functionStackScope = new Stack<bool>();
 
         public Program Program { get; }
 

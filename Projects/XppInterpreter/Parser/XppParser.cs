@@ -91,7 +91,7 @@ namespace XppInterpreter.Parser
                 SourceCodeBinding(start, lastScanResult));
         }
 
-        internal List<string> IntrinsicParameters(string functionName)
+        internal List<string> IntrinsicParameters()
         {
             List<string> literalParameters = new List<string>();
             Match(TType.LeftParenthesis);
@@ -148,7 +148,7 @@ namespace XppInterpreter.Parser
         internal Expression IntrinsicFunction(string functionName)
         {
             var start = lastScanResult;
-            var parameters = IntrinsicParameters(functionName);
+            var parameters = IntrinsicParameters();
             object result = null;
             Expression ret = null;
 
