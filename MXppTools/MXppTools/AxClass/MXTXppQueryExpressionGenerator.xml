@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppQueryExpressionGenerator</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+using XppInterpreter.Interpreter.Query;
+using XppInterpreter.Interpreter;
+using XppInterpreter;
+
+internal final class MXTXppQueryExpressionGenerator
+{
+    private Set tablesInQuery;
+    private XppInterpreter.Interpreter.Query.QueryGenerationHelper generationHelper;
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>new</Name>
+				<Source><![CDATA[
+    void new(RuntimeContext _context, Set _tablesInQuery)
+    {
+        tablesInQuery = _tablesInQuery;
+        generationHelper = new XppInterpreter.Interpreter.Query.QueryGenerationHelper(_context);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>visitExpression</Name>
+				<Source><![CDATA[
+    public SysDaQueryExpression visitExpression(Parser.Expression _expression)
+    {
+        if (_expression is Parser.BinaryOperation)
+        {
+            return this.visitBinaryOperation(_expression);
+        }
+        else if (_expression is Parser.UnaryOperation)
+        {
+            return this.visitUnaryOperation(_expression);
+        }
+        else if (_expression is Parser.Constant)
+        {
+            return this.visitConstant(_expression);
+        }
+        else if (_expression is Parser.Variable)
+        {
+            return this.visitVariable(_expression);
+        }
+
+        throw new System.NotImplementedException();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>visitBinaryOperation</Name>
+				<Source><![CDATA[
+    private SysDaQueryExpression visitBinaryOperation(Parser.BinaryOperation _binaryOperation)
+    {
+        var left = this.visitExpression(_binaryOperation.LeftOperand);
+        var right = this.visitExpression(_binaryOperation.RightOperand);
+
+        switch (_binaryOperation.Token.TokenType)
+        {
+            case Lexer.TType::And: return new SysDaAndExpression(left, right);
+            case Lexer.TType::Or: return new SysDaOrExpression(left, right);
+            case Lexer.TType::Equal: return new SysDaEqualsExpression(left, right);
+            case Lexer.TType::NotEqual: return new SysDaNotEqualsExpression(left, right);
+            case Lexer.TType::Greater: return new SysDaGreaterThanExpression(left, right);
+            case Lexer.TType::GreaterOrEqual: return new SysDaGreaterThanOrEqualsExpression(left, right);
+            case Lexer.TType::Smaller: return new SysDaLessThanExpression(left, right);
+            case Lexer.TType::SmallerOrEqual: return new SysDaLessThanOrEqualsExpression(left, right);
+            case Lexer.TType::Plus: return new SysDaPlusExpression(left, right);
+            case Lexer.TType::Minus: return new SysDaMinusExpression(left, right);
+            case Lexer.TType::Division: return new SysDaDivideExpression(left, right);
+            case Lexer.TType::Star: return new SysDaMultiplyExpression(left, right);
+            case Lexer.TType::Mod: return new SysDaModExpression(left, right);
+            case Lexer.TType::IntegerDivision: return new SysDaIntDivExpression(left, right);
+            case Lexer.TType::In: return new SysDaInExpression(left, right);
+            case Lexer.TType::Like: return new SysDaLikeExpression(left, right);
+        }
+
+        throw new System.Exception("Invalid binary expression.");
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>visitUnaryOperation</Name>
+				<Source><![CDATA[
+    private SysDaQueryExpression visitUnaryOperation(Parser.UnaryOperation _unaryOperation)
+    {
+        throw new System.NotImplementedException("Unary expressions for query statements are not implemented.");
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>visitConstant</Name>
+				<Source><![CDATA[
+    private SysDaQueryExpression visitConstant(Parser.Constant _constant)
+    {
+        return new SysDaValueExpression(generationHelper.ComputeConstant(_constant));
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>visitVariable</Name>
+				<Source><![CDATA[
+    private SysDaQueryExpression visitVariable(Parser.Variable _variable)
+    {
+        if (this.isVariableTable(_variable))
+        {
+            Common common = generationHelper.ComputeVariable(_variable.Caller);
+            Lexer.Word word = _variable.Token;
+
+            return new SysDaFieldExpression(common, word.Lexeme);
+        }
+        else if (_variable is Parser.FunctionCall)
+        {
+            return new SysDaValueExpression(generationHelper.ComputeFunctionCall(_variable));
+        }
+        else
+        {
+            return new SysDaValueExpression(generationHelper.ComputeVariable(_variable));
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>isVariableTable</Name>
+				<Source><![CDATA[
+    private boolean isVariableTable(Parser.Variable _variable)
+    {
+        if (_variable.Caller != null && _variable.Token is Lexer.Word)
+        {
+            Lexer.Word word = _variable.Token;
+
+            return tablesInQuery.in(word.Lexeme);
+        }
+
+        return false;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

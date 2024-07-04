@@ -16,7 +16,7 @@ namespace XppInterpreter.Interpreter.Bytecode
 
         public void Execute(RuntimeContext context)
         {
-            SearchInstance searchInstance = null;
+            ISearchInstance searchInstance = null;
             bool found = false;
 
             if (UseAsExpression && context.Queries.TryGetValue(Query, out searchInstance))
@@ -25,7 +25,7 @@ namespace XppInterpreter.Interpreter.Bytecode
             }
             else
             {
-                searchInstance = new QueryGenerator(context).NewSearchInstance(Query);
+                searchInstance = context.Proxy.QueryGeneration.NewQueryGenerator().NewSearchInstance(Query, context);
                 found = searchInstance.Next();
             }
 

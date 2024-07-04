@@ -8,5 +8,6 @@ namespace XppInterpreter.Interpreter.Proxy
         void TtsCommit();
         void TtsAbort();
         IDisposable CreateChangeCompanyHandler(string datAreaId);
+        void Next(object common);
     }
 }

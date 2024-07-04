@@ -14,7 +14,7 @@ namespace XppInterpreter.Interpreter.Bytecode
 
         public void Execute(RuntimeContext context)
         {
-            new QueryGenerator(context).ExecuteDeleteFrom(DeleteFrom);
+            context.Proxy.QueryGeneration.NewQueryGenerator().ExecuteDeleteFrom(DeleteFrom, context);
         }
     }
 }

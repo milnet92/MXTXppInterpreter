@@ -13,7 +13,7 @@ namespace XppInterpreter.Interpreter
         private int _pc = 0;
         public int Counter => _pc;
         public Stack<object> Stack => ScopeHandler.CurrentScope.Stack;
-        public Dictionary<Parser.Data.Query, SearchInstance> Queries = new Dictionary<Parser.Data.Query, SearchInstance>();
+        public Dictionary<Parser.Data.Query, ISearchInstance> Queries = new Dictionary<Parser.Data.Query, ISearchInstance>();
         public Stack<IDisposable> ChangeCompanyHandlers = new Stack<IDisposable>();
         public readonly ScopeHandler ScopeHandler;
         public readonly XppProxy Proxy;

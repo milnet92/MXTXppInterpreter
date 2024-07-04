@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Diagnostics
+  GenerationTime="2024-07-04T16:31:12.7389927+02:00">
+  <Items>
+    <Diagnostic>
+      <DiagnosticType>Compile</DiagnosticType>
+      <Severity>Error</Severity>
+      <Path>dynamics://Class/MXTXppQueryGenerator</Path>
+      <ElementType>Class</ElementType>
+      <Moniker>ModelElementWithUnparsableSource</Moniker>
+      <Line>0</Line>
+      <Column>0</Column>
+      <Message>The model element was saved with unparsable source code and cannot be used. Please edit the element in Visual Studio to fix the errors.</Message>
+    </Diagnostic>
+    <Diagnostic>
+      <DiagnosticType>Compile</DiagnosticType>
+      <Severity>Fatal</Severity>
+      <Path>dynamics://Class/MXTXppQueryGenerator</Path>
+      <ElementType>Class</ElementType>
+      <Moniker>ExpectedToken</Moniker>
+      <Line>186</Line>
+      <Column>2</Column>
+      <EndLine>186</EndLine>
+      <EndColumn>2</EndColumn>
+      <Message>'}' expected.</Message>
+    </Diagnostic>
+    <Diagnostic>
+      <DiagnosticType>Compile</DiagnosticType>
+      <Severity>Error</Severity>
+      <Path>dynamics://Class/MXTXppQueryGenerator</Path>
+      <ElementType>Class</ElementType>
+      <Moniker>InterfaceMethodNotImplemented</Moniker>
+      <Line>0</Line>
+      <Column>0</Column>
+      <Message>Class 'MXTXppQueryGenerator' does not implement the method 'ExecuteUpdateRecordset' from the interface 'XppInterpreter.Interpreter.Query.IQueryGenerator'.</Message>
+    </Diagnostic>
+    <Diagnostic>
+      <DiagnosticType>Compile</DiagnosticType>
+      <Severity>Error</Severity>
+      <Path>dynamics://Class/MXTXppQueryGenerator</Path>
+      <ElementType>Class</ElementType>
+      <Moniker>InterfaceMethodNotImplemented</Moniker>
+      <Line>0</Line>
+      <Column>0</Column>
+      <Message>Class 'MXTXppQueryGenerator' does not implement the method 'NewSearchInstance' from the interface 'XppInterpreter.Interpreter.Query.IQueryGenerator'.</Message>
+    </Diagnostic>
+    <Diagnostic>
+      <DiagnosticType>Compile</DiagnosticType>
+      <Severity>Error</Severity>
+      <Path>dynamics://Class/MXTXppQueryGenerator</Path>
+      <ElementType>Class</ElementType>
+      <Moniker>InterfaceMethodNotImplemented</Moniker>
+      <Line>0</Line>
+      <Column>0</Column>
+      <Message>Class 'MXTXppQueryGenerator' does not implement the method 'ExecuteDeleteFrom' from the interface 'XppInterpreter.Interpreter.Query.IQueryGenerator'.</Message>
+    </Diagnostic>
+    <Diagnostic>
+      <DiagnosticType>Compile</DiagnosticType>
+      <Severity>Error</Severity>
+      <Path>dynamics://Class/MXTXppQueryGenerator</Path>
+      <ElementType>Class</ElementType>
+      <Moniker>InterfaceMethodNotImplemented</Moniker>
+      <Line>0</Line>
+      <Column>0</Column>
+      <Message>Class 'MXTXppQueryGenerator' does not implement the method 'ExecuteInsertRecordset' from the interface 'XppInterpreter.Interpreter.Query.IQueryGenerator'.</Message>
+    </Diagnostic>
+    <Diagnostic>
+      <DiagnosticType>Compile</DiagnosticType>
+      <Severity>Error</Severity>
+      <Path>dynamics://Class/MXTXppQueryGenerator/Method/generateFromQuery</Path>
+      <ElementType>Class Method</ElementType>
+      <Moniker>ExpectedToken</Moniker>
+      <Line>127</Line>
+      <Column>41</Column>
+      <EndLine>127</EndLine>
+      <EndColumn>42</EndColumn>
+      <Message>';' expected.</Message>
+    </Diagnostic>
+    <Diagnostic>
+      <DiagnosticType>Compile</DiagnosticType>
+      <Severity>Error</Severity>
+      <Path>dynamics://Class/MXTXppQueryGenerator/Method/generateFromQuery</Path>
+      <ElementType>Class Method</ElementType>
+      <Moniker>ExpectedToken</Moniker>
+      <Line>149</Line>
+      <Column>35</Column>
+      <EndLine>149</EndLine>
+      <EndColumn>36</EndColumn>
+      <Message>';' expected.</Message>
+    </Diagnostic>
+    <Diagnostic>
+      <DiagnosticType>Compile</DiagnosticType>
+      <Severity>Error</Severity>
+      <Path>dynamics://Class/MXTXppQueryGenerator/Method/generateFromQuery</Path>
+      <ElementType>Class Method</ElementType>
+      <Moniker>ExpectedToken</Moniker>
+      <Line>174</Line>
+      <Column>38</Column>
+      <EndLine>174</EndLine>
+      <EndColumn>39</EndColumn>
+      <Message>';' expected.</Message>
+    </Diagnostic>
+  </Items>
+  <Aliases />
+</Diagnostics>

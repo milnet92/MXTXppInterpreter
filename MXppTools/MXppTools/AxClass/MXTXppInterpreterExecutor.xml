@@ -22,7 +22,8 @@ internal final class MXTXppInterpreterExecutor
             new MXTXppUnaryOperationProxy(),
             new MXTXppDataAccessProxy(),
             new MXTXppReflectionProxy(),
-            new MXTXppExceptionsProxy());
+            new MXTXppExceptionsProxy(),
+            new MXTXppQueryGenerationProxy());
     }
 
 ]]></Source>

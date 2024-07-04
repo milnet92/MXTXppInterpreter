@@ -9,6 +9,7 @@
         public readonly IXppUnaryOperationProxy Unary;
         public readonly IXppDataAccessProxy Data;
         public readonly IXppExceptionsProxy Exceptions;
+        public readonly IXppQueryGenerationProxy QueryGeneration;
 
         public XppProxy(
             IIntrinsicFunctionProvider intrinsic,
@@ -17,7 +18,8 @@
             IXppUnaryOperationProxy unary,
             IXppDataAccessProxy data,
             IXppReflectionProxy reflection,
-            IXppExceptionsProxy exceptions)
+            IXppExceptionsProxy exceptions,
+            IXppQueryGenerationProxy queryGeneration)
         {
             Intrinsic = intrinsic;
             Binary = binary;
@@ -26,6 +28,7 @@
             Data = data;
             Reflection = reflection;
             Exceptions = exceptions;
+            QueryGeneration = queryGeneration;
         }
     }
 }

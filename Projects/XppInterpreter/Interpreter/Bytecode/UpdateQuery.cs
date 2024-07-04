@@ -14,7 +14,7 @@ namespace XppInterpreter.Interpreter.Bytecode
 
         public void Execute(RuntimeContext context)
         {
-            new QueryGenerator(context).ExecuteUpdateRecordset(UpdateRecordset);
+            context.Proxy.QueryGeneration.NewQueryGenerator().ExecuteUpdateRecordset(UpdateRecordset, context);
         }
     }
 }

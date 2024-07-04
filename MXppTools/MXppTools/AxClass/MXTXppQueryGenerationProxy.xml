@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppQueryGenerationProxy</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+internal final class MXTXppQueryGenerationProxy implements XppInterpreter.Interpreter.Proxy.IXppQueryGenerationProxy
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>NewQueryGenerator</Name>
+				<Source><![CDATA[
+    public XppInterpreter.Interpreter.Query.IQueryGenerator NewQueryGenerator()
+    {
+        return new MXTXppQueryGenerator();
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

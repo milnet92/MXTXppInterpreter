@@ -35,25 +35,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Dynamics.AX.ApplicationPlatform">
-      <HintPath>K:\AosService\PackagesLocalDirectory\ApplicationPlatform\bin\Dynamics.AX.ApplicationPlatform.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Dynamics.AX.Data.Core">
-      <HintPath>K:\AosService\PackagesLocalDirectory\bin\Microsoft.Dynamics.AX.Data.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Dynamics.AX.Server.Core">
-      <HintPath>K:\AosService\PackagesLocalDirectory\bin\Microsoft.Dynamics.AX.Server.Core.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Dynamics.AX.Xpp.AxShared">
-      <HintPath>K:\AosService\PackagesLocalDirectory\bin\Microsoft.Dynamics.AX.Xpp.AxShared.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Dynamics.AX.Xpp.Support">
-      <HintPath>K:\AosService\PackagesLocalDirectory\bin\Microsoft.Dynamics.AX.Xpp.Support.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.ServiceModel" />
@@ -137,9 +118,10 @@
     <Compile Include="Interpreter\IAstVisitor.cs" />
     <Compile Include="Interpreter\InterpreterResult.cs" />
     <Compile Include="Interpreter\InterpreterSaveState.cs" />
-    <Compile Include="Interpreter\Query\QueryExpressionGenerator.cs" />
+    <Compile Include="Interpreter\Proxy\IXppQueryGenerationProxy.cs" />
+    <Compile Include="Interpreter\Query\IQueryGenerator.cs" />
+    <Compile Include="Interpreter\Query\ISearchInstance.cs" />
     <Compile Include="Interpreter\Query\QueryGenerationHelper.cs" />
-    <Compile Include="Interpreter\Query\QueryGenerator.cs" />
     <Compile Include="Interpreter\RuntimeContext.cs" />
     <Compile Include="Interpreter\Proxy\ChangeCompanyCallback.cs" />
     <Compile Include="Interpreter\Proxy\IIntrinsicFunctionProvider.cs" />
@@ -151,8 +133,6 @@
     <Compile Include="Interpreter\Proxy\IXppUnaryOperationProxy.cs" />
     <Compile Include="Interpreter\Proxy\XppProxy.cs" />
     <Compile Include="Interpreter\Proxy\XppProxyHelper.cs" />
-    <Compile Include="Interpreter\Query\IQueryExpressionVisitor.cs" />
-    <Compile Include="Interpreter\Query\SearchInstance.cs" />
     <Compile Include="Interpreter\XppInterpreter.cs" />
     <Compile Include="Interpreter\XppInterpreterOptions.cs" />
     <Compile Include="Lexer\BaseType.cs" />

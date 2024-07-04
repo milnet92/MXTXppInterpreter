@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppSearchInstance</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+internal final class MXTXppSearchInstance implements XppInterpreter.Interpreter.Query.ISearchInstance
+{
+    SysDaSearchObject searchObject;
+    SysDaSearchStatement searchStatement;
+    private boolean nextExecuted = false;
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>Next</Name>
+				<Source><![CDATA[
+	public boolean Next()
+    {
+        nextExecuted = true;
+        return searchStatement.findNext(searchObject);
+	}
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>SetSearchObjects</Name>
+				<Source><![CDATA[
+    public void SetSearchObjects(System.Object _searchObject, System.Object _searchStatement)
+    {
+        searchObject = _searchObject;
+        searchStatement = _searchStatement;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>IsNextExecuted</Name>
+				<Source><![CDATA[
+    public boolean IsNextExecuted()
+    {
+        return nextExecuted;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

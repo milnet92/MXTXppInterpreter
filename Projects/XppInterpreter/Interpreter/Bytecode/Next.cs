@@ -8,7 +8,7 @@ namespace XppInterpreter.Interpreter.Bytecode
 
         public void Execute(RuntimeContext context)
         {
-            SearchInstance.ExecuteNext(context.Stack.Pop());
+            context.Proxy.Data.Next(context.Stack.Pop());
         }
     }
 }

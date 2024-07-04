@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppQueryGenerator</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+using XppInterpreter.Interpreter.Query;
+using XppInterpreter.Interpreter;
+using XppInterpreter;
+
+internal final class MXTXppQueryGenerator implements XppInterpreter.Interpreter.Query.IQueryGenerator
+{
+    private Set tablesInQuery = new Set(Types::String);
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>ExecuteInsertRecordset</Name>
+				<Source><![CDATA[
+    public void ExecuteInsertRecordset(Parser.InsertRecordset _insertRecordset, RuntimeContext _runtimeContext)
+    {
+        SysDaInsertObject sysDaInsert = this.generateFromInsertRecordset(_insertRecordset, _runtimeContext);
+        SysDaInsertStatement insertStatement = new SysDaInsertStatement();
+        insertStatement.insert(sysDaInsert);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>ExecuteDeleteFrom</Name>
+				<Source><![CDATA[
+    public void ExecuteDeleteFrom(Parser.DeleteFrom _deleteFrom, RuntimeContext _runtimeContext)
+    {
+        SysDaDeleteObject sysDaDelete = this.generateFromDeleteRecordset(_deleteFrom, _runtimeContext);
+        SysDaDeleteStatement deleteStatement = new SysDaDeleteStatement();
+        deleteStatement.delete(sysDaDelete);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>ExecuteUpdateRecordset</Name>
+				<Source><![CDATA[
+    public void ExecuteUpdateRecordset(XppInterpreter.Parser.UpdateRecordset _updateRecordset, RuntimeContext _runtimeContext)
+    {
+        SysDaUpdateObject sysDaUpdate = this.generateFromUpdateRecordset(_updateRecordset, _runtimeContext);
+        SysDaUpdateStatement updStatement = new SysDaUpdateStatement();
+        updStatement.update(sysDaUpdate);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>NewSearchInstance</Name>
+				<Source><![CDATA[
+    public XppInterpreter.Interpreter.Query.ISearchInstance NewSearchInstance(Parser.Data.Query _query, RuntimeContext _runtimeContext)
+    {
+        SysDaQueryObject sysDaQuery = this.generateFromQuery(_query, _runtimeContext);
+        SysDaSearchObject searchObject = new SysDaSearchObject(sysDaQuery);
+        SysDaSearchStatement searchStatement = new SysDaSearchStatement();
+
+        XppInterpreter.Interpreter.Query.QueryGenerationHelper generationHelper = new XppInterpreter.Interpreter.Query.QueryGenerationHelper(_runtimeContext);
+
+        if (_query.ValidTimeState != null)
+        {
+            searchObject.validTimeState(new SysDaValidTimeStateDateRange(
+                generationHelper.ComputeVariable(_query.ValidTimeState.FromDate),
+                generationHelper.ComputeVariable(_query.ValidTimeState.ToDate)));
+        }
+
+        if (_query.CrossCompany != null)
+        {
+            if (_query.CrossCompany.Container == null)
+            {
+                searchObject.crossCompany(new SysDaCrossCompanyAll());
+            }
+            else
+            {
+                searchObject.crossCompany(new SysDaCrossCompanyContainer(generationHelper.ComputeVariable(_query.CrossCompany.Container)));
+            }
+        }
+
+        var searchInstance = new MXTXppSearchInstance();
+        searchInstance.SetSearchObjects(searchObject, searchStatement);
+
+        return searchInstance;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>generateFromInsertRecordset</Name>
+				<Source><![CDATA[
+    private SysDaInsertObject generateFromInsertRecordset(Parser.InsertRecordset _insertRecordset, RuntimeContext _runtimeContext)
+    {
+        Common common = _runtimeContext.ScopeHandler.CurrentScope.GetVar(_insertRecordset.TableVariableName);
+
+        tablesInQuery.add(_insertRecordset.TableVariableName);
+
+        SysDaInsertObject sysDaInsert = new SysDaInsertObject(common);
+
+        var fields = _insertRecordset.FieldList.ToArray();
+        for (int i = 0; i < fields.Length; i++)
+        {
+            sysDaInsert.fields().add(fields.GetValue(i));
+        }
+
+        // Select query
+        sysDaInsert.query(this.generateFromQuery(_insertRecordset.Select.Query, _runtimeContext));
+
+        return sysDaInsert;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>generateFromUpdateRecordset</Name>
+				<Source><![CDATA[
+    public SysDaUpdateObject generateFromUpdateRecordset(Parser.UpdateRecordset _updateRecordset, RuntimeContext _runtimeContext)
+    {
+        Common common = _runtimeContext.ScopeHandler.CurrentScope.GetVar(_updateRecordset.TableVariableName);
+
+        tablesInQuery.add(_updateRecordset.TableVariableName);
+
+        SysDaUpdateObject sysDaUpdate = new SysDaUpdateObject(common);
+
+        // Join
+        if (_updateRecordset.Join != null)
+        {
+            sysDaUpdate.joinClause(this.getJoinKind(_updateRecordset.Join), this.generateFromQuery(_updateRecordset.Join.Select, _runtimeContext));
+        }
+
+        // Where
+        if (_updateRecordset.Where != null)
+        {
+            MXTXppQueryExpressionGenerator queryExpressionGenerator = new MXTXppQueryExpressionGenerator(_runtimeContext, tablesInQuery);
+            sysDaUpdate.whereClause(queryExpressionGenerator.visitExpression(_updateRecordset.Where.Expression));
+        }
+
+        // Settings
+        var settings = _updateRecordset.Settings.ToArray();
+        for (int i = 0; i < settings.Length; i++)
+        {
+            Parser.Data.Setting settingField = settings.GetValue(i);
+            MXTXppQueryExpressionGenerator queryExpressionGenerator = new MXTXppQueryExpressionGenerator(_runtimeContext, tablesInQuery);
+            sysDaUpdate.settingClause().add(settingField.FieldName, queryExpressionGenerator.visitExpression(settingField.Expression));
+        }
+
+        return sysDaUpdate;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>generateFromDeleteRecordset</Name>
+				<Source><![CDATA[
+    private SysDaDeleteObject generateFromDeleteRecordset(Parser.DeleteFrom _deleteFrom, RuntimeContext _runtimeContext)
+    {
+        Common common = _runtimeContext.ScopeHandler.CurrentScope.GetVar(_deleteFrom.TableVariableName);
+
+        tablesInQuery.add(_deleteFrom.TableVariableName);
+
+        SysDaQueryObject sysDaQuery = new SysDaQueryObject(common);
+
+        // Join
+        if (_deleteFrom.Join != null)
+        {
+            sysDaQuery.joinClause(this.getJoinKind(_deleteFrom.Join), this.generateFromQuery(_deleteFrom.Join.Select, _runtimeContext));
+        }
+
+        // Where
+        if (_deleteFrom.Where != null)
+        {
+            MXTXppQueryExpressionGenerator queryExpressionGenerator = new MXTXppQueryExpressionGenerator(_runtimeContext, tablesInQuery);
+            sysDaQuery.whereClause(queryExpressionGenerator.visitExpression(_deleteFrom.Where.Expression));
+        }
+
+        return new SysDaDeleteObject(sysDaQuery);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>generateFromQuery</Name>
+				<Source><![CDATA[
+    private SysDaQueryObject generateFromQuery(Parser.Data.Query _query, RuntimeContext _runtimeContext)
+    {
+        Common common = _runtimeContext.ScopeHandler.CurrentScope.GetVar(_query.TableVariableName);
+
+        tablesInQuery.add(_query.TableVariableName);
+
+        SysDaQueryObject sysDaQuery = new SysDaQueryObject(common);
+
+        sysDaQuery.firstFastHint = _query.FirstFast;
+        sysDaQuery.firstOnlyHint = this.getFirstOnlyHint(_query);
+        sysDaQuery.forceLiteralsHint = _query.ForceLiterals;
+        sysDaQuery.forceNestedLoopHint = _query.ForceNetsedLoops;
+        sysDaQuery.forcePlaceholdersHint = _query.ForcePlaceHolders;
+        sysDaQuery.forceSelectOrderHint = _query.ForceSelectOrder;
+        sysDaQuery.reverseHint = _query.Reverse;
+        sysDaQuery.forUpdateHint = _query.ForUpdate;
+        sysDaQuery.generateOnlyHint = _query.GenerateOnly;
+        sysDaQuery.optimisticLockHint = _query.OptimisticLock;
+        sysDaQuery.pessimisticLockHint = _query.PessimisticLock;
+        sysDaQuery.repeatablereadHint = _query.RepeatableRead;
+        sysDaQuery.noFetchHint = _query.NoFetch;
+
+        // Selection fields
+        if (_query.SelectionFields != null)
+        {
+            var selectionFields = _query.SelectionFields.ToArray();
+            for (int i = 0; i < selectionFields.Length; i++)
+            {
+                this.AddSelectionField(sysDaQuery.projection(), selectionFields.GetValue(i));
+            }
+
+        }
+
+        // Group by
+        if (_query.GroupFields != null)
+        {
+            var groupFields = _query.GroupFields.ToArray();
+            for (int i = 0; i < groupFields.Length; i++)
+            {
+                Parser.Data.Field field = groupFields.GetValue(i);
+
+                sysDaQuery.groupByClause().add(field.Name);
+            }
+        }
+
+        // Order by
+        if (_query.OrderFields != null)
+        {
+            var orderFields = _query.OrderFields.ToArray();
+            for (int i = 0; i < orderFields.Length; i++)
+            {
+                Parser.Data.OrderByField field = orderFields.GetValue(i);
+
+                if (field.OrderByDirection == Parser.Data.OrderByType::Ascending ||
+                    field.OrderByDirection == Parser.Data.OrderByType::Unespecified)
+                {
+                    sysDaQuery.orderByClause().add(field.Name);
+                }
+                else
+                {
+                    sysDaQuery.orderByClause().addDescending(field.Name);
+                }
+            }
+        }
+        
+        // Join
+        if (_query.Join != null)
+        {
+            sysDaQuery.joinClause(this.getJoinKind(_query.Join), this.generateFromQuery(_query.Join.Select, _runtimeContext));
+        }
+
+        // Where
+        if (_query.Where != null)
+        {
+            MXTXppQueryExpressionGenerator queryExpressionGenerator = new MXTXppQueryExpressionGenerator(_runtimeContext, tablesInQuery);
+            sysDaQuery.whereClause(queryExpressionGenerator.visitExpression(_query.Where.Expression));
+        }
+
+        return sysDaQuery;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getFirstOnlyHint</Name>
+				<Source><![CDATA[
+    private SysDaFirstOnlyHint getFirstOnlyHint(Parser.Data.Query _query)
+    {
+        if (_query.FirstOnly)
+        {
+            return SysDaFirstOnlyHint::FirstOnly1;
+        }
+        else if (_query.FirstOnly10)
+        {
+            return SysDaFirstOnlyHint::FirstOnly10;
+        }
+        else if (_query.FirstOnly100)
+        {
+            return SysDaFirstOnlyHint::FirstOnly100;
+        }
+        else if (_query.FirstOnly1000)
+        {
+            return SysDaFirstOnlyHint::FirstOnly1000;
+        }
+
+        return SysDaFirstOnlyHint::None;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>addSelectionField</Name>
+				<Source><![CDATA[
+    private void addSelectionField(SysDaSelection _selection, Parser.Data.SelectionField _selectionField)
+    {
+        switch (_selectionField.AggregateFunction)
+        {
+            case Parser.Data.AggregateFunction::Avg:
+                _selection.addAvg(_selectionField.Field.Name);
+                break;
+            case Parser.Data.AggregateFunction::Sum:
+                _selection.addSum(_selectionField.Field.Name);
+                break;
+            case Parser.Data.AggregateFunction::Count:
+                _selection.addCount(_selectionField.Field.Name);
+                break;
+            case Parser.Data.AggregateFunction::MaxOf:
+                _selection.addMax(_selectionField.Field.Name);
+                break;
+            case Parser.Data.AggregateFunction::MinOf:
+                _selection.addMin(_selectionField.Field.Name);
+                break;
+            case Parser.Data.AggregateFunction::None:
+                _selection.add(_selectionField.Field.Name);
+                break;
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getJoinKind</Name>
+				<Source><![CDATA[
+    private SysDaJoinKind getJoinKind(Parser.Data.Join _join)
+    {
+        switch (_join.JoinType)
+        {
+            case Parser.Data.JoinType::Regular: return SysDaJoinKind::InnerJoin;
+            case Parser.Data.JoinType::Outer: return SysDaJoinKind::OuterJoin;
+            case Parser.Data.JoinType::Exists: return SysDaJoinKind::ExistsJoin;
+            case Parser.Data.JoinType::NotExists: return SysDaJoinKind::NotExistsJoin;
+        }
+
+        throw new System.Exception("Invalid join type.");
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

@@ -50,9 +50,20 @@ internal final class MXTXppDataAccessProxy implements XppInterpreter.Interpreter
 			<Method>
 				<Name>CreateChangeCompanyHandler</Name>
 				<Source><![CDATA[
-    System.IDisposable CreateChangeCompanyHandler(System.String newCompany)
+    public System.IDisposable CreateChangeCompanyHandler(System.String newCompany)
     {
         return Microsoft.Dynamics.Ax.Xpp.PredefinedFunctions::changecompany(newCompany);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>Next</Name>
+				<Source><![CDATA[
+    public void Next(System.Object _common)
+    {
+        Common common = _common;
+        next common;
     }
 
 ]]></Source>

@@ -2,10 +2,10 @@
 
 namespace XppInterpreter.Interpreter.Query
 {
-    internal class QueryGenerationHelper
+    public class QueryGenerationHelper
     {
         private readonly RuntimeContext _context;
-        internal QueryGenerationHelper(RuntimeContext context)
+        public QueryGenerationHelper(RuntimeContext context)
         {
             _context = context;
         }
@@ -18,7 +18,7 @@ namespace XppInterpreter.Interpreter.Query
             return _context.Stack.Pop();
         }
 
-        internal object ComputeVariable(Parser.Variable variable)
+        public object ComputeVariable(Parser.Variable variable)
         {
             // Compile
             var generator = new Bytecode.ByteCodeGenerator();
@@ -28,7 +28,7 @@ namespace XppInterpreter.Interpreter.Query
             return Interpret(bytecode);
         }
 
-        internal object ComputeFunctionCall(Parser.FunctionCall functionCall)
+        public object ComputeFunctionCall(Parser.FunctionCall functionCall)
         {
             // Compile
             var generator = new Bytecode.ByteCodeGenerator();
@@ -38,7 +38,7 @@ namespace XppInterpreter.Interpreter.Query
             return Interpret(bytecode);
         }
 
-        internal object ComputeConstant(Parser.Constant constant)
+        public object ComputeConstant(Parser.Constant constant)
         {
             // Compile
             var generator = new Bytecode.ByteCodeGenerator();
