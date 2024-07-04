@@ -15,13 +15,6 @@ internal final class MXTXppDataAccessProxy implements XppInterpreter.Interpreter
 				<Source><![CDATA[
 	public void TtsBegin()
     {
-        switch (10)
-        {
-            case 10: break;
-            case 11: break;
-            default: {} {} break;
-        }
-
         ttsbegin;
     }
 
