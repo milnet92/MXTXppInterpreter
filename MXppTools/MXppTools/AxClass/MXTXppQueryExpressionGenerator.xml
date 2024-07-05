@@ -135,9 +135,9 @@ internal final class MXTXppQueryExpressionGenerator
 				<Source><![CDATA[
     private boolean isVariableTable(Parser.Variable _variable)
     {
-        if (_variable.Caller != null && _variable.Token is Lexer.Word)
+        if (_variable.Caller != null && _variable.Caller.Token is Lexer.Word)
         {
-            Lexer.Word word = _variable.Token;
+            Lexer.Word word = _variable.Caller.Token;
 
             return tablesInQuery.in(word.Lexeme);
         }
