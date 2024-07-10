@@ -7,7 +7,7 @@ This tool allows you to write, execute and debug X++ code directly in the browse
 ## Getting started
 1. Clone the repo
 2. Build the **MXppTools** package included and apply it to your environment
-3. Navigate to https://[YOU_ENVIRONMENT]/?mi=**MXTXppInterpreterRunner** and start writing your code
+3. Navigate to https://[YOU_ENVIRONMENT]/?mi=**MXTScriptEditor** and start writing your code
 
 # Interpreter
 This tool generates bytecode that is later interpreted directly during execution. The instructions that are interpreted are executed in native code using a series of proxies written in X++. That allows to simulate the execution *almost* exactly as native code would do it, without the need to compile.
