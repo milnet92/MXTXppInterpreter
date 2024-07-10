@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxForm xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns="Microsoft.Dynamics.AX.Metadata.V6">
+	<Name>MXTExecuteFormDialog</Name>
+	<SourceCode>
+		<Methods xmlns="">
+			<Method>
+				<Name>classDeclaration</Name>
+				<Source><![CDATA[
+[Form]
+public class MXTExecuteFormDialog extends FormRun
+{
+    MXTXppInterpreterParameters globalParameters = MXTXppInterpreterParameters::find();
+    MXTXppInterpreterScript     script;
+}
+]]></Source>
+			</Method>
+			<Method>
+				<Name>init</Name>
+				<Source><![CDATA[
+    /// <summary>
+    ///
+    /// </summary>
+    public void init()
+    {
+        script = this.args().record() as MXTXppInterpreterScript;
+
+        if (!script)
+        {
+            throw error(error::missingRecord(tableStr(MXTXppInterpreterScript)));
+        }
+
+        super();
+
+        EmitGlobalTtsAbort.checked(globalParameters.EmitGlobalTtsAbort);
+        MaxLoopIterations.value(globalParameters.MaxLoopIteratations);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>constructExecutionParameters</Name>
+				<Source><![CDATA[
+    internal MXTXppInterpreterParameters constructExecutionParameters()
+    {
+        MXTXppInterpreterParameters executionParameters;
+
+        executionParameters.EmitGlobalTtsAbort  = EmitGlobalTtsAbort.checked() ? NoYes::Yes : NoYes::No;
+        executionParameters.MaxLoopIteratations = MaxLoopIterations.value();
+
+        return executionParameters;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+		<DataSources xmlns="" />
+		<DataControls xmlns="">
+			<Control>
+				<Name>ExecuteNowButton</Name>
+				<Type>Button</Type>
+				<Methods>
+					<Method>
+						<Name>clicked</Name>
+						<Source><![CDATA[
+        /// <summary>
+        /// Add entity for export using the field
+        /// group to create source mapping
+        /// </summary>
+        public void clicked()
+        {
+            element.close();
+
+            MXTXppInterpreterExecutor::executeScript(script, element.constructExecutionParameters());
+        }
+
+]]></Source>
+					</Method>
+				</Methods>
+			</Control>
+			<Control>
+				<Name>ExecuteInbatchButton</Name>
+				<Type>Button</Type>
+				<Methods>
+					<Method>
+						<Name>clicked</Name>
+						<Source><![CDATA[
+        /// <summary>
+        /// Add entity for export using the field
+        /// group to create source mapping
+        /// </summary>
+        public void clicked()
+        {
+            MXTXppInterpreterExecutor::executeScriptInBatch(script);
+        }
+
+]]></Source>
+					</Method>
+				</Methods>
+			</Control>
+		</DataControls>
+		<Members xmlns="" />
+	</SourceCode>
+	<DataSources>
+		<AxFormDataSource xmlns="">
+			<Name>MXTXppInterpreterScript</Name>
+			<Table>MXTXppInterpreterScript</Table>
+			<Fields>
+				<AxFormDataSourceField>
+					<DataField>CreatedBy</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>CreatedDateTime</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>Description</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>ModifiedBy</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>ModifiedDateTime</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>Partition</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>RecId</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>SourceCode</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>TableId</DataField>
+				</AxFormDataSourceField>
+			</Fields>
+			<ReferencedDataSources />
+			<DataSourceLinks />
+			<DerivedDataSources />
+		</AxFormDataSource>
+	</DataSources>
+	<Design>
+		<DefaultAction xmlns="">OkButton</DefaultAction>
+		<Pattern xmlns="">Custom</Pattern>
+		<UseCaptionFromMenuItem xmlns="">Yes</UseCaptionFromMenuItem>
+		<ViewEditMode xmlns="">Edit</ViewEditMode>
+		<WindowType xmlns="">Popup</WindowType>
+		<Controls xmlns="">
+			<AxFormControl xmlns=""
+				i:type="AxFormGroupControl">
+				<Name>ColumnGroup</Name>
+				<AutoDeclaration>Yes</AutoDeclaration>
+				<Type>Group</Type>
+				<WidthMode>SizeToAvailable</WidthMode>
+				<FormControlExtension
+					i:nil="true" />
+				<Controls>
+					<AxFormControl xmlns=""
+						i:type="AxFormGroupControl">
+						<Name>ExecuteOptionsGroup</Name>
+						<Type>Group</Type>
+						<FormControlExtension
+							i:nil="true" />
+						<Controls>
+							<AxFormControl xmlns=""
+								i:type="AxFormCheckBoxControl">
+								<Name>EmitGlobalTtsAbort</Name>
+								<AutoDeclaration>Yes</AutoDeclaration>
+								<Type>CheckBox</Type>
+								<FormControlExtension
+									i:nil="true" />
+								<Label>@MXT:GlobalTtsAbort</Label>
+							</AxFormControl>
+							<AxFormControl xmlns=""
+								i:type="AxFormIntegerControl">
+								<Name>MaxLoopIterations</Name>
+								<AutoDeclaration>Yes</AutoDeclaration>
+								<Type>Integer</Type>
+								<FormControlExtension
+									i:nil="true" />
+								<Label>@MXT:MaxLoopIterations</Label>
+							</AxFormControl>
+						</Controls>
+						<Caption>@MXT:ExecutionParameters</Caption>
+					</AxFormControl>
+				</Controls>
+				<Columns>2</Columns>
+				<Style>DialogContent</Style>
+			</AxFormControl>
+			<AxFormControl xmlns=""
+				i:type="AxFormButtonGroupControl">
+				<Name>FormButtonGroup</Name>
+				<Type>ButtonGroup</Type>
+				<WidthMode>SizeToAvailable</WidthMode>
+				<FormControlExtension
+					i:nil="true" />
+				<Controls>
+					<AxFormControl xmlns=""
+						i:type="AxFormButtonControl">
+						<Name>ExecuteNowButton</Name>
+						<AutoDeclaration>Yes</AutoDeclaration>
+						<Type>Button</Type>
+						<FormControlExtension
+							i:nil="true" />
+						<Text>@MXT:Execute</Text>
+					</AxFormControl>
+					<AxFormControl xmlns=""
+						i:type="AxFormButtonControl">
+						<Name>ExecuteInbatchButton</Name>
+						<AutoDeclaration>Yes</AutoDeclaration>
+						<Type>Button</Type>
+						<FormControlExtension
+							i:nil="true" />
+						<Text>@MXT:Schedule</Text>
+					</AxFormControl>
+					<AxFormControl xmlns=""
+						i:type="AxFormCommandButtonControl">
+						<Name>OkButton</Name>
+						<Type>CommandButton</Type>
+						<FormControlExtension
+							i:nil="true" />
+						<Command>OK</Command>
+						<Text>@SYS301990</Text>
+					</AxFormControl>
+				</Controls>
+				<ArrangeMethod>HorizontalRight</ArrangeMethod>
+				<Style>DialogCommitContainer</Style>
+			</AxFormControl>
+		</Controls>
+	</Design>
+	<Parts />
+</AxForm>

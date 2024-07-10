@@ -1,0 +1,415 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxForm xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns="Microsoft.Dynamics.AX.Metadata.V6">
+	<Name>MXTScriptViewDependencies</Name>
+	<SourceCode>
+		<Methods xmlns="">
+			<Method>
+				<Name>classDeclaration</Name>
+				<Source><![CDATA[
+[Form]
+public class MXTScriptViewDependencies extends FormRun
+{
+    private const int CONTEXTMENU_CREATE = 1;
+    private const int CONTEXTMENU_DELETE = 2;
+
+    MXTXppInterpreterScript callerScript;
+
+}
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>init</Name>
+				<Source><![CDATA[
+    /// <summary>
+    ///
+    /// </summary>
+    public void init()
+    {
+        if (this.args().dataset() == tableNum(MXTXppInterpreterScript))
+        {
+            callerScript = this.args().record();
+        }
+
+        super();
+
+        this.buildDependencyTree();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>buildDependencyTree</Name>
+				<Source><![CDATA[
+    private void buildDependencyTree()
+    {
+        var itemIdx = SysFormTreeControl::addTreeItem(
+            Tree, 
+            strFmt("%1 - %2", callerScript.Description, callerScript.RecId), 
+            FormTreeAdd::Root, 
+            callerScript.RecId);
+
+        Tree.getItem(itemIdx).stateBold(true);
+
+        this.addNodes(itemIdx, callerScript.RecId);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>addNodes</Name>
+				<Source><![CDATA[
+    private void addNodes(TreeItemIdx _parentItemIdx, RecId _parentScriptId)
+    {
+        MXTXppInterpreterScriptDependency dependency;
+        MXTXppInterpreterScript           script;
+
+        while select dependency
+            where dependency.ScriptId == _parentScriptId
+        join script
+            where script.RecId == dependency.ReferenceScriptId
+        {
+            var itemIdx = SysFormTreeControl::addTreeItem(
+                Tree,
+                strFmt("%1 - %2", script.Description, script.RecId),
+                _parentItemIdx, 
+                script.RecId);
+
+            this.addNodes(itemIdx, script.RecId);
+        }
+
+        SysFormTreeControl::expandTree(Tree, _parentItemIdx);
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+		<DataSources xmlns="" />
+		<DataControls xmlns="">
+			<Control>
+				<Name>Tree</Name>
+				<Type>Tree</Type>
+				<Methods>
+					<Method>
+						<Name>getContextMenuOptions</Name>
+						<Source><![CDATA[
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
+        public str getContextMenuOptions()
+        {
+            str ret;
+            int idx;
+            ContextMenu menu = new ContextMenu();
+            ret = super();
+            
+            idx = this.getSelection();
+
+            if(idx)
+            {
+                Tree.select(idx);
+                List menuOptions = new List(Types::Class);
+
+                menuOptions.addEnd(ContextMenuOption::Create("Add dependency", CONTEXTMENU_CREATE));
+
+                if (idx != FormTreeAdd::Root)
+                {
+                    menuOptions.addEnd(ContextMenuOption::Create("Delete dependency", CONTEXTMENU_DELETE));
+                }
+
+                menu.ContextMenuOptions(menuOptions);
+            }
+
+            menu.OverrideSystemMenu(true);
+
+            return menu.Serialize();
+        }
+
+]]></Source>
+					</Method>
+					<Method>
+						<Name>selectedMenuOption</Name>
+						<Source><![CDATA[
+        public void selectedMenuOption(int selectedOption)
+        {
+            int action = selectedOption;
+            int idx = this.getSelection();
+
+            switch (action)
+            {
+                case CONTEXTMENU_CREATE:
+                    break;
+
+                case CONTEXTMENU_DELETE:
+                    break;
+            }
+        }
+
+]]></Source>
+					</Method>
+					<Method>
+						<Name>selectionChanged</Name>
+						<Source><![CDATA[
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name = "_OldItem"></param>
+        /// <param name = "_NewItem"></param>
+        /// <param name = "_how"></param>
+        public void selectionChanged(FormTreeItem _OldItem, FormTreeItem _NewItem, FormTreeSelect _how)
+        {
+            super(_OldItem, _NewItem, _how);
+
+            if (_NewItem)
+            {
+                var selecterScript = MXTXppInterpreterScript::find(_NewItem.data());
+
+                //CodeEditor.sourceCode(selecterScript.SourceCode);
+            }
+        }
+
+]]></Source>
+					</Method>
+				</Methods>
+			</Control>
+		</DataControls>
+		<Members xmlns="" />
+	</SourceCode>
+	<DataSources />
+	<Design>
+		<Pattern xmlns="">Custom</Pattern>
+		<Controls xmlns="">
+			<AxFormControl xmlns=""
+				i:type="AxFormGroupControl">
+				<Name>SplitterGroup</Name>
+				<AutoDeclaration>Yes</AutoDeclaration>
+				<ElementPosition>1073741822</ElementPosition>
+				<FilterExpression>%1</FilterExpression>
+				<Height>0</Height>
+				<HeightMode>SizeToAvailable</HeightMode>
+				<Type>Group</Type>
+				<VerticalSpacing>-1</VerticalSpacing>
+				<Width>5</Width>
+				<WidthMode>Manual</WidthMode>
+				<FormControlExtension
+					i:nil="true" />
+				<Controls />
+				<AlignChild>No</AlignChild>
+				<ArrangeMethod>Auto</ArrangeMethod>
+				<HideIfEmpty>No</HideIfEmpty>
+				<BackgroundColor>WindowBackground</BackgroundColor>
+				<Style>SplitterVerticalContainer</Style>
+			</AxFormControl>
+			<AxFormControl xmlns=""
+				i:type="AxFormTabControl">
+				<Name>DetailsTab</Name>
+				<AlignControl>No</AlignControl>
+				<AutoDeclaration>Yes</AutoDeclaration>
+				<ElementPosition>1610612733</ElementPosition>
+				<FilterExpression>%1</FilterExpression>
+				<Height>0</Height>
+				<Type>Tab</Type>
+				<VerticalSpacing>-1</VerticalSpacing>
+				<Width>0</Width>
+				<FormControlExtension
+					i:nil="true" />
+				<Controls>
+					<AxFormControl xmlns=""
+						i:type="AxFormTabPageControl">
+						<Name>EmptyPage</Name>
+						<AutoDeclaration>Yes</AutoDeclaration>
+						<ElementPosition>858993458</ElementPosition>
+						<FilterExpression>%1</FilterExpression>
+						<HeightMode>Auto</HeightMode>
+						<Type>TabPage</Type>
+						<VerticalSpacing>-1</VerticalSpacing>
+						<WidthMode>Auto</WidthMode>
+						<FormControlExtension
+							i:nil="true" />
+						<Controls />
+						<ArrangeMethod>Auto</ArrangeMethod>
+						<Columns>-1</Columns>
+						<ColumnsMode>Fill</ColumnsMode>
+						<HideIfEmpty>No</HideIfEmpty>
+						<Caption>@SYS40780</Caption>
+						<Scrollbars>Auto</Scrollbars>
+						<ViewEditMode>Edit</ViewEditMode>
+					</AxFormControl>
+					<AxFormControl xmlns=""
+						i:type="AxFormTabPageControl">
+						<Name>SourceCodePage</Name>
+						<Type>TabPage</Type>
+						<FormControlExtension
+							i:nil="true" />
+						<Controls>
+							<AxFormControl>
+								<Name>CodeEditor</Name>
+								<AllowEdit>No</AllowEdit>
+								<AutoDeclaration>Yes</AutoDeclaration>
+								<Height>300</Height>
+								<HeightMode>Manual</HeightMode>
+								<Width>500</Width>
+								<WidthMode>Manual</WidthMode>
+								<FormControlExtension>
+									<Name>MXTXppInterpreterCodeEditorControl</Name>
+									<ExtensionComponents />
+									<ExtensionProperties>
+										<AxFormControlExtensionProperty>
+											<Name>SourceCode</Name>
+											<Type>String</Type>
+										</AxFormControlExtensionProperty>
+										<AxFormControlExtensionProperty>
+											<Name>Language</Name>
+											<Type>Enum</Type>
+											<TypeName>MXTXppInterpreterEditorLanguage</TypeName>
+											<Value>Xpp</Value>
+										</AxFormControlExtensionProperty>
+									</ExtensionProperties>
+								</FormControlExtension>
+							</AxFormControl>
+						</Controls>
+					</AxFormControl>
+				</Controls>
+				<AlignChild>No</AlignChild>
+				<HideIfEmpty>No</HideIfEmpty>
+				<ShowTabs>No</ShowTabs>
+				<TabAutoChange>No</TabAutoChange>
+			</AxFormControl>
+			<AxFormControl xmlns=""
+				i:type="AxFormActionPaneControl">
+				<Name>ActionPane_ConditionalSettingButtonGroup</Name>
+				<AutoDeclaration>Yes</AutoDeclaration>
+				<HeightMode>Auto</HeightMode>
+				<Type>ActionPane</Type>
+				<Visible>No</Visible>
+				<FormControlExtension
+					i:nil="true" />
+				<Controls />
+			</AxFormControl>
+			<AxFormControl xmlns=""
+				i:type="AxFormTreeControl">
+				<Name>Tree</Name>
+				<AutoDeclaration>Yes</AutoDeclaration>
+				<DragDrop>Manual</DragDrop>
+				<ElementPosition>536870911</ElementPosition>
+				<FilterExpression>%1</FilterExpression>
+				<Height>0</Height>
+				<HeightMode>SizeToAvailable</HeightMode>
+				<Type>Tree</Type>
+				<VerticalSpacing>-1</VerticalSpacing>
+				<Width>0</Width>
+				<FormControlExtension
+					i:nil="true" />
+			</AxFormControl>
+			<AxFormControl xmlns=""
+				i:type="AxFormGroupControl">
+				<Name>SplitterGroupCopy1</Name>
+				<AutoDeclaration>Yes</AutoDeclaration>
+				<ElementPosition>1073741822</ElementPosition>
+				<FilterExpression>%1</FilterExpression>
+				<Height>0</Height>
+				<HeightMode>SizeToAvailable</HeightMode>
+				<Type>Group</Type>
+				<VerticalSpacing>-1</VerticalSpacing>
+				<Width>5</Width>
+				<WidthMode>Manual</WidthMode>
+				<FormControlExtension
+					i:nil="true" />
+				<Controls />
+				<AlignChild>No</AlignChild>
+				<ArrangeMethod>Auto</ArrangeMethod>
+				<HideIfEmpty>No</HideIfEmpty>
+				<BackgroundColor>WindowBackground</BackgroundColor>
+				<Style>SplitterVerticalContainer</Style>
+			</AxFormControl>
+			<AxFormControl xmlns=""
+				i:type="AxFormTabControl">
+				<Name>DetailsTabCopy1</Name>
+				<AlignControl>No</AlignControl>
+				<AutoDeclaration>Yes</AutoDeclaration>
+				<ElementPosition>1610612733</ElementPosition>
+				<FilterExpression>%1</FilterExpression>
+				<Height>0</Height>
+				<Type>Tab</Type>
+				<VerticalSpacing>-1</VerticalSpacing>
+				<Width>0</Width>
+				<FormControlExtension
+					i:nil="true" />
+				<Controls>
+					<AxFormControl xmlns=""
+						i:type="AxFormTabPageControl">
+						<Name>EmptyPageCopy1</Name>
+						<AutoDeclaration>Yes</AutoDeclaration>
+						<ElementPosition>858993458</ElementPosition>
+						<FilterExpression>%1</FilterExpression>
+						<HeightMode>Auto</HeightMode>
+						<Type>TabPage</Type>
+						<VerticalSpacing>-1</VerticalSpacing>
+						<WidthMode>Auto</WidthMode>
+						<FormControlExtension
+							i:nil="true" />
+						<Controls />
+						<ArrangeMethod>Auto</ArrangeMethod>
+						<Columns>-1</Columns>
+						<ColumnsMode>Fill</ColumnsMode>
+						<HideIfEmpty>No</HideIfEmpty>
+						<Caption>@SYS40780</Caption>
+						<Scrollbars>Auto</Scrollbars>
+						<ViewEditMode>Edit</ViewEditMode>
+					</AxFormControl>
+					<AxFormControl xmlns=""
+						i:type="AxFormTabPageControl">
+						<Name>DocInstancePage</Name>
+						<AutoDeclaration>Yes</AutoDeclaration>
+						<ElementPosition>1288490187</ElementPosition>
+						<FilterExpression>%1</FilterExpression>
+						<HeightMode>Auto</HeightMode>
+						<Type>TabPage</Type>
+						<VerticalSpacing>-1</VerticalSpacing>
+						<WidthMode>Auto</WidthMode>
+						<FormControlExtension
+							i:nil="true" />
+						<Controls>
+							<AxFormControl xmlns=""
+								i:type="AxFormGroupControl">
+								<Name>DocInstanceIdGroup</Name>
+								<AutoDeclaration>Yes</AutoDeclaration>
+								<ElementPosition>1073741822</ElementPosition>
+								<FilterExpression>%1</FilterExpression>
+								<HeightMode>Auto</HeightMode>
+								<Type>Group</Type>
+								<VerticalSpacing>-1</VerticalSpacing>
+								<Width>0</Width>
+								<WidthMode>SizeToAvailable</WidthMode>
+								<FormControlExtension
+									i:nil="true" />
+								<Controls>
+									<AxFormControl xmlns=""
+										i:type="AxFormStringControl">
+										<Name>FormStringControl1</Name>
+										<Type>String</Type>
+										<FormControlExtension
+											i:nil="true" />
+										<Text>test</Text>
+									</AxFormControl>
+								</Controls>
+								<ArrangeMethod>Auto</ArrangeMethod>
+								<Caption>@SYS109703</Caption>
+							</AxFormControl>
+						</Controls>
+						<ArrangeMethod>Auto</ArrangeMethod>
+						<Caption>@BI:Instance</Caption>
+						<Scrollbars>Auto</Scrollbars>
+						<ViewEditMode>Edit</ViewEditMode>
+					</AxFormControl>
+				</Controls>
+				<AlignChild>No</AlignChild>
+				<HideIfEmpty>No</HideIfEmpty>
+				<ShowTabs>No</ShowTabs>
+				<TabAutoChange>No</TabAutoChange>
+			</AxFormControl>
+		</Controls>
+	</Design>
+	<Parts />
+</AxForm>

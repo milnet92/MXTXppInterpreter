@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppExportScriptHelper</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+internal final class MXTXppExportScriptHelper
+{
+    private const str CLASS_TEMPLATE = @'<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+    <Name>%class_name%</Name>
+    <SourceCode>
+        <Declaration><![CDATA[
+internal final class %class_name%
+{
+}
+]]]]><![CDATA[></Declaration>
+        <Methods>
+            <Method>
+                <Name>main</Name>
+                <Source><![CDATA[
+    /// <summary>
+    /// This class was automatically generated from MXT X++ Interpreter
+    /// from script "%script_name%" at %script_date%
+    /// </summary>
+    /// <param name = "_args">The specified arguments.</param>
+    public static void main(Args _args)
+    {
+%code%
+    }
+
+]]]]><![CDATA[></Source>
+            </Method>
+        </Methods>
+    </SourceCode>
+</AxClass>
+';
+
+    private const str CODE_PLACEHOLDER = '%code%';
+    private const str NAME_PLACEHOLDER = '%class_name%';
+    private const str SCRIPTNAME_PLACEHOLDER = '%script_name%';
+    private const str DATE_PLACEHOLDER = '%script_date%';
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>exportAsXpp</Name>
+				<Source><![CDATA[
+	public static void exportAsXpp(MXTXppInterpreterScript _script)
+    {
+        // Get the name for the form
+        str className = MXTXppExportScriptHelper::getUserClassName();
+
+        if (className)
+        {
+            str sourceCode = CLASS_TEMPLATE;
+            
+            sourceCode = strReplace(sourceCode, NAME_PLACEHOLDER, className);
+            sourceCode = strReplace(sourceCode, SCRIPTNAME_PLACEHOLDER, _script.Description);
+            sourceCode = strReplace(sourceCode, DATE_PLACEHOLDER, datetime2Str(DateTimeUtil::getSystemDateTime()));
+
+            // Since the code is inside the main method we need to add 
+            // tabs for indentetion
+            List scriptLines = strSplit(_script.SourceCode, '\n');
+            ListEnumerator enumerator = scriptLines.getEnumerator();
+            str scriptCode = "";
+            int cnt = 0;
+            while (enumerator.moveNext())
+            {
+                cnt ++;
+                scriptCode += "\t\t" + enumerator.current();
+
+                if (cnt < scriptLines.elements())
+                {
+                    scriptCode += '\n';
+                }
+            }
+
+            sourceCode = strReplace(sourceCode, CODE_PLACEHOLDER, scriptCode);
+
+            File::SendStringAsFileToUser(sourceCode, className + ".xml");
+        }
+	}
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getUserClassName</Name>
+				<Source><![CDATA[
+    private static str getUserClassName()
+    {
+        Dialog      dialog = new Dialog("@MXT:DownloadAsXml");
+        DialogField nameField = dialog.addField(identifierStr(Name), "@MXT:ClassName");
+
+        if (dialog.run())
+        {
+            return nameField.value();
+        }
+
+        return "";
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

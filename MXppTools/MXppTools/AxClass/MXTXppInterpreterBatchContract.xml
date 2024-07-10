@@ -6,7 +6,9 @@
 [DataContract]
 internal final class MXTXppInterpreterBatchContract
 {
-    MXTSourceCode sourceCode;
+    private MXTSourceCode sourceCode;
+    private int maxLoopIterations;
+    private NoYesId emitGlobalTtsAbort;
 
 }
 ]]></Declaration>
@@ -21,6 +23,32 @@ internal final class MXTXppInterpreterBatchContract
         sourceCode = _sourceCode;
 
         return sourceCode;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmMaxLoopIterations</Name>
+				<Source><![CDATA[
+    [DataMember,
+     SysOperationLabel(literalStr("@MXT:MaxLoopIterations"))]
+    public int parmMaxLoopIterations(int _maxLoopIterations = maxLoopIterations)
+    {
+        maxLoopIterations = _maxLoopIterations;
+        return maxLoopIterations;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmEmitGlobalTtsAbort</Name>
+				<Source><![CDATA[
+    [DataMember,
+     SysOperationLabel(literalStr("@MXT:GlobalTtsAbort"))]
+    public NoYesId parmEmitGlobalTtsAbort(NoYesId _emitGlobalTtsAbort = emitGlobalTtsAbort)
+    {
+        emitGlobalTtsAbort = _emitGlobalTtsAbort;
+        return emitGlobalTtsAbort;
     }
 
 ]]></Source>

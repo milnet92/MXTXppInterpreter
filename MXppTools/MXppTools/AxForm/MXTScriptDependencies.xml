@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxForm xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns="Microsoft.Dynamics.AX.Metadata.V6">
+	<Name>MXTScriptDependencies</Name>
+	<SourceCode>
+		<Methods xmlns="">
+			<Method>
+				<Name>classDeclaration</Name>
+				<Source><![CDATA[
+[Form]
+public class MXTScriptDependencies extends FormRun
+{
+    MXTXppInterpreterScript callerScript;
+
+}
+]]></Source>
+			</Method>
+			<Method>
+				<Name>init</Name>
+				<Source><![CDATA[
+    /// <summary>
+    ///
+    /// </summary>
+    public void init()
+    {
+        if (this.args().dataset() != tableNum(MXTXppInterpreterScript))
+        {
+            throw error(Error::missingRecord(tableStr(MXTXppInterpreterScript)));
+        }
+
+        callerScript = this.args().record();
+
+        super();
+
+        this.design().caption(strFmt("@MXT:DependenciesCaption", callerScript.Description));
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+		<DataSources xmlns="">
+			<DataSource>
+				<Name>MXTXppInterpreterScriptDependency</Name>
+				<Methods>
+					<Method>
+						<Name>init</Name>
+						<Source><![CDATA[
+        /// <summary>
+        ///
+        /// </summary>
+        public void init()
+        {
+            super();
+
+            this.queryBuildDataSource().addRange(fieldNum(MXTXppInterpreterScriptDependency, ScriptId)).value(SysQuery::value(callerScript.RecId));
+        }
+
+]]></Source>
+					</Method>
+				</Methods>
+				<Fields />
+			</DataSource>
+		</DataSources>
+		<DataControls xmlns="">
+			<Control>
+				<Name>MXTXppInterpreterScriptDependency_ReferenceScriptId</Name>
+				<Type>Int64</Type>
+				<Methods>
+					<Method>
+						<Name>lookup</Name>
+						<Source><![CDATA[
+        /// <summary>
+        ///
+        /// </summary>
+        public void lookup()
+        {
+            Query query = new Query();
+            SysTableLookup sysTableLookup = SysTableLookup::newParameters(tableNum(MXTXppInterpreterScript), this);
+
+            sysTableLookup.addLookupField(fieldNum(MXTXppInterpreterScript, RecId));
+            sysTableLookup.addLookupField(fieldNum(MXTXppInterpreterScript, Description));
+
+            QueryBuildDataSource qbds = query.addDataSource(tableNum(MXTXppInterpreterScript));
+            qbds.addRange(fieldNum(MXTXppInterpreterScript, RecId)).value(SysQuery::valueNot(callerScript.RecId));
+
+            QueryBuildDataSource qbdsDependency = qbds.addDataSource(tableNum(MXTXppInterpreterScriptDependency));
+
+            qbdsDependency.joinMode(JoinMode::NoExistsJoin);
+            qbdsDependency.addLink(fieldNum(MXTXppInterpreterScript, RecId), fieldNum(MXTXppInterpreterScriptDependency, ReferenceScriptId));
+            qbdsDependency.addRange(fieldNum(MXTXppInterpreterScriptDependency, ScriptId)).value(SysQuery::value(callerScript.RecId));
+
+            sysTableLookup.parmQuery(query);
+            sysTableLookup.performFormLookup();
+        }
+
+]]></Source>
+					</Method>
+				</Methods>
+			</Control>
+		</DataControls>
+		<Members xmlns="" />
+	</SourceCode>
+	<DataSources>
+		<AxFormDataSource xmlns="">
+			<Name>MXTXppInterpreterScriptDependency</Name>
+			<Table>MXTXppInterpreterScriptDependency</Table>
+			<Fields>
+				<AxFormDataSourceField>
+					<DataField>Partition</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>RecId</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>ReferenceScriptId</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>ScriptId</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>TableId</DataField>
+				</AxFormDataSourceField>
+			</Fields>
+			<ReferencedDataSources />
+			<InsertAtEnd>No</InsertAtEnd>
+			<InsertIfEmpty>No</InsertIfEmpty>
+			<DataSourceLinks />
+			<DerivedDataSources />
+		</AxFormDataSource>
+	</DataSources>
+	<Design>
+		<Pattern xmlns="">Custom</Pattern>
+		<Style xmlns="">SimpleList</Style>
+		<Controls xmlns="">
+			<AxFormControl xmlns=""
+				i:type="AxFormActionPaneControl">
+				<Name>FormActionPaneControl1</Name>
+				<Type>ActionPane</Type>
+				<FormControlExtension
+					i:nil="true" />
+				<Controls>
+					<AxFormControl xmlns=""
+						i:type="AxFormButtonGroupControl">
+						<Name>FormButtonGroupControl1</Name>
+						<Type>ButtonGroup</Type>
+						<FormControlExtension
+							i:nil="true" />
+						<Controls />
+					</AxFormControl>
+				</Controls>
+			</AxFormControl>
+			<AxFormControl xmlns=""
+				i:type="AxFormGridControl">
+				<Name>FormGridControl1</Name>
+				<Type>Grid</Type>
+				<FormControlExtension
+					i:nil="true" />
+				<Controls>
+					<AxFormControl xmlns=""
+						i:type="AxFormInt64Control">
+						<Name>MXTXppInterpreterScriptDependency_ReferenceScriptId</Name>
+						<Type>Int64</Type>
+						<FormControlExtension
+							i:nil="true" />
+						<DataField>ReferenceScriptId</DataField>
+						<DataSource>MXTXppInterpreterScriptDependency</DataSource>
+						<LookupButton>Always</LookupButton>
+					</AxFormControl>
+					<AxFormControl xmlns=""
+						i:type="AxFormStringControl">
+						<Name>ScriptDescription</Name>
+						<Type>String</Type>
+						<FormControlExtension
+							i:nil="true" />
+						<DataMethod>scriptName</DataMethod>
+						<DataSource>MXTXppInterpreterScriptDependency</DataSource>
+					</AxFormControl>
+				</Controls>
+				<Style>Tabular</Style>
+			</AxFormControl>
+		</Controls>
+	</Design>
+	<Parts />
+</AxForm>

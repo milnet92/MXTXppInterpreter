@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppScriptDependencyManager</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+internal final class MXTXppScriptDependencyManager
+{
+    RefRecId scriptId;
+    
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>new</Name>
+				<Source><![CDATA[
+    void new(RefRecId _scriptId)
+    {
+        this.scriptId = _scriptId;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateCircularDependencies</Name>
+				<Source><![CDATA[
+    public void validateCircularDependencies()
+    {
+        this.validateCircularDependenciesInternal(this.scriptId);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateCircularDependenciesInternal</Name>
+				<Source><![CDATA[
+    private void validateCircularDependenciesInternal(RefRecId _scriptId, container _dependencies = conNull())
+    {
+        MXTXppInterpreterScriptDependency dependency;
+        MXTXppInterpreterScript           referenceScript;
+
+        container dependencies = _dependencies + [dependency.ReferenceScriptId];
+
+        while select ReferenceScriptId from dependency
+            index ScriptId
+            where dependency.ScriptId == _scriptId
+        join Description from referenceScript
+            where referenceScript.RecId == dependency.ReferenceScriptId
+        {
+            if (conFind(_dependencies, dependency.ReferenceScriptId))
+            {
+                MXTXppInterpreterScript script = MXTXppInterpreterScript::find(this.scriptId);
+
+                throw Error(strFmt("Dependency found between script %1 and %2", script.Description, referenceScript.Description));
+            }
+
+            this.validateCircularDependenciesInternal(dependency.ReferenceScriptId, dependencies);
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parseDependencies</Name>
+				<Source><![CDATA[
+    public static XppInterpreter.Interpreter.XppInterpreterDependencyCollection parseDependencies(RecId _scriptId)
+    {
+        XppInterpreter.Interpreter.XppInterpreterDependencyCollection dependencies = new XppInterpreter.Interpreter.XppInterpreterDependencyCollection();
+        MXTXppScriptDependencyManager::parseDependenciesInternal(_scriptId, dependencies);
+        return dependencies;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parseDependenciesInternal</Name>
+				<Source><![CDATA[
+    private static void parseDependenciesInternal(RecId _scriptId, XppInterpreter.Interpreter.XppInterpreterDependencyCollection _dependencies)
+    {
+        MXTXppInterpreterScriptDependency dependency;
+        MXTXppInterpreterScript           script;
+
+        while select script
+        exists join dependency
+            where dependency.ScriptId               == _scriptId &&
+                  dependency.ReferenceScriptId      == script.RecId
+        {
+            MXTXppScriptDependencyManager::parseDependenciesInternal(script.RecId, _dependencies);
+            XppInterpreter.Parser.Program dependencyProgram = MXTXppInterpreterExecutor::parse(script.SourceCode);
+
+            _dependencies.Add(dependencyProgram);
+        }
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

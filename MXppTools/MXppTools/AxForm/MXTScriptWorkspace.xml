@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxForm xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns="Microsoft.Dynamics.AX.Metadata.V6">
+	<Name>MXTScriptWorkspace</Name>
+	<SourceCode>
+		<Methods xmlns="">
+			<Method>
+				<Name>classDeclaration</Name>
+				<Source><![CDATA[
+[Form]
+public class MXTScriptWorkspace extends FormRun
+{
+}
+]]></Source>
+			</Method>
+		</Methods>
+		<DataSources xmlns="" />
+		<DataControls xmlns="">
+			<Control>
+				<Name>AllScripts</Name>
+				<Type>TabPage</Type>
+				<Methods>
+					<Method>
+						<Name>pageActivated</Name>
+						<Source><![CDATA[
+        public void pageActivated()
+        {
+            super();
+
+            AllScriptsFormPart.refresh();
+        }
+
+]]></Source>
+					</Method>
+				</Methods>
+			</Control>
+		</DataControls>
+		<Members xmlns="" />
+	</SourceCode>
+	<DataSources />
+	<Design>
+		<Caption xmlns="">@MXT:MXTWorkspace</Caption>
+		<Pattern xmlns="">WorkspaceOperational</Pattern>
+		<PatternVersion xmlns="">1.1</PatternVersion>
+		<ShowDeleteButton xmlns="">No</ShowDeleteButton>
+		<ShowNewButton xmlns="">No</ShowNewButton>
+		<Style xmlns="">Workspace</Style>
+		<ViewEditMode xmlns="">View</ViewEditMode>
+		<Controls xmlns="">
+			<AxFormControl xmlns=""
+				i:type="AxFormTabControl">
+				<Name>PanaromaTab</Name>
+				<AutoDeclaration>Yes</AutoDeclaration>
+				<ExtendedStyle>tab_simpleFastTab</ExtendedStyle>
+				<Type>Tab</Type>
+				<FormControlExtension
+					i:nil="true" />
+				<Controls>
+					<AxFormControl xmlns=""
+						i:type="AxFormTabPageControl">
+						<Name>GeneralTabPage</Name>
+						<AutoDeclaration>Yes</AutoDeclaration>
+						<ExtendedStyle>workspace_tileLayout</ExtendedStyle>
+						<HeightMode>Auto</HeightMode>
+						<Pattern>SectionTiles</Pattern>
+						<PatternVersion>1.1</PatternVersion>
+						<Type>TabPage</Type>
+						<WidthMode>Auto</WidthMode>
+						<FormControlExtension
+							i:nil="true" />
+						<Controls>
+							<AxFormControl xmlns=""
+								i:type="AxFormMenuFunctionButtonControl">
+								<Name>OpenEditor</Name>
+								<Type>MenuFunctionButton</Type>
+								<FormControlExtension>
+									<Name>TileButtonControl</Name>
+									<ExtensionComponents />
+									<ExtensionProperties>
+										<AxFormControlExtensionProperty>
+											<Name>tile</Name>
+											<Type>String</Type>
+											<Value>MXTScriptEditorTile</Value>
+										</AxFormControlExtensionProperty>
+										<AxFormControlExtensionProperty>
+											<Name>tileDisplay</Name>
+											<Type>Enum</Type>
+											<TypeName>TileDisplay</TypeName>
+											<Value>TextAndImage</Value>
+										</AxFormControlExtensionProperty>
+									</ExtensionProperties>
+								</FormControlExtension>
+								<CopyCallerQuery>No</CopyCallerQuery>
+								<NormalImage>Draft</NormalImage>
+								<OpenMode>New</OpenMode>
+								<Text>@MXT:Editor</Text>
+							</AxFormControl>
+							<AxFormControl xmlns=""
+								i:type="AxFormMenuFunctionButtonControl">
+								<Name>NewScript</Name>
+								<Type>MenuFunctionButton</Type>
+								<FormControlExtension>
+									<Name>TileButtonControl</Name>
+									<ExtensionComponents />
+									<ExtensionProperties>
+										<AxFormControlExtensionProperty>
+											<Name>tile</Name>
+											<Type>String</Type>
+											<Value>MXTNewScriptTile</Value>
+										</AxFormControlExtensionProperty>
+										<AxFormControlExtensionProperty>
+											<Name>tileDisplay</Name>
+											<Type>Enum</Type>
+											<TypeName>TileDisplay</TypeName>
+											<Value>TextAndImage</Value>
+										</AxFormControlExtensionProperty>
+									</ExtensionProperties>
+								</FormControlExtension>
+								<NormalImage>DevelopmentAndTesting</NormalImage>
+								<OpenMode>New</OpenMode>
+								<Text>@MXT:Script</Text>
+							</AxFormControl>
+							<AxFormControl xmlns=""
+								i:type="AxFormMenuFunctionButtonControl">
+								<Name>GlobalParameters</Name>
+								<Type>MenuFunctionButton</Type>
+								<FormControlExtension>
+									<Name>TileButtonControl</Name>
+									<ExtensionComponents />
+									<ExtensionProperties>
+										<AxFormControlExtensionProperty>
+											<Name>tile</Name>
+											<Type>String</Type>
+											<Value>MXTXppInterpreterParametersTile</Value>
+										</AxFormControlExtensionProperty>
+										<AxFormControlExtensionProperty>
+											<Name>tileDisplay</Name>
+											<Type>Enum</Type>
+											<TypeName>TileDisplay</TypeName>
+											<Value>TextAndImage</Value>
+										</AxFormControlExtensionProperty>
+									</ExtensionProperties>
+								</FormControlExtension>
+								<NormalImage>Settings</NormalImage>
+								<Text>@MXT:XppInterpreterParametersSimple</Text>
+							</AxFormControl>
+						</Controls>
+						<ArrangeMethod>HorizontalLeft</ArrangeMethod>
+						<Caption>@MXT:Operations</Caption>
+						<FastTabExpanded>Yes</FastTabExpanded>
+					</AxFormControl>
+					<AxFormControl xmlns=""
+						i:type="AxFormTabPageControl">
+						<Name>ScriptsView</Name>
+						<AutoDeclaration>Yes</AutoDeclaration>
+						<Pattern>SectionTabbedList</Pattern>
+						<PatternVersion>1.1</PatternVersion>
+						<Type>TabPage</Type>
+						<FormControlExtension
+							i:nil="true" />
+						<Controls>
+							<AxFormControl xmlns=""
+								i:type="AxFormTabControl">
+								<Name>ScriptsTab</Name>
+								<Height>500</Height>
+								<HeightMode>Manual</HeightMode>
+								<Type>Tab</Type>
+								<FormControlExtension
+									i:nil="true" />
+								<Controls>
+									<AxFormControl xmlns=""
+										i:type="AxFormTabPageControl">
+										<Name>AllScripts</Name>
+										<Type>TabPage</Type>
+										<FormControlExtension
+											i:nil="true" />
+										<Controls>
+											<AxFormControl xmlns=""
+												i:type="AxFormContainerControl">
+												<Name>AllScriptsFormPart</Name>
+												<AutoDeclaration>Yes</AutoDeclaration>
+												<HeightMode>SizeToAvailable</HeightMode>
+												<Type>Container</Type>
+												<WidthMode>SizeToAvailable</WidthMode>
+												<FormControlExtension>
+													<Name>FormPartControl</Name>
+													<ExtensionComponents>
+														<AxFormControlExtensionComponent xmlns=""
+															i:type="AxFormControlExtensionComponentComposite">
+															<Name>dataLinks</Name>
+															<ExtensionComponents />
+														</AxFormControlExtensionComponent>
+													</ExtensionComponents>
+													<ExtensionProperties>
+														<AxFormControlExtensionProperty>
+															<Name>targetName</Name>
+															<Type>String</Type>
+															<Value>MXTScriptsFormPart</Value>
+														</AxFormControlExtensionProperty>
+														<AxFormControlExtensionProperty>
+															<Name>autoRefreshInterval</Name>
+															<Type>Int32</Type>
+															<Value>0</Value>
+														</AxFormControlExtensionProperty>
+														<AxFormControlExtensionProperty>
+															<Name>parmRunMode</Name>
+															<Type>Enum</Type>
+															<TypeName>FormPartControlRunMode</TypeName>
+															<Value>Local</Value>
+														</AxFormControlExtensionProperty>
+													</ExtensionProperties>
+												</FormControlExtension>
+												<Controls />
+											</AxFormControl>
+										</Controls>
+										<Caption>@MXT:AllScripts</Caption>
+									</AxFormControl>
+								</Controls>
+								<ArrangeMethod>Vertical</ArrangeMethod>
+								<Style>VerticalTabs</Style>
+							</AxFormControl>
+						</Controls>
+						<Caption>@MXT:Scripts</Caption>
+						<FastTabExpanded>Yes</FastTabExpanded>
+					</AxFormControl>
+					<AxFormControl xmlns=""
+						i:type="AxFormTabPageControl">
+						<Name>LinksTab</Name>
+						<Pattern>SectionRelatedLinks</Pattern>
+						<PatternVersion>1.1</PatternVersion>
+						<Type>TabPage</Type>
+						<FormControlExtension
+							i:nil="true" />
+						<Controls>
+							<AxFormControl xmlns=""
+								i:type="AxFormMenuFunctionButtonControl">
+								<Name>MXTOpenGithubRepo</Name>
+								<Type>MenuFunctionButton</Type>
+								<FormControlExtension
+									i:nil="true" />
+								<ButtonDisplay>TextOnly</ButtonDisplay>
+								<MenuItemName>MXTOpenGithubRepo</MenuItemName>
+								<Style>Link</Style>
+							</AxFormControl>
+						</Controls>
+						<ColumnsMode>Fill</ColumnsMode>
+						<Caption>@MXT:Links</Caption>
+						<FastTabExpanded>Yes</FastTabExpanded>
+					</AxFormControl>
+				</Controls>
+				<Style>FastTabs</Style>
+			</AxFormControl>
+		</Controls>
+	</Design>
+	<Parts />
+</AxForm>

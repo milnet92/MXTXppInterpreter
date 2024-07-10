@@ -1,33 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AxForm xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns="Microsoft.Dynamics.AX.Metadata.V6">
-	<Name>MXTXppInterpreterCreateEditScript</Name>
+	<Name>MXTScriptEditDetails</Name>
 	<SourceCode>
 		<Methods xmlns="">
 			<Method>
 				<Name>classDeclaration</Name>
 				<Source><![CDATA[
 [Form]
-public class MXTXppInterpreterCreateEditScript extends FormRun
+public class MXTScriptEditDetails extends FormRun
 {
-    MXTXppInterpreterScript callerRecord;
+    private boolean fromEditor;
+    private str callerSourceCode;
 
 }
 ]]></Source>
 			</Method>
 			<Method>
-				<Name>close</Name>
+				<Name>run</Name>
 				<Source><![CDATA[
     /// <summary>
     ///
     /// </summary>
-    public void close()
+    public void run()
     {
-        FormDataSource fds = FormDataUtil::getFormDataSource(element.args().record());
-
-        if (fds)
-        {
-            fds.research(true);
-        }
+        MXTXppInterpreterScript_ds.create();
 
         super();
     }
@@ -42,32 +38,39 @@ public class MXTXppInterpreterCreateEditScript extends FormRun
     /// </summary>
     public void init()
     {
-        if (this.args().dataset() == tableNum(MXTXppInterpreterScript))
-        {
-            callerRecord = this.args().record() as MXTXppInterpreterScript;
-        }
+        fromEditor = this.args().callerName() == formStr(MXTScriptEditor);
+        callerSourceCode = this.args().parm();
+
+        this.args().record(null);
 
         super();
-
-        this.design().caption(this.args().openMode() == OpenMode::Edit ? "@MXT:EditScript" : "@MXT:NewScript");
-        SourceCodeLabel.bold(7);
     }
 
 ]]></Source>
 			</Method>
 			<Method>
-				<Name>run</Name>
+				<Name>close</Name>
 				<Source><![CDATA[
     /// <summary>
     ///
     /// </summary>
-    public void run()
+    public void close()
     {
-        super();
+        if (fromEditor)
+        {
+            element.args().record(MXTXppInterpreterScript);
+        }
+        else if (MXTXppInterpreterScript)
+        {
+            MenuFunction menuFunc = new MenuFunction(menuItemDisplayStr(MXTScriptEditor), MenuItemType::Display);
+            Args args = new Args();
+            args.record(MXTXppInterpreterScript);
+            args.openMode(OpenMode::Edit);
 
-        MXTXppInterpreterCodeEditorControl.sourceCode
-            (this.args().openMode() == OpenMode::Edit ?
-                callerRecord.SourceCode : "");
+            menuFunc.run(args);
+        }
+
+        super();
     }
 
 ]]></Source>
@@ -78,20 +81,76 @@ public class MXTXppInterpreterCreateEditScript extends FormRun
 				<Name>MXTXppInterpreterScript</Name>
 				<Methods>
 					<Method>
-						<Name>init</Name>
+						<Name>write</Name>
 						<Source><![CDATA[
         /// <summary>
         ///
         /// </summary>
-        public void init()
+        public void write()
+        {
+            if (!element.closedOk())
+            {
+                return;
+            }
+
+            MXTXppInterpreterScript.insert();
+        }
+
+]]></Source>
+					</Method>
+					<Method>
+						<Name>research</Name>
+						<Source><![CDATA[
+        public void research(boolean _retainPosition = false)
+        {
+            //Disable the refresh feature in this form. Do not invoke "super(_retainPosition);".
+        }
+
+]]></Source>
+					</Method>
+					<Method>
+						<Name>reread</Name>
+						<Source><![CDATA[
+        public void reread()
+        {
+            if (MXTXppInterpreterScript.RecId)
+            {
+                super();
+            }
+        }
+
+]]></Source>
+					</Method>
+					<Method>
+						<Name>validateWrite</Name>
+						<Source><![CDATA[
+        boolean validateWrite()
+        {
+            boolean ret;
+
+            if (!element.closedOk())
+            {
+                return true;
+            }
+
+            return super();
+        }
+
+]]></Source>
+					</Method>
+					<Method>
+						<Name>initValue</Name>
+						<Source><![CDATA[
+        /// <summary>
+        ///
+        /// </summary>
+        public void initValue()
         {
             super();
 
-            if (callerRecord)
+            if (callerSourceCode)
             {
-                this.query().dataSourceTable(tableNum(MXTXppInterpreterScript))
-                    .addRange(fieldNum(MXTXppInterpreterScript, RecId))
-                    .value(SysQuery::value(callerRecord.RecId));
+                MXTXppInterpreterScript.SourceCode = callerSourceCode;
             }
         }
 
@@ -101,29 +160,7 @@ public class MXTXppInterpreterCreateEditScript extends FormRun
 				<Fields />
 			</DataSource>
 		</DataSources>
-		<DataControls xmlns="">
-			<Control>
-				<Name>OkButton</Name>
-				<Type>CommandButton</Type>
-				<Methods>
-					<Method>
-						<Name>clicked</Name>
-						<Source><![CDATA[
-        /// <summary>
-        ///
-        /// </summary>
-        public void clicked()
-        {
-            MXTXppInterpreterScript.SourceCode = MXTXppInterpreterCodeEditorControl.sourceCode();
-
-            super();
-        }
-
-]]></Source>
-					</Method>
-				</Methods>
-			</Control>
-		</DataControls>
+		<DataControls xmlns="" />
 		<Members xmlns="" />
 	</SourceCode>
 	<DataSources>
@@ -165,7 +202,8 @@ public class MXTXppInterpreterCreateEditScript extends FormRun
 		</AxFormDataSource>
 	</DataSources>
 	<Design>
-		<DialogSize xmlns="">Medium</DialogSize>
+		<Caption xmlns="">@MXT:NewScript</Caption>
+		<DefaultAction xmlns="">OkButton</DefaultAction>
 		<Pattern xmlns="">Dialog</Pattern>
 		<PatternVersion xmlns="">1.2</PatternVersion>
 		<Style xmlns="">Dialog</Style>
@@ -180,68 +218,20 @@ public class MXTXppInterpreterCreateEditScript extends FormRun
 					i:nil="true" />
 				<Controls>
 					<AxFormControl xmlns=""
-						i:type="AxFormGroupControl">
-						<Name>Script</Name>
-						<HeightMode>SizeToAvailable</HeightMode>
-						<Type>Group</Type>
-						<WidthMode>SizeToAvailable</WidthMode>
+						i:type="AxFormStringControl">
+						<Name>MXTXppInterpreterScript_Description</Name>
+						<Type>String</Type>
 						<FormControlExtension
 							i:nil="true" />
-						<Controls>
-							<AxFormControl xmlns=""
-								i:type="AxFormStringControl">
-								<Name>MXTXppInterpreterScript_Description</Name>
-								<AutoDeclaration>Yes</AutoDeclaration>
-								<Height>300</Height>
-								<Type>String</Type>
-								<Width>300</Width>
-								<WidthMode>SizeToAvailable</WidthMode>
-								<FormControlExtension
-									i:nil="true" />
-								<DataField>Description</DataField>
-								<DataSource>MXTXppInterpreterScript</DataSource>
-							</AxFormControl>
-							<AxFormControl xmlns=""
-								i:type="AxFormStaticTextControl">
-								<Name>SourceCodeLabel</Name>
-								<AutoDeclaration>Yes</AutoDeclaration>
-								<Type>StaticText</Type>
-								<FormControlExtension
-									i:nil="true" />
-								<Text>@MXT:SourceCode</Text>
-							</AxFormControl>
-							<AxFormControl>
-								<Name>MXTXppInterpreterCodeEditorControl</Name>
-								<AutoDeclaration>Yes</AutoDeclaration>
-								<Height>370</Height>
-								<HeightMode>Manual</HeightMode>
-								<Width>600</Width>
-								<WidthMode>Manual</WidthMode>
-								<FormControlExtension>
-									<Name>MXTXppInterpreterCodeEditorControl</Name>
-									<ExtensionComponents />
-									<ExtensionProperties>
-										<AxFormControlExtensionProperty>
-											<Name>SourceCode</Name>
-											<Type>String</Type>
-										</AxFormControlExtensionProperty>
-										<AxFormControlExtensionProperty>
-											<Name>Language</Name>
-											<Type>Enum</Type>
-											<TypeName>MXTXppInterpreterEditorLanguage</TypeName>
-											<Value>Xpp</Value>
-										</AxFormControlExtensionProperty>
-									</ExtensionProperties>
-								</FormControlExtension>
-							</AxFormControl>
-						</Controls>
+						<DataField>Description</DataField>
+						<DataSource>MXTXppInterpreterScript</DataSource>
 					</AxFormControl>
 				</Controls>
 				<Style>DialogContent</Style>
 			</AxFormControl>
 			<AxFormControl xmlns=""
 				i:type="AxFormButtonGroupControl">
-				<Name>FormButtonGroupControl1</Name>
+				<Name>CommitButtonGroup</Name>
 				<Type>ButtonGroup</Type>
 				<WidthMode>SizeToAvailable</WidthMode>
 				<FormControlExtension
@@ -249,20 +239,32 @@ public class MXTXppInterpreterCreateEditScript extends FormRun
 				<Controls>
 					<AxFormControl xmlns=""
 						i:type="AxFormCommandButtonControl">
-						<Name>OkButton</Name>
+						<Name>OK</Name>
+						<ElementPosition>1073741822</ElementPosition>
+						<FilterExpression>%1</FilterExpression>
+						<HeightMode>Auto</HeightMode>
 						<Type>CommandButton</Type>
+						<VerticalSpacing>-1</VerticalSpacing>
+						<WidthMode>Auto</WidthMode>
 						<FormControlExtension
 							i:nil="true" />
+						<ButtonDisplay>TextOnly</ButtonDisplay>
 						<Command>OK</Command>
+						<DefaultButton>Yes</DefaultButton>
 					</AxFormControl>
 					<AxFormControl xmlns=""
 						i:type="AxFormCommandButtonControl">
-						<Name>CancelButton</Name>
+						<Name>Cancel</Name>
+						<ElementPosition>1610612733</ElementPosition>
+						<FilterExpression>%1</FilterExpression>
+						<HeightMode>Auto</HeightMode>
 						<Type>CommandButton</Type>
+						<VerticalSpacing>-1</VerticalSpacing>
+						<WidthMode>Auto</WidthMode>
 						<FormControlExtension
 							i:nil="true" />
+						<ButtonDisplay>TextOnly</ButtonDisplay>
 						<Command>Cancel</Command>
-						<SaveRecord>No</SaveRecord>
 					</AxFormControl>
 				</Controls>
 				<ArrangeMethod>HorizontalRight</ArrangeMethod>

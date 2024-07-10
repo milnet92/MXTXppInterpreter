@@ -53,9 +53,11 @@ internal final class MXTXppInterpreterExecutor
 			<Method>
 				<Name>executeScript</Name>
 				<Source><![CDATA[
-    public static void executeScript(MXTXppInterpreterScript _script)
+    public static void executeScript(MXTXppInterpreterScript _script, MXTXppInterpreterParameters _parameters)
     {
-        MXTXppInterpreterExecutor::execute(_script.SourceCode);
+        var dependencies = MXTXppScriptDependencyManager::parseDependencies(_script.RecId);
+
+        MXTXppInterpreterExecutor::execute(_script.SourceCode, null, _parameters, dependencies);
     }
 
 ]]></Source>
@@ -76,18 +78,20 @@ internal final class MXTXppInterpreterExecutor
 			<Method>
 				<Name>executeProgram</Name>
 				<Source><![CDATA[
-    public static void executeProgram(XppInterpreter.Parser.Program _program, XppInterpreter.Interpreter.Debug.IDebugger _debugger = null)
+    public static void executeProgram(
+        XppInterpreter.Parser.Program               _program, 
+        XppInterpreter.Interpreter.Debug.IDebugger _debugger    = null, 
+        MXTXppInterpreterParameters                _parameters  = MXTXppInterpreterParameters::find(),
+        XppInterpreter.Interpreter.XppInterpreterDependencyCollection _dependencies = null)
     {
-        MXTXppInterpreterParameters parameters = MXTXppInterpreterParameters::find();
-        
         // Setup options
         XppInterpreter.Interpreter.XppInterpreterOptions options = new XppInterpreter.Interpreter.XppInterpreterOptions();
-        options.EmitGlobalTtsAbort = parameters.EmitGlobalTtsAbort;
-        options.MaxLoopIterations = parameters.MaxLoopIteratations;
+        options.EmitGlobalTtsAbort = _parameters.EmitGlobalTtsAbort;
+        options.MaxLoopIterations = _parameters.MaxLoopIteratations;
 
         XppInterpreter.Interpreter.XppInterpreter interpreter = new XppInterpreter.Interpreter.XppInterpreter(proxy);
 
-        interpreter.Interpret(_program);
+        interpreter.Interpret(_program, _dependencies);
     }
 
 ]]></Source>
@@ -95,12 +99,29 @@ internal final class MXTXppInterpreterExecutor
 			<Method>
 				<Name>execute</Name>
 				<Source><![CDATA[
-	public static void execute(str _sourceCode, XppInterpreter.Interpreter.Debug.IDebugger _debugger = null)
+    public static void execute(
+        str                                         _sourceCode, 
+        XppInterpreter.Interpreter.Debug.IDebugger  _debugger = null, 
+        MXTXppInterpreterParameters                 _parameters  = MXTXppInterpreterParameters::find(),
+        XppInterpreter.Interpreter.XppInterpreterDependencyCollection _dependencies = null)
     {
         // Create lexer and parser
         XppInterpreter.Parser.Program parseResult = MXTXppInterpreterExecutor::parse(_sourceCode);
-        MXTXppInterpreterExecutor::executeProgram(parseResult, _debugger);
+        MXTXppInterpreterExecutor::executeProgram(parseResult, _debugger, _parameters, _dependencies);
 	}
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>executeScriptInBatch</Name>
+				<Source><![CDATA[
+    public static void executeScriptInBatch(MXTXppInterpreterScript _script)
+    {
+        Args args = new Args();
+        args.record(_script);
+
+        MXTXppInterpreterBatchController::main(args);
+    }
 
 ]]></Source>
 			</Method>

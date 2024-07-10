@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AxForm xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns="Microsoft.Dynamics.AX.Metadata.V6">
-	<Name>MXTXppInterpreterRunner</Name>
+	<Name>MXTScriptEditor</Name>
 	<SourceCode>
 		<Methods xmlns="">
 			<Method>
@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 [Form]
-public class MXTXppInterpreterRunner extends FormRun
+public class MXTScriptEditor extends FormRun
 {
     private int normalFGColor = WinAPI::RGB2int(0, 0, 0);
     private int errorFGColor = WinAPI::RGB2int(255, 0, 0);
@@ -20,7 +20,6 @@ public class MXTXppInterpreterRunner extends FormRun
 
     MXTXppInterpreterScript callerScript;
     str sourceCode;
-    
 
 }
 ]]></Source>
@@ -62,8 +61,27 @@ public class MXTXppInterpreterRunner extends FormRun
         }
         else if (callerScript)
         {
-            this.design().caption(callerScript.Description);
             MXTXppInterpreterCodeEditorControl.sourceCode(callerScript.SourceCode);
+        }
+
+        this.refreshCaption();
+        this.visibleDependencies();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>refreshCaption</Name>
+				<Source><![CDATA[
+    private void refreshCaption()
+    {
+        if (callerScript)
+        {
+            this.design().caption(callerScript.Description);
+        }
+        else
+        {
+            this.design().caption("@MXT:NewScriptCaption");
         }
     }
 
@@ -159,6 +177,12 @@ public class MXTXppInterpreterRunner extends FormRun
             return;
         }
 
+        // Parse dependencies
+        if (callerScript)
+        {
+            currentSession.parseDependencies(callerScript.RecId);
+        }
+
         var parseException = currentSession.tryParse(MXTXppInterpreterCodeEditorControl.sourceCode());
 
         if (parseException)
@@ -195,9 +219,18 @@ public class MXTXppInterpreterRunner extends FormRun
     /// </summary>
     public void init()
     {
-        if (this.args().dataset() == tableNum(MXTXppInterpreterScript))
+        var callerTableId = this.args().dataset();
+
+        switch (callerTableId)
         {
-            callerScript = this.args().record();
+            case tableNum(MXTXppInterpreterScript):
+                callerScript = this.args().record();
+                break;
+
+            case tableNum(MXTXppInterpreterReferences):
+                MXTXppInterpreterScriptDependency dependency = this.args().record();
+                callerScript = MXTXppInterpreterScript::find(dependency.ReferenceScriptId);
+                break;
         }
 
         super();
@@ -221,6 +254,19 @@ public class MXTXppInterpreterRunner extends FormRun
         }
 
         super();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>visibleDependencies</Name>
+				<Source><![CDATA[
+    /// <summary>
+    ///
+    /// </summary>
+    private void visibleDependencies()
+    {
+        MXTScriptDependencies.visible(callerScript.RecId != 0);
     }
 
 ]]></Source>
@@ -266,6 +312,50 @@ public class MXTXppInterpreterRunner extends FormRun
 
 ]]></Source>
 					</Method>
+					<Method>
+						<Name>validateWrite</Name>
+						<Source><![CDATA[
+        /// <summary>
+        ///
+        /// </summary>
+        /// <returns></returns>
+        public boolean validateWrite()
+        {
+            if (currentSession.isExecuting())
+            {
+                return false;
+            }
+
+            if (callerScript)
+            {
+                return super();
+            }
+
+            Args args = new Args(formStr(MXTScriptEditDetails));
+            args.caller(element);
+            args.record(null);
+            args.openMode(OpenMode::New);
+            args.parm(MXTXppInterpreterCodeEditorControl.sourceCode());
+            FormRun formRun = classfactory.formRunClass(args);
+            formRun.init();
+            formRun.run();
+            formRun.wait(true);
+
+            callerScript = args.record() as MXTXppInterpreterScript;
+
+            if (callerScript)
+            {
+                MXTXppInterpreterScript_ds.positionToRecord(callerScript);
+            }
+
+            element.refreshCaption();
+            element.visibleDependencies();
+
+            return callerScript.RecId != 0;
+        }
+
+]]></Source>
+					</Method>
 				</Methods>
 				<Fields />
 			</DataSource>
@@ -305,9 +395,7 @@ public class MXTXppInterpreterRunner extends FormRun
         /// </summary>
         public void clicked()
         {
-            MXTXppInterpreterDebugSession session = element.currentSession;
-    
-            session.continueExecution(XppInterpreter.Interpreter.Debug.DebugAction::Continue);
+            currentSession.continueExecution(XppInterpreter.Interpreter.Debug.DebugAction::Continue);
         }
 
 ]]></Source>
@@ -326,9 +414,7 @@ public class MXTXppInterpreterRunner extends FormRun
         /// </summary>
         public void clicked()
         {
-            MXTXppInterpreterDebugSession session = element.currentSession;
-    
-            session.continueExecution(XppInterpreter.Interpreter.Debug.DebugAction::StepOver);
+            currentSession.continueExecution(XppInterpreter.Interpreter.Debug.DebugAction::StepOver);
         }
 
 ]]></Source>
@@ -347,9 +433,7 @@ public class MXTXppInterpreterRunner extends FormRun
         /// </summary>
         public void clicked()
         {
-            MXTXppInterpreterDebugSession session = element.currentSession;
-            
-            session.continueExecution(XppInterpreter.Interpreter.Debug.DebugAction::StopDebugging);
+            currentSession.continueExecution(XppInterpreter.Interpreter.Debug.DebugAction::StopDebugging);
         }
 
 ]]></Source>
@@ -368,9 +452,7 @@ public class MXTXppInterpreterRunner extends FormRun
         /// </summary>
         public void clicked()
         {
-            MXTXppInterpreterDebugSession session = element.currentSession;
-            
-            session.continueExecution(XppInterpreter.Interpreter.Debug.DebugAction::CancelExecution);
+            currentSession.continueExecution(XppInterpreter.Interpreter.Debug.DebugAction::CancelExecution);
         }
 
 ]]></Source>
@@ -393,16 +475,15 @@ public class MXTXppInterpreterRunner extends FormRun
             int ret;
         
             ret = super();
-            MXTXppInterpreterDebugSession session = element.currentSession;
 
-            if (!session.isExecuting())
+            if (!currentSession.isExecuting())
             {
                 System.Exception ex;
                 boolean error = false;
 
                 try
                 {
-                    session.execute();
+                    currentSession.execute();
                 }
                 catch (Exception::Error)
                 {
@@ -501,7 +582,39 @@ public class MXTXppInterpreterRunner extends FormRun
 		<Controls xmlns="">
 			<AxFormControl xmlns=""
 				i:type="AxFormActionPaneControl">
-				<Name>FormActionPaneControl1</Name>
+				<Name>MainActionPane</Name>
+				<Type>ActionPane</Type>
+				<FormControlExtension
+					i:nil="true" />
+				<Controls>
+					<AxFormControl xmlns=""
+						i:type="AxFormButtonGroupControl">
+						<Name>FormButtonGroupControl3</Name>
+						<Type>ButtonGroup</Type>
+						<FormControlExtension
+							i:nil="true" />
+						<Controls>
+							<AxFormControl xmlns=""
+								i:type="AxFormMenuFunctionButtonControl">
+								<Name>MXTScriptDependencies</Name>
+								<AutoDeclaration>Yes</AutoDeclaration>
+								<Type>MenuFunctionButton</Type>
+								<FormControlExtension
+									i:nil="true" />
+								<ButtonDisplay>TextWithImageLeft</ButtonDisplay>
+								<DataSource>MXTXppInterpreterScript</DataSource>
+								<MenuItemName>MXTScriptDependencies</MenuItemName>
+								<NeedsRecord>Yes</NeedsRecord>
+								<NormalImage>Organization</NormalImage>
+							</AxFormControl>
+						</Controls>
+					</AxFormControl>
+				</Controls>
+				<DataSource>MXTXppInterpreterScript</DataSource>
+			</AxFormControl>
+			<AxFormControl xmlns=""
+				i:type="AxFormActionPaneControl">
+				<Name>CodeActionPane</Name>
 				<Type>ActionPane</Type>
 				<FormControlExtension
 					i:nil="true" />
@@ -522,15 +635,6 @@ public class MXTXppInterpreterRunner extends FormRun
 									i:nil="true" />
 								<NormalImage>Send</NormalImage>
 								<Text>@MXT:Execute</Text>
-							</AxFormControl>
-							<AxFormControl xmlns=""
-								i:type="AxFormMenuFunctionButtonControl">
-								<Name>MXTXppInterpreterParameters</Name>
-								<Type>MenuFunctionButton</Type>
-								<FormControlExtension
-									i:nil="true" />
-								<MenuItemName>MXTXppInterpreterParameters</MenuItemName>
-								<NormalImage>Settings</NormalImage>
 							</AxFormControl>
 							<AxFormControl xmlns=""
 								i:type="AxFormButtonControl">
@@ -593,29 +697,6 @@ public class MXTXppInterpreterRunner extends FormRun
 				</Controls>
 				<AllowUserSetup>No</AllowUserSetup>
 				<Style>Strip</Style>
-			</AxFormControl>
-			<AxFormControl xmlns=""
-				i:type="AxFormGroupControl">
-				<Name>Title</Name>
-				<Height>50</Height>
-				<HeightMode>Manual</HeightMode>
-				<Type>Group</Type>
-				<WidthMode>SizeToAvailable</WidthMode>
-				<FormControlExtension
-					i:nil="true" />
-				<Controls>
-					<AxFormControl xmlns=""
-						i:type="AxFormStaticTextControl">
-						<Name>StaticDisplay</Name>
-						<AutoDeclaration>Yes</AutoDeclaration>
-						<HeightMode>SizeToAvailable</HeightMode>
-						<Type>StaticText</Type>
-						<WidthMode>SizeToAvailable</WidthMode>
-						<FormControlExtension
-							i:nil="true" />
-						<Text></Text>
-					</AxFormControl>
-				</Controls>
 			</AxFormControl>
 			<AxFormControl>
 				<Name>timerControl</Name>
@@ -689,6 +770,29 @@ public class MXTXppInterpreterRunner extends FormRun
 					</AxFormControl>
 				</Controls>
 				<Columns>2</Columns>
+			</AxFormControl>
+			<AxFormControl xmlns=""
+				i:type="AxFormGroupControl">
+				<Name>Title</Name>
+				<Height>50</Height>
+				<HeightMode>Manual</HeightMode>
+				<Type>Group</Type>
+				<WidthMode>SizeToAvailable</WidthMode>
+				<FormControlExtension
+					i:nil="true" />
+				<Controls>
+					<AxFormControl xmlns=""
+						i:type="AxFormStaticTextControl">
+						<Name>StaticDisplay</Name>
+						<AutoDeclaration>Yes</AutoDeclaration>
+						<HeightMode>SizeToAvailable</HeightMode>
+						<Type>StaticText</Type>
+						<WidthMode>SizeToAvailable</WidthMode>
+						<FormControlExtension
+							i:nil="true" />
+						<Text></Text>
+					</AxFormControl>
+				</Controls>
 			</AxFormControl>
 		</Controls>
 	</Design>

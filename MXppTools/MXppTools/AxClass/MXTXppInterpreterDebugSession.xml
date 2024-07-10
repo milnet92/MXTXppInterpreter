@@ -22,6 +22,7 @@ public class MXTXppInterpreterDebugSession
     InterpreterResult currentExecutionResult;
     boolean executing;
     boolean stopOnBreakpoint;
+    XppInterpreterDependencyCollection dependencyCollection = null;
 
     XppInterpreter.Interpreter.Proxy.XppProxy proxy = new XppInterpreter.Interpreter.Proxy.XppProxy(
                     new MXTXppIntrinsicFunctionProvider(),
@@ -86,11 +87,11 @@ public class MXTXppInterpreterDebugSession
 ]]></Source>
 			</Method>
 			<Method>
-				<Name>isStoppedOnBreakpoint</Name>
+				<Name>parseDependencies</Name>
 				<Source><![CDATA[
-    public boolean isStoppedOnBreakpoint()
+    public void parseDependencies(RecId _scriptId)
     {
-        return stopOnBreakpoint;
+        dependencyCollection = MXTXppScriptDependencyManager::parseDependencies(_scriptId);
     }
 
 ]]></Source>
@@ -125,7 +126,7 @@ public class MXTXppInterpreterDebugSession
 
         try
         {
-            currentExecutionResult = interpreter.Interpret(program);
+            currentExecutionResult = interpreter.Interpret(program, dependencyCollection);
 
             if (currentExecutionResult.HasStopped)
             {

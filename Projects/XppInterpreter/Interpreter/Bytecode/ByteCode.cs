@@ -7,6 +7,12 @@ namespace XppInterpreter.Interpreter.Bytecode
         public List<IInstruction> Instructions;
         public List<RefFunction> DeclaredFunctions;
 
+        internal ByteCode()
+        {
+            Instructions = new List<IInstruction>();
+            DeclaredFunctions = new List<RefFunction>();
+        }
+
         public ByteCode(List<IInstruction> instructions)
         {
             Instructions = instructions;

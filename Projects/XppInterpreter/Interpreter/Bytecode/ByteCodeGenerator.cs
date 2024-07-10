@@ -24,8 +24,13 @@ namespace XppInterpreter.Interpreter.Bytecode
             _hasMaxIterations = Options != null && Options.MaxLoopIterations > 0;
         }
 
-        public ByteCode Generate(Program program, bool generateDebugInfo)
+        public ByteCode Generate(Program program, bool generateDebugInfo, List<RefFunction> dependencyFunctions = null)
         {
+            if (dependencyFunctions != null)
+            {
+                _declaredFunctions.AddRange(dependencyFunctions);
+            }
+
             if (_ss.Count == 0)
             {
                 _ss.Push(new ByteCodeGenerationScope());

@@ -7,11 +7,34 @@ public class MXTXppInterpreterScript extends common
 {
 }
 ]]></Declaration>
-		<Methods />
+		<Methods>
+			<Method>
+				<Name>find</Name>
+				<Source><![CDATA[
+    public static MXTXppInterpreterScript find(RecId _scriptId, boolean _forUpdate = false)
+    {
+        MXTXppInterpreterScript script;
+
+        select firstonly script
+            where script.RecId == _scriptId;
+
+        if (_forUpdate)
+        {
+            script.selectForUpdate(true);
+        }
+
+        return script;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
 	</SourceCode>
 	<SubscriberAccessLevel>
 		<Read>Allow</Read>
 	</SubscriberAccessLevel>
+	<TitleField1>RecId</TitleField1>
+	<TitleField2>Description</TitleField2>
 	<AllowRowVersionChangeTracking>Yes</AllowRowVersionChangeTracking>
 	<CreatedBy>Yes</CreatedBy>
 	<CreatedDateTime>Yes</CreatedDateTime>
@@ -26,7 +49,14 @@ public class MXTXppInterpreterScript extends common
 		</AxTableFieldGroup>
 		<AxTableFieldGroup>
 			<Name>AutoLookup</Name>
-			<Fields />
+			<Fields>
+				<AxTableFieldGroupField>
+					<DataField>RecId</DataField>
+				</AxTableFieldGroupField>
+				<AxTableFieldGroupField>
+					<DataField>Description</DataField>
+				</AxTableFieldGroupField>
+			</Fields>
 		</AxTableFieldGroup>
 		<AxTableFieldGroup>
 			<Name>AutoIdentification</Name>

@@ -155,7 +155,7 @@ namespace XppInterpreter.Interpreter
             return null;
         }
 
-        public InterpreterResult Interpret(Program program)
+        public InterpreterResult Interpret(Program program, XppInterpreterDependencyCollection dependencies = null)
         {
             bool globalTtsAbort = Options?.EmitGlobalTtsAbort ?? false;
 
@@ -168,7 +168,7 @@ namespace XppInterpreter.Interpreter
 
             try
             {
-                ret = Interpret(Compile(program));
+                ret = Interpret(Compile(program, dependencies));
             }
             finally
             {
@@ -181,9 +181,48 @@ namespace XppInterpreter.Interpreter
             return ret;
         }
 
-        public ByteCode Compile(Program program)
+        public ByteCode Compile(Program program, XppInterpreterDependencyCollection dependencies = null)
         {
-            return new ByteCodeGenerator(Options).Generate(program, IsDebuggerAttached());
+            ByteCode fullByteCode;
+
+            // Compile dependencies first
+            if (dependencies != null)
+            {
+                fullByteCode = CompileDependencies(dependencies);
+            }
+            else
+            {
+                fullByteCode = new ByteCode();
+            }
+
+            ByteCode compiledProgram = new ByteCodeGenerator(Options).Generate(program, IsDebuggerAttached(), fullByteCode.DeclaredFunctions);
+
+            // We don't add declared functions as the bytecode generation
+            // for the full program already include the ref functions
+            fullByteCode.Instructions.AddRange(compiledProgram.Instructions);
+
+            return fullByteCode;
+        }
+
+        private ByteCode CompileDependencies(XppInterpreterDependencyCollection dependencies)
+        {
+            ByteCode byteCode = new ByteCode();
+
+            foreach (var dependency in dependencies)
+            {
+                var compiledDependency = new ByteCodeGenerator(Options).Generate(dependency, false , byteCode.DeclaredFunctions);
+
+                // Merge dependencies
+                byteCode.Instructions.AddRange(compiledDependency.Instructions);
+
+                // Compiled bytecode contains aggregated function references
+                if (compiledDependency.DeclaredFunctions != null)
+                {
+                    byteCode.DeclaredFunctions = compiledDependency.DeclaredFunctions;
+                }
+            }
+
+            return byteCode;
         }
 
         private bool IsDebuggerAttached()

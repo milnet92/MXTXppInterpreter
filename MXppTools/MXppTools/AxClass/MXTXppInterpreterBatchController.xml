@@ -30,20 +30,18 @@ internal final class MXTXppInterpreterBatchController extends SysOperationServic
 				<Source><![CDATA[
     public static void main(Args _args)
     {
-        if (!_args.parm())
-        {
-            throw Error("@MXT:NothingToExecute");
-        }
-
         MXTXppInterpreterBatchController   controller  = MXTXppInterpreterBatchController::construct();
         MXTXppInterpreterBatchContract contract = controller.getDataContractObject() as MXTXppInterpreterBatchContract;
-
-        contract.parmSourceCode(_args.parm());
 
         MXTXppInterpreterScript script;
         if (_args.dataset() == tableNum(MXTXppInterpreterScript))
         {
             script = _args.record();
+            contract.parmSourceCode(script.SourceCode);
+        }
+        else
+        {
+            contract.parmSourceCode(_args.parm());
         }
 
         controller.parmDialogCaption(script ? script.Description : "@MXT:ExecuteInBatch");

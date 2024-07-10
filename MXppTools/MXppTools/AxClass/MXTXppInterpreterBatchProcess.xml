@@ -15,7 +15,22 @@ internal final class MXTXppInterpreterBatchProcess
     {
         Debug::assert(_dataContract.parmSourceCode() != "");
 
-        MXTXppInterpreterExecutor::execute(_dataContract.parmSourceCode());
+        MXTXppInterpreterExecutor::execute(_dataContract.parmSourceCode(), null, this.initializeExecutionParameters(_dataContract));
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>initializeExecutionParameters</Name>
+				<Source><![CDATA[
+    protected MXTXppInterpreterParameters initializeExecutionParameters(MXTXppInterpreterBatchContract _dataContract)
+    {
+        MXTXppInterpreterParameters parameters;
+
+        parameters.EmitGlobalTtsAbort   = _dataContract.parmEmitGlobalTtsAbort() ? NoYes::Yes : NoYes::No;
+        parameters.MaxLoopIteratations  = _dataContract.parmMaxLoopIterations();
+
+        return parameters;
     }
 
 ]]></Source>

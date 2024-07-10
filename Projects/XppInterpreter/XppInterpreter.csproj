@@ -134,6 +134,7 @@
     <Compile Include="Interpreter\Proxy\XppProxy.cs" />
     <Compile Include="Interpreter\Proxy\XppProxyHelper.cs" />
     <Compile Include="Interpreter\XppInterpreter.cs" />
+    <Compile Include="Interpreter\XppInterpreterDependencyCollection.cs" />
     <Compile Include="Interpreter\XppInterpreterOptions.cs" />
     <Compile Include="Lexer\BaseType.cs" />
     <Compile Include="Core\SourceCodeLocation.cs" />
