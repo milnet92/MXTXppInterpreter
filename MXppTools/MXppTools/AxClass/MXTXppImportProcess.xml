@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppImportProcess</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+internal final class MXTXppImportProcess
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>main</Name>
+				<Source><![CDATA[
+	public static void main(Args _args)
+    {
+        MXTXppImportProcess process = new MXTXppImportProcess();
+
+        process.startOperation();
+	}
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>startOperation</Name>
+				<Source><![CDATA[
+	public void startOperation()
+    {
+        FileUploadTemporaryStorageResult uploadFileResult = File::GetFileFromUser();
+
+        if(uploadFileResult && uploadFileResult.getUploadStatus())
+        {
+            this.processResult(uploadFileResult);
+        }
+        else
+        {
+            throw error("Import process cancelled.");
+        }
+	}
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>processResult</Name>
+				<Source><![CDATA[
+    private void processResult(FileUploadTemporaryStorageResult _result)
+    {
+        str fileURL = _result.getDownloadUrl();
+        System.IO.Stream stream = File::UseFileFromURL(fileURL);
+        System.IO.StreamReader reader = new System.IO.StreamReader(stream);
+        var fileContent = reader.ReadToEnd();
+
+        MXTXppScriptCollection collection = FormJsonSerializer::deserializeObject(classNum(MXTXppScriptCollection), fileContent);
+        ListEnumerator scriptEnumerator = collection.parmScripts().getEnumerator();
+
+        Map ids = new Map(Types::Int64, Types::Int64);
+        int importedScripts = 0;
+
+        ttsbegin;
+
+        // Import scripts
+        while (scriptEnumerator.moveNext())
+        {
+            MXTXppScriptEntry entry = scriptEnumerator.current();
+
+            MXTXppInterpreterScript script;
+
+            script.Description = entry.parmDescription();
+            script.SourceCode  = entry.parmSourceCode();
+
+            script.insert();
+
+            ids.add(entry.parmId(), script.RecId);
+
+            importedScripts ++;
+        }
+
+        // Import dependencies
+        scriptEnumerator.reset();
+        while (scriptEnumerator.moveNext())
+        {
+            MXTXppScriptEntry entry = scriptEnumerator.current();
+            ListEnumerator    dependenciesEnumerator = entry.parmDependencies().getEnumerator();
+            RecId             scriptId = ids.lookup(entry.parmId());
+
+            while (dependenciesEnumerator.moveNext())
+            {
+                RecId referenceScriptId = ids.lookup(dependenciesEnumerator.current());
+
+                if (!referenceScriptId)
+                {
+                    throw error(strFmt("Script '%1' references a script with id %2 that it is not included in the MXT file.", 
+                        MXTXppInterpreterScript::find(scriptId).Description,
+                        dependenciesEnumerator.current()));
+                }
+
+                MXTXppInterpreterScriptDependency dependency;
+
+                dependency.ScriptId             = scriptId;
+                dependency.ReferenceScriptId    = referenceScriptId;
+                dependency.insert();
+            }
+        }
+
+        ttscommit;
+
+        info(strFmt("%1 Scripts imported successfully.", importedScripts));
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

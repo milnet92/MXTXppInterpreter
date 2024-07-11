@@ -49,7 +49,7 @@ internal final class %class_name%
 	public static void exportAsXpp(MXTXppInterpreterScript _script)
     {
         // Get the name for the form
-        str className = MXTXppExportScriptHelper::getUserClassName();
+        str className = MXTXppExportScriptHelper::getUserFileName("@MXT:DownloadAsXml", "@MXT:ClassName");
 
         if (className)
         {
@@ -85,12 +85,30 @@ internal final class %class_name%
 ]]></Source>
 			</Method>
 			<Method>
-				<Name>getUserClassName</Name>
+				<Name>exportAsJson</Name>
 				<Source><![CDATA[
-    private static str getUserClassName()
+    public static void exportAsJson(container _scriptIds)
     {
-        Dialog      dialog = new Dialog("@MXT:DownloadAsXml");
-        DialogField nameField = dialog.addField(identifierStr(Name), "@MXT:ClassName");
+        str fileName = MXTXppExportScriptHelper::getUserFileName("@MXT:ExportAsJson", "File name");
+
+        if (!fileName)
+        {
+            return;
+        }
+
+        MXTXppExportProcess process = new MXTXppExportProcess(_scriptIds, fileName);
+        process.export();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getUserFileName</Name>
+				<Source><![CDATA[
+    public static str getUserFileName(str _dialogCaption, str _label)
+    {
+        Dialog      dialog = new Dialog(_dialogCaption);
+        DialogField nameField = dialog.addField(identifierStr(Name), _label);
 
         if (dialog.run())
         {

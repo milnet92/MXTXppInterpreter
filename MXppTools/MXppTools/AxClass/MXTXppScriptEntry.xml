@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppScriptEntry</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+[DataContract]
+internal final class MXTXppScriptEntry
+{
+    Description     description;
+    MXTSourceCode   sourceCode;
+    RecId           id;
+    List            dependencies = new List(Types::Int64);
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>parmDescription</Name>
+				<Source><![CDATA[
+    [DataMember("Description")]
+    public Description parmDescription(Description _description = description)
+    {
+        description = _description;
+        return description;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmSourceCode</Name>
+				<Source><![CDATA[
+    [DataMember("SourceCode")]
+    public MXTSourceCode parmSourceCode(MXTSourceCode _sourceCode = sourceCode)
+    {
+        sourceCode = _sourceCode;
+        return sourceCode;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmId</Name>
+				<Source><![CDATA[
+    [DataMember("Id")]
+    public RecId parmId(RecId _id = id)
+    {
+        id = _id;
+        return id;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmDependencies</Name>
+				<Source><![CDATA[
+    [DataMember("Dependencies"),
+     DataCollection(Types::Int64)]
+    public List parmDependencies(List _dependencies = dependencies)
+    {
+        dependencies = _dependencies;
+        return dependencies;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppScriptCollection</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+[DataContract]
+internal final class MXTXppScriptCollection
+{
+    private List scripts = new List(Types::Class);
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>parmScripts</Name>
+				<Source><![CDATA[
+    [DataMember("Scripts"),
+     DataCollection(Types::Class, classStr(MXTXppScriptEntry))]
+    public List parmScripts(List _scripts = scripts)
+    {
+        scripts = _scripts;
+        return scripts;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

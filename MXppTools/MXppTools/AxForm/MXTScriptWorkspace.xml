@@ -121,6 +121,31 @@ public class MXTScriptWorkspace extends FormRun
 							</AxFormControl>
 							<AxFormControl xmlns=""
 								i:type="AxFormMenuFunctionButtonControl">
+								<Name>ImportMXTFile</Name>
+								<Type>MenuFunctionButton</Type>
+								<FormControlExtension>
+									<Name>TileButtonControl</Name>
+									<ExtensionComponents />
+									<ExtensionProperties>
+										<AxFormControlExtensionProperty>
+											<Name>tile</Name>
+											<Type>String</Type>
+											<Value>MXTImportMXTFileTile</Value>
+										</AxFormControlExtensionProperty>
+										<AxFormControlExtensionProperty>
+											<Name>tileDisplay</Name>
+											<Type>Enum</Type>
+											<TypeName>TileDisplay</TypeName>
+											<Value>TextAndImage</Value>
+										</AxFormControlExtensionProperty>
+									</ExtensionProperties>
+								</FormControlExtension>
+								<CopyCallerQuery>No</CopyCallerQuery>
+								<NormalImage>Import</NormalImage>
+								<Text>Import scripts</Text>
+							</AxFormControl>
+							<AxFormControl xmlns=""
+								i:type="AxFormMenuFunctionButtonControl">
 								<Name>GlobalParameters</Name>
 								<Type>MenuFunctionButton</Type>
 								<FormControlExtension>

@@ -10,14 +10,13 @@
 public class MXTScriptsFormPart extends FormRun
 {
 }
-
 ]]></Source>
 			</Method>
 		</Methods>
 		<DataSources xmlns="" />
 		<DataControls xmlns="">
 			<Control>
-				<Name>ExportAndDownload</Name>
+				<Name>DownloadAsXml</Name>
 				<Type>Button</Type>
 				<Methods>
 					<Method>
@@ -29,6 +28,35 @@ public class MXTScriptsFormPart extends FormRun
         public void clicked()
         {
             MXTXppExportScriptHelper::exportAsXpp(MXTXppInterpreterScript);
+        }
+
+]]></Source>
+					</Method>
+				</Methods>
+			</Control>
+			<Control>
+				<Name>DownloadAsMXT</Name>
+				<Type>Button</Type>
+				<Methods>
+					<Method>
+						<Name>clicked</Name>
+						<Source><![CDATA[
+        /// <summary>
+        ///
+        /// </summary>
+        public void clicked()
+        {
+            MXTXppInterpreterScript script;
+
+            container selected = conNull();
+            for (script = MXTXppInterpreterScript_ds.getFirst(true) ? MXTXppInterpreterScript_ds.getFirst(true) : MXTXppInterpreterScript_ds.cursor();
+                script ; 
+                script = MXTXppInterpreterScript_ds.getNext())
+            {
+                selected += [script.RecId];
+            }
+
+            MXTXppExportScriptHelper::exportAsJson(selected);
         }
 
 ]]></Source>
@@ -146,14 +174,26 @@ public class MXTScriptsFormPart extends FormRun
 									</AxFormControl>
 									<AxFormControl xmlns=""
 										i:type="AxFormButtonControl">
-										<Name>ExportAndDownload</Name>
+										<Name>DownloadAsXml</Name>
 										<Type>Button</Type>
 										<FormControlExtension
 											i:nil="true" />
 										<ButtonDisplay>TextWithImageLeft</ButtonDisplay>
 										<NeedsRecord>Yes</NeedsRecord>
-										<NormalImage>Download</NormalImage>
-										<Text>@MXT:DownloadAsXml</Text>
+										<NormalImage>Export</NormalImage>
+										<Text>@MXT:ExportRunnableClass</Text>
+									</AxFormControl>
+									<AxFormControl xmlns=""
+										i:type="AxFormButtonControl">
+										<Name>DownloadAsMXT</Name>
+										<Type>Button</Type>
+										<FormControlExtension
+											i:nil="true" />
+										<ButtonDisplay>TextWithImageLeft</ButtonDisplay>
+										<MultiSelect>Yes</MultiSelect>
+										<NeedsRecord>Yes</NeedsRecord>
+										<NormalImage>Export</NormalImage>
+										<Text>@MXT:ExportAsJson</Text>
 									</AxFormControl>
 								</Controls>
 							</AxFormControl>
@@ -180,6 +220,7 @@ public class MXTScriptsFormPart extends FormRun
 							i:nil="true" />
 						<DataField>RecId</DataField>
 						<DataSource>MXTXppInterpreterScript</DataSource>
+						<Label>@MXT:ScriptId</Label>
 					</AxFormControl>
 					<AxFormControl xmlns=""
 						i:type="AxFormStringControl">

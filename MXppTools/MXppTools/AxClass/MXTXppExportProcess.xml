@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppExportProcess</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+internal final class MXTXppExportProcess
+{
+    container scriptsToExport;
+    boolean includeNotSelectedScritps,
+            dependenciesDialogShown;
+    str     fileName;
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>new</Name>
+				<Source><![CDATA[
+    void new(container _scripts, str _fileName)
+    {
+        scriptsToExport = _scripts;
+        fileName = _fileName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>export</Name>
+				<Source><![CDATA[
+    public void export()
+    {
+        this.validateDependencies();
+        this.exportToFile();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>exportToFile</Name>
+				<Source><![CDATA[
+    private void exportToFile()
+    {
+        List scripts = new List(Types::Class);
+
+        for (int i = 1; i <= conLen(scriptsToExport); i ++)
+        {
+            MXTXppInterpreterScript script = MXTXppInterpreterScript::find(conPeek(scriptsToExport, i));
+
+            MXTXppScriptEntry entry = new MXTXppScriptEntry();
+
+            entry.parmDescription(script.Description);
+            entry.parmSourceCode(script.SourceCode);
+            entry.parmId(script.RecId);
+
+            // Get dependency list
+            MXTXppInterpreterScriptDependency dependency;
+            List dependencies = new List(Types::Int64);
+
+            while select ReferenceScriptId from dependency
+                where dependency.ScriptId == script.RecId
+            {
+                boolean isDependencyIncluded = conFind(scriptsToExport, dependency.ReferenceScriptId) != 0;
+
+                if (isDependencyIncluded)
+                {
+                    dependencies.addEnd(dependency.ReferenceScriptId);
+                }
+            }
+
+            entry.parmDependencies(dependencies);
+
+            scripts.addEnd(entry);
+        }
+
+        MXTXppScriptCollection collection = new MXTXppScriptCollection();
+        collection.parmScripts(scripts);
+
+        var json = FormJsonSerializer::serializeClass(collection);
+
+        File::SendStringAsFileToUser(json, fileName + ".mxt");
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateDependencies</Name>
+				<Source><![CDATA[
+    private void validateDependencies()
+    {
+        int total = conLen(scriptsToExport);
+        for (int i = 1; i <= total; i++)
+        {
+            this.addDependenciesToExport(conPeek(scriptsToExport, i));
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>addDependenciesToExport</Name>
+				<Source><![CDATA[
+    private void addDependenciesToExport(RecId _scriptId)
+    {
+        MXTXppInterpreterScriptDependency dependency;
+
+        while select ReferenceScriptId from dependency
+            where dependency.ScriptId == _scriptId
+        {
+            boolean isDependencySelected = conFind(scriptsToExport, dependency.ReferenceScriptId) != 0;
+
+            if (!isDependencySelected && !dependenciesDialogShown)
+            {
+                dependenciesDialogShown = true;
+
+                var result = Box::yesNoCancel(
+                    "Some scripts contain dependencies that are not selected for export tha may cause the scripts no not run properly. Do you want to export these dependencies?", 
+                    DialogButton::Yes, 
+                    "Dependencies not included");
+
+                includeNotSelectedScritps = result == DialogButton::Yes;
+
+                if (result == DialogButton::Cancel)
+                {
+                    throw error("Export process cancelled.");
+                }
+            }
+
+            // Stop validating if the dialog is already shown and the option
+            // selected by the user is not include dependencies
+            if (dependenciesDialogShown && !includeNotSelectedScritps)
+            {
+                return;
+            }
+
+            if (!isDependencySelected)
+            {
+                scriptsToExport += [dependency.ReferenceScriptId];
+            }
+
+            this.addDependenciesToExport(dependency.ReferenceScriptId);
+        }
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

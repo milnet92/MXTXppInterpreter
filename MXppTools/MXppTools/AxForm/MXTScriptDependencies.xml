@@ -163,6 +163,7 @@ public class MXTScriptDependencies extends FormRun
 							i:nil="true" />
 						<DataField>ReferenceScriptId</DataField>
 						<DataSource>MXTXppInterpreterScriptDependency</DataSource>
+						<Label>@MXT:ScriptId</Label>
 						<LookupButton>Always</LookupButton>
 					</AxFormControl>
 					<AxFormControl xmlns=""
