@@ -196,7 +196,8 @@ namespace XppInterpreter.Parser
 
         internal Expression Variable(Expression caller = null, bool staticCall = false)
         {
-            var identifier = Match(TType.Id);
+            IScanResult identifier = caller is null ? Match(TType.Id) : MatchAnyWord();
+
             Expression ret;
             SourceCodeBinding debuggeableStartBinding = caller?.SourceCodeBinding ?? new SourceCodeBinding(identifier.Line, identifier.Start, 0, 0);
 
@@ -1110,6 +1111,21 @@ namespace XppInterpreter.Parser
             else
             {
                 ThrowParseException($"Syntax error: {string.Join(", ", ttypes)} expected.");
+            }
+
+            // Move function sets the last scan results
+            return lastScanResult;
+        }
+
+        internal IScanResult MatchAnyWord()
+        {
+            if (currentToken is Word)
+            {
+                Move();
+            }
+            else
+            {
+                ThrowParseException($"Syntax error: Identifier was expected.");
             }
 
             // Move function sets the last scan results
