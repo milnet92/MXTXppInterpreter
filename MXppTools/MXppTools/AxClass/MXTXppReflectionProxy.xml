@@ -95,8 +95,18 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
             {
                 return propertyInfo.GetValue(_instance);
             }
-
-            throw error(strFmt("@MXT:InvalidPropertyError", _propertyName));
+            else
+            {
+                System.Reflection.FieldInfo fieldInfo = _instance.GetType().GetField(_propertyName);
+                if (fieldInfo)
+                {
+                    return fieldInfo.GetValue(_instance);
+                }
+                else
+                {
+                    throw error(strFmt("@MXT:InvalidPropertyError", _propertyName));
+                }
+            }
         }
     }
 
@@ -156,15 +166,24 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
         }
         else
         {
+            // Check if it's actually a property
             System.Reflection.PropertyInfo propertyInfo = _instance.GetType().GetProperty(_propertyName);
-
             if (propertyInfo)
             {
                 propertyInfo.SetValue(_instance, _value);
             }
             else
             {
-                throw error(strFmt("@MXT:InvalidPropertyError", _propertyName));
+                // Check if it's a field
+                System.Reflection.FieldInfo fieldInfo = _instance.GetType().GetField(_propertyName);
+                if (fieldInfo)
+                {
+                    fieldInfo.SetValue(_instance, _value);
+                }
+                else
+                {
+                    throw error(strFmt("@MXT:InvalidPropertyError", _propertyName));
+                }
             }
         }
     }
