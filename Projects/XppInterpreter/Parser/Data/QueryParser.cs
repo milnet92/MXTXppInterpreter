@@ -262,9 +262,10 @@ namespace XppInterpreter.Parser
         {
             var start = Match(TType.While);
             Select select = Select();
+            var end = lastScanResult;
             Block block = Block();
 
-            return new WhileSelect(select, block, SourceCodeBinding(start, lastScanResult), DebuggeableBinding(start));
+            return new WhileSelect(select, block, SourceCodeBinding(start, lastScanResult), SourceCodeBinding(start, end));
         }
 
         internal List<Setting> Settings()
