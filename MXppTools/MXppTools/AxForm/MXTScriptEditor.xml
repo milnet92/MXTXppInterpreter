@@ -15,6 +15,7 @@ public class MXTScriptEditor extends FormRun
     private int normalFGColor = WinAPI::RGB2int(0, 0, 0);
     private int errorFGColor = WinAPI::RGB2int(255, 0, 0);
     private int pausedFGColor = WinAPI::RGB2int(202, 222, 73);
+    private FromTime startTime;
 
     MXTXppInterpreterDebugSession currentSession;
 
@@ -120,12 +121,12 @@ public class MXTScriptEditor extends FormRun
 				<Source><![CDATA[
     private void executionFinished()
     {
-        StaticDisplay.text("@MXT:ExecutionCompleted");
+        StaticDisplay.text(strFmt("@MXT:ExecutionCompleted", timeConsumed(startTime, timeNow())));
 
         MXTXppInterpreterCodeEditorControl.enabled(true);
         ExecuteButton.enabled(true);
         MXTXppInterpreterCodeEditorControl.setFocus();
-
+        
         this.showDebugControls(false);
     }
 
@@ -204,6 +205,8 @@ public class MXTScriptEditor extends FormRun
         // Set back the foreground color and text
         StaticDisplay.foregroundColor(normalFGColor);
         StaticDisplay.text("@MXT:CodeRunning");
+
+        startTime = timeNow();
 
         // Timer is enabled here and the running of the class will pickup in the timer elapsed method.
         // We need to update the UI indicating the class is running.  Running the class here will not update the UI
