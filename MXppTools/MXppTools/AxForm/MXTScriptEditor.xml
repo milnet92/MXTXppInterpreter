@@ -46,6 +46,8 @@ public class MXTScriptEditor extends FormRun
         MXTXppInterpreterCodeEditorControl.setDebugSession(currentSession);
         MXTXppInterpreterVariablesInspectorControl.setDebugSession(currentSession);
 
+        this.updateEditorVisuals();
+
         if (encodedSourceCode)
         {
             try
@@ -267,6 +269,19 @@ public class MXTScriptEditor extends FormRun
     private void visibleDependencies()
     {
         MXTScriptDependencies.visible(callerScript.RecId != 0);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>updateEditorVisuals</Name>
+				<Source><![CDATA[
+    private void updateEditorVisuals()
+    {
+        MXTEditorParameters editorParameters = MXTEditorParameters::find();
+
+        MXTXppInterpreterCodeEditorControl.theme(editorParameters.Theme);
+        MXTXppInterpreterCodeEditorControl.fontSize(editorParameters.FontSize);
     }
 
 ]]></Source>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxEnum xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTEditorTheme</Name>
+	<Label>Theme</Label>
+	<EnumValues>
+		<AxEnumValue>
+			<Name>XCode</Name>
+			<Label>XCode</Label>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Eclipse</Name>
+			<Label>Eclipse</Label>
+			<Value>1</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>GithubLightDefault</Name>
+			<Label>Github Light Default</Label>
+			<Value>2</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>TextMate</Name>
+			<Label>TextMate</Label>
+			<Value>3</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Chrome</Name>
+			<Label>Chrome</Label>
+			<Value>4</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Kuroir</Name>
+			<Label>Kuroir</Label>
+			<Value>5</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Ambiance</Name>
+			<Label>Ambiance (Dark)</Label>
+			<Value>6</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Dracula</Name>
+			<Label>Dracula (Dark)</Label>
+			<Value>7</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Cobalt</Name>
+			<Label>Cobalt (Dark)</Label>
+			<Value>8</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Terminal</Name>
+			<Label>Terminal (Dark)</Label>
+			<Value>9</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>GithubDark</Name>
+			<Label>Github (Dark)</Label>
+			<Value>10</Value>
+		</AxEnumValue>
+	</EnumValues>
+</AxEnum>

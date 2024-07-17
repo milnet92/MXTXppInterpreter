@@ -3,6 +3,19 @@
 
     var lastBreakpointHit = null;
     var Range = ace.require('ace/range').Range;
+    const themes = {
+        "XCode": "xcode",
+        "Eclipse": "eclipse",
+        "GithubLightDefault": "github_light_default",
+        "TextMate": "textmate",
+        "Chrome": "chrome",
+        "Kuroir": "kuroir",
+        "Ambiance": "ambiance",
+        "Dracula": "dracula",
+        "Cobalt": "cobalt",
+        "Terminal": "terminal",
+        "GithubDark": "github_dark"
+    };
 
     function removeMarker(editor, fromLine, fromPosition, toLine, toPosition, className) {
         const prevMarkers = editor.session.getMarkers();
@@ -127,6 +140,7 @@
         editor.setShowFoldWidgets(true);
         editor.session.setMode($dyn.value(this.Mode));
         editor.session.setValue($dyn.value(this.SourceCode));
+        
         editor.setShowPrintMargin(false);
         editor.setOptions({
             behavioursEnabled: true,
@@ -186,6 +200,18 @@
 
         $dyn.observe(this.Enabled, function (value) {
             editor.setReadOnly(!value);
+        });
+
+        $dyn.observe(this.Theme, function (value) {
+            if (value !== null) {
+                editor.setTheme("ace/theme/" + themes[value]);
+            }
+        });
+
+        $dyn.observe(this.FontSize, function (value) {
+            if (value !== null) {
+                editor.setFontSize(value);
+            }
         });
 
         $dyn.observe(this.ParseError, function (value) {

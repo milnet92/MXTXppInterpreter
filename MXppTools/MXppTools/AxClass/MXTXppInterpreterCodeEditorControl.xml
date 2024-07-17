@@ -9,11 +9,12 @@ using XppInterpreter.Interpreter.Debug;
 public class MXTXppInterpreterCodeEditorControl extends FormTemplateControl
 {
     FormProperty sourceCodeProperty;
-    FormProperty themeProperty;
     FormProperty modeProperty;
     FormProperty parseErrorProperty;
     FormProperty breakpointHitProperty;
     FormProperty executionPhaseProperty;
+    FormProperty themeProperty;
+    FormProperty fontSizeProperty;
 
     MXTXppInterpreterDebugSession debugSession;
 
@@ -41,11 +42,13 @@ public class MXTXppInterpreterCodeEditorControl extends FormTemplateControl
         this.setResourceBundleName("/resources/html/MXTXppInterpreterCodeEditor");
 
         sourceCodeProperty = properties.addProperty(methodStr(MXTXppInterpreterCodeEditorControl, sourceCode), Types::String);
-        themeProperty = properties.addProperty(methodStr(MXTXppInterpreterCodeEditorControl, theme), Types::String);
         modeProperty = properties.addProperty(methodStr(MXTXppInterpreterCodeEditorControl, mode), Types::String);
         parseErrorProperty = properties.addProperty(methodStr(MXTXppInterpreterCodeEditorControl, parseError), Types::Class);
         breakpointHitProperty = properties.addProperty(methodStr(MXTXppInterpreterCodeEditorControl, breakpointHit), Types::Class);
         executionPhaseProperty = properties.addProperty(methodStr(MXTXppInterpreterCodeEditorControl, executionPhase), Types::Integer);
+
+        themeProperty = properties.addProperty(methodStr(MXTXppInterpreterCodeEditorControl, theme), Types::Enum);
+        fontSizeProperty = properties.addProperty(methodStr(MXTXppInterpreterCodeEditorControl, fontSize), Types::Integer);
 	}
 
 ]]></Source>
@@ -102,7 +105,7 @@ public class MXTXppInterpreterCodeEditorControl extends FormTemplateControl
 				<Name>theme</Name>
 				<Source><![CDATA[
     [FormPropertyAttribute(FormPropertyKind::Value, "Theme", true)]
-    public str theme(str _value = themeProperty.parmValue())
+    public MXTEditorTheme theme(MXTEditorTheme _value = themeProperty.parmValue())
     {
         if(!prmIsDefault(_value))
         {
@@ -110,6 +113,22 @@ public class MXTXppInterpreterCodeEditorControl extends FormTemplateControl
         }
 
         return themeProperty.parmValue();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>fontSize</Name>
+				<Source><![CDATA[
+    [FormPropertyAttribute(FormPropertyKind::Value, "FontSize", true)]
+    public int fontSize(int _value = fontSizeProperty.parmValue())
+    {
+        if(!prmIsDefault(_value))
+        {
+            fontSizeProperty.setValueOrBinding(_value);
+        }
+
+        return fontSizeProperty.parmValue();
     }
 
 ]]></Source>
