@@ -164,10 +164,13 @@ ace.define('ace/mode/xpp', function (require, exports, module) {
     var TextMode = require("./text").Mode;
     var Tokenizer = require("ace/tokenizer").Tokenizer;
     this.HighlightRules = require("ace/mode/xpp_highlight_rules").CustomScriptHighlightRules;
+    var CstyleBehaviour = require("./behaviour/cstyle").CstyleBehaviour;
 
     var Mode = function () {
         this.$tokenizer = new Tokenizer(new HighlightRules().getRules());
+        this.$behaviour = new CstyleBehaviour();
     };
+
     oop.inherits(Mode, TextMode);
 
     exports.Mode = Mode;
@@ -175,8 +178,9 @@ ace.define('ace/mode/xpp', function (require, exports, module) {
 
 ace.define('ace/mode/xpp_highlight_rules', function (require, exports, module) {
 
-    var oop = require("ace/lib/oop");
-    var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
+    var oop = require("../lib/oop");
+
+    var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;  
     var CustomScriptHighlightRules = function () {
         
     var keywordMapper = this.createKeywordMapper({
@@ -192,8 +196,7 @@ ace.define('ace/mode/xpp_highlight_rules', function (require, exports, module) {
                 {
                     token: "comment",
                     regex: "\\/\\/.*$"
-                },
-                {
+                }, {
                     token: "comment", // multi line comment
                     regex: "\\/\\*",
                     next: "comment"
@@ -253,6 +256,8 @@ ace.define('ace/mode/xpp_highlight_rules', function (require, exports, module) {
                 }
             ]
         };
+
+        this.normalizeRules();
     };
 
     oop.inherits(CustomScriptHighlightRules, TextHighlightRules);

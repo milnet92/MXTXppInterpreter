@@ -30,6 +30,24 @@ public class MXTXppInterpreterScriptDependency extends common
 
 ]]></Source>
 			</Method>
+			<Method>
+				<Name>isDependency</Name>
+				<Source><![CDATA[
+    /// <summary>
+    ///
+    /// </summary>
+    public static boolean isDependency(RecId _scriptId)
+    {
+        MXTXppInterpreterScriptDependency dependency;
+
+        select firstonly RecId from dependency
+            where dependency.ReferenceScriptId == _scriptId;
+
+        return dependency.RecId != 0;
+    }
+
+]]></Source>
+			</Method>
 		</Methods>
 	</SourceCode>
 	<SubscriberAccessLevel>

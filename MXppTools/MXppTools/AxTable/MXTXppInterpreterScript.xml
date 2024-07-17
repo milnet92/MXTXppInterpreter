@@ -28,6 +28,55 @@ public class MXTXppInterpreterScript extends common
 
 ]]></Source>
 			</Method>
+			<Method>
+				<Name>delete</Name>
+				<Source><![CDATA[
+    /// <summary>
+    ///
+    /// </summary>
+    public void delete()
+    {
+        MXTXppInterpreterScriptDependency dependency;
+
+        ttsbegin;
+
+        delete_from dependency
+            where dependency.ScriptId == this.RecId;
+
+        super();
+
+        ttscommit;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateDelete</Name>
+				<Source><![CDATA[
+    /// <summary>
+    ///
+    /// </summary>
+    /// <returns></returns>
+    public boolean validateDelete()
+    {
+        boolean ret;
+    
+        ret = super();
+    
+        if (ret && this.RecId)
+        {
+            // Check if it a dependency exist
+            if (MXTXppInterpreterScriptDependency::isDependency(this.RecId))
+            {
+                return checkFailed("Script cannot be deleted as it is included as a dependency of other scripts. Delete dependant first.");
+            }
+        }
+
+        return ret;
+    }
+
+]]></Source>
+			</Method>
 		</Methods>
 	</SourceCode>
 	<SubscriberAccessLevel>

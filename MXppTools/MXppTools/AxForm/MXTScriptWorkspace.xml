@@ -10,6 +10,7 @@
 public class MXTScriptWorkspace extends FormRun
 {
 }
+
 ]]></Source>
 			</Method>
 		</Methods>
@@ -39,8 +40,7 @@ public class MXTScriptWorkspace extends FormRun
 	<DataSources />
 	<Design>
 		<Caption xmlns="">@MXT:MXTWorkspace</Caption>
-		<Pattern xmlns="">WorkspaceOperational</Pattern>
-		<PatternVersion xmlns="">1.1</PatternVersion>
+		<Pattern xmlns="">Custom</Pattern>
 		<ShowDeleteButton xmlns="">No</ShowDeleteButton>
 		<ShowNewButton xmlns="">No</ShowNewButton>
 		<Style xmlns="">Workspace</Style>
@@ -70,6 +70,31 @@ public class MXTScriptWorkspace extends FormRun
 						<Controls>
 							<AxFormControl xmlns=""
 								i:type="AxFormMenuFunctionButtonControl">
+								<Name>NewScript</Name>
+								<Type>MenuFunctionButton</Type>
+								<FormControlExtension>
+									<Name>TileButtonControl</Name>
+									<ExtensionComponents />
+									<ExtensionProperties>
+										<AxFormControlExtensionProperty>
+											<Name>tile</Name>
+											<Type>String</Type>
+											<Value>MXTNewScriptTile</Value>
+										</AxFormControlExtensionProperty>
+										<AxFormControlExtensionProperty>
+											<Name>tileDisplay</Name>
+											<Type>Enum</Type>
+											<TypeName>TileDisplay</TypeName>
+											<Value>TextAndImage</Value>
+										</AxFormControlExtensionProperty>
+									</ExtensionProperties>
+								</FormControlExtension>
+								<NormalImage>New</NormalImage>
+								<OpenMode>New</OpenMode>
+								<Text>@MXT:NewScript</Text>
+							</AxFormControl>
+							<AxFormControl xmlns=""
+								i:type="AxFormMenuFunctionButtonControl">
 								<Name>OpenEditor</Name>
 								<Type>MenuFunctionButton</Type>
 								<FormControlExtension>
@@ -96,31 +121,6 @@ public class MXTScriptWorkspace extends FormRun
 							</AxFormControl>
 							<AxFormControl xmlns=""
 								i:type="AxFormMenuFunctionButtonControl">
-								<Name>NewScript</Name>
-								<Type>MenuFunctionButton</Type>
-								<FormControlExtension>
-									<Name>TileButtonControl</Name>
-									<ExtensionComponents />
-									<ExtensionProperties>
-										<AxFormControlExtensionProperty>
-											<Name>tile</Name>
-											<Type>String</Type>
-											<Value>MXTNewScriptTile</Value>
-										</AxFormControlExtensionProperty>
-										<AxFormControlExtensionProperty>
-											<Name>tileDisplay</Name>
-											<Type>Enum</Type>
-											<TypeName>TileDisplay</TypeName>
-											<Value>TextAndImage</Value>
-										</AxFormControlExtensionProperty>
-									</ExtensionProperties>
-								</FormControlExtension>
-								<NormalImage>DevelopmentAndTesting</NormalImage>
-								<OpenMode>New</OpenMode>
-								<Text>@MXT:Script</Text>
-							</AxFormControl>
-							<AxFormControl xmlns=""
-								i:type="AxFormMenuFunctionButtonControl">
 								<Name>ImportMXTFile</Name>
 								<Type>MenuFunctionButton</Type>
 								<FormControlExtension>
@@ -142,7 +142,7 @@ public class MXTScriptWorkspace extends FormRun
 								</FormControlExtension>
 								<CopyCallerQuery>No</CopyCallerQuery>
 								<NormalImage>Import</NormalImage>
-								<Text>Import scripts</Text>
+								<Text>@MXT:ImportMXT</Text>
 							</AxFormControl>
 							<AxFormControl xmlns=""
 								i:type="AxFormMenuFunctionButtonControl">
@@ -249,7 +249,7 @@ public class MXTScriptWorkspace extends FormRun
 					</AxFormControl>
 					<AxFormControl xmlns=""
 						i:type="AxFormTabPageControl">
-						<Name>LinksTab</Name>
+						<Name>LinksTabPage</Name>
 						<Pattern>SectionRelatedLinks</Pattern>
 						<PatternVersion>1.1</PatternVersion>
 						<Type>TabPage</Type>

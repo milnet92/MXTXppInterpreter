@@ -10,6 +10,20 @@
 public class MXTInterpreterParameters extends FormRun
 {
 }
+]]></Source>
+			</Method>
+			<Method>
+				<Name>init</Name>
+				<Source><![CDATA[
+    /// <summary>
+    ///
+    /// </summary>
+    public void init()
+    {
+        super();
+
+        MXTXppInterpreterParameters::find();
+    }
 
 ]]></Source>
 			</Method>
@@ -48,69 +62,89 @@ public class MXTInterpreterParameters extends FormRun
 		</AxFormDataSource>
 	</DataSources>
 	<Design>
-		<Caption xmlns="">@MXT:XppInterpreterParameters</Caption>
-		<Pattern xmlns="">Dialog</Pattern>
-		<PatternVersion xmlns="">1.2</PatternVersion>
-		<Style xmlns="">Dialog</Style>
+		<Caption xmlns="">@MXT:XppInterpreterParametersSimple</Caption>
+		<Pattern xmlns="">TableOfContents</Pattern>
+		<PatternVersion xmlns="">1.1</PatternVersion>
+		<Style xmlns="">TableOfContents</Style>
 		<Controls xmlns="">
 			<AxFormControl xmlns=""
-				i:type="AxFormGroupControl">
-				<Name>FormGroupControl1</Name>
-				<HeightMode>SizeToAvailable</HeightMode>
-				<Type>Group</Type>
-				<WidthMode>SizeToAvailable</WidthMode>
+				i:type="AxFormTabControl">
+				<Name>Tab</Name>
+				<Type>Tab</Type>
 				<FormControlExtension
 					i:nil="true" />
 				<Controls>
 					<AxFormControl xmlns=""
-						i:type="AxFormCheckBoxControl">
-						<Name>MXTXppInterpreterParameters_EmitGlobalTtsAbort</Name>
-						<Type>CheckBox</Type>
+						i:type="AxFormTabPageControl">
+						<Name>TabGeneral</Name>
+						<Type>TabPage</Type>
 						<FormControlExtension
 							i:nil="true" />
-						<DataField>EmitGlobalTtsAbort</DataField>
-						<DataSource>MXTXppInterpreterParameters</DataSource>
-					</AxFormControl>
-					<AxFormControl xmlns=""
-						i:type="AxFormIntegerControl">
-						<Name>MXTXppInterpreterParameters_MaxLoopIteratations</Name>
-						<Type>Integer</Type>
-						<FormControlExtension
-							i:nil="true" />
-						<DataField>MaxLoopIteratations</DataField>
-						<DataSource>MXTXppInterpreterParameters</DataSource>
+						<Controls>
+							<AxFormControl xmlns=""
+								i:type="AxFormGroupControl">
+								<Name>FormGroupControl1</Name>
+								<Skip>Yes</Skip>
+								<Type>Group</Type>
+								<WidthMode>SizeToAvailable</WidthMode>
+								<FormControlExtension
+									i:nil="true" />
+								<Controls>
+									<AxFormControl xmlns=""
+										i:type="AxFormStaticTextControl">
+										<Name>FormStaticTextControl1</Name>
+										<Skip>Yes</Skip>
+										<Type>StaticText</Type>
+										<WidthMode>SizeToAvailable</WidthMode>
+										<FormControlExtension
+											i:nil="true" />
+										<Style>MainInstruction</Style>
+										<Text>@MXT:XppInterpreterParameters</Text>
+									</AxFormControl>
+								</Controls>
+								<AllowUserSetup>No</AllowUserSetup>
+								<FrameType>None</FrameType>
+								<Style>TOCTitleContainer</Style>
+							</AxFormControl>
+							<AxFormControl xmlns=""
+								i:type="AxFormGroupControl">
+								<Name>InterpreterParametersGroup</Name>
+								<HeightMode>SizeToAvailable</HeightMode>
+								<Pattern>FieldsFieldGroups</Pattern>
+								<PatternVersion>1.1</PatternVersion>
+								<Type>Group</Type>
+								<WidthMode>SizeToAvailable</WidthMode>
+								<FormControlExtension
+									i:nil="true" />
+								<Controls>
+									<AxFormControl xmlns=""
+										i:type="AxFormIntegerControl">
+										<Name>MXTXppInterpreterParameters_MaxLoopIteratations</Name>
+										<Type>Integer</Type>
+										<FormControlExtension
+											i:nil="true" />
+										<DataField>MaxLoopIteratations</DataField>
+										<DataSource>MXTXppInterpreterParameters</DataSource>
+									</AxFormControl>
+									<AxFormControl xmlns=""
+										i:type="AxFormCheckBoxControl">
+										<Name>MXTXppInterpreterParameters_EmitGlobalTtsAbort</Name>
+										<Type>CheckBox</Type>
+										<FormControlExtension
+											i:nil="true" />
+										<DataField>EmitGlobalTtsAbort</DataField>
+										<DataSource>MXTXppInterpreterParameters</DataSource>
+									</AxFormControl>
+								</Controls>
+								<ColumnsMode>Fill</ColumnsMode>
+								<DataSource>MXTXppInterpreterParameters</DataSource>
+								<FrameType>None</FrameType>
+							</AxFormControl>
+						</Controls>
+						<Caption>@MXT:Interpreter</Caption>
 					</AxFormControl>
 				</Controls>
-				<Style>DialogContent</Style>
-			</AxFormControl>
-			<AxFormControl xmlns=""
-				i:type="AxFormButtonGroupControl">
-				<Name>ButtonGroup</Name>
-				<Type>ButtonGroup</Type>
-				<WidthMode>SizeToAvailable</WidthMode>
-				<FormControlExtension
-					i:nil="true" />
-				<Controls>
-					<AxFormControl xmlns=""
-						i:type="AxFormCommandButtonControl">
-						<Name>ButtonOk</Name>
-						<Type>CommandButton</Type>
-						<FormControlExtension
-							i:nil="true" />
-						<Command>OK</Command>
-					</AxFormControl>
-					<AxFormControl xmlns=""
-						i:type="AxFormCommandButtonControl">
-						<Name>ButtonCancel</Name>
-						<Type>CommandButton</Type>
-						<FormControlExtension
-							i:nil="true" />
-						<Command>Cancel</Command>
-						<SaveRecord>No</SaveRecord>
-					</AxFormControl>
-				</Controls>
-				<ArrangeMethod>HorizontalRight</ArrangeMethod>
-				<Style>DialogCommitContainer</Style>
+				<Style>VerticalTabs</Style>
 			</AxFormControl>
 		</Controls>
 	</Design>

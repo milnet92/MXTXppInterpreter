@@ -128,7 +128,10 @@
         editor.session.setMode($dyn.value(this.Mode));
         editor.session.setValue($dyn.value(this.SourceCode));
         editor.setShowPrintMargin(false);
-        
+        editor.setOptions({
+            behavioursEnabled: true,
+            wrapBehavioursEnabled: true
+        });
         editor.clearSelection();
 
         editor.session.on('change', function (delta) {

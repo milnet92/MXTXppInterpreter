@@ -4,5 +4,6 @@
 	<Label>@MXT:MXTWorkspace</Label>
 	<MenuItemName>MXTScriptWorkspace</MenuItemName>
 	<NormalImage>DevelopmentAndTesting</NormalImage>
+	<Size>Wide</Size>
 	<TileDisplay>BackgroundImage</TileDisplay>
 </AxTile>
