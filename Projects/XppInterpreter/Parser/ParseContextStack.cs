@@ -2,20 +2,28 @@
 
 namespace XppInterpreter.Parser
 {
-    class ParseContextStack
+    class ParseContextStack : ParseContextStack<bool>
     {
-        private readonly Stack<bool> _stack = new Stack<bool>();
-
         public bool Empty => _stack.Count == 0;
 
         public void New()
         {
-            _stack.Push(true);
+            New(true);
+        }
+    }
+
+    class ParseContextStack<T>
+    {
+        protected readonly Stack<T> _stack = new Stack<T>();
+
+        public void New(T value)
+        {
+            _stack.Push(value);
         }
 
-        public void Release()
+        public T Release()
         {
-            _stack.Pop();
+            return _stack.Pop();
         }
     }
 }

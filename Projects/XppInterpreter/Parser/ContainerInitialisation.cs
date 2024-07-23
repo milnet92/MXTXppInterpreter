@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using XppInterpreter.Interpreter;
+using XppInterpreter.Parser.Completer;
 
 namespace XppInterpreter.Parser
 {
@@ -17,6 +18,11 @@ namespace XppInterpreter.Parser
         public override void Accept(IAstVisitor interpreter)
         {
             interpreter.VisitContainerInitialisation(this);
+        }
+
+        internal override System.Type Accept(ITypeInferExpressionVisitor inferer)
+        {
+            return inferer.VisitContainerInitialisation(this);
         }
     }
 }

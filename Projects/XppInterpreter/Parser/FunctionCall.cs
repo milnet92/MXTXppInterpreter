@@ -3,6 +3,7 @@ using System.Diagnostics;
 using XppInterpreter.Interpreter;
 using XppInterpreter.Interpreter.Debug;
 using XppInterpreter.Lexer;
+using XppInterpreter.Parser.Completer;
 
 namespace XppInterpreter.Parser
 {
@@ -29,6 +30,10 @@ namespace XppInterpreter.Parser
         public override void Accept(IAstVisitor interpreter)
         {
             interpreter.VisitFunctionCall(this);
+        }
+        internal override System.Type Accept(ITypeInferExpressionVisitor inferer)
+        {
+            return inferer.VisitFunctionCall(this);
         }
     }
 }

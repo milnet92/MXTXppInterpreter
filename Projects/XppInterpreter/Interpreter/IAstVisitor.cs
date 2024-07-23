@@ -5,7 +5,7 @@ namespace XppInterpreter.Interpreter
     /// <summary>
     /// Abstract syntax tree visitor interface
     /// </summary>
-    public interface IAstVisitor
+    public interface IAstVisitor : IExpressionVisitor
     {
         void VisitPrint(Print print);
         void VisitReturn(Return @return);
@@ -19,17 +19,13 @@ namespace XppInterpreter.Interpreter
         void VisitNext(Next next);
         void VisitWhileSelect(WhileSelect whileSelect);
         void VisitChangeCompany(ChangeCompany changeCompany);
-        void VisitContainerInitialisation(ContainerInitialisation containerInitialisation);
         void VisitTtsCommit(TtsCommit ttsCommit);
         void VisitSwitch(Switch @switch);
         void VisitTtsBegin(TtsBegin ttsBegin);
         void VisitTtsAbort(TtsAbort ttsAbort);
         void VisitLoopControl(LoopControl loopControl);
-        void VisitConstructor(Constructor constructor);
         void VisitAssignment(Assignment assignment);
-        void VisitBinaryOperation(BinaryOperation binaryOperation);
         void VisitBlock(Block block);
-        void VisitConstant(Constant constant);
         void VisitDo(Do @do);
         void VisitElse(Else @else);
         void VisitFor(For @for);
@@ -38,9 +34,6 @@ namespace XppInterpreter.Interpreter
         void VisitIf(If @if);
         void VisitWhile(While @while);
         void VisitFunctionCall(FunctionCall functionCall);
-        void VisitTernary(Ternary ternary);
-        void VisitUnaryOperation(UnaryOperation unaryOperation);
-        void VisitVariable(Variable variable);
         void VisitVariableDeclarations(VariableDeclarations variableDeclaration);
     }
 }

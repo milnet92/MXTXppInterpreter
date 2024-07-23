@@ -296,6 +296,19 @@ public class MXTXppInterpreterCodeEditorControl extends FormTemplateControl
 
 ]]></Source>
 			</Method>
+			<Method>
+				<Name>GetAutoCompletions</Name>
+				<Source><![CDATA[
+    [FormCommand("GetAutocompletions", true)]
+    public MXTXppCompletionsContract GetAutoCompletions(int _line, int _position, boolean _staticCompletion)
+    {
+        if (debugSession == null) return null;
+
+        return debugSession.getCompletions(_line, _position, _staticCompletion, this.sourceCode());
+    }
+
+]]></Source>
+			</Method>
 		</Methods>
 	</SourceCode>
 </AxClass>

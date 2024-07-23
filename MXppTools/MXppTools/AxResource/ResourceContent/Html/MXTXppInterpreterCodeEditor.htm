@@ -1,4 +1,5 @@
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.33.0/ace.js"></script>
+<script src="https://www.unpkg.com/ace-builds@latest/src-noconflict/ace.js"></script>
+<script src="https://www.unpkg.com/ace-builds@latest/src-noconflict/ext-language_tools.js"></script>
 <script src="/resources/scripts/MXTXppInterpreterCodeEditor.js"></script>
 <script src="/resources/scripts/MXTXppInterpreterEditorHighlighter.js"></script>
 
@@ -38,7 +39,7 @@
 
 <div id="MXTXppInterpreterCodeEditor"
      data-dyn-bind="
-     sizing: { height: $data.Height, width: $data.Width },
+     sizing: $dyn.layout.sizing($data),
      visible: $data.Visible,
      keyDown: $data.keydown">
     <div id="editor"

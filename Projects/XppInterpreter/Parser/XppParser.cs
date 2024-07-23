@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using XppInterpreter.Core;
 using XppInterpreter.Lexer;
+using XppInterpreter.Parser.Completer;
 
 namespace XppInterpreter.Parser
 {
@@ -17,6 +18,10 @@ namespace XppInterpreter.Parser
         private readonly ILexer _lexer;
         private readonly ParseContext _parseContext = new ParseContext();
         private readonly Interpreter.Proxy.XppProxy _proxy;
+
+        private bool forAutoCompletion;
+        private int autocompletionRow, autocompletionColumn;
+        private XppTypeInferer typeInferer = null;
 
         IScanResult AdvancePeek(bool reset = false)
         {
@@ -43,8 +48,33 @@ namespace XppInterpreter.Parser
         public IAstNode Parse()
         {
             Initialize();
-
             return Program();
+        }
+
+        public System.Type ParseForAutoCompletion(int row, int column)
+        {
+            Initialize();
+
+            forAutoCompletion = true;
+            autocompletionRow = row;
+            autocompletionColumn = column;
+
+            typeInferer = new XppTypeInferer(_proxy);
+
+            try
+            {
+                Parse();
+            }
+            catch (AutoCompleteInterruption interruption)
+            {
+                return interruption.InferedType;
+            }
+            catch
+            {
+                return null;
+            }
+
+            return null;
         }
 
         internal Program Program()
@@ -62,6 +92,8 @@ namespace XppInterpreter.Parser
 
         internal Block Block()
         {
+            _parseContext.BeginScope();
+
             var start = Match(TType.LeftBrace);
             var stmts = new List<Statement>();
 
@@ -71,6 +103,8 @@ namespace XppInterpreter.Parser
             }
 
             var end = Match(TType.RightBrace);
+
+            _parseContext.EndScope();
 
             return new Block(stmts, SourceCodeBinding(start, end), DebuggeableBinding(start));
         }
@@ -270,8 +304,10 @@ namespace XppInterpreter.Parser
                     ThrowParseException($"Syntax error. Token {currentToken.TokenType} was not expected.");
                 }
 
-                var match = MatchMultiple(TType.Dot, TType.StaticDoubleDot);
-                ret = Variable(ret, match.Token.TokenType == TType.StaticDoubleDot);
+                MatchMultiple(TType.Dot, TType.StaticDoubleDot);
+                HandleAutocompletion(ret);
+
+                ret = Variable(ret, lastScanResult.Token.TokenType == TType.StaticDoubleDot);
             }
 
 
@@ -502,14 +538,28 @@ namespace XppInterpreter.Parser
                 Match(TType.Semicolon);
             }
 
+            VariableDeclarations ret;
+
             if (isArray)
             {
-                return new VariableArrayDeclaration((Word)type, arrayIdentifier, arraySize, SourceCodeBinding(start, lastScanResult));
+                ret = new VariableArrayDeclaration((Word)type, arrayIdentifier, arraySize, SourceCodeBinding(start, lastScanResult));
             }
             else
             {
-                return new VariableDeclarations((Word)type, declarations, SourceCodeBinding(start, lastScanResult));
+                ret = new VariableDeclarations((Word)type, declarations, SourceCodeBinding(start, lastScanResult));
             }
+
+            if (forAutoCompletion)
+            {
+                foreach (var identifier in ret.Identifiers.Keys)
+                {
+                    typeInferer.AddExpressionType(identifier.Lexeme, ret.VariableType);
+                }
+            }
+
+            _parseContext.CurrentScope.VariableDeclarations.Add(ret);
+
+            return ret;
         }
 
         internal LoopControl LoopControl()
@@ -1161,6 +1211,19 @@ namespace XppInterpreter.Parser
             lastScanResult = currentScanResult;
             currentScanResult = _lexer.GetNextToken();
             currentToken = currentScanResult.Token;
+        }
+
+        internal void HandleAutocompletion(Expression expression)
+        {
+            if (forAutoCompletion)
+            {
+                if (lastScanResult.Line == autocompletionRow &&
+                    lastScanResult.Start <= autocompletionColumn &&
+                    lastScanResult.End >= autocompletionColumn)
+                {
+                    throw new AutoCompleteInterruption(typeInferer.InferType(expression, lastScanResult.Token));
+                }
+            }
         }
 
         internal SourceCodeBinding DebuggeableBinding(IScanResult scanResult)

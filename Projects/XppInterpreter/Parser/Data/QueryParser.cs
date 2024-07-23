@@ -89,6 +89,8 @@ namespace XppInterpreter.Parser
 
                 var tableNameVar = (Word)Match(TType.Id).Token;
                 Match(TType.Dot);
+                HandleAutocompletion(new Variable(tableNameVar, null, false, null));
+
                 var fieldNameVar = (Word)Match(TType.Id).Token;
 
                 ret.Add(new Field(tableNameVar.Lexeme, fieldNameVar.Lexeme));
@@ -113,7 +115,10 @@ namespace XppInterpreter.Parser
                 }
 
                 var tableNameVar = (Word)Match(TType.Id).Token;
+
                 Match(TType.Dot);
+                HandleAutocompletion(new Variable(tableNameVar, null, false, null));
+
                 var fieldNameVar = (Word)Match(TType.Id).Token;
 
                 OrderByType orderByType = OrderByType.Unespecified;

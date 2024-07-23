@@ -158,6 +158,10 @@ var intrinsicFunctions = [
 var keywordString = keywords.join("|");
 var intrinsicFunctionString = intrinsicFunctions.join("|");
 
+var keywordsCompleterList = keywords.map(function (e) { return { value: e, name: e, meta: "keyword" } });
+var intrinsicCompleterList = intrinsicFunctions.map(function (e) { return { value: e, name: e, meta: "predefined function" } });
+
+
 ace.define('ace/mode/xpp', function (require, exports, module) {
 
     var oop = require("ace/lib/oop");
@@ -169,6 +173,7 @@ ace.define('ace/mode/xpp', function (require, exports, module) {
     var Mode = function () {
         this.$tokenizer = new Tokenizer(new HighlightRules().getRules());
         this.$behaviour = new CstyleBehaviour();
+        this.$keywordList = [];
     };
 
     oop.inherits(Mode, TextMode);
@@ -240,7 +245,7 @@ ace.define('ace/mode/xpp_highlight_rules', function (require, exports, module) {
                     regex: "[[({]"
                 }, {
                     token: "paren.rparen", 
-                    regex: "[\\])}]"
+                    regex: "[[){]"
                 }, {
                     token: "text",
                     regex: "\\s+"

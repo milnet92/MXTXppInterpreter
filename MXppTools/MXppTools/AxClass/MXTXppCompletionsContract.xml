@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppCompletionsContract</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+[DataContract]
+public final class MXTXppCompletionsContract
+{
+    List completions = new List(Types::Class);
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>parmCompletions</Name>
+				<Source><![CDATA[
+    [DataMember("Completions"),
+     AifCollectionType("_completions", Types::Class)]
+    public List parmCompletions(List _completions = completions)
+    {
+        completions = _completions;
+        return completions;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

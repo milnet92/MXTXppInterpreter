@@ -18,5 +18,6 @@ namespace XppInterpreter.Parser
         }
 
         public abstract void Accept(IAstVisitor interpreter);
+        internal abstract System.Type Accept(Completer.ITypeInferExpressionVisitor inferer);
     }
 }

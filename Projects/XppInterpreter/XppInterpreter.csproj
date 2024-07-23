@@ -116,6 +116,7 @@
     <Compile Include="Interpreter\Debug\XppDebugger.cs" />
     <Compile Include="Interpreter\Debug\IDebugger.cs" />
     <Compile Include="Interpreter\IAstVisitor.cs" />
+    <Compile Include="Interpreter\IExpressionVisitor.cs" />
     <Compile Include="Interpreter\InterpreterResult.cs" />
     <Compile Include="Interpreter\InterpreterSaveState.cs" />
     <Compile Include="Interpreter\Proxy\IXppQueryGenerationProxy.cs" />
@@ -151,6 +152,12 @@
     <Compile Include="Parser\Block.cs" />
     <Compile Include="Parser\Breakpoint.cs" />
     <Compile Include="Parser\ChangeCompany.cs" />
+    <Compile Include="Parser\Completer\AutoCompleteInterruption.cs" />
+    <Compile Include="Parser\Completer\CompletionCollection.cs" />
+    <Compile Include="Parser\Completer\Completion.cs" />
+    <Compile Include="Parser\Completer\CompletionProvider.cs" />
+    <Compile Include="Parser\Completer\ITypeInferExpressionVisitor.cs" />
+    <Compile Include="Parser\Completer\XppTypeInferer.cs" />
     <Compile Include="Parser\Constant.cs" />
     <Compile Include="Parser\Constructor.cs" />
     <Compile Include="Parser\ContainerInitialisation.cs" />
@@ -162,6 +169,7 @@
     <Compile Include="Parser\FunctionDeclarationParameter.cs" />
     <Compile Include="Parser\InsertRecordset.cs" />
     <Compile Include="Parser\ParseContext.cs" />
+    <Compile Include="Parser\ParseContextScope.cs" />
     <Compile Include="Parser\ParseContextStack.cs" />
     <Compile Include="Parser\Print.cs" />
     <Compile Include="Parser\Return.cs" />

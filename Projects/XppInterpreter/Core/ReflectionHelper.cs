@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 
 namespace XppInterpreter.Core
 {
@@ -35,13 +36,50 @@ namespace XppInterpreter.Core
 
         public static bool TypeHasMethod(Type type, string methodName)
         {
+            if (type is null) return false;
+
             return type.GetMethods().Any(m => m.Name?.ToLower() == methodName.ToLower());
+        }
+
+        public static bool TypeHasProperty(Type type, string propertyName)
+        {
+            if (type is null) return false;
+            return type.GetProperties().Any(p => p.Name?.ToLower() == propertyName.ToLower());
+        }
+
+        public static bool TypeHasField(Type type, string fieldName)
+        {
+            if (type is null) return false;
+            return type.GetFields().Any(f => f.Name?.ToLower() == fieldName.ToLower());
         }
 
         public static string GetMethodInvariantName(Type type, string methodName)
         {
             return TypeHasMethod(type, methodName)
                 ? type.GetMethods().FirstOrDefault(m => m.Name.ToLowerInvariant() == methodName.ToLowerInvariant()).Name
+                : null;
+        }
+
+        public static PropertyInfo GetProperty(Type type, string propertyName)
+        {
+            return TypeHasProperty(type, propertyName)
+                ? type.GetProperties().FirstOrDefault(p => p.Name.ToLowerInvariant() == propertyName.ToLowerInvariant())
+                : null;
+        }
+
+        public static FieldInfo GetField(Type type, string fieldName)
+        {
+            return TypeHasField(type, fieldName)
+                ? type.GetFields().FirstOrDefault(f => f.Name.ToLowerInvariant() == fieldName.ToLowerInvariant())
+                : null;
+        }
+
+        public static MethodInfo GetMethod(Type type, string methodName)
+        {
+            string invariantMethodName = GetMethodInvariantName(type, methodName);
+
+            return !string.IsNullOrEmpty(invariantMethodName)
+                ? type.GetMethods().FirstOrDefault(m => m.Name.ToLowerInvariant() == methodName.ToLowerInvariant())
                 : null;
         }
     }

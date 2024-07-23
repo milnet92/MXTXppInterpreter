@@ -129,23 +129,76 @@
                 win: "Enter"
             },
             exec: function () {
-                editor.session.insert(editor.getCursorPosition(), "\n");
+                editor.insert("\n");
+            }
+        }
+
+        /// Setup completer
+        ace.require("ace/ext/language_tools");
+        var xppCompleter = {
+
+            getCompletions: (editor, session, pos, prefix, callback) => {
+
+                var TokenIterator = ace.require("ace/token_iterator").TokenIterator;
+                var stream = new TokenIterator(editor.session, pos.row, pos.column);
+
+                var currentToken = stream.getCurrentToken();
+                console.log(currentToken);
+
+                if (currentToken) {
+
+                    var triggerChar = currentToken.value;
+                    var previousToken = stream.stepBackward();
+
+                    // Ignore trigger for numbers
+                    if (previousToken && !isNaN(previousToken.value)) return callback(null, []);
+
+                    if (previousToken && (previousToken.type = 'identifier' || previousToken.value.endsWith(')')) &&
+                        triggerChar.includes('::') || triggerChar.startsWith('.')) {
+
+                        clearTimeout(change_timer);
+                        return $dyn.callFunction(self.GetAutocompletions, self, { _line: pos.row, _position: pos.column - 1, _staticCompletion: triggerChar.includes('::') }, function (ret) {
+                            console.log(ret);
+                            ret && callback(null, ret.Completions.map(function (c) {
+                                return {
+                                    value: c.Value,
+                                    name: c.Value,
+                                    meta: c.Type
+                                };
+                            }));
+                        });
+                    }
+                    else if (previousToken && triggerChar.includes(':')) return callback(null, []);
+                }
+
+                callback(null, [...intrinsicCompleterList, ...keywordsCompleterList]);
             }
         }
 
         var editor = ace.edit("editor");
         var change_timer;
 
+        var Autocomplete = ace.require("ace/autocomplete").Autocomplete;
+        editor.commands.on("afterExec", function (e) {
+            if (e.command.name == "insertstring" && (e.args == ':' || e.args == '.')) {
+                if (!editor.completer) editor.completer = new Autocomplete(); // not initialized until it's first needed
+                editor.completer.showPopup(editor);
+            }
+        });
+
         editor.commands.addCommand(command);
         editor.setShowFoldWidgets(true);
         editor.session.setMode($dyn.value(this.Mode));
         editor.session.setValue($dyn.value(this.SourceCode));
-        
+        editor.completers = [xppCompleter];
         editor.setShowPrintMargin(false);
         editor.setOptions({
             behavioursEnabled: true,
-            wrapBehavioursEnabled: true
+            wrapBehavioursEnabled: true,
+            enableBasicAutocompletion: true,
+            enableLiveAutocompletion: false
         });
+
         editor.clearSelection();
 
         editor.session.on('change', function (delta) {
