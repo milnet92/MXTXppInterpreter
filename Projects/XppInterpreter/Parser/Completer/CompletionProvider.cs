@@ -88,23 +88,53 @@ namespace XppInterpreter.Parser.Completer
             if (type is null) return;
 
             // Add public methods
-            foreach (var method in GetMethods(type, @static).GroupBy(m => m.Name))
+            foreach (var methods in GetMethods(type, @static).GroupBy(m => m.Name))
             {
-                completions.Add(new Completion(method.Key, method.Key, CompletionEntryType.Method));
+                StringBuilder docHtmlBuilder = new StringBuilder();
+
+                foreach (var method in methods)
+                {
+                    docHtmlBuilder.AppendLine(method.GenerateCompleterDocHtml(_proxy));
+                }
+
+                completions.Add(new Completion(methods.Key, methods.Key, CompletionEntryType.Method)
+                {
+                    DocHtml = docHtmlBuilder.ToString()
+                });
             }
 
             bool isCommon = _proxy.Reflection.IsCommonType(type);
 
             // Add fields
-            foreach (var field in GetFields(type, @static).GroupBy(m => m.Name))
+            foreach (var fieldGroup in GetFields(type, @static).GroupBy(m => m.Name))
             {
-                completions.Add(new Completion(field.Key, field.Key, isCommon ? CompletionEntryType.TableField : CompletionEntryType.ClassProperty));
+                StringBuilder docHtmlBuilder = new StringBuilder();
+
+                foreach (var field in fieldGroup)
+                {
+                    docHtmlBuilder.AppendLine(field.GenerateCompleterDocHtml(_proxy));
+                }
+
+                completions.Add(new Completion(fieldGroup.Key, fieldGroup.Key, isCommon ? CompletionEntryType.TableField : CompletionEntryType.ClassProperty)
+                {
+                    DocHtml = docHtmlBuilder.ToString()
+                });
             }
 
             // Add properties
-            foreach (var property in GetProperties(type, @static).GroupBy(m => m.Name))
+            foreach (var propertyGroup in GetProperties(type, @static).GroupBy(m => m.Name))
             {
-                completions.Add(new Completion(property.Key, property.Key, isCommon ? CompletionEntryType.TableField : CompletionEntryType.ClassProperty));
+                StringBuilder docHtmlBuilder = new StringBuilder();
+
+                foreach (var property in propertyGroup)
+                {
+                    docHtmlBuilder.AppendLine(property.GenerateCompleterDocHtml(_proxy));
+                }
+
+                completions.Add(new Completion(propertyGroup.Key, propertyGroup.Key, isCommon ? CompletionEntryType.TableField : CompletionEntryType.ClassProperty)
+                {
+                    DocHtml = docHtmlBuilder.ToString()
+                });
             }
         }
     }

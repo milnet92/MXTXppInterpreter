@@ -460,6 +460,7 @@ public class MXTXppInterpreterDebugSession
 
             entry.parmValue(completion.Value);
             entry.parmEntryType(completion.EntryType.ToString());
+            entry.parmDocHtml(completion.DocHtml);
 
             completions.addEnd(entry);
         }

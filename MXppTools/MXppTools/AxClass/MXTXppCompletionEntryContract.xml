@@ -10,6 +10,7 @@ public final class MXTXppCompletionEntryContract
 {
     str value;
     str entryType;
+    str docHtml;
 
 }
 ]]></Declaration>
@@ -34,6 +35,18 @@ public final class MXTXppCompletionEntryContract
     {
         entryType = _entryType;
         return entryType;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmDocHtml</Name>
+				<Source><![CDATA[
+    [DataMember("DocHtml")]
+    public str parmDocHtml(str _docHtml = docHtml)
+    {
+        docHtml = _docHtml;
+        return docHtml;
     }
 
 ]]></Source>

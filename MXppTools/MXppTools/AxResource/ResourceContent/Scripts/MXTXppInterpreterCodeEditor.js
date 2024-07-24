@@ -163,7 +163,8 @@
                                 return {
                                     value: c.Value,
                                     name: c.Value,
-                                    meta: c.Type
+                                    meta: c.Type,
+                                    docHTML: c.DocHtml
                                 };
                             }));
                         });

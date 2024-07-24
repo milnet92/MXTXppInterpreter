@@ -153,6 +153,7 @@
     <Compile Include="Parser\Breakpoint.cs" />
     <Compile Include="Parser\ChangeCompany.cs" />
     <Compile Include="Parser\Completer\AutoCompleteInterruption.cs" />
+    <Compile Include="Parser\Completer\CompleterExtensions.cs" />
     <Compile Include="Parser\Completer\CompletionCollection.cs" />
     <Compile Include="Parser\Completer\Completion.cs" />
     <Compile Include="Parser\Completer\CompletionProvider.cs" />
