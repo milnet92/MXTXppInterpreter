@@ -22,6 +22,12 @@ namespace XppInterpreter.Parser.Completer
         {
             _list.Add(completion);
         }
+
+        public void Union(CompletionCollection completions)
+        {
+            this._list.AddRange(completions._list);
+        }
+
         public bool Remove(Completion completion)
         {
             return _list.Remove(completion);

@@ -551,9 +551,9 @@ namespace XppInterpreter.Parser
 
             if (forAutoCompletion)
             {
-                foreach (var identifier in ret.Identifiers.Keys)
+                foreach (var identifier in ret.Identifiers)
                 {
-                    typeInferer.AddExpressionType(identifier.Lexeme, ret.VariableType);
+                    typeInferer.AddExpressionType(identifier.Key.Lexeme, ret.VariableType, identifier.Value);
                 }
             }
 

@@ -17,22 +17,36 @@ namespace XppInterpreter.Parser.Completer
             _proxy = proxy;
         }
 
-        public CompletionCollection GetCompletions(string sourceCode, int row, int column, bool isStatic)
+        public CompletionCollection GetCompletions(ICompletionProvider nativeProvider, string sourceCode, int row, int column, bool isStatic)
         {
             XppLexer lexer = new XppLexer(sourceCode);
             XppParser parser = new XppParser(lexer, _proxy);
 
             System.Type inferedType = parser.ParseForAutoCompletion(row, column);
 
+            if (inferedType is null) return new CompletionCollection();
+
             CompletionCollection completions = new CompletionCollection();
 
-            if (isStatic)
+            if (_proxy.Reflection.IsCommonType(inferedType))
             {
-                AddStaticCompletions(inferedType, completions);
+                completions.Union(nativeProvider.GetTableMethodCompletions(inferedType.Name, isStatic));
+
+                if (!isStatic)
+                {
+                    completions.Union(nativeProvider.GetTableFieldsCompletions(inferedType.Name));
+                }
             }
             else
             {
-                AddInstanceCompletions(inferedType, completions);
+                if (isStatic && _proxy.Reflection.IsEnum(inferedType.Name))
+                {
+                    completions.Union(nativeProvider.GetEnumCompletions(inferedType.Name));
+                }
+                else
+                {
+                    completions.Union(nativeProvider.GetClassMethodCompletions(inferedType.Name, isStatic));
+                }
             }
 
             return completions;
@@ -66,7 +80,13 @@ namespace XppInterpreter.Parser.Completer
         {
             System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.Public | (@static ? System.Reflection.BindingFlags.Static : System.Reflection.BindingFlags.Instance);
 
-            return type.GetMethods(flags).Where(m => !m.IsSpecialName && !m.IsHideBySig && !m.Name.StartsWith("_") && !m.Name.StartsWith("`") && !m.Name.StartsWith("$"));
+            return type.GetMethods(flags)
+                .Where(m => 
+                !m.IsSpecialName 
+                && (!m.IsHideBySig || (m.Attributes & System.Reflection.MethodAttributes.VtableLayoutMask) == System.Reflection.MethodAttributes.NewSlot)
+                && !m.Name.StartsWith("_") 
+                && !m.Name.StartsWith("`") 
+                && !m.Name.StartsWith("$"));
         }
 
         private IEnumerable<System.Reflection.FieldInfo> GetFields(System.Type type, bool @static)

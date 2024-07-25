@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppCompletionProvider</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+using XppInterpreter.Parser.Completer;
+
+public final class MXTXppCompletionProvider implements ICompletionProvider
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>getMethodDocumentation</Name>
+				<Source><![CDATA[
+    private str getMethodDocumentation(SysDictMethod _method)
+    {
+        return _method.syntax();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>fillMethodCompletions</Name>
+				<Source><![CDATA[
+    private void fillMethodCompletions(Set _methods, boolean _isTable, CompletionCollection _completions)
+    {
+        SetEnumerator enumerator = _methods.getEnumerator();
+
+        while (enumerator.moveNext())
+        {
+            SysDictMethod method = enumerator.current() as SysDictMethod;
+
+            Completion completion = new Completion(method.name(), method.name(), method.isStatic() ? CompletionEntryType::StaticMethod : CompletionEntryType::Method);
+            completion.DocHtml = '<span>' + this.getMethodDocumentation(method) + '</span>';
+
+            _completions.Add(completion);
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetTableMethodCompletions</Name>
+				<Source><![CDATA[
+    CompletionCollection GetTableMethodCompletions(str _tableName, boolean _isStatic)
+    {
+        CompletionCollection completions = new CompletionCollection();
+
+        SysDictTable dictTable = SysDictTable::newName(_tableName);
+
+        if (!dictTable) return completions;
+
+        this.fillMethodCompletions(dictTable.methods(!_isStatic, _isStatic, true), true, completions);
+
+        return completions;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetTableFieldsCompletions</Name>
+				<Source><![CDATA[
+    CompletionCollection GetTableFieldsCompletions(str _tableName)
+    {
+        CompletionCollection completions = new CompletionCollection();
+
+        SysDictTable dictTable = SysDictTable::newName(_tableName);
+
+        if (!dictTable) return completions;
+
+        FieldId      fieldId = dictTable.fieldNext(0, TableScope::IncludeBaseTables);
+        SysDictField dictField;
+
+        while (fieldId)
+        {
+            dictField = new SysDictField(dictTable.id(), fieldId);
+
+            Completion completion = new Completion(dictField.name(), dictField.name(), CompletionEntryType::TableField);
+            completion.DocHtml = '<span>' + dictField.name() + " " + dictField.typeName() + '</span>';
+
+            completions.Add(completion);
+
+            fieldId = dictTable.fieldNext(fieldId, TableScope::IncludeBaseTables);
+        }
+
+        return completions;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetClassMethodCompletions</Name>
+				<Source><![CDATA[
+    CompletionCollection GetClassMethodCompletions(str _className, boolean _isStatic)
+    {
+        CompletionCollection completions = new CompletionCollection();
+
+        SysDictClass dictClass = SysDictClass::newName(_className);
+
+        if (!dictClass) return completions;
+
+        this.fillMethodCompletions(dictClass.methods(!_isStatic, _isStatic, true), false, completions);
+
+        return completions;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetEnumCompletions</Name>
+				<Source><![CDATA[
+    CompletionCollection GetEnumCompletions(str _enumName)
+    {
+        CompletionCollection completions = new CompletionCollection();
+        
+        SysDictEnum dictEnum = new SysDictEnum(enumName2Id(_enumName));
+
+        if (!dictEnum) return completions;
+
+        for (int i = 0; i < dictEnum.values(); i++)
+        {
+            str symbol = dictEnum.index2Symbol(i);
+            completions.Add(new Completion(symbol, symbol, CompletionEntryType::EnumValue));
+        }
+
+        return completions;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

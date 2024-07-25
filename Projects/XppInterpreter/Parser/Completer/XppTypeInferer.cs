@@ -13,9 +13,9 @@ namespace XppInterpreter.Parser.Completer
     {
         private System.Type _globalType, _predefinedType;
         private readonly XppProxy _proxy;
-        private Token _triggerToken = null;
+        private bool calledStatically;
 
-        private readonly Dictionary<string, Word> _localVariableTypes = new Dictionary<string, Word>(StringComparer.InvariantCultureIgnoreCase);
+        private readonly Dictionary<string, Tuple<Word, Expression>> _localVariableTypes = new Dictionary<string, Tuple<Word, Expression>>(StringComparer.InvariantCultureIgnoreCase);
 
         public XppTypeInferer(XppProxy proxy)
         {
@@ -26,15 +26,15 @@ namespace XppInterpreter.Parser.Completer
             _predefinedType = _proxy.Casting.GetSystemTypeFromTypeName("PredefinedFunctions");
         }
 
-        public System.Type InferType(Expression expression, Token triggerToken)
+        public System.Type InferType(Expression expression, Token triggerToken = null)
         {
-            _triggerToken = triggerToken;
+            calledStatically = triggerToken is null ? false : triggerToken.TokenType == TType.StaticDoubleDot;
             return expression.Accept(this);
         }
 
-        public void AddExpressionType(string varName, Word word)
+        public void AddExpressionType(string varName, Word word, Expression initialization = null)
         {
-            _localVariableTypes.Add(varName, word);
+            _localVariableTypes.Add(varName, new Tuple<Word, Expression>(word, initialization));
         }
 
         private bool IsGlobalFunction(string methodName)
@@ -84,7 +84,12 @@ namespace XppInterpreter.Parser.Completer
         {
             if (functionCall.Caller != null)
             {
+                bool staticSave = calledStatically;
+                calledStatically = functionCall.StaticCall;
+
                 System.Type callerType = functionCall.Caller.Accept(this);
+
+                calledStatically = staticSave;
 
                 if (callerType != null)
                 {
@@ -141,14 +146,26 @@ namespace XppInterpreter.Parser.Completer
             }
             else
             {
-                if (_triggerToken.TokenType == TType.StaticDoubleDot)
+                if (calledStatically)
                 {
                     return GetTypeFromWord(variable.Token as Word);
                 }
                 // Infer from variables
                 else if (_localVariableTypes.ContainsKey(variable.Name))
                 {
-                    return GetTypeFromWord(_localVariableTypes[variable.Name]);
+                    var declaration = _localVariableTypes[variable.Name];
+
+                    // If declaration is done using a non defined type, try to infer type from initialization
+                    if (declaration.Item1.TokenType == TType.Var)
+                    {
+                        // Needs initialization otherwise we do not know which type
+                        if (declaration.Item2 is null) return null;
+
+                        // Infer type from initialization expression
+                        return InferType(declaration.Item2);
+                    }
+
+                    return GetTypeFromWord(declaration.Item1);
                 }
             }
 

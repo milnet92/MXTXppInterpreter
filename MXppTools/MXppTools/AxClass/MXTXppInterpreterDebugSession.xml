@@ -447,7 +447,7 @@ public class MXTXppInterpreterDebugSession
     public MXTXppCompletionsContract getCompletions(int _line, int _position, boolean _staticCompletion, str _sourceCode)
     {
         XppInterpreter.Parser.Completer.CompletionProvider completionProvider = new XppInterpreter.Parser.Completer.CompletionProvider(this.proxy);
-        XppInterpreter.Parser.Completer.CompletionCollection completionCollection = completionProvider.GetCompletions(_sourceCode, _line, _position, _staticCompletion);
+        XppInterpreter.Parser.Completer.CompletionCollection completionCollection = completionProvider.GetCompletions(new MXTXppCompletionProvider(), _sourceCode, _line, _position, _staticCompletion);
 
         MXTXppCompletionsContract ret = new MXTXppCompletionsContract();
         List completions = new List(Types::Class);

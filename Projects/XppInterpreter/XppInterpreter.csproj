@@ -157,6 +157,7 @@
     <Compile Include="Parser\Completer\CompletionCollection.cs" />
     <Compile Include="Parser\Completer\Completion.cs" />
     <Compile Include="Parser\Completer\CompletionProvider.cs" />
+    <Compile Include="Parser\Completer\ICompletionProvider.cs" />
     <Compile Include="Parser\Completer\ITypeInferExpressionVisitor.cs" />
     <Compile Include="Parser\Completer\XppTypeInferer.cs" />
     <Compile Include="Parser\Constant.cs" />

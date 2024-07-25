@@ -136,7 +136,7 @@
         /// Setup completer
         ace.require("ace/ext/language_tools");
         var xppCompleter = {
-
+            exactMatch: true,
             getCompletions: (editor, session, pos, prefix, callback) => {
 
                 var TokenIterator = ace.require("ace/token_iterator").TokenIterator;
@@ -197,7 +197,7 @@
             behavioursEnabled: true,
             wrapBehavioursEnabled: true,
             enableBasicAutocompletion: true,
-            enableLiveAutocompletion: false
+            enableLiveAutocompletion: true
         });
 
         editor.clearSelection();
