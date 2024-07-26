@@ -6,6 +6,7 @@
         border-collapse: collapse;
         width: 100%;
         height: 100%;
+        margin-right: 30px;
     }
 
     #inspector td, #inspector th {
@@ -31,10 +32,11 @@
 </style>
 
 <div id="MXTXppInterpreterVariablesInspector"
-     style="width: 300px; margin-left: 30px; background-color: white;"
-     data-dyn-bind="visible: $data.Visible">
+     style="background-color: white; padding: 4px 4px 4px 4px"
+     data-dyn-bind="
+        visible: $data.Visible,
+        sizing: $dyn.layout.sizing($data)">
     <table id="inspector" data-dyn-bind="visible: $data.Visible">
-        <caption style="background-color: slategrey; color: white; padding: 4px 0px 4px 4px">Variable inspector</caption>
         <tr>
             <th data-dyn-bind="text: $dyn.label('Name')"></th>
             <th data-dyn-bind="text: $dyn.label('Value')"></th>

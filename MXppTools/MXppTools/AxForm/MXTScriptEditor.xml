@@ -81,9 +81,12 @@ public class MXTScriptEditor extends FormRun
         if (callerScript)
         {
             this.design().caption(callerScript.Description);
+            StaticTextTitle.text(callerScript.Description);
+            StaticTextTitle.visible(true);
         }
         else
         {
+            StaticTextTitle.visible(false);
             this.design().caption("@MXT:NewScriptCaption");
         }
     }
@@ -155,6 +158,7 @@ public class MXTScriptEditor extends FormRun
         StopDebuggingButton.visible(_visible);
         CancelProcessButton.visible(_visible);
 
+        VariableInspectorGroup.visible(_visible);
         MXTXppInterpreterVariablesInspectorControl.visible(_visible);
     }
 
@@ -595,9 +599,20 @@ public class MXTScriptEditor extends FormRun
 		<Pattern xmlns="">Custom</Pattern>
 		<ShowDeleteButton xmlns="">No</ShowDeleteButton>
 		<ShowNewButton xmlns="">No</ShowNewButton>
+		<Style xmlns="">Dashboard</Style>
 		<ViewEditMode xmlns="">Edit</ViewEditMode>
 		<WidthMode xmlns="">SizeToAvailable</WidthMode>
 		<Controls xmlns="">
+			<AxFormControl xmlns=""
+				i:type="AxFormStaticTextControl">
+				<Name>StaticTextTitle</Name>
+				<AutoDeclaration>Yes</AutoDeclaration>
+				<Type>StaticText</Type>
+				<WidthMode>SizeToAvailable</WidthMode>
+				<FormControlExtension
+					i:nil="true" />
+				<Style>FormCaption</Style>
+			</AxFormControl>
 			<AxFormControl xmlns=""
 				i:type="AxFormActionPaneControl">
 				<Name>MainActionPane</Name>
@@ -744,7 +759,7 @@ public class MXTScriptEditor extends FormRun
 				<HeightMode>SizeToAvailable</HeightMode>
 				<Type>Group</Type>
 				<Width>1300</Width>
-				<WidthMode>Manual</WidthMode>
+				<WidthMode>SizeToAvailable</WidthMode>
 				<FormControlExtension
 					i:nil="true" />
 				<Controls>
@@ -752,9 +767,9 @@ public class MXTScriptEditor extends FormRun
 						<Name>MXTXppInterpreterCodeEditorControl</Name>
 						<AutoDeclaration>Yes</AutoDeclaration>
 						<Height>440</Height>
-						<HeightMode>Manual</HeightMode>
+						<HeightMode>SizeToAvailable</HeightMode>
 						<Width>800</Width>
-						<WidthMode>Manual</WidthMode>
+						<WidthMode>SizeToAvailable</WidthMode>
 						<FormControlExtension>
 							<Name>MXTXppInterpreterCodeEditorControl</Name>
 							<ExtensionComponents />
@@ -772,19 +787,31 @@ public class MXTScriptEditor extends FormRun
 							</ExtensionProperties>
 						</FormControlExtension>
 					</AxFormControl>
-					<AxFormControl>
-						<Name>MXTXppInterpreterVariablesInspectorControl</Name>
+					<AxFormControl xmlns=""
+						i:type="AxFormGroupControl">
+						<Name>VariableInspectorGroup</Name>
 						<AutoDeclaration>Yes</AutoDeclaration>
-						<Height>440</Height>
-						<HeightMode>Manual</HeightMode>
-						<Visible>No</Visible>
-						<Width>400</Width>
-						<WidthMode>Manual</WidthMode>
-						<FormControlExtension>
-							<Name>MXTXppInterpreterVariablesInspectorControl</Name>
-							<ExtensionComponents />
-							<ExtensionProperties />
-						</FormControlExtension>
+						<Type>Group</Type>
+						<FormControlExtension
+							i:nil="true" />
+						<Controls>
+							<AxFormControl>
+								<Name>MXTXppInterpreterVariablesInspectorControl</Name>
+								<AutoDeclaration>Yes</AutoDeclaration>
+								<Height>440</Height>
+								<HeightMode>SizeToAvailable</HeightMode>
+								<Visible>No</Visible>
+								<Width>450</Width>
+								<WidthMode>Manual</WidthMode>
+								<FormControlExtension>
+									<Name>MXTXppInterpreterVariablesInspectorControl</Name>
+									<ExtensionComponents />
+									<ExtensionProperties />
+								</FormControlExtension>
+							</AxFormControl>
+						</Controls>
+						<Caption>Variable inspector</Caption>
+						<Style>SidePanel</Style>
 					</AxFormControl>
 				</Controls>
 				<Columns>2</Columns>
