@@ -7,7 +7,7 @@ using XppInterpreter.Interpreter;
 
 namespace XppInterpreter.Parser.Completer
 {
-    public class ProgramMetadataProvider : AstSimpleVisitor
+    public class TokenMetadataProvider : AstSimpleVisitor
     {
         public int LookupLine { get; set; }
         public int LookupColumn { get; set; }

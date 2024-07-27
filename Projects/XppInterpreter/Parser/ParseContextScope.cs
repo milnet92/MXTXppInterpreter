@@ -24,5 +24,24 @@ namespace XppInterpreter.Parser
         {
             return Parent;
         }
+
+        public VariableDeclarations FindVariableDeclaration(string identifier)
+        {
+            ParseContextScope scope = this;
+
+            do
+            {
+                var declaration = VariableDeclarations.FirstOrDefault(v => v.Identifiers.Keys.Any(k => k.Lexeme == identifier));
+
+                if (declaration != null)
+                {
+                    return declaration;
+                }
+
+                scope = scope.Parent;
+            } while (scope != null);
+
+            return null;
+        }
     }
 }

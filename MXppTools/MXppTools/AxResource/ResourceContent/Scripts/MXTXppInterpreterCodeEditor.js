@@ -17,7 +17,7 @@
         "GithubDark": "github_dark"
     };
 
-    function removeMarker(editor, fromLine, fromPosition, toLine, toPosition, className) {
+    var removeMarker = function(editor, fromLine, fromPosition, toLine, toPosition, className) {
         const prevMarkers = editor.session.getMarkers();
         if (prevMarkers) {
             const prevMarkersArr = Object.keys(prevMarkers);
@@ -35,7 +35,7 @@
         }
     }
 
-    function removeLastBreakpointHitMarkerIfAny(editor) {
+    var removeLastBreakpointHitMarkerIfAny = function(editor) {
         if (lastBreakpointHit !== null) {
             removeMarker(
                 editor,
@@ -49,7 +49,7 @@
         }
     }
 
-    function addBreakpointHitMarker(editor, breakpointHit) {
+    var addBreakpointHitMarker = function(editor, breakpointHit) {
 
         // Remove last breakpointhit
         if (lastBreakpointHit !== null) {
@@ -74,8 +74,7 @@
             "text");
     }
 
-    function addOrRemoveBreakpointMarker(editor, breakpoint) {
-
+    var addOrRemoveBreakpointMarker = function(editor, breakpoint) {
         if (breakpoint.Removed) {
             editor.session.clearBreakpoint(breakpoint.RemovedFromLine);
             removeMarker(
@@ -86,7 +85,6 @@
                 breakpoint.RemovedToPosition,
                 "breakpointMarker");
         }
-
         if (breakpoint.Created) {
             editor.session.setBreakpoint(breakpoint.FromLine);
             editor.session.addMarker(new Range(
@@ -99,7 +97,7 @@
         }
     }
 
-    function clearErrors(editor) {
+    var clearErrors = function(editor) {
 
         editor.session.clearAnnotations();
         editor.session.clearBreakpoints();
@@ -112,6 +110,11 @@
                 editor.session.removeMarker(prevMarkers[item].id);
             }
         }
+    }
+
+    var tokenMetadataCache = [];
+    var getTokenFromCache = function (row, column) {
+        return tokenMetadataCache.find((element) => element.Row == row && element.Column == column);
     }
 
     $dyn.ui.defaults.MXTXppInterpreterCodeEditor = {};
@@ -149,7 +152,7 @@
                     var triggerChar = currentToken.value;
                     var previousToken = stream.stepBackward();
 
-                    // Ignore trigger for numbers
+                    // Ignore trigger for numbers (i.e. 132.45)
                     if (previousToken && !isNaN(previousToken.value)) return callback(null, []);
 
                     if (previousToken && (previousToken.type = 'identifier' || previousToken.value.endsWith(')')) &&
@@ -208,10 +211,36 @@
             var TokenIterator = ace.require("ace/token_iterator").TokenIterator;
             var stream = new TokenIterator(editor.session, last.$pos.row, last.$pos.column);
             var currentToken = stream.getCurrentToken();
-            console.log(currentToken);
+
             if (currentToken && currentToken.type == 'identifier') {
-                tooltip.setHtml("(local) " + currentToken.value);
-                tooltip.show(null, last.x, last.y - 30);
+                var metadata = getTokenFromCache(currentToken.index, currentToken.start);
+
+                if (metadata) {
+                    if (metadata.Type == 'UNKOWN') return;
+                    tooltip.setHtml(metadata.Prefix + ' ' + '<span style="color:#3a9dc7">' + metadata.Type + '</span>' + ' ' + metadata.Name);
+                    tooltip.show(null, last.x, last.y - 30);
+                }
+                else {
+                    return $dyn.callFunction(self.GetTokenMetadata, self, { _line: last.$pos.row, _position: last.$pos.column }, function (ret) {
+
+                        if (ret) {
+                            // Store in cache
+                            tokenMetadataCache.push(
+                                {
+                                    Name: ret.Name,
+                                    Type: ret.Type,
+                                    Prefix: ret.Prefix,
+                                    Row: currentToken.index,
+                                    Column: currentToken.start
+                                });
+
+                            if (ret.Type != 'UNKOWN') {
+                                tooltip.setHtml(ret.Prefix + ' ' + '<span style="color:#3a9dc7">' + ret.Type + '</span>' + ' ' + ret.Name);
+                                tooltip.show(null, last.x, last.y - 30);
+                            }
+                        }
+                    });
+                }
             }
         }
 
@@ -220,13 +249,13 @@
         editor.clearSelection();
 
         editor.session.on('change', function (delta) {
-
+            tokenMetadataCache = [];
             clearErrors(editor);
             var sc = editor.getValue();
 
             self.SourceCode(sc);
 
-            // Set source code back to X++ contorl
+            // Set source code back to X++ control
             if (sc !== '') {
                 clearTimeout(change_timer);
                 change_timer = setTimeout(function () {

@@ -309,6 +309,19 @@ public class MXTXppInterpreterCodeEditorControl extends FormTemplateControl
 
 ]]></Source>
 			</Method>
+			<Method>
+				<Name>GetTokenMetadata</Name>
+				<Source><![CDATA[
+    [FormCommand("GetTokenMetadata", true)]
+    public MXTXppTokenMetadata GetTokenMetadata(int _line, int _position)
+    {
+        if (debugSession == null) return null;
+
+        return debugSession.getTokenMetadata(_line, _position, this.sourceCode());
+    }
+
+]]></Source>
+			</Method>
 		</Methods>
 	</SourceCode>
 </AxClass>

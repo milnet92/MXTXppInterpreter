@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppTokenMetadata</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+[DataContract]
+public final class MXTXppTokenMetadata
+{
+    private str type, name, prefix;
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>parmType</Name>
+				<Source><![CDATA[
+    [DataMember('Type')]
+    public str parmType(str _type = type)
+    {
+        type = _type;
+        return type;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmName</Name>
+				<Source><![CDATA[
+    [DataMember('Name')]
+    public str parmName(str _name = name)
+    {
+        name = _name;
+        return name;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmPrefix</Name>
+				<Source><![CDATA[
+    [DataMember('Prefix')]
+    public str parmPrefix(str _prefix = prefix)
+    {
+        prefix = _prefix;
+        return prefix;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

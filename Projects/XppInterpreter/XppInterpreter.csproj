@@ -159,6 +159,9 @@
     <Compile Include="Parser\Completer\CompletionProvider.cs" />
     <Compile Include="Parser\Completer\ICompletionProvider.cs" />
     <Compile Include="Parser\Completer\ITypeInferExpressionVisitor.cs" />
+    <Compile Include="Parser\Completer\MetadataInterruption.cs" />
+    <Compile Include="Parser\Completer\TokenMetadataProvider.cs" />
+    <Compile Include="Parser\Completer\TokenMetadata.cs" />
     <Compile Include="Parser\Completer\XppTypeInferer.cs" />
     <Compile Include="Parser\Constant.cs" />
     <Compile Include="Parser\Constructor.cs" />
@@ -170,9 +173,12 @@
     <Compile Include="Parser\FunctionDeclaration.cs" />
     <Compile Include="Parser\FunctionDeclarationParameter.cs" />
     <Compile Include="Parser\InsertRecordset.cs" />
+    <Compile Include="Parser\IParseResult.cs" />
     <Compile Include="Parser\ParseContext.cs" />
     <Compile Include="Parser\ParseContextScope.cs" />
     <Compile Include="Parser\ParseContextStack.cs" />
+    <Compile Include="Parser\ParseError.cs" />
+    <Compile Include="Parser\ParseErrorCollection.cs" />
     <Compile Include="Parser\Print.cs" />
     <Compile Include="Parser\Return.cs" />
     <Compile Include="Parser\Switch.cs" />
@@ -214,6 +220,7 @@
     <Compile Include="Parser\While.cs" />
     <Compile Include="Parser\WhileSelect.cs" />
     <Compile Include="Parser\XppParser.cs" />
+    <Compile Include="Parser\XppParseResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -21,7 +21,8 @@ namespace XppInterpreter.Parser
         private readonly ParseErrorCollection _parseErrors = new ParseErrorCollection();
 
         private bool _forAutoCompletion;
-        private int _autocompletionRow, _autocompletionColumn;
+        private bool _forMetadata;
+        private int _stopAtRow, _stopAtColumn;
         private XppTypeInferer _typeInferer = null;
 
         IScanResult AdvancePeek(bool reset = false)
@@ -52,13 +53,33 @@ namespace XppInterpreter.Parser
             return Program();
         }
 
+        public TokenMetadata GetTokenMetadataAt(int row, int column)
+        {
+            _forMetadata = true;
+            _stopAtRow = row;
+            _stopAtColumn = column;
+
+            try
+            {
+                Parse();
+            }
+            catch (MetadataInterruption interruption)
+            {
+                return interruption.TokenData;
+            }
+            catch
+            {
+                return null;
+            }
+
+            return null;
+        }
+
         public System.Type ParseForAutoCompletion(int row, int column)
         {
-            Initialize();
-
             _forAutoCompletion = true;
-            _autocompletionRow = row;
-            _autocompletionColumn = column;
+            _stopAtRow = row;
+            _stopAtColumn = column;
 
             _typeInferer = new XppTypeInferer(_proxy);
 
@@ -274,6 +295,25 @@ namespace XppInterpreter.Parser
             }
             else
             {
+                if (caller is null && _forMetadata)
+                {
+                    // Search for declaration of the variable
+                    if (identifier.Line == _stopAtRow &&
+                        identifier.Start <= _stopAtColumn &&
+                        identifier.End >= _stopAtColumn)
+                    {
+                        string varName = ((Word)identifier.Token).Lexeme;
+                        var declaration = _parseContext.CurrentScope.FindVariableDeclaration(varName);
+
+                        throw new MetadataInterruption(new TokenMetadata()
+                        {
+                            Name = varName,
+                            Prefix = "(local variable)",
+                            Type = declaration?.VariableType?.Lexeme ?? ""
+                        });
+                    }
+                }
+
                 if (currentToken.TokenType == TType.LeftBracket)
                 {
                     Match(TType.LeftBracket);
@@ -1225,9 +1265,9 @@ namespace XppInterpreter.Parser
         {
             if (_forAutoCompletion)
             {
-                if (lastScanResult.Line == _autocompletionRow &&
-                    lastScanResult.Start <= _autocompletionColumn &&
-                    lastScanResult.End >= _autocompletionColumn)
+                if (lastScanResult.Line == _stopAtRow &&
+                    lastScanResult.Start <= _stopAtColumn &&
+                    lastScanResult.End >= _stopAtColumn)
                 {
                     throw new AutoCompleteInterruption(_typeInferer.InferType(expression, lastScanResult.Token));
                 }
