@@ -9,15 +9,22 @@ namespace XppInterpreter.Interpreter.Bytecode
 
         public string OperationCode => "CALL";
         public string Name => _ref.Declaration.Name;
-        public int NArgs => _ref.Declaration.Parameters.Count;
+
+        public int NArgs { get; set; }
         public bool Alloc => _ref.Declaration.ReturnType.TokenType != TType.Void;
         public bool ProcessParameters => true;
         public InterpreterResult LastResult { get; private set; }
 
 
-        public DeclaredFunctionCall(RefFunction refFunction)
+        public DeclaredFunctionCall(RefFunction refFunction, int nArgs)
         {
             _ref = refFunction;
+            NArgs = nArgs;
+
+            if (_ref.Declaration.Parameters.Count != nArgs)
+            {
+                throw new Exception($"Definied function '{Name}' parameter count missmatch.");
+            }
         }
 
         public void Execute(RuntimeContext context)
@@ -38,7 +45,8 @@ namespace XppInterpreter.Interpreter.Bytecode
 
                 for (int narg = 0; narg < NArgs; narg++)
                 {
-                    arguments[narg] = context.Stack.Pop();
+                    if (context.Stack.Count > 0)
+                        arguments[narg] = context.Stack.Pop();
                 }
 
                 // Create new runtime context for the function call
@@ -48,11 +56,6 @@ namespace XppInterpreter.Interpreter.Bytecode
                 };
 
                 newContext = new RuntimeContext(context.Proxy, newByteCode);
-
-                if (arguments.Length != NArgs)
-                {
-                    throw new Exception($"Definied function '{Name}' parameter count missmatch.");
-                }
 
                 // Assign callee parameter to function definition parameter's scope
                 for (int numParam = 0; numParam < NArgs; numParam++)

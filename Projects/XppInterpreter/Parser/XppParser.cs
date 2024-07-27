@@ -18,10 +18,11 @@ namespace XppInterpreter.Parser
         private readonly ILexer _lexer;
         private readonly ParseContext _parseContext = new ParseContext();
         private readonly Interpreter.Proxy.XppProxy _proxy;
+        private readonly ParseErrorCollection _parseErrors = new ParseErrorCollection();
 
-        private bool forAutoCompletion;
-        private int autocompletionRow, autocompletionColumn;
-        private XppTypeInferer typeInferer = null;
+        private bool _forAutoCompletion;
+        private int _autocompletionRow, _autocompletionColumn;
+        private XppTypeInferer _typeInferer = null;
 
         IScanResult AdvancePeek(bool reset = false)
         {
@@ -55,11 +56,11 @@ namespace XppInterpreter.Parser
         {
             Initialize();
 
-            forAutoCompletion = true;
-            autocompletionRow = row;
-            autocompletionColumn = column;
+            _forAutoCompletion = true;
+            _autocompletionRow = row;
+            _autocompletionColumn = column;
 
-            typeInferer = new XppTypeInferer(_proxy);
+            _typeInferer = new XppTypeInferer(_proxy);
 
             try
             {
@@ -199,7 +200,7 @@ namespace XppInterpreter.Parser
                     message = ex.InnerException.Message;
                 }
 
-                ThrowParseException(message, false);
+                HandleParseError(message, false);
             }
 
             var binding = SourceCodeBinding(start, lastScanResult);
@@ -222,7 +223,7 @@ namespace XppInterpreter.Parser
             }
             else
             {
-                ThrowParseException($"Unexpected compile-time function {functionName} result.");
+                HandleParseError($"Unexpected compile-time function {functionName} result.");
             }
 
             return ret;
@@ -301,7 +302,7 @@ namespace XppInterpreter.Parser
                 if (currentToken.TokenType == TType.StaticDoubleDot &&
                     (ret is FunctionCall || ret is ArrayAccess))
                 {
-                    ThrowParseException($"Syntax error. Token {currentToken.TokenType} was not expected.");
+                    HandleParseError($"Syntax error. Token {currentToken.TokenType} was not expected.");
                 }
 
                 MatchMultiple(TType.Dot, TType.StaticDoubleDot);
@@ -364,11 +365,11 @@ namespace XppInterpreter.Parser
                 {
                     if (currentToken.TokenType == TType.Case)
                     {
-                        ThrowParseException("Default part must be the last case in switch statement.");
+                        HandleParseError("Default part must be the last case in switch statement.");
                     }
                     else if (currentToken.TokenType == TType.Default)
                     {
-                        ThrowParseException("Switch statements may not have multie default parts.");
+                        HandleParseError("Switch statements may not have multie default parts.");
                     }
                 }
 
@@ -549,11 +550,11 @@ namespace XppInterpreter.Parser
                 ret = new VariableDeclarations((Word)type, declarations, SourceCodeBinding(start, lastScanResult));
             }
 
-            if (forAutoCompletion)
+            if (_forAutoCompletion)
             {
                 foreach (var identifier in ret.Identifiers)
                 {
-                    typeInferer.AddExpressionType(identifier.Key.Lexeme, ret.VariableType, identifier.Value);
+                    _typeInferer.AddExpressionType(identifier.Key.Lexeme, ret.VariableType, identifier.Value);
                 }
             }
 
@@ -638,7 +639,7 @@ namespace XppInterpreter.Parser
         {
             if (_parseContext.FunctionDeclarationStack.Empty)
             {
-                ThrowParseException("Return statement can only be used inside function declarations.");
+                HandleParseError("Return statement can only be used inside function declarations.");
             }
 
             var start = currentScanResult;
@@ -757,7 +758,7 @@ namespace XppInterpreter.Parser
                     }
                 default:
                     {
-                        ThrowParseException("Invalid syntax.");
+                        HandleParseError("Invalid syntax.");
                         return null;
                     }
             }
@@ -925,7 +926,7 @@ namespace XppInterpreter.Parser
                     return Constructor();
 
                 default:
-                    ThrowParseException($"Syntax error. Token {token} was not expected.");
+                    HandleParseError($"Syntax error. Token {token} was not expected.");
                     return null;
             }
         }
@@ -1016,7 +1017,7 @@ namespace XppInterpreter.Parser
                    || currentToken.TokenType == TType.In)
                     && !isParsingWhereStatement)
                 {
-                    ThrowParseException("In and Like statements can only be used in queries.");
+                    HandleParseError("In and Like statements can only be used in queries.");
                 }
 
                 var result = Match(currentToken.TokenType);
@@ -1032,7 +1033,7 @@ namespace XppInterpreter.Parser
                    (binaryExpr.LeftOperand.GetType() != typeof(Variable) ||
                     binaryExpr.RightOperand.GetType() != typeof(Variable)))
                 {
-                    ThrowParseException("In statement can only be compared to a container variable.");
+                    HandleParseError("In statement can only be compared to a container variable.");
                 }
             }
 
@@ -1117,7 +1118,7 @@ namespace XppInterpreter.Parser
                         }
                         else
                         {
-                            ThrowParseException("Syntax error.");
+                            HandleParseError("Syntax error.");
                         }
                     }
                     break;
@@ -1142,14 +1143,21 @@ namespace XppInterpreter.Parser
             return ret;
         }
 
-        void ThrowParseException(string s, bool showLine = false)
+        void HandleParseError(string s, bool showLine = false, bool stop = true)
         {
-            throw new ParseException(
-                s,
-                currentToken,
-                currentScanResult.Line,
-                currentScanResult.End,
-                showLine);
+            if (stop)
+            {
+                throw new ParseException(
+                    s,
+                    currentToken,
+                    currentScanResult.Line,
+                    currentScanResult.End,
+                    showLine);
+            }
+            else
+            {
+                _parseErrors.Add(new ParseError(currentToken, currentScanResult.Line, currentScanResult.End, s));
+            }
         }
 
         IScanResult MatchMultiple(params TType[] ttypes)
@@ -1160,7 +1168,7 @@ namespace XppInterpreter.Parser
             }
             else
             {
-                ThrowParseException($"Syntax error: {string.Join(", ", ttypes)} expected.");
+                HandleParseError($"Syntax error: {string.Join(", ", ttypes)} expected.");
             }
 
             // Move function sets the last scan results
@@ -1175,7 +1183,7 @@ namespace XppInterpreter.Parser
             }
             else
             {
-                ThrowParseException($"Syntax error: Identifier was expected.");
+                HandleParseError($"Syntax error: Identifier was expected.");
             }
 
             // Move function sets the last scan results
@@ -1190,7 +1198,7 @@ namespace XppInterpreter.Parser
             }
             else
             {
-                ThrowParseException($"Syntax error: {ttype} was expected.");
+                HandleParseError($"Syntax error: {ttype} was expected.");
             }
 
             // Move function sets the last scan results
@@ -1215,13 +1223,13 @@ namespace XppInterpreter.Parser
 
         internal void HandleAutocompletion(Expression expression)
         {
-            if (forAutoCompletion)
+            if (_forAutoCompletion)
             {
-                if (lastScanResult.Line == autocompletionRow &&
-                    lastScanResult.Start <= autocompletionColumn &&
-                    lastScanResult.End >= autocompletionColumn)
+                if (lastScanResult.Line == _autocompletionRow &&
+                    lastScanResult.Start <= _autocompletionColumn &&
+                    lastScanResult.End >= _autocompletionColumn)
                 {
-                    throw new AutoCompleteInterruption(typeInferer.InferType(expression, lastScanResult.Token));
+                    throw new AutoCompleteInterruption(_typeInferer.InferType(expression, lastScanResult.Token));
                 }
             }
         }

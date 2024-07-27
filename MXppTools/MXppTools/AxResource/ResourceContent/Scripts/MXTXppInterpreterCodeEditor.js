@@ -143,7 +143,6 @@
                 var stream = new TokenIterator(editor.session, pos.row, pos.column);
 
                 var currentToken = stream.getCurrentToken();
-                console.log(currentToken);
 
                 if (currentToken) {
 
@@ -158,7 +157,7 @@
 
                         clearTimeout(change_timer);
                         return $dyn.callFunction(self.GetAutocompletions, self, { _line: pos.row, _position: pos.column - 1, _staticCompletion: triggerChar.includes('::') }, function (ret) {
-                            console.log(ret);
+                            
                             ret && callback(null, ret.Completions.map(function (c) {
                                 return {
                                     value: c.Value,
@@ -179,6 +178,7 @@
         var editor = ace.edit("editor");
         var change_timer;
 
+        // trigger autocomplete whenever . or : is pressed
         var Autocomplete = ace.require("ace/autocomplete").Autocomplete;
         editor.commands.on("afterExec", function (e) {
             if (e.command.name == "insertstring" && (e.args == ':' || e.args == '.')) {
@@ -199,7 +199,24 @@
             enableBasicAutocompletion: true,
             enableLiveAutocompletion: true
         });
+        
+        // Setup hover tooltip
+        var HoverTooltip = ace.require('./tooltip').HoverTooltip;
+        var tooltip = new HoverTooltip();
 
+        tooltip.$gatherData = function (last, editor) {
+            var TokenIterator = ace.require("ace/token_iterator").TokenIterator;
+            var stream = new TokenIterator(editor.session, last.$pos.row, last.$pos.column);
+            var currentToken = stream.getCurrentToken();
+            console.log(currentToken);
+            if (currentToken && currentToken.type == 'identifier') {
+                tooltip.setHtml("(local) " + currentToken.value);
+                tooltip.show(null, last.x, last.y - 30);
+            }
+        }
+
+        tooltip.addToEditor(editor);
+        
         editor.clearSelection();
 
         editor.session.on('change', function (delta) {

@@ -69,13 +69,6 @@ namespace XppInterpreter.Parser.Completer
             }
         }
 
-        private void AddInstanceCompletions(System.Type type, CompletionCollection completions)
-        {
-            if (type is null) return;
-
-            AddCompletions(type, completions, false);
-        }
-
         private IEnumerable<System.Reflection.MethodInfo> GetMethods(System.Type type, bool @static)
         {
             System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.Public | (@static ? System.Reflection.BindingFlags.Static : System.Reflection.BindingFlags.Instance);

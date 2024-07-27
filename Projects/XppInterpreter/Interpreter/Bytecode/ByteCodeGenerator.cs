@@ -473,7 +473,7 @@ namespace XppInterpreter.Interpreter.Bytecode
             if (_declaredFunctions.Exists(f => f.Declaration.Name.ToLowerInvariant() == functionCall.Name.ToLowerInvariant()) && functionCall.Caller is null)
             {
                 var declaredFunctionRef = _declaredFunctions.First(f => f.Declaration.Name.ToLowerInvariant() == functionCall.Name.ToLowerInvariant());
-                Emit(new DeclaredFunctionCall(declaredFunctionRef));
+                Emit(new DeclaredFunctionCall(declaredFunctionRef, nArgs));
             }
             else if (functionCall.Intrinsical)
             {
