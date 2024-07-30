@@ -18,5 +18,6 @@ namespace XppInterpreter.Interpreter.Proxy
         void ClearCommon(object common);
         object GetEnumValue(string enumType, string enumValue);
         string[] GetAllEnumValues(string enumType);
+        string GetMethodSyntax(string typeName, string methodName);
     }
 }

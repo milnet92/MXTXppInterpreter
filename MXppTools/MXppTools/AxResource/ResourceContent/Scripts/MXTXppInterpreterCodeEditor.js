@@ -1,6 +1,8 @@
 (function () {
     'use strict';
 
+    var methodTooltip = null;
+    var change_timer = null;
     var lastBreakpointHit = null;
     var Range = ace.require('ace/range').Range;
     const themes = {
@@ -117,6 +119,37 @@
         return tokenMetadataCache.find((element) => element.Row == row && element.Column == column);
     }
 
+    var showMethodToolTip = function (editor, self) {
+        var TokenIterator = ace.require("ace/token_iterator").TokenIterator;
+        var pos = editor.getCursorPosition();
+        var stream = new TokenIterator(editor.session, pos.row, pos.column);
+        var currentToken = stream.getCurrentToken();
+
+        if (!currentToken || currentToken.type == 'string') return;
+
+        var previousToken = stream.stepBackward();
+
+        if ((currentToken.value == '(' && previousToken && (previousToken.type == 'identifier' || previousToken.type == 'keyword.other')) ||
+            (currentToken.value == ',')) {
+            clearTimeout(change_timer);
+
+            $dyn.callFunction(self.GetTokenMetadata, self, { _line: pos.row, _position: currentToken.start + 1, _isMethodParameters: true }, function (ret) {
+                if (ret !== null && typeof ret != 'undefined' && ret.DocHtml !== '') {
+                    // Get client position
+                    var position = editor.renderer.textToScreenCoordinates(pos.row, currentToken.start);
+                    showTooTip(methodTooltip, position.pageX + 20, position.pageY, ret.DocHtml);
+                }
+            });
+        }
+
+    }
+
+    var showTooTip = function(tooltip, x, y, message)
+    {
+        tooltip.setHtml(message);
+        tooltip.show(null, x, y - 30);
+    }
+
     $dyn.ui.defaults.MXTXppInterpreterCodeEditor = {};
     $dyn.controls.MXTXppInterpreterCodeEditor = function (data, element) {
 
@@ -154,9 +187,10 @@
 
                     // Ignore trigger for numbers (i.e. 132.45)
                     if (previousToken && !isNaN(previousToken.value)) return callback(null, []);
-
-                    if (previousToken && (previousToken.type = 'identifier' || previousToken.value.endsWith(')')) &&
-                        triggerChar.includes('::') || triggerChar.startsWith('.')) {
+                    // Ignore if inside string
+                    if (currentToken.type == 'string') return callback(null, []);
+                    if (previousToken && (previousToken.type == 'identifier' || previousToken.value.endsWith(')')) &&
+                        (triggerChar.includes('::') || triggerChar.startsWith('.'))) {
 
                         clearTimeout(change_timer);
                         return $dyn.callFunction(self.GetAutocompletions, self, { _line: pos.row, _position: pos.column - 1, _staticCompletion: triggerChar.includes('::') }, function (ret) {
@@ -179,14 +213,21 @@
         }
 
         var editor = ace.edit("editor");
-        var change_timer;
 
         // trigger autocomplete whenever . or : is pressed
         var Autocomplete = ace.require("ace/autocomplete").Autocomplete;
         editor.commands.on("afterExec", function (e) {
-            if (e.command.name == "insertstring" && (e.args == ':' || e.args == '.')) {
-                if (!editor.completer) editor.completer = new Autocomplete(); // not initialized until it's first needed
-                editor.completer.showPopup(editor);
+            // Always hide method tooltip if shown
+
+            if (e.args !== ' ') methodTooltip.hide();
+
+            if (e.command.name == "insertstring") {
+                if (e.args == ':' || e.args == '.') {
+                    if (!editor.completer) editor.completer = new Autocomplete(); // not initialized until it's first needed
+                    editor.completer.showPopup(editor);
+                } else if (e.args == '(' || e.args == ',') {
+                    showMethodToolTip(editor, self);
+                }
             }
         });
 
@@ -208,44 +249,62 @@
         var tooltip = new HoverTooltip();
 
         tooltip.$gatherData = function (last, editor) {
+            
             var TokenIterator = ace.require("ace/token_iterator").TokenIterator;
             var stream = new TokenIterator(editor.session, last.$pos.row, last.$pos.column);
             var currentToken = stream.getCurrentToken();
 
-            if (currentToken && currentToken.type == 'identifier') {
-                var metadata = getTokenFromCache(currentToken.index, currentToken.start);
+            if (currentToken) {
 
-                if (metadata) {
-                    if (metadata.Type == 'UNKOWN') return;
-                    tooltip.setHtml(metadata.Prefix + ' ' + '<span style="color:#3a9dc7">' + metadata.Type + '</span>' + ' ' + metadata.Name);
-                    tooltip.show(null, last.x, last.y - 30);
-                }
-                else {
-                    return $dyn.callFunction(self.GetTokenMetadata, self, { _line: last.$pos.row, _position: last.$pos.column }, function (ret) {
-
-                        if (ret) {
-                            // Store in cache
-                            tokenMetadataCache.push(
-                                {
-                                    Name: ret.Name,
-                                    Type: ret.Type,
-                                    Prefix: ret.Prefix,
-                                    Row: currentToken.index,
-                                    Column: currentToken.start
-                                });
-
-                            if (ret.Type != 'UNKOWN') {
-                                tooltip.setHtml(ret.Prefix + ' ' + '<span style="color:#3a9dc7">' + ret.Type + '</span>' + ' ' + ret.Name);
-                                tooltip.show(null, last.x, last.y - 30);
+                switch (currentToken.type) {
+                    case 'keyword':
+                        showTooTip(tooltip, last.x, last.y, '(keyword) ' + '<span style="color:blue">' + currentToken.value + '</span>');
+                        break;
+                    case 'keyword.other':
+                        showTooTip(tooltip, last.x, last.y, '(function) ' + '<span style="color:blue">' + currentToken.value + '</span>');
+                        break;
+                    case 'identifier':
+                        var metadata = getTokenFromCache(currentToken.index, currentToken.start);
+                        if (metadata) {
+                            if (metadata.Type != 'UNKNOWN') {
+                                showTooTip(tooltip, last.x, last.y, metadata.Prefix + ' ' + '<span style="color:#3a9dc7">' + metadata.Type + '</span>' + ' ' + metadata.Name);
+                            } else {
+                                showTooTip(tooltip, last.x, last.y, metadata.Prefix + ' ' + '<span>unknown</span>' + ' ' + metadata.Name);
                             }
+
                         }
-                    });
+                        else {
+                            return $dyn.callFunction(self.GetTokenMetadata, self, { _line: last.$pos.row, _position: last.$pos.column, _isMethodParameters: false}, function (ret) {
+                                
+                                if (ret) {
+                                    // Store in cache
+                                    tokenMetadataCache.push(
+                                        {
+                                            Name: ret.Name,
+                                            Type: ret.Type,
+                                            Prefix: ret.Prefix,
+                                            Row: currentToken.index,
+                                            Column: currentToken.start
+                                        });
+
+                                    if (ret.Type != 'UNKNOWN') {
+                                        showTooTip(tooltip, last.x, last.y, ret.Prefix + ' ' + '<span style="color:#3a9dc7">' + ret.Type + '</span>' + ' ' + ret.Name);
+                                    } else {
+                                        showTooTip(tooltip, last.x, last.y, ret.Prefix + ' ' + '<span>unknown</span>' + ' ' + ret.Name);
+                                    }
+                                }
+                            });
+                        }
+                        break;
                 }
             }
         }
 
         tooltip.addToEditor(editor);
-        
+
+        var ToolTip = ace.require('./tooltip').Tooltip;
+        methodTooltip = new ToolTip(editor.container);
+
         editor.clearSelection();
 
         editor.session.on('change', function (delta) {

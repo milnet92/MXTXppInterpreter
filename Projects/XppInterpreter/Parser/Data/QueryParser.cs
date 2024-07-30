@@ -87,7 +87,9 @@ namespace XppInterpreter.Parser
                     Match(TType.Comma);
                 }
 
-                var tableNameVar = (Word)Match(TType.Id).Token;
+                var tableResult = Match(TType.Id);
+                var tableNameVar = (Word)tableResult.Token;
+                HandleMetadata(tableResult.Line, tableResult.Start, tableResult.End, tableResult.Token);
                 Match(TType.Dot);
                 HandleAutocompletion(new Variable(tableNameVar, null, false, null));
 
@@ -113,9 +115,9 @@ namespace XppInterpreter.Parser
                 {
                     Match(TType.Comma);
                 }
-
-                var tableNameVar = (Word)Match(TType.Id).Token;
-
+                var tableResult = Match(TType.Id);
+                var tableNameVar = (Word)tableResult.Token;
+                HandleMetadata(tableResult.Line, tableResult.Start, tableResult.End, tableResult.Token);
                 Match(TType.Dot);
                 HandleAutocompletion(new Variable(tableNameVar, null, false, null));
 
@@ -439,7 +441,9 @@ namespace XppInterpreter.Parser
                 HandleParseError("Invalid selection field.");
             }
 
-            var tableVarName = (Word)Match(TType.Id).Token;
+            var tableResult = Match(TType.Id);
+            var tableVarName = (Word)tableResult.Token;
+            HandleMetadata(tableResult.Line, tableResult.Start, tableResult.End, tableResult.Token);
             string index = null;
 
             if (currentToken.TokenType == TType.Index)

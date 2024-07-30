@@ -31,7 +31,7 @@ namespace XppInterpreter.Parser
 
             do
             {
-                var declaration = VariableDeclarations.FirstOrDefault(v => v.Identifiers.Keys.Any(k => k.Lexeme == identifier));
+                var declaration = scope.VariableDeclarations.FirstOrDefault(v => v.Identifiers.Keys.Any(k => k.Lexeme.ToLowerInvariant() == identifier.ToLowerInvariant()));
 
                 if (declaration != null)
                 {

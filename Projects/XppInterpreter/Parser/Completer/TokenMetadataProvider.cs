@@ -4,33 +4,90 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using XppInterpreter.Interpreter;
+using XppInterpreter.Interpreter.Proxy;
 
 namespace XppInterpreter.Parser.Completer
 {
-    public class TokenMetadataProvider : AstSimpleVisitor
+    public class TokenMetadataProvider
     {
-        public int LookupLine { get; set; }
-        public int LookupColumn { get; set; }
-
-
-        public override void VisitConstant(Constant constant)
+        public static TokenMetadata GetMetadataForMethodParameters(System.Type callerType, string methodName, int parameterPosition, XppProxy proxy, bool isIntrinsic)
         {
-            base.VisitConstant(constant);
+            if (isIntrinsic)
+            {
+                return new TokenMetadata()
+                {
+                    DocHtml = GenerateIntrinsicSignatureHtml(methodName, proxy, parameterPosition)
+                };
+            }
+
+            string syntax = proxy.Reflection.GetMethodSyntax(callerType?.Name ?? "", methodName);
+            StringBuilder builder = new StringBuilder();
+            int parsingParamCount = -1;
+            syntax = System.Text.RegularExpressions.Regex.Replace(syntax, "\n[\\s]*", "");
+            syntax = System.Text.RegularExpressions.Regex.Replace(syntax, "client[\\s]|server[\\s]", "");
+
+            foreach (var c in syntax)
+            {
+                if (c == ',' || c == '(' || c == ')')
+                {
+                    parsingParamCount ++;
+
+                    if (parameterPosition == parsingParamCount)
+                    {
+                        builder.Append("<b>");
+                    }
+
+                    if (parameterPosition == (parsingParamCount - 1))
+                    {
+                        builder.Append("</b>");
+                    }
+                }
+
+                builder.Append(c);
+            }
+
+            return new TokenMetadata()
+            {
+                DocHtml = builder.ToString()
+            };
         }
 
-        public override void VisitConstructor(Constructor constructor)
+        private static string GenerateIntrinsicSignatureHtml(string methodName, XppProxy proxy, int parameterPosition)
         {
-            base.VisitConstructor(constructor);
-        }
+            StringBuilder builder = new StringBuilder();
+            System.Reflection.MethodInfo method = Core.ReflectionHelper.GetMethod(proxy.Intrinsic.GetType(), methodName);
 
-        public override void VisitVariable(Variable variable)
-        {
-            base.VisitVariable(variable);
-        }
+            builder.Append(method.ReturnType.Name);
+            builder.Append(' ');
+            builder.Append(method.Name);
+            builder.Append('(');
 
-        public override void VisitFunctionCall(FunctionCall functionCall)
-        {
-            base.VisitFunctionCall(functionCall);
+            int parmNum = 0;
+            foreach (var parm in method.GetParameters())
+            {
+                if (parmNum > 0)
+                {
+                    builder.Append(", ");
+                }
+
+                if (parameterPosition == parmNum)
+                {
+                    builder.Append("<b>");
+                }
+
+                builder.Append(parm.Name);
+
+                if (parameterPosition == parmNum)
+                {
+                    builder.Append("</b>");
+                }
+
+                parmNum ++;
+            }
+
+            builder.Append(')');
+
+            return builder.ToString();
         }
     }
 }

@@ -277,6 +277,63 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 
 ]]></Source>
 			</Method>
+			<Method>
+				<Name>GetMethodSyntax</Name>
+				<Source><![CDATA[
+    public System.String GetMethodSyntax(System.String _typeName, System.String _methodName)
+    {
+        SysDictMethod dictMethod = null;
+
+        if (this.IsInstantiable(_typeName))
+        {
+            SysDictClass dictClass = SysDictClass::newName(_typeName);
+
+            if (dictClass.hasObjectMethod(_methodName))
+            {
+                dictMethod = new SysDictMethod(UtilElementType::ClassInstanceMethod, className2Id(_typeName), _methodName);
+            }
+            else if (dictClass.hasStaticMethod(_methodName))
+            {
+                dictMethod = new SysDictMethod(UtilElementType::ClassStaticMethod, className2Id(_typeName), _methodName);
+            }
+        }
+        else if (tableName2Id(_typeName))
+        {
+            SysDictTable dictTable = SysDictTable::newName(_typeName);
+
+            // Iterate over instance methods
+            int objMethodCnt = dictTable.objectMethodCnt();
+            for (int i=1; i<=objMethodCnt; i++)
+            {
+                if (dictTable.objectMethod(i) == _methodName)
+                {
+                    dictMethod = new SysDictMethod(UtilElementType::TableInstanceMethod, tableName2Id(_typeName), _methodName);
+                    break;
+                }
+            }
+
+            if (!dictMethod)
+            {
+                int staticMethodCnt = dictTable.staticMethodCnt();
+                for (int i=1; i<=staticMethodCnt; i++)
+                {
+                    if (dictTable.staticMethod(i) == _methodName)
+                    {
+                        dictMethod = new SysDictMethod(UtilElementType::TableStaticMethod, tableName2Id(_typeName), _methodName);
+                    }
+                }
+            }
+        }
+        else if (!_typeName && className2Id(_methodName))
+        {
+            dictMethod = new SysDictMethod(UtilElementType::ClassInstanceMethod, className2Id(_methodName), "new");
+        }
+
+        return dictMethod ? dictMethod.syntax() : "";
+    }
+
+]]></Source>
+			</Method>
 		</Methods>
 	</SourceCode>
 </AxClass>

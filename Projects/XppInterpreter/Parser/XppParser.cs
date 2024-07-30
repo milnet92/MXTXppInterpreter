@@ -22,6 +22,7 @@ namespace XppInterpreter.Parser
 
         private bool _forAutoCompletion;
         private bool _forMetadata;
+        private bool _metadataFromMethodParams;
         private int _stopAtRow, _stopAtColumn;
         private XppTypeInferer _typeInferer = null;
 
@@ -53,11 +54,17 @@ namespace XppInterpreter.Parser
             return Program();
         }
 
-        public TokenMetadata GetTokenMetadataAt(int row, int column)
+        public TokenMetadata GetTokenMetadataAt(int row, int column, bool isMethodParameters)
         {
             _forMetadata = true;
             _stopAtRow = row;
             _stopAtColumn = column;
+
+            if (isMethodParameters)
+            {
+                _typeInferer = new XppTypeInferer(_proxy);
+                _metadataFromMethodParams = true;
+            }
 
             try
             {
@@ -140,17 +147,21 @@ namespace XppInterpreter.Parser
 
             return new Constructor(
                 identifier,
-                Parameters(),
+                Parameters(null, identifier.Lexeme, false),
                 null,
                 false,
                 SourceCodeBinding(start, lastScanResult),
                 SourceCodeBinding(start, lastScanResult));
         }
 
-        internal List<string> IntrinsicParameters()
+        internal List<string> IntrinsicParameters(string methodName)
         {
             List<string> literalParameters = new List<string>();
-            Match(TType.LeftParenthesis);
+            var start = Match(TType.LeftParenthesis);
+
+            int parameterCount = 0;
+
+            HandleMetadata(start.Line, start.Start, start.Start + 1, null, methodName, parameterCount, true, false);
 
             while (currentToken.TokenType != TType.RightParenthesis)
             {
@@ -171,7 +182,9 @@ namespace XppInterpreter.Parser
 
                 if (currentToken.TokenType != TType.RightParenthesis)
                 {
-                    Match(TType.Comma);
+                    var comma = Match(TType.Comma);
+                    parameterCount ++;
+                    HandleMetadata(comma.Line, comma.Start, comma.Start + 1, null, methodName, parameterCount, true, false);
                 }
             }
 
@@ -180,11 +193,15 @@ namespace XppInterpreter.Parser
             return literalParameters;
         }
 
-        internal List<Expression> Parameters()
+        internal List<Expression> Parameters(Expression caller, string tokenName, bool isStatic)
         {
             List<Expression> parameters = new List<Expression>();
 
-            Match(TType.LeftParenthesis);
+            IScanResult start = Match(TType.LeftParenthesis);
+
+            int parameterCount = 0;
+
+            HandleMetadata(start.Line, start.Start, start.Start + 1, caller, tokenName, parameterCount, false, isStatic);
 
             while (currentToken.TokenType != TType.RightParenthesis)
             {
@@ -192,7 +209,10 @@ namespace XppInterpreter.Parser
 
                 if (currentToken.TokenType != TType.RightParenthesis)
                 {
-                    Match(TType.Comma);
+                    var comma = Match(TType.Comma);
+
+                    parameterCount++;
+                    HandleMetadata(comma.Line, comma.Start, comma.Start + 1, caller, tokenName, parameterCount, false, isStatic);
                 }
             }
 
@@ -204,14 +224,21 @@ namespace XppInterpreter.Parser
         internal Expression IntrinsicFunction(string functionName)
         {
             var start = lastScanResult;
-            var parameters = IntrinsicParameters();
+            var parameters = IntrinsicParameters(functionName);
             object result = null;
             Expression ret = null;
 
             try
             {
-                // Call intrinsic function
-                result = Interpreter.Proxy.XppProxyHelper.CallIntrinsicFunction(_proxy.Intrinsic, functionName, parameters.ToArray<object>());
+                if (!_forAutoCompletion && !_forMetadata)
+                { 
+                    // Call intrinsic function
+                    result = Interpreter.Proxy.XppProxyHelper.CallIntrinsicFunction(_proxy.Intrinsic, functionName, parameters.ToArray<object>());
+                }
+                else
+                {
+                    result = -1;
+                }
             }
             catch (Exception ex)
             {
@@ -278,11 +305,11 @@ namespace XppInterpreter.Parser
                 }
                 else
                 {
-
-                    var parameters = Parameters();
+                    var funcName = (Word)identifier.Token;
+                    var parameters = Parameters(caller, funcName.Lexeme, staticCall);
 
                     ret = new FunctionCall(
-                        (Word)identifier.Token,
+                        funcName,
                         parameters,
                         caller,
                         staticCall,
@@ -295,23 +322,9 @@ namespace XppInterpreter.Parser
             }
             else
             {
-                if (caller is null && _forMetadata)
+                if (caller is null)
                 {
-                    // Search for declaration of the variable
-                    if (identifier.Line == _stopAtRow &&
-                        identifier.Start <= _stopAtColumn &&
-                        identifier.End >= _stopAtColumn)
-                    {
-                        string varName = ((Word)identifier.Token).Lexeme;
-                        var declaration = _parseContext.CurrentScope.FindVariableDeclaration(varName);
-
-                        throw new MetadataInterruption(new TokenMetadata()
-                        {
-                            Name = varName,
-                            Prefix = "(local variable)",
-                            Type = declaration?.VariableType?.Lexeme ?? ""
-                        });
-                    }
+                    HandleMetadata(identifier.Line, identifier.Start, identifier.End, identifier.Token);
                 }
 
                 if (currentToken.TokenType == TType.LeftBracket)
@@ -590,7 +603,7 @@ namespace XppInterpreter.Parser
                 ret = new VariableDeclarations((Word)type, declarations, SourceCodeBinding(start, lastScanResult));
             }
 
-            if (_forAutoCompletion)
+            if (_forAutoCompletion || _metadataFromMethodParams)
             {
                 foreach (var identifier in ret.Identifiers)
                 {
@@ -1261,16 +1274,55 @@ namespace XppInterpreter.Parser
             currentToken = currentScanResult.Token;
         }
 
+        internal void HandleMetadata(int line, int start, int end, Expression caller, string methodName, int parameterPosition, bool isIntrinsic, bool isStatic)
+        {
+            if (!_forMetadata) return;
+
+            // Search for declaration of the variable
+            if (line == _stopAtRow &&
+                start <= _stopAtColumn &&
+                end >= _stopAtColumn)
+            {
+                System.Type callerType = null;
+
+                if (caller != null)
+                {
+                    callerType = _typeInferer.InferType(caller, new Token(isStatic ? TType.StaticDoubleDot : TType.Dot));
+                }
+
+                throw new MetadataInterruption(TokenMetadataProvider.GetMetadataForMethodParameters(callerType, methodName, parameterPosition, _proxy, isIntrinsic));
+            }
+        }
+
+        internal void HandleMetadata(int line, int start, int end, Token token)
+        {
+            if (!_forMetadata) return;
+
+            // Search for declaration of the variable
+            if (line == _stopAtRow &&
+                start <= _stopAtColumn &&
+                end >= _stopAtColumn)
+            {
+                string varName = ((Word)token).Lexeme;
+                var declaration = _parseContext.CurrentScope.FindVariableDeclaration(varName);
+
+                throw new MetadataInterruption(new TokenMetadata()
+                {
+                    Name = varName,
+                    Prefix = "(local variable)",
+                    Type = declaration?.VariableType?.Lexeme ?? ""
+                });
+            }
+        }
         internal void HandleAutocompletion(Expression expression)
         {
-            if (_forAutoCompletion)
+            if (!_forAutoCompletion) return;
+
+            if (lastScanResult.Line == _stopAtRow &&
+                lastScanResult.Start <= _stopAtColumn &&
+                lastScanResult.End >= _stopAtColumn)
             {
-                if (lastScanResult.Line == _stopAtRow &&
-                    lastScanResult.Start <= _stopAtColumn &&
-                    lastScanResult.End >= _stopAtColumn)
-                {
-                    throw new AutoCompleteInterruption(_typeInferer.InferType(expression, lastScanResult.Token));
-                }
+                throw new AutoCompleteInterruption(_typeInferer.InferType(expression, lastScanResult.Token));
             }
         }
 

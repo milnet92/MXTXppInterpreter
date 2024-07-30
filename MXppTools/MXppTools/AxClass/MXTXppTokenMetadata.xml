@@ -6,7 +6,7 @@
 [DataContract]
 public final class MXTXppTokenMetadata
 {
-    private str type, name, prefix;
+    private str type, name, prefix, docHtml;
 
 }
 ]]></Declaration>
@@ -43,6 +43,18 @@ public final class MXTXppTokenMetadata
     {
         prefix = _prefix;
         return prefix;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmDocHtml</Name>
+				<Source><![CDATA[
+    [DataMember('DocHtml')]
+    public str parmDocHtml(str _docHtml = docHtml)
+    {
+        docHtml = _docHtml;
+        return docHtml;
     }
 
 ]]></Source>

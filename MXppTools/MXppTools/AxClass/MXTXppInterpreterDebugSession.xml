@@ -474,12 +474,12 @@ public class MXTXppInterpreterDebugSession
 			<Method>
 				<Name>getTokenMetadata</Name>
 				<Source><![CDATA[
-    public MXTXppTokenMetadata getTokenMetadata(int _line, int _position, str _sourceCode)
+    public MXTXppTokenMetadata getTokenMetadata(int _line, int _position, boolean _isMethodParameters, str _sourceCode)
     {
         XppInterpreter.Lexer.XppLexer lexer = new XppInterpreter.Lexer.XppLexer(_sourceCode);
         XppInterpreter.Parser.XppParser parser = new XppInterpreter.Parser.XppParser(lexer, proxy);
 
-        var metadata = parser.GetTokenMetadataAt(_line, _position);
+        var metadata = parser.GetTokenMetadataAt(_line, _position, _isMethodParameters);
 
         MXTXppTokenMetadata ret;
 
@@ -490,6 +490,7 @@ public class MXTXppInterpreterDebugSession
             ret.parmName(metadata.Name);
             ret.parmPrefix(metadata.Prefix);
             ret.parmType(metadata.Type ? metadata.Type : 'UNKNOWN');
+            ret.parmDocHtml(metadata.DocHtml);
         }
 
         return ret;
