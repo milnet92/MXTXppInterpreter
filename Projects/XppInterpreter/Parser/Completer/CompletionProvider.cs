@@ -52,23 +52,6 @@ namespace XppInterpreter.Parser.Completer
             return completions;
         }
 
-        private void AddStaticCompletions(System.Type type, CompletionCollection completions)
-        {
-            if (type is null) return;
-
-            if (_proxy.Reflection.IsEnum(type.Name))
-            {
-                foreach (var enumSymbol in _proxy.Reflection.GetAllEnumValues(type.Name))
-                {
-                    completions.Add(new Completion(enumSymbol, enumSymbol, CompletionEntryType.EnumValue));
-                }
-            }
-            else
-            { 
-                AddCompletions(type, completions, true);
-            }
-        }
-
         private IEnumerable<System.Reflection.MethodInfo> GetMethods(System.Type type, bool @static)
         {
             System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.Public | (@static ? System.Reflection.BindingFlags.Static : System.Reflection.BindingFlags.Instance);
@@ -94,61 +77,6 @@ namespace XppInterpreter.Parser.Completer
             System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.Public | (@static ? System.Reflection.BindingFlags.Static : System.Reflection.BindingFlags.Instance);
 
             return type.GetProperties(flags).Where(m => !m.IsSpecialName && !m.Name.StartsWith("_") && !m.Name.StartsWith("`") && !m.Name.StartsWith("$"));
-        }
-
-        private void AddCompletions(System.Type type, CompletionCollection completions, bool @static)
-        {
-            if (type is null) return;
-
-            // Add public methods
-            foreach (var methods in GetMethods(type, @static).GroupBy(m => m.Name))
-            {
-                StringBuilder docHtmlBuilder = new StringBuilder();
-
-                foreach (var method in methods)
-                {
-                    docHtmlBuilder.AppendLine(method.GenerateCompleterDocHtml(_proxy));
-                }
-
-                completions.Add(new Completion(methods.Key, methods.Key, CompletionEntryType.Method)
-                {
-                    DocHtml = docHtmlBuilder.ToString()
-                });
-            }
-
-            bool isCommon = _proxy.Reflection.IsCommonType(type);
-
-            // Add fields
-            foreach (var fieldGroup in GetFields(type, @static).GroupBy(m => m.Name))
-            {
-                StringBuilder docHtmlBuilder = new StringBuilder();
-
-                foreach (var field in fieldGroup)
-                {
-                    docHtmlBuilder.AppendLine(field.GenerateCompleterDocHtml(_proxy));
-                }
-
-                completions.Add(new Completion(fieldGroup.Key, fieldGroup.Key, isCommon ? CompletionEntryType.TableField : CompletionEntryType.ClassProperty)
-                {
-                    DocHtml = docHtmlBuilder.ToString()
-                });
-            }
-
-            // Add properties
-            foreach (var propertyGroup in GetProperties(type, @static).GroupBy(m => m.Name))
-            {
-                StringBuilder docHtmlBuilder = new StringBuilder();
-
-                foreach (var property in propertyGroup)
-                {
-                    docHtmlBuilder.AppendLine(property.GenerateCompleterDocHtml(_proxy));
-                }
-
-                completions.Add(new Completion(propertyGroup.Key, propertyGroup.Key, isCommon ? CompletionEntryType.TableField : CompletionEntryType.ClassProperty)
-                {
-                    DocHtml = docHtmlBuilder.ToString()
-                });
-            }
         }
     }
 }

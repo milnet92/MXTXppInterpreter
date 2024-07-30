@@ -68,7 +68,7 @@ public class MXTScriptEditor extends FormRun
         }
 
         this.refreshCaption();
-        this.visibleDependencies();
+        this.refreshButtons();
     }
 
 ]]></Source>
@@ -268,14 +268,17 @@ public class MXTScriptEditor extends FormRun
 ]]></Source>
 			</Method>
 			<Method>
-				<Name>visibleDependencies</Name>
+				<Name>refreshButtons</Name>
 				<Source><![CDATA[
     /// <summary>
     ///
     /// </summary>
-    private void visibleDependencies()
+    private void refreshButtons()
     {
         MXTScriptDependencies.visible(callerScript.RecId != 0);
+        SaveButton.visible(callerScript.RecId != 0);
+
+        MXTScriptDependencies.text(strFmt("%1 (%2)", "@MXT:Dependencies", MXTXppInterpreterScriptDependency::count(callerScript.RecId)));
     }
 
 ]]></Source>
@@ -371,7 +374,7 @@ public class MXTScriptEditor extends FormRun
             }
 
             element.refreshCaption();
-            element.visibleDependencies();
+            element.refreshButtons();
 
             return callerScript.RecId != 0;
         }
@@ -383,6 +386,27 @@ public class MXTScriptEditor extends FormRun
 			</DataSource>
 		</DataSources>
 		<DataControls xmlns="">
+			<Control>
+				<Name>MXTScriptDependencies</Name>
+				<Type>MenuFunctionButton</Type>
+				<Methods>
+					<Method>
+						<Name>clicked</Name>
+						<Source><![CDATA[
+        /// <summary>
+        ///
+        /// </summary>
+        public void clicked()
+        {
+            super();
+
+            element.refreshButtons();
+        }
+
+]]></Source>
+					</Method>
+				</Methods>
+			</Control>
 			<Control>
 				<Name>ExecuteButton</Name>
 				<Type>Button</Type>
@@ -627,6 +651,18 @@ public class MXTScriptEditor extends FormRun
 						<FormControlExtension
 							i:nil="true" />
 						<Controls>
+							<AxFormControl xmlns=""
+								i:type="AxFormCommandButtonControl">
+								<Name>SaveButton</Name>
+								<AutoDeclaration>Yes</AutoDeclaration>
+								<Type>CommandButton</Type>
+								<FormControlExtension
+									i:nil="true" />
+								<ButtonDisplay>TextWithImageLeft</ButtonDisplay>
+								<Command>Save</Command>
+								<NormalImage>Save</NormalImage>
+								<Text>Save</Text>
+							</AxFormControl>
 							<AxFormControl xmlns=""
 								i:type="AxFormMenuFunctionButtonControl">
 								<Name>MXTScriptDependencies</Name>

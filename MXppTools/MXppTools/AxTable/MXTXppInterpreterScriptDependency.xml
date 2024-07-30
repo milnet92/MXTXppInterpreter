@@ -48,6 +48,21 @@ public class MXTXppInterpreterScriptDependency extends common
 
 ]]></Source>
 			</Method>
+			<Method>
+				<Name>count</Name>
+				<Source><![CDATA[
+    /// <summary>
+    ///
+    /// </summary>
+    public static RecId count(RecId _scriptId)
+    {
+        return (select count(RecId) from MXTXppInterpreterScriptDependency
+                index ScriptId
+                where MXTXppInterpreterScriptDependency.ScriptId == _scriptId).RecId;
+    }
+
+]]></Source>
+			</Method>
 		</Methods>
 	</SourceCode>
 	<SubscriberAccessLevel>
