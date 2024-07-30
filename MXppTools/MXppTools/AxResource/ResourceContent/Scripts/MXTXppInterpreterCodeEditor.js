@@ -187,8 +187,9 @@
 
                     // Ignore trigger for numbers (i.e. 132.45)
                     if (previousToken && !isNaN(previousToken.value)) return callback(null, []);
-                    // Ignore if inside string
-                    if (currentToken.type == 'string') return callback(null, []);
+                    // Ignore if inside string or comment
+                    if (currentToken.type == 'string' || currentToken.type == 'comment') return callback(null, []);
+
                     if (previousToken && (previousToken.type == 'identifier' || previousToken.value.endsWith(')')) &&
                         (triggerChar.includes('::') || triggerChar.startsWith('.'))) {
 
@@ -328,7 +329,7 @@
                             }]);
                         }
                     });
-                }, 600);
+                }, 400);
             }
         });
 
