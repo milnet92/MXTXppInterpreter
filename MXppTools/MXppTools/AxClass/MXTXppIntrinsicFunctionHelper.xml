@@ -97,18 +97,21 @@ internal final class MXTXppIntrinsicFunctionHelper
                 {
                     MXTXppIntrinsicFunctionHelper::throwArgumentException(_menuItemName, 'menu item action');
                 }
+                break;
 
             case MenuItemType::Display:
                 if (Microsoft.Dynamics.Ax.Xpp.MetadataSupport::GetMenuItemDisplay(_menuItemName) == null)
                 {
                     MXTXppIntrinsicFunctionHelper::throwArgumentException(_menuItemName, 'menu item display');
                 }
-            
+                break;
+
             case MenuItemType::Output:
                 if (Microsoft.Dynamics.Ax.Xpp.MetadataSupport::GetMenuItemOutput(_menuItemName) == null)
                 {
                     MXTXppIntrinsicFunctionHelper::throwArgumentException(_menuItemName, 'menu item output');
                 }
+                break;
         }
     }
 
