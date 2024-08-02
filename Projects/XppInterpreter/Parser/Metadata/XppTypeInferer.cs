@@ -7,15 +7,14 @@ using XppInterpreter.Interpreter;
 using XppInterpreter.Interpreter.Proxy;
 using XppInterpreter.Lexer;
 
-namespace XppInterpreter.Parser.Completer
+namespace XppInterpreter.Parser.Metadata
 {
     class XppTypeInferer : ITypeInferExpressionVisitor
     {
         private System.Type _globalType, _predefinedType;
         private readonly XppProxy _proxy;
-        private bool calledStatically;
-
-        private readonly Dictionary<string, Tuple<Word, Expression>> _localVariableTypes = new Dictionary<string, Tuple<Word, Expression>>(StringComparer.InvariantCultureIgnoreCase);
+        private bool _calledStatically;
+        private ParseContext _context;
 
         public XppTypeInferer(XppProxy proxy)
         {
@@ -26,15 +25,12 @@ namespace XppInterpreter.Parser.Completer
             _predefinedType = _proxy.Casting.GetSystemTypeFromTypeName("PredefinedFunctions");
         }
 
-        public System.Type InferType(Expression expression, Token triggerToken = null)
+        public System.Type InferType(Expression expression, bool calledStatic, ParseContext context)
         {
-            calledStatically = triggerToken is null ? false : triggerToken.TokenType == TType.StaticDoubleDot;
-            return expression.Accept(this);
-        }
+            _calledStatically = calledStatic;
+            _context = context;
 
-        public void AddExpressionType(string varName, Word word, Expression initialization = null)
-        {
-            _localVariableTypes.Add(varName, new Tuple<Word, Expression>(word, initialization));
+            return expression.Accept(this);
         }
 
         private bool IsGlobalFunction(string methodName)
@@ -84,12 +80,12 @@ namespace XppInterpreter.Parser.Completer
         {
             if (functionCall.Caller != null)
             {
-                bool staticSave = calledStatically;
-                calledStatically = functionCall.StaticCall;
+                bool staticSave = _calledStatically;
+                _calledStatically = functionCall.StaticCall;
 
                 System.Type callerType = functionCall.Caller.Accept(this);
 
-                calledStatically = staticSave;
+                _calledStatically = staticSave;
 
                 if (callerType != null)
                 {
@@ -146,26 +142,26 @@ namespace XppInterpreter.Parser.Completer
             }
             else
             {
-                if (calledStatically)
+                if (_calledStatically)
                 {
                     return GetTypeFromWord(variable.Token as Word);
                 }
                 // Infer from variables
-                else if (_localVariableTypes.ContainsKey(variable.Name))
+                else
                 {
-                    var declaration = _localVariableTypes[variable.Name];
+                    var declaration = _context.CurrentScope.FindVariableDeclaration(variable.Name);
 
-                    // If declaration is done using a non defined type, try to infer type from initialization
-                    if (declaration.Item1.TokenType == TType.Var)
+                    if (declaration != null)
                     {
-                        // Needs initialization otherwise we do not know which type
-                        if (declaration.Item2 is null) return null;
+                        if (declaration.Type.TokenType == TType.Var)
+                        {
+                            if (declaration.Initialization is null) return null;
+                            return InferType(declaration.Initialization, false, _context);
+                        }
 
-                        // Infer type from initialization expression
-                        return InferType(declaration.Item2);
+                        return GetTypeFromWord((Word)declaration.Type);
+
                     }
-
-                    return GetTypeFromWord(declaration.Item1);
                 }
             }
 

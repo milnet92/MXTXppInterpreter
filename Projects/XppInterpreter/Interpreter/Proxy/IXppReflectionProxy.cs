@@ -19,5 +19,6 @@ namespace XppInterpreter.Interpreter.Proxy
         object GetEnumValue(string enumType, string enumValue);
         string[] GetAllEnumValues(string enumType);
         string GetMethodSyntax(string typeName, string methodName);
+        string LabelIdToValue(string labelId, string languageId);
     }
 }

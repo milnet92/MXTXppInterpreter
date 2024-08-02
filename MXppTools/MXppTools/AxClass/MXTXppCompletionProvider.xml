@@ -3,7 +3,7 @@
 	<Name>MXTXppCompletionProvider</Name>
 	<SourceCode>
 		<Declaration><![CDATA[
-using XppInterpreter.Parser.Completer;
+using XppInterpreter.Parser.Metadata;
 
 public final class MXTXppCompletionProvider implements ICompletionProvider
 {

@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using XppInterpreter.Interpreter;
 using XppInterpreter.Lexer;
-using XppInterpreter.Parser.Completer;
+using XppInterpreter.Parser.Metadata;
 
 namespace XppInterpreter.Parser
 {
@@ -23,6 +23,7 @@ namespace XppInterpreter.Parser
         {
             interpreter.VisitTernary(this);
         }
+
         internal override System.Type Accept(ITypeInferExpressionVisitor inferer)
         {
             return inferer.VisitTernary(this);

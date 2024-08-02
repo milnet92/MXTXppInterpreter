@@ -1,6 +1,6 @@
 ﻿namespace XppInterpreter.Parser
 {
-    internal class ParseContext
+    public class ParseContext
     {
         private readonly ParseContextScope _globalScope = new ParseContextScope();
         public ParseContextScope CurrentScope { get; private set; }

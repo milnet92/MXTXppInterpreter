@@ -3,8 +3,6 @@
 	<Name>MXTXppCompletionEntryContract</Name>
 	<SourceCode>
 		<Declaration><![CDATA[
-using XppInterpreter.Parser.Completer;
-
 [DataContract]
 public final class MXTXppCompletionEntryContract
 {

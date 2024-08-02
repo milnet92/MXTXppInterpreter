@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using XppInterpreter.Interpreter.Proxy;
 using XppInterpreter.Lexer;
 
-namespace XppInterpreter.Parser.Completer
+namespace XppInterpreter.Parser.Metadata
 {
     public class CompletionProvider
     {

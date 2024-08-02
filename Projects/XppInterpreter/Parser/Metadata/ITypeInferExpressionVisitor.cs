@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace XppInterpreter.Parser.Completer
+namespace XppInterpreter.Parser.Metadata
 {
     internal interface ITypeInferExpressionVisitor
     {

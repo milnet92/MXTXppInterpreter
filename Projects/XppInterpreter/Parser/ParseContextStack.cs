@@ -2,7 +2,7 @@
 
 namespace XppInterpreter.Parser
 {
-    class ParseContextStack : ParseContextStack<bool>
+    public class ParseContextStack : ParseContextStack<bool>
     {
         public bool Empty => _stack.Count == 0;
 
@@ -12,7 +12,7 @@ namespace XppInterpreter.Parser
         }
     }
 
-    class ParseContextStack<T>
+    public class ParseContextStack<T>
     {
         protected readonly Stack<T> _stack = new Stack<T>();
 

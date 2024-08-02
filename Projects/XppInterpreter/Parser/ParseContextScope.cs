@@ -7,9 +7,10 @@ using XppInterpreter.Lexer;
 
 namespace XppInterpreter.Parser
 {
-    class ParseContextScope
+    public class ParseContextScope
     {
-        public readonly List<VariableDeclarations> VariableDeclarations = new List<VariableDeclarations>();
+        public readonly List<FunctionDeclaration> FunctionDeclarations = new List<FunctionDeclaration>();
+        public readonly List<ParseContextScopeVariable> VariableDeclarations = new List<ParseContextScopeVariable>();
         public ParseContextScope Parent {get; set; }
         public ParseContextScope Begin()
         {
@@ -25,13 +26,13 @@ namespace XppInterpreter.Parser
             return Parent;
         }
 
-        public VariableDeclarations FindVariableDeclaration(string identifier)
+        public ParseContextScopeVariable FindVariableDeclaration(string identifier)
         {
             ParseContextScope scope = this;
 
             do
             {
-                var declaration = scope.VariableDeclarations.FirstOrDefault(v => v.Identifiers.Keys.Any(k => k.Lexeme.ToLowerInvariant() == identifier.ToLowerInvariant()));
+                var declaration = scope.VariableDeclarations.FirstOrDefault(v => v.VariableName.ToLowerInvariant() == identifier.ToLowerInvariant());
 
                 if (declaration != null)
                 {

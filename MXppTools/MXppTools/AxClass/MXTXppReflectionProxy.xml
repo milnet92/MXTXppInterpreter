@@ -11,6 +11,7 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
     private System.Type predefinedFunctionsType = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType("PredefinedFunctions");
     private System.Type globalType = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType("Global");
 
+
 }
 ]]></Declaration>
 		<Methods>
@@ -204,11 +205,23 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
             System.String invariantMethodName = XppInterpreter.Core.ReflectionHelper::GetMethodInvariantName(predefinedFunctionsType, _methodName);
             return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeStaticCall(predefinedFunctionsType, invariantMethodName, _parameters);
         }
-        else
+        else if (this.isGlobalFunction(_methodName))
         {
             System.String invariantMethodName = XppInterpreter.Core.ReflectionHelper::GetMethodInvariantName(globalType, _methodName);
             return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeStaticCall(globalType, invariantMethodName, _parameters);
         }
+
+        throw new System.Exception(strFmt("Function '%1' was not found.", _methodName));
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>isGlobalFunction</Name>
+				<Source><![CDATA[
+    private boolean isGlobalFunction(str _methodName)
+    {
+        return XppInterpreter.Core.ReflectionHelper::GetMethodInvariantName(globalType, _methodName) != null;
     }
 
 ]]></Source>
@@ -301,35 +314,43 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
         {
             SysDictTable dictTable = SysDictTable::newName(_typeName);
 
-            // Iterate over instance methods
-            int objMethodCnt = dictTable.objectMethodCnt();
-            for (int i=1; i<=objMethodCnt; i++)
+            Set tableMethods = dictTable.methods(true, true, true, tableStr(Common));
+            SetEnumerator tableMethodsEnumerator = tableMethods.getEnumerator();
+
+            while (tableMethodsEnumerator.moveNext())
             {
-                if (dictTable.objectMethod(i) == _methodName)
+                SysDictMethod currentMethod = tableMethodsEnumerator.current() as SysDictMethod;
+                if (currentMethod.name() == _methodName)
                 {
-                    dictMethod = new SysDictMethod(UtilElementType::TableInstanceMethod, tableName2Id(_typeName), _methodName);
+                    dictMethod = currentMethod;
                     break;
                 }
             }
-
-            if (!dictMethod)
+        }
+        else if (!_typeName)
+        {
+            if (this.isGlobalFunction(_methodName))
             {
-                int staticMethodCnt = dictTable.staticMethodCnt();
-                for (int i=1; i<=staticMethodCnt; i++)
-                {
-                    if (dictTable.staticMethod(i) == _methodName)
-                    {
-                        dictMethod = new SysDictMethod(UtilElementType::TableStaticMethod, tableName2Id(_typeName), _methodName);
-                    }
-                }
+                dictMethod = new SysDictMethod(UtilElementType::ClassStaticMethod, className2Id(globalType.Name), _methodName);
+            }
+            else if (MXTXppPredefinedFunctions::isCustomPredefinedFunction(_methodName))
+            {
+                dictMethod = new SysDictMethod(UtilElementType::ClassStaticMethod, classNum(MXTXppPredefinedFunctions), _methodName);
             }
         }
-        else if (!_typeName && className2Id(_methodName))
-        {
-            dictMethod = new SysDictMethod(UtilElementType::ClassInstanceMethod, className2Id(_methodName), "new");
-        }
 
-        return dictMethod ? dictMethod.syntax() : "";
+        return dictMethod ? dictMethod.metadataSyntax() : '';
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>LabelIdToValue</Name>
+				<Source><![CDATA[
+    public System.String LabelIdToValue(System.String _labelId, System.String _languageId)
+    {
+        str languageId = _languageId ? _labelId : 'en-us';
+        return SysLabel::labelId2String(_labelId, languageId);
     }
 
 ]]></Source>

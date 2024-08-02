@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using XppInterpreter.Core;
 using XppInterpreter.Lexer;
-using XppInterpreter.Parser.Completer;
+using XppInterpreter.Parser.Metadata;
 
 namespace XppInterpreter.Parser
 {
@@ -60,11 +60,7 @@ namespace XppInterpreter.Parser
             _stopAtRow = row;
             _stopAtColumn = column;
 
-            if (isMethodParameters)
-            {
-                _typeInferer = new XppTypeInferer(_proxy);
-                _metadataFromMethodParams = true;
-            }
+            _typeInferer = new XppTypeInferer(_proxy);
 
             try
             {
@@ -147,7 +143,7 @@ namespace XppInterpreter.Parser
 
             return new Constructor(
                 identifier,
-                Parameters(null, identifier.Lexeme, false),
+                Parameters(null, identifier.Lexeme, false, true),
                 null,
                 false,
                 SourceCodeBinding(start, lastScanResult),
@@ -161,7 +157,7 @@ namespace XppInterpreter.Parser
 
             int parameterCount = 0;
 
-            HandleMetadata(start.Line, start.Start, start.Start + 1, null, methodName, parameterCount, true, false);
+            HandleMetadata(start.Line, start.Start, start.Start + 1, null, methodName, parameterCount, true, false, false);
 
             while (currentToken.TokenType != TType.RightParenthesis)
             {
@@ -184,7 +180,7 @@ namespace XppInterpreter.Parser
                 {
                     var comma = Match(TType.Comma);
                     parameterCount ++;
-                    HandleMetadata(comma.Line, comma.Start, comma.Start + 1, null, methodName, parameterCount, true, false);
+                    HandleMetadata(comma.Line, comma.Start, comma.Start + 1, null, methodName, parameterCount, true, false, false);
                 }
             }
 
@@ -193,7 +189,7 @@ namespace XppInterpreter.Parser
             return literalParameters;
         }
 
-        internal List<Expression> Parameters(Expression caller, string tokenName, bool isStatic)
+        internal List<Expression> Parameters(Expression caller, string tokenName, bool isStatic, bool isConstructor)
         {
             List<Expression> parameters = new List<Expression>();
 
@@ -201,7 +197,7 @@ namespace XppInterpreter.Parser
 
             int parameterCount = 0;
 
-            HandleMetadata(start.Line, start.Start, start.Start + 1, caller, tokenName, parameterCount, false, isStatic);
+            HandleMetadata(start.Line, start.Start, start.Start + 1, caller, tokenName, parameterCount, false, isStatic, isConstructor);
 
             while (currentToken.TokenType != TType.RightParenthesis)
             {
@@ -212,7 +208,7 @@ namespace XppInterpreter.Parser
                     var comma = Match(TType.Comma);
 
                     parameterCount++;
-                    HandleMetadata(comma.Line, comma.Start, comma.Start + 1, caller, tokenName, parameterCount, false, isStatic);
+                    HandleMetadata(comma.Line, comma.Start, comma.Start + 1, caller, tokenName, parameterCount, false, isStatic, isConstructor);
                 }
             }
 
@@ -224,6 +220,8 @@ namespace XppInterpreter.Parser
         internal Expression IntrinsicFunction(string functionName)
         {
             var start = lastScanResult;
+            HandleMetadataInterruption(start.Line, start.Start, start.End, start.Token, TokenMetadataType.IntrinsicMethod);
+
             var parameters = IntrinsicParameters(functionName);
             object result = null;
             Expression ret = null;
@@ -306,7 +304,18 @@ namespace XppInterpreter.Parser
                 else
                 {
                     var funcName = (Word)identifier.Token;
-                    var parameters = Parameters(caller, funcName.Lexeme, staticCall);
+
+                    HandleMetadataInterruption(
+                        identifier.Line, 
+                        identifier.Start, 
+                        identifier.End, 
+                        identifier.Token,
+                        staticCall ? TokenMetadataType.StaticMethod : 
+                            caller is null ? TokenMetadataType.GlobalOrDefinedMethod : 
+                                             TokenMetadataType.InstanceMethod,
+                        caller);
+
+                    var parameters = Parameters(caller, funcName.Lexeme, staticCall, false);
 
                     ret = new FunctionCall(
                         funcName,
@@ -324,7 +333,7 @@ namespace XppInterpreter.Parser
             {
                 if (caller is null)
                 {
-                    HandleMetadata(identifier.Line, identifier.Start, identifier.End, identifier.Token);
+                    HandleMetadataInterruption(identifier.Line, identifier.Start, identifier.End, identifier.Token, TokenMetadataType.Variable);
                 }
 
                 if (currentToken.TokenType == TType.LeftBracket)
@@ -597,21 +606,20 @@ namespace XppInterpreter.Parser
             if (isArray)
             {
                 ret = new VariableArrayDeclaration((Word)type, arrayIdentifier, arraySize, SourceCodeBinding(start, lastScanResult));
+
+                _parseContext.CurrentScope.VariableDeclarations.Add(
+                    new ParseContextScopeVariable(arrayIdentifier.Lexeme, type, true, null));
             }
             else
             {
                 ret = new VariableDeclarations((Word)type, declarations, SourceCodeBinding(start, lastScanResult));
-            }
 
-            if (_forAutoCompletion || _metadataFromMethodParams)
-            {
                 foreach (var identifier in ret.Identifiers)
                 {
-                    _typeInferer.AddExpressionType(identifier.Key.Lexeme, ret.VariableType, identifier.Value);
+                    _parseContext.CurrentScope.VariableDeclarations.Add(
+                        new ParseContextScopeVariable(identifier.Key.Lexeme, ret.VariableType, false, identifier.Value));
                 }
             }
-
-            _parseContext.CurrentScope.VariableDeclarations.Add(ret);
 
             return ret;
         }
@@ -841,6 +849,8 @@ namespace XppInterpreter.Parser
 
             List<FunctionDeclarationParameter> parameters = new List<FunctionDeclarationParameter>();
 
+            _parseContext.CurrentScope.Begin();
+
             while (currentToken.TokenType != TType.RightParenthesis)
             {
                 parameters.Add(FunctionDeclarationParameter());
@@ -855,17 +865,23 @@ namespace XppInterpreter.Parser
             var block = Block();
 
             _parseContext.FunctionDeclarationStack.Release();
+            _parseContext.CurrentScope.End();
 
-            return new FunctionDeclaration(
+            var ret = new FunctionDeclaration(
                 ((Word)funcNameToken).Lexeme,
                 start.Token,
                 parameters,
                 block,
                 SourceCodeBinding(start, lastScanResult));
+
+            _parseContext.CurrentScope.FunctionDeclarations.Add(ret);
+
+            return ret;
         }
 
         FunctionDeclarationParameter FunctionDeclarationParameter()
         {
+            // TODO: allow array types to be function parameters
             var start = MatchMultiple(
                 TType.Id,
                 TType.TypeAnytype,
@@ -880,6 +896,9 @@ namespace XppInterpreter.Parser
                 TType.TypeDatetime);
 
             var id = Match(TType.Id).Token;
+
+            _parseContext.CurrentScope.VariableDeclarations.Add(
+                new ParseContextScopeVariable((id as Word).Lexeme, start.Token, false));
 
             return new FunctionDeclarationParameter(start.Token, ((Word)id).Lexeme, SourceCodeBinding(start, lastScanResult));
         }
@@ -961,6 +980,7 @@ namespace XppInterpreter.Parser
 
                 case TType.String:
                     var stringScan = Match(TType.String);
+                    HandleMetadataInterruption(stringScan.Line, stringScan.Start, stringScan.End, stringScan.Token, TokenMetadataType.Label);
                     return new Constant((string)(stringScan.Token as BaseType).Value, SourceCodeBinding(stringScan));
 
                 case TType.True:
@@ -1274,7 +1294,7 @@ namespace XppInterpreter.Parser
             currentToken = currentScanResult.Token;
         }
 
-        internal void HandleMetadata(int line, int start, int end, Expression caller, string methodName, int parameterPosition, bool isIntrinsic, bool isStatic)
+        internal void HandleMetadata(int line, int start, int end, Expression caller, string methodName, int parameterPosition, bool isIntrinsic, bool isStatic, bool isConstructor)
         {
             if (!_forMetadata) return;
 
@@ -1287,14 +1307,21 @@ namespace XppInterpreter.Parser
 
                 if (caller != null)
                 {
-                    callerType = _typeInferer.InferType(caller, new Token(isStatic ? TType.StaticDoubleDot : TType.Dot));
+                    callerType = _typeInferer.InferType(caller, isStatic, _parseContext);
                 }
 
-                throw new MetadataInterruption(TokenMetadataProvider.GetMetadataForMethodParameters(callerType, methodName, parameterPosition, _proxy, isIntrinsic));
+                throw new MetadataInterruption(TokenMetadataProviderHelper.GetMetadataForMethodParameters(callerType, 
+                    methodName, 
+                    isIntrinsic, 
+                    isStatic, 
+                    isConstructor, 
+                    parameterPosition,
+                    _proxy,
+                    _parseContext));
             }
         }
 
-        internal void HandleMetadata(int line, int start, int end, Token token)
+        internal void HandleMetadataInterruption(int line, int start, int end, Token token, TokenMetadataType type, Expression caller = null)
         {
             if (!_forMetadata) return;
 
@@ -1303,15 +1330,41 @@ namespace XppInterpreter.Parser
                 start <= _stopAtColumn &&
                 end >= _stopAtColumn)
             {
-                string varName = ((Word)token).Lexeme;
-                var declaration = _parseContext.CurrentScope.FindVariableDeclaration(varName);
-
-                throw new MetadataInterruption(new TokenMetadata()
+                if (type == TokenMetadataType.IntrinsicMethod ||
+                    type == TokenMetadataType.GlobalOrDefinedMethod ||
+                    type == TokenMetadataType.StaticMethod ||
+                    type == TokenMetadataType.InstanceMethod ||
+                    type == TokenMetadataType.Constructor)
                 {
-                    Name = varName,
-                    Prefix = "(local variable)",
-                    Type = declaration?.VariableType?.Lexeme ?? ""
-                });
+                    var methodName = (token as Word).Lexeme;
+                    System.Type callerType = null;
+
+                    if (caller != null)
+                    {
+                        callerType = _typeInferer.InferType(caller, type == TokenMetadataType.StaticMethod, _parseContext);
+
+                        if (callerType is null) throw new MetadataInterruption(null);
+                    }
+
+                    throw new MetadataInterruption(TokenMetadataProviderHelper.GetMethodMetadata(
+                        callerType, 
+                        methodName,
+                        type == TokenMetadataType.IntrinsicMethod,
+                        type == TokenMetadataType.StaticMethod,
+                        type == TokenMetadataType.Constructor,
+                        _proxy, 
+                        _parseContext));
+                }
+                else if (type == TokenMetadataType.Label)
+                {
+                    throw new MetadataInterruption(TokenMetadataProviderHelper.GetLabelMetadata((token as Lexer.String).Value.ToString(), _proxy));
+                }
+                else if (type == TokenMetadataType.Variable)
+                {
+                    var varName = (token as Word).Lexeme;
+
+                    throw new MetadataInterruption(TokenMetadataProviderHelper.GetLocalVariableMetadata(varName, _proxy, _parseContext));
+                }
             }
         }
         internal void HandleAutocompletion(Expression expression)
@@ -1322,7 +1375,7 @@ namespace XppInterpreter.Parser
                 lastScanResult.Start <= _stopAtColumn &&
                 lastScanResult.End >= _stopAtColumn)
             {
-                throw new AutoCompleteInterruption(_typeInferer.InferType(expression, lastScanResult.Token));
+                throw new AutoCompleteInterruption(_typeInferer.InferType(expression, lastScanResult.Token.TokenType == TType.StaticDoubleDot, _parseContext));
             }
         }
 

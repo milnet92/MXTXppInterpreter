@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using XppInterpreter.Interpreter;
-using XppInterpreter.Parser.Completer;
+using XppInterpreter.Parser.Metadata;
 
 namespace XppInterpreter.Parser
 {

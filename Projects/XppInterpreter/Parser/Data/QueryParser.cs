@@ -89,7 +89,7 @@ namespace XppInterpreter.Parser
 
                 var tableResult = Match(TType.Id);
                 var tableNameVar = (Word)tableResult.Token;
-                HandleMetadata(tableResult.Line, tableResult.Start, tableResult.End, tableResult.Token);
+                HandleMetadataInterruption(tableResult.Line, tableResult.Start, tableResult.End, tableResult.Token, Metadata.TokenMetadataType.Variable);
                 Match(TType.Dot);
                 HandleAutocompletion(new Variable(tableNameVar, null, false, null));
 
@@ -117,7 +117,7 @@ namespace XppInterpreter.Parser
                 }
                 var tableResult = Match(TType.Id);
                 var tableNameVar = (Word)tableResult.Token;
-                HandleMetadata(tableResult.Line, tableResult.Start, tableResult.End, tableResult.Token);
+                HandleMetadataInterruption(tableResult.Line, tableResult.Start, tableResult.End, tableResult.Token, Metadata.TokenMetadataType.Variable);
                 Match(TType.Dot);
                 HandleAutocompletion(new Variable(tableNameVar, null, false, null));
 
@@ -443,7 +443,7 @@ namespace XppInterpreter.Parser
 
             var tableResult = Match(TType.Id);
             var tableVarName = (Word)tableResult.Token;
-            HandleMetadata(tableResult.Line, tableResult.Start, tableResult.End, tableResult.Token);
+            HandleMetadataInterruption(tableResult.Line, tableResult.Start, tableResult.End, tableResult.Token, Metadata.TokenMetadataType.Variable);
             string index = null;
 
             if (currentToken.TokenType == TType.Index)

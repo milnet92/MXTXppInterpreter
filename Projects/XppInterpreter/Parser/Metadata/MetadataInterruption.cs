@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace XppInterpreter.Parser.Completer
+namespace XppInterpreter.Parser.Metadata
 {
     class MetadataInterruption : Exception
     {

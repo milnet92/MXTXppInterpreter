@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using XppInterpreter.Interpreter.Proxy;
 
-namespace XppInterpreter.Parser.Completer
+namespace XppInterpreter.Parser.Metadata
 {
     public static class CompleterExtensions
     {

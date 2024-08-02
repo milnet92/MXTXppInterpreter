@@ -214,7 +214,6 @@
         }
 
         var editor = ace.edit("editor");
-
         // trigger autocomplete whenever . or : is pressed
         var Autocomplete = ace.require("ace/autocomplete").Autocomplete;
         editor.commands.on("afterExec", function (e) {
@@ -234,6 +233,7 @@
 
         editor.commands.addCommand(command);
         editor.setShowFoldWidgets(true);
+        editor.setTheme(themes[$dyn.value(this.Theme)]);
         editor.session.setMode($dyn.value(this.Mode));
         editor.session.setValue($dyn.value(this.SourceCode));
         editor.completers = [xppCompleter];
@@ -247,9 +247,9 @@
         
         // Setup hover tooltip
         var HoverTooltip = ace.require('./tooltip').HoverTooltip;
-        var tooltip = new HoverTooltip();
+        var hoverToolTip = new HoverTooltip();
 
-        tooltip.$gatherData = function (last, editor) {
+        hoverToolTip.$gatherData = function (last, editor) {
             
             var TokenIterator = ace.require("ace/token_iterator").TokenIterator;
             var stream = new TokenIterator(editor.session, last.$pos.row, last.$pos.column);
@@ -259,49 +259,32 @@
 
                 switch (currentToken.type) {
                     case 'keyword':
-                        showTooTip(tooltip, last.x, last.y, '(keyword) ' + '<span style="color:blue">' + currentToken.value + '</span>');
+                        showTooTip(hoverToolTip, last.x, last.y, '(keyword) ' + '<span style="color:blue">' + currentToken.value + '</span>');
                         break;
                     case 'keyword.other':
-                        showTooTip(tooltip, last.x, last.y, '(function) ' + '<span style="color:blue">' + currentToken.value + '</span>');
-                        break;
                     case 'identifier':
-                        var metadata = getTokenFromCache(currentToken.index, currentToken.start);
-                        if (metadata) {
-                            if (metadata.Type != 'UNKNOWN') {
-                                showTooTip(tooltip, last.x, last.y, metadata.Prefix + ' ' + '<span style="color:#3a9dc7">' + metadata.Type + '</span>' + ' ' + metadata.Name);
-                            } else {
-                                showTooTip(tooltip, last.x, last.y, metadata.Prefix + ' ' + '<span>unknown</span>' + ' ' + metadata.Name);
+                        $dyn.callFunction(self.GetTokenMetadata, self, { _line: last.$pos.row, _position: last.$pos.column, _isMethodParameters: false}, function (ret) {
+                            console.log(ret);
+                            if (ret && ret.DocHtml !== '') {
+                                    showTooTip(hoverToolTip, last.x, last.y, ret.DocHtml);
                             }
-
-                        }
-                        else {
-                            return $dyn.callFunction(self.GetTokenMetadata, self, { _line: last.$pos.row, _position: last.$pos.column, _isMethodParameters: false}, function (ret) {
-                                
-                                if (ret) {
-                                    // Store in cache
-                                    tokenMetadataCache.push(
-                                        {
-                                            Name: ret.Name,
-                                            Type: ret.Type,
-                                            Prefix: ret.Prefix,
-                                            Row: currentToken.index,
-                                            Column: currentToken.start
-                                        });
-
-                                    if (ret.Type != 'UNKNOWN') {
-                                        showTooTip(tooltip, last.x, last.y, ret.Prefix + ' ' + '<span style="color:#3a9dc7">' + ret.Type + '</span>' + ' ' + ret.Name);
-                                    } else {
-                                        showTooTip(tooltip, last.x, last.y, ret.Prefix + ' ' + '<span>unknown</span>' + ' ' + ret.Name);
-                                    }
+                        });
+                        break;
+                    default:
+                        // Label case
+                        if (currentToken.type == 'string' && currentToken.value.startsWith('@')) {
+                            $dyn.callFunction(self.GetTokenMetadata, self, { _line: last.$pos.row, _position: last.$pos.column, _isMethodParameters: false }, function (ret) {
+                                console.log(ret);
+                                if (ret && ret.DocHtml !== '') {
+                                    showTooTip(hoverToolTip, last.x, last.y, ret.DocHtml);
                                 }
                             });
                         }
-                        break;
                 }
             }
         }
 
-        tooltip.addToEditor(editor);
+        hoverToolTip.addToEditor(editor);
 
         var ToolTip = ace.require('./tooltip').Tooltip;
         methodTooltip = new ToolTip(editor.container);

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>SysDictMethodMXT_Extension</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+[ExtensionOf(classStr(SysDictMethod))]
+internal final class SysDictMethodMXT_Extension
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>metadataSyntax</Name>
+				<Source><![CDATA[
+	internal final str metadataSyntax()
+    {
+        int i;
+        str ret;
+
+        if (parentId &&
+            this.parentType() == UtilElementType::Class &&
+            this.name() == identifierStr(ClassDeclaration))
+        {
+            // Ignore class declarations
+            return "";
+        }
+        else
+        {
+            switch (this.displayType())
+            {
+                case DisplayFunctionType::Set:
+                case DisplayFunctionType::RecordSet:
+                    ret += 'edit ';
+                    break;
+
+                case DisplayFunctionType::Get:
+                case DisplayFunctionType::RecordGet:
+                    ret += 'display ';
+                    break;
+
+                default:
+                    ret += strLwr(enum2str(this.accessSpecifier()))+' ';
+            }
+            if (this.isStatic())
+            {
+                ret += 'static ';
+            }
+            if (this.isAbstract())
+            {
+                ret += 'abstract ';
+            }
+
+            ret += extendedTypeId2DisplayName(this.returnType(), this.returnId());
+            ret += ' ' + this.name() + '(';
+
+            for (i=1;i<=this.parameterCnt();i++)
+            {
+                if (this.parameterOptional(i))
+                    ret += '[';
+
+                ret += extendedTypeId2DisplayName(this.parameterType(i), this.parameterId(i));
+                ret += ' '+this.parameterName(i);
+
+                if (this.parameterOptional(i))
+                    ret += ']';
+
+                if (i < this.parameterCnt())
+                    ret += ', ';
+            }
+            ret += ')';
+        }
+        return ret;
+	}
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

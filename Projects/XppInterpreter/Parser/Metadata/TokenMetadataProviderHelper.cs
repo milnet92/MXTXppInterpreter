@@ -5,25 +5,65 @@ using System.Text;
 using System.Threading.Tasks;
 using XppInterpreter.Interpreter;
 using XppInterpreter.Interpreter.Proxy;
+using XppInterpreter.Parser.Metadata.Providers;
 
-namespace XppInterpreter.Parser.Completer
+namespace XppInterpreter.Parser.Metadata
 {
-    public class TokenMetadataProvider
+    public class TokenMetadataProviderHelper
     {
-        public static TokenMetadata GetMetadataForMethodParameters(System.Type callerType, string methodName, int parameterPosition, XppProxy proxy, bool isIntrinsic)
+        public static TokenMetadata GetLocalVariableMetadata(string varName, XppProxy proxy, ParseContext context)
+        {
+            return new LocalVariableMetadataProvider(varName, context).GetTokenMetadata(proxy);
+        }
+
+        public static TokenMetadata GetLabelMetadata(string labelId, XppProxy proxy)
+        {
+            return new LabelMetadataProvider(labelId).GetTokenMetadata(proxy);
+        }
+
+        public static TokenMetadata GetMethodMetadata(
+            Type callerType,
+            string methodName,
+            bool isIntrinsic,
+            bool isStatic,
+            bool isConstructor,
+            XppProxy proxy,
+            ParseContext context)
+        {
+            ITokenMetadataProvider provider;
+            if (isIntrinsic)
+            {
+                provider = new IntrinsicMethodMetadataProvider(methodName);
+            }
+            else
+            {
+                provider = new MethodMetadataProvider(methodName, context, isStatic, isConstructor, callerType);
+            }
+
+            return provider.GetTokenMetadata(proxy);
+        }
+
+        public static TokenMetadata GetMetadataForMethodParameters(
+            Type callerType, 
+            string methodName,
+            bool isIntrinsic,
+            bool isStatic,
+            bool isConstructor,
+            int parameterPosition, 
+            XppProxy proxy,
+            ParseContext context)
         {
             if (isIntrinsic)
             {
-                return new TokenMetadata()
-                {
-                    DocHtml = GenerateIntrinsicSignatureHtml(methodName, proxy, parameterPosition)
-                };
+                return new IntrinsicMethodTokenMetadata(GenerateIntrinsicSignatureHtml(methodName, proxy, parameterPosition));
             }
 
-            string syntax = proxy.Reflection.GetMethodSyntax(callerType?.Name ?? "", methodName);
+            string syntax = new Providers.MethodMetadataProvider(methodName, context, isStatic, isConstructor, callerType)
+                .GetTokenMetadata(proxy)
+                .GetDisplayHtml();
+
             StringBuilder builder = new StringBuilder();
             int parsingParamCount = -1;
-            syntax = System.Text.RegularExpressions.Regex.Replace(syntax, "\n[\\s]*", "");
             syntax = System.Text.RegularExpressions.Regex.Replace(syntax, "client[\\s]|server[\\s]", "");
 
             foreach (var c in syntax)
@@ -46,10 +86,7 @@ namespace XppInterpreter.Parser.Completer
                 builder.Append(c);
             }
 
-            return new TokenMetadata()
-            {
-                DocHtml = builder.ToString()
-            };
+            return new IntrinsicMethodTokenMetadata(builder.ToString());
         }
 
         private static string GenerateIntrinsicSignatureHtml(string methodName, XppProxy proxy, int parameterPosition)

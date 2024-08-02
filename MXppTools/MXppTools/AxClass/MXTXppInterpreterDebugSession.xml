@@ -446,15 +446,15 @@ public class MXTXppInterpreterDebugSession
 				<Source><![CDATA[
     public MXTXppCompletionsContract getCompletions(int _line, int _position, boolean _staticCompletion, str _sourceCode)
     {
-        XppInterpreter.Parser.Completer.CompletionProvider completionProvider = new XppInterpreter.Parser.Completer.CompletionProvider(this.proxy);
-        XppInterpreter.Parser.Completer.CompletionCollection completionCollection = completionProvider.GetCompletions(new MXTXppCompletionProvider(), _sourceCode, _line, _position, _staticCompletion);
+        XppInterpreter.Parser.Metadata.CompletionProvider completionProvider = new XppInterpreter.Parser.Metadata.CompletionProvider(this.proxy);
+        XppInterpreter.Parser.Metadata.CompletionCollection completionCollection = completionProvider.GetCompletions(new MXTXppCompletionProvider(), _sourceCode, _line, _position, _staticCompletion);
 
         MXTXppCompletionsContract ret = new MXTXppCompletionsContract();
         List completions = new List(Types::Class);
 
         for (int i = 0; i < completionCollection.Count; i++)
         {
-            XppInterpreter.Parser.Completer.Completion completion = completionCollection.GetAt(i);
+            XppInterpreter.Parser.Metadata.Completion completion = completionCollection.GetAt(i);
 
             MXTXppCompletionEntryContract entry = new MXTXppCompletionEntryContract();
 
@@ -479,7 +479,7 @@ public class MXTXppInterpreterDebugSession
         XppInterpreter.Lexer.XppLexer lexer = new XppInterpreter.Lexer.XppLexer(_sourceCode);
         XppInterpreter.Parser.XppParser parser = new XppInterpreter.Parser.XppParser(lexer, proxy);
 
-        var metadata = parser.GetTokenMetadataAt(_line, _position, _isMethodParameters);
+        XppInterpreter.Parser.Metadata.TokenMetadata metadata = parser.GetTokenMetadataAt(_line, _position, _isMethodParameters);
 
         MXTXppTokenMetadata ret;
 
@@ -487,10 +487,7 @@ public class MXTXppInterpreterDebugSession
         {
             ret = new MXTXppTokenMetadata();
 
-            ret.parmName(metadata.Name);
-            ret.parmPrefix(metadata.Prefix);
-            ret.parmType(metadata.Type ? metadata.Type : 'UNKNOWN');
-            ret.parmDocHtml(metadata.DocHtml);
+            ret.parmDocHtml(metadata.GetDisplayHtml());
         }
 
         return ret;
