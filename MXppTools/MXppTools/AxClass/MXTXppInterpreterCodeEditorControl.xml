@@ -322,6 +322,25 @@ public class MXTXppInterpreterCodeEditorControl extends FormTemplateControl
 
 ]]></Source>
 			</Method>
+			<Method>
+				<Name>GetMetadataElements</Name>
+				<Source><![CDATA[
+    [FormCommand("GetMetadataElements", true)]
+    public MXTXppMetadataElementsContract GetMetadataElements()
+    {
+        MXTXppMetadataElementsContract ret = new MXTXppMetadataElementsContract();
+
+        ret.parmClasses(MXTXppCompletionProvider::getClassNames());
+        ret.parmTables(MXTXppCompletionProvider::getTableNames());
+        ret.parmEnums(MXTXppCompletionProvider::getEnumNames());
+        ret.parmEdts(MXTXppCompletionProvider::getEDTNames());
+        ret.parmGlobalFunctions(MXTXppCompletionProvider::getGlobalFunctions());
+
+        return ret;
+    }
+
+]]></Source>
+			</Method>
 		</Methods>
 	</SourceCode>
 </AxClass>

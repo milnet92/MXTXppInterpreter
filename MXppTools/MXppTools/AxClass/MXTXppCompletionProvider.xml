@@ -7,6 +7,8 @@ using XppInterpreter.Parser.Metadata;
 
 public final class MXTXppCompletionProvider implements ICompletionProvider
 {
+    private static List classNames, tableNames, edtNames, enumNames, globalFunctions;
+
 }
 ]]></Declaration>
 		<Methods>
@@ -15,7 +17,7 @@ public final class MXTXppCompletionProvider implements ICompletionProvider
 				<Source><![CDATA[
     private str getMethodDocumentation(SysDictMethod _method)
     {
-        return _method.syntax();
+        return _method.metadataSyntax();
     }
 
 ]]></Source>
@@ -125,6 +127,129 @@ public final class MXTXppCompletionProvider implements ICompletionProvider
         }
 
         return completions;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>stringEnumeratorToList</Name>
+				<Source><![CDATA[
+    private static List stringEnumeratorToList(System.Collections.Specialized.StringEnumerator _enumerator)
+    {
+        List list = new List(Types::String);
+
+        while (_enumerator.MoveNext())
+        {
+            list.addEnd(_enumerator.Current);
+        }
+
+        return list;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getClassNames</Name>
+				<Source><![CDATA[
+    public static List getClassNames()
+    {
+        if (classNames)
+        {
+            return classNames;
+        }
+
+        classNames = MXTXppCompletionProvider::stringEnumeratorToList(Microsoft.Dynamics.Ax.Xpp.MetadataSupport::ClassNames());
+
+        return classNames;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getTableNames</Name>
+				<Source><![CDATA[
+    public static List getTableNames()
+    {
+        if (tableNames)
+        {
+            return tableNames;
+        }
+
+        tableNames = MXTXppCompletionProvider::stringEnumeratorToList(Microsoft.Dynamics.Ax.Xpp.MetadataSupport::TableNames());
+
+        return tableNames;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getEDTNames</Name>
+				<Source><![CDATA[
+    public static List getEDTNames()
+    {
+        if (edtNames)
+        {
+            return edtNames;
+        }
+
+        edtNames = MXTXppCompletionProvider::stringEnumeratorToList(Microsoft.Dynamics.Ax.Xpp.MetadataSupport::EdtNames());
+
+        return edtNames;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getEnumNames</Name>
+				<Source><![CDATA[
+    public static List getEnumNames()
+    {
+        if (enumNames)
+        {
+            return enumNames;
+        }
+
+        enumNames = MXTXppCompletionProvider::stringEnumeratorToList(Microsoft.Dynamics.Ax.Xpp.MetadataSupport::EnumNames());
+
+        return enumNames;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getGlobalFunctions</Name>
+				<Source><![CDATA[
+    public static List getGlobalFunctions()
+    {
+        if (globalFunctions)
+        {
+            return globalFunctions;
+        }
+
+        globalFunctions = new List(Types::String);
+
+        MXTXppCompletionProvider::fillClassMethodList(globalFunctions, classStr(Global), true, false);
+        MXTXppCompletionProvider::fillClassMethodList(globalFunctions, classStr(MXTXppPredefinedFunctions), true, false);
+
+        return globalFunctions;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>fillClassMethodList</Name>
+				<Source><![CDATA[
+    private static void fillClassMethodList(List _list, ClassName _className, boolean _static, boolean _instance)
+    {
+        SysDictClass  globalDict = SysDictClass::newName(_className);
+        SetEnumerator globalMethodsEnumerator = globalDict.methods(_instance, _static, false).getEnumerator();
+
+        while (globalMethodsEnumerator.moveNext())
+        {
+            SysDictMethod method = globalMethodsEnumerator.current();
+
+            _list.addEnd(method.name());
+        }
     }
 
 ]]></Source>

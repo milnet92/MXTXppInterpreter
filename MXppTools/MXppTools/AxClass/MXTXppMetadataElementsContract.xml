@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppMetadataElementsContract</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+[DataContract]
+public final class MXTXppMetadataElementsContract
+{
+    List classes, tables, edts, enums, globalFunctions;
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>parmClasses</Name>
+				<Source><![CDATA[
+    [DataMember("Classes"), 
+     AifCollectionType("_classes", Types::String)]
+    public List parmClasses(List _classes = classes)
+    {
+        classes = _classes;
+        return classes;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmTables</Name>
+				<Source><![CDATA[
+    [DataMember("Tables"),
+     AifCollectionType("_tables", Types::String)]
+    public List parmTables(List _tables = tables)
+    {
+        tables = _tables;
+        return tables;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmEdts</Name>
+				<Source><![CDATA[
+    [DataMember("Edts"),
+     AifCollectionType("_edts", Types::String)]
+    public List parmEdts(List _edts = edts)
+    {
+        edts = _edts;
+        return edts;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmEnums</Name>
+				<Source><![CDATA[
+    [DataMember("Enums"),
+     AifCollectionType("_enums", Types::String)]
+    public List parmEnums(List _enums = enums)
+    {
+        enums = _enums;
+        return enums;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmGlobalFunctions</Name>
+				<Source><![CDATA[
+    [DataMember("GlobalFunctions"),
+     AifCollectionType("_globalFunctions", Types::String)]
+    public List parmGlobalFunctions(List _globalFunctions = globalFunctions)
+    {
+        globalFunctions = _globalFunctions;
+
+        return globalFunctions;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

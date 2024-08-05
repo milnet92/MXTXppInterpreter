@@ -1,10 +1,18 @@
 (function () {
     'use strict';
-
-    var methodTooltip = null;
-    var change_timer = null;
-    var lastBreakpointHit = null;
     var Range = ace.require('ace/range').Range;
+
+    var methodTooltip;
+    var change_timer;
+    var lastBreakpointHit = null;
+    var listObjects = {
+        Classes: [],
+        Tables: [],
+        Edts: [],
+        Enums: [],
+        GlobalFunctions: []
+    }
+
     const themes = {
         "XCode": "xcode",
         "Eclipse": "eclipse",
@@ -172,7 +180,7 @@
         /// Setup completer
         ace.require("ace/ext/language_tools");
         var xppCompleter = {
-            exactMatch: true,
+            hideInlinePreview: true,
             getCompletions: (editor, session, pos, prefix, callback) => {
 
                 var TokenIterator = ace.require("ace/token_iterator").TokenIterator;
@@ -186,7 +194,7 @@
                     var previousToken = stream.stepBackward();
 
                     // Ignore trigger for numbers (i.e. 132.45)
-                    if (previousToken && !isNaN(previousToken.value)) return callback(null, []);
+                    if (previousToken && !isNaN(previousToken.value) && previousToken.value != ' ') return callback(null, []);
                     // Ignore if inside string or comment
                     if (currentToken.type == 'string' || currentToken.type == 'comment') return callback(null, []);
 
@@ -202,6 +210,7 @@
                                     name: c.Value,
                                     meta: c.Type,
                                     docHTML: c.DocHtml
+                                    //className: "iconable"
                                 };
                             }));
                         });
@@ -209,7 +218,22 @@
                     else if (previousToken && triggerChar.includes(':')) return callback(null, []);
                 }
 
-                callback(null, [...intrinsicCompleterList, ...keywordsCompleterList]);
+                if (prefix.length >= 3) {
+                    callback(null, [
+                        ...listObjects.Classes,
+                        ...listObjects.Tables,
+                        ...listObjects.Enums,
+                        ...listObjects.Edts,
+                        ...listObjects.GlobalFunctions,
+                        ...intrinsicCompleterList,
+                        ...keywordsCompleterList]);
+                }
+                else {
+                    callback(null, [
+                        ...listObjects.GlobalFunctions,
+                        ...intrinsicCompleterList,
+                        ...keywordsCompleterList]);
+                }
             }
         }
 
@@ -223,7 +247,9 @@
 
             if (e.command.name == "insertstring") {
                 if (e.args == ':' || e.args == '.') {
-                    if (!editor.completer) editor.completer = new Autocomplete(); // not initialized until it's first needed
+                    if (!editor.completer) {
+                        editor.completer = new Autocomplete();
+                    }
                     editor.completer.showPopup(editor);
                 } else if (e.args == '(' || e.args == ',') {
                     showMethodToolTip(editor, self);
@@ -233,16 +259,20 @@
 
         editor.commands.addCommand(command);
         editor.setShowFoldWidgets(true);
-        editor.setTheme(themes[$dyn.value(this.Theme)]);
+        editor.setTheme(themes["ace/theme/" + $dyn.value(this.Theme)]);
+        editor.setFontSize($dyn.value(this.FontSize));
         editor.session.setMode($dyn.value(this.Mode));
         editor.session.setValue($dyn.value(this.SourceCode));
         editor.completers = [xppCompleter];
+        editor.completer = new Autocomplete();
+        //editor.completer.exactMatch = true;
         editor.setShowPrintMargin(false);
         editor.setOptions({
             behavioursEnabled: true,
             wrapBehavioursEnabled: true,
             enableBasicAutocompletion: true,
-            enableLiveAutocompletion: true
+            enableLiveAutocompletion: true,
+            cursorStyle: 'smooth'
         });
         
         // Setup hover tooltip
@@ -251,7 +281,7 @@
 
         hoverToolTip.$gatherData = function (last, editor) {
             
-            var TokenIterator = ace.require("ace/token_iterator").TokenIterator;
+            var TokenIterator = ace.require('ace/token_iterator').TokenIterator;
             var stream = new TokenIterator(editor.session, last.$pos.row, last.$pos.column);
             var currentToken = stream.getCurrentToken();
 
@@ -264,9 +294,9 @@
                     case 'keyword.other':
                     case 'identifier':
                         $dyn.callFunction(self.GetTokenMetadata, self, { _line: last.$pos.row, _position: last.$pos.column, _isMethodParameters: false}, function (ret) {
-                            console.log(ret);
+                            
                             if (ret && ret.DocHtml !== '') {
-                                    showTooTip(hoverToolTip, last.x, last.y, ret.DocHtml);
+                                showTooTip(hoverToolTip, last.x, last.y, ret.DocHtml);
                             }
                         });
                         break;
@@ -274,7 +304,7 @@
                         // Label case
                         if (currentToken.type == 'string' && currentToken.value.startsWith('@')) {
                             $dyn.callFunction(self.GetTokenMetadata, self, { _line: last.$pos.row, _position: last.$pos.column, _isMethodParameters: false }, function (ret) {
-                                console.log(ret);
+                                
                                 if (ret && ret.DocHtml !== '') {
                                     showTooTip(hoverToolTip, last.x, last.y, ret.DocHtml);
                                 }
@@ -285,6 +315,17 @@
         }
 
         hoverToolTip.addToEditor(editor);
+
+        // Retrieve metadata list
+        $dyn.callFunction(this.GetMetadataElements, self, {}, function (ret) {
+            listObjects = {
+                Classes: ret.Classes.map(function (e) { return { value: e, name: e, meta: 'class' } }),
+                Tables: ret.Tables.map(function (e) { return { value: e, name: e, meta: 'table' } }),
+                Enums: ret.Enums.map(function (e) { return { value: e, name: e, meta: 'enum' } }),
+                Edts: ret.Edts.map(function (e) { return { value: e, name: e, meta: 'edt' } }),
+                GlobalFunctions: ret.GlobalFunctions.map(function (e) { return { value: e, name: e, meta: 'global function' } }),
+            };
+        });
 
         var ToolTip = ace.require('./tooltip').Tooltip;
         methodTooltip = new ToolTip(editor.container);
@@ -320,10 +361,7 @@
         editor.on("guttermousedown", function (e) {
             var target = e.domEvent.target;
 
-            if (target.className.indexOf("ace_gutter-cell") == -1) {
-                return;
-            }
-            if (!editor.isFocused())
+            if (target.className.indexOf("ace_gutter-cell") == -1 || !editor.isFocused())
                 return;
 
             if (e.clientX > 25 + target.getBoundingClientRect().left)
@@ -333,9 +371,8 @@
             var column = e.getDocumentPosition().column;
 
             $dyn.callFunction(self.AddOrRemoveBreakpoint, self, { _line: row, _position: column }, function (ret) {
-                if (ret !== null && typeof ret !== 'undefined') {
+                if (ret !== null && typeof ret !== 'undefined')
                     addOrRemoveBreakpointMarker(editor, ret);
-                }
             });
 
             e.stop();
@@ -346,13 +383,13 @@
         });
 
         $dyn.observe(this.Theme, function (value) {
-            if (value !== null) {
+            if (value !== null && typeof value != 'undefined') {
                 editor.setTheme("ace/theme/" + themes[value]);
             }
         });
 
         $dyn.observe(this.FontSize, function (value) {
-            if (value !== null) {
+            if (value !== null && typeof value != 'undefined') {
                 editor.setFontSize(value);
             }
         });
