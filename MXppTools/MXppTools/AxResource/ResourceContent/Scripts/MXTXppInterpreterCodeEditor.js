@@ -192,9 +192,9 @@
 
                     var triggerChar = currentToken.value;
                     var previousToken = stream.stepBackward();
-
+                    const isNumeric = (string) => /^[+-]?\d+(\.\d+)?$/.test(string);
                     // Ignore trigger for numbers (i.e. 132.45)
-                    if (previousToken && !isNaN(previousToken.value) && previousToken.value != ' ') return callback(null, []);
+                    if (previousToken && isNumeric(previousToken.value)) return callback(null, []);
                     // Ignore if inside string or comment
                     if (currentToken.type == 'string' || currentToken.type == 'comment') return callback(null, []);
 
@@ -203,14 +203,12 @@
 
                         clearTimeout(change_timer);
                         return $dyn.callFunction(self.GetAutocompletions, self, { _line: pos.row, _position: pos.column - 1, _staticCompletion: triggerChar.includes('::') }, function (ret) {
-                            
                             ret && callback(null, ret.Completions.map(function (c) {
                                 return {
                                     value: c.Value,
                                     name: c.Value,
-                                    meta: c.Type,
+                                    type: c.Type,
                                     docHTML: c.DocHtml
-                                    //className: "iconable"
                                 };
                             }));
                         });
@@ -218,22 +216,15 @@
                     else if (previousToken && triggerChar.includes(':')) return callback(null, []);
                 }
 
-                if (prefix.length >= 3) {
-                    callback(null, [
-                        ...listObjects.Classes,
-                        ...listObjects.Tables,
-                        ...listObjects.Enums,
-                        ...listObjects.Edts,
-                        ...listObjects.GlobalFunctions,
-                        ...intrinsicCompleterList,
-                        ...keywordsCompleterList]);
-                }
-                else {
-                    callback(null, [
-                        ...listObjects.GlobalFunctions,
-                        ...intrinsicCompleterList,
-                        ...keywordsCompleterList]);
-                }
+                callback(null, [
+                    ...listObjects.Classes,
+                    ...listObjects.Tables,
+                    ...listObjects.Enums,
+                    ...listObjects.Edts,
+                    ...listObjects.GlobalFunctions,
+                    ...intrinsicCompleterList,
+                    ...keywordsCompleterList])
+
             }
         }
 
@@ -265,7 +256,9 @@
         editor.session.setValue($dyn.value(this.SourceCode));
         editor.completers = [xppCompleter];
         editor.completer = new Autocomplete();
-        //editor.completer.exactMatch = true;
+        editor.completer.exactMatch = true;
+        editor.completer.ignoreCaption = true;
+
         editor.setShowPrintMargin(false);
         editor.setOptions({
             behavioursEnabled: true,
@@ -319,11 +312,11 @@
         // Retrieve metadata list
         $dyn.callFunction(this.GetMetadataElements, self, {}, function (ret) {
             listObjects = {
-                Classes: ret.Classes.map(function (e) { return { value: e, name: e, meta: 'class' } }),
-                Tables: ret.Tables.map(function (e) { return { value: e, name: e, meta: 'table' } }),
-                Enums: ret.Enums.map(function (e) { return { value: e, name: e, meta: 'enum' } }),
-                Edts: ret.Edts.map(function (e) { return { value: e, name: e, meta: 'edt' } }),
-                GlobalFunctions: ret.GlobalFunctions.map(function (e) { return { value: e, name: e, meta: 'global function' } }),
+                Classes: ret.Classes.map(function (e) { return { value: e, name: e, type: 'Class' } }),
+                Tables: ret.Tables.map(function (e) { return { value: e, name: e, type: 'Table' } }),
+                Enums: ret.Enums.map(function (e) { return { value: e, name: e, type: 'Enum' } }),
+                Edts: ret.Edts.map(function (e) { return { value: e, name: e, type: 'Edt' } }),
+                GlobalFunctions: ret.GlobalFunctions.map(function (e) { return { value: e, name: e, type: 'GlobalFunction' } }),
             };
         });
 

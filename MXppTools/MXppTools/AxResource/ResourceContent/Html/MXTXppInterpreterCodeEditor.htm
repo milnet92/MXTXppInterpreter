@@ -1,13 +1,24 @@
-<script src="https://www.unpkg.com/ace-builds@latest/src-noconflict/ace.js"></script>
-<script src="https://www.unpkg.com/ace-builds@latest/src-noconflict/ext-language_tools.js"></script>
+<script src="https://www.unpkg.com/ace-builds@1.35.4/src-noconflict/ace.js"></script>
+<script src="/resources/scripts/ext-language_tools.js"></script>
 <script src="/resources/scripts/MXTXppInterpreterCodeEditor.js"></script>
 <script src="/resources/scripts/MXTXppInterpreterEditorHighlighter.js"></script>
 
 <style>
 
     /* Completer suggest icons*/
-    .ace_iconable:before {
-        background-image: url('/resources/images/symbol-method.svg');
+
+    .ace_autocomplete {
+        width: 400px !important;
+    }
+
+    .ace_symbol-class,
+    .ace_symbol-table,
+    .ace_symbol-enum,
+    .ace_symbol-enum-value,
+    .ace_symbol-edt,
+    .ace_symbol-method,
+    .ace_symbol-keyword,
+    .ace_symbol-table-field {
         background-size: 13px 13px;
         display: inline-block;
         margin-right: 5px;
@@ -15,7 +26,38 @@
         height: 13px;
         content: "";
     }
-    /**/
+
+    .ace_symbol-class {
+        background-image: url('/resources/images/Class_16x.png');
+    }
+
+    .ace_symbol-table {
+        background-image: url('/resources/images/Table_16x.png');
+    }
+
+    .ace_symbol-enum{
+        background-image: url('/resources/images/Enumerator_16x.png');
+    }
+
+    .ace_symbol-enum-value {
+        background-image: url('/resources/images/EnumItem_16x.png');
+    }
+
+    .ace_symbol-edt {
+        background-image: url('/resources/images/Edt_16x.png');
+    }
+
+    .ace_symbol-method {
+        background-image: url('/resources/images/Method_16x.png');
+    }
+
+    .ace_symbol-keyword {
+        background-image: url('/resources/images/Keyword_16x.png');
+    }
+
+    .ace_symbol-table-field {
+        background-image: url('/resources/images/DataField_16x.png');
+    }
 
     .ace_gutter-cell.ace_breakpoint {
         border-radius: 20px 0px 0px 20px;

@@ -158,8 +158,8 @@ var intrinsicFunctions = [
 var keywordString = keywords.join("|");
 var intrinsicFunctionString = intrinsicFunctions.join("|");
 
-var keywordsCompleterList = keywords.map(function (e) { return { value: e, name: e, meta: "keyword" } });
-var intrinsicCompleterList = intrinsicFunctions.map(function (e) { return { value: e, name: e, meta: "predefined function" } });
+var keywordsCompleterList = keywords.map(function (e) { return { value: e, name: e, type: "Keyword" } });
+var intrinsicCompleterList = intrinsicFunctions.map(function (e) { return { value: e, name: e, type: "PredefinedFunction" } });
 
 
 ace.define('ace/mode/xpp', function (require, exports, module) {
