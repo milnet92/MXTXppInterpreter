@@ -254,11 +254,13 @@
         editor.setFontSize($dyn.value(this.FontSize));
         editor.session.setMode($dyn.value(this.Mode));
         editor.session.setValue($dyn.value(this.SourceCode));
+
         editor.completers = [xppCompleter];
         editor.completer = new Autocomplete();
         editor.completer.exactMatch = true;
         editor.completer.ignoreCaption = true;
 
+        editor.$mouseHandler.$enableJumpToDef = true
         editor.setShowPrintMargin(false);
         editor.setOptions({
             behavioursEnabled: true,
