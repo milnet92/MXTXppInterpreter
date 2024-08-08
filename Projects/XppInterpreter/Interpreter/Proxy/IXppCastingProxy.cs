@@ -11,5 +11,7 @@ namespace XppInterpreter.Interpreter.Proxy
         object GetArrayIndexValue(object array, int index);
         void SetArrayIndexValue(object array, int index, object value);
         Type GetSystemTypeFromTypeName(string typeName);
+        bool Is(object value, string typeName);
+        object As(object value, string typeName);
     }
 }

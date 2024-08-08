@@ -701,5 +701,17 @@ namespace XppInterpreter.Interpreter.Bytecode
             Emit(new StaticFunctionCall("strFmt", print.Parameters.Count + 1, true));
             Emit(new StaticFunctionCall("info", 1, false));
         }
+
+        public void VisitIs(Parser.Is @is)
+        {
+            @is.Expression.Accept(this);
+            Emit(new Is(@is.TypeName));
+        }
+
+        public void VisitAs(Parser.As @as)
+        {
+            @as.Expression.Accept(this);
+            Emit(new As(@as.TypeName));
+        }
     }
 }

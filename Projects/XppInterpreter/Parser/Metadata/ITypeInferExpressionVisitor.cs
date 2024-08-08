@@ -12,5 +12,7 @@ namespace XppInterpreter.Parser.Metadata
         Type VisitUnaryOperation(UnaryOperation unaryOperation);
         Type VisitVariable(Variable variable);
         Type VisitFunctionCall(FunctionCall functionCall);
+        Type VisitIs(Is @is);
+        Type VisitAs(As @as);
     }
 }

@@ -17,6 +17,7 @@
 
         public Type(string lexeme, TType tokenType) : base(lexeme, tokenType)
         {
+
         }
     }
 }

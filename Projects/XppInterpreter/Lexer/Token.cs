@@ -139,6 +139,8 @@ namespace XppInterpreter.Lexer
         Case,
         Default,
         Print,
+        Is,
+        As,
 
         #region Type identification
         TypeAnytype,

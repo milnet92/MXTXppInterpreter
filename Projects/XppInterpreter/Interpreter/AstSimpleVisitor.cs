@@ -7,6 +7,16 @@ namespace XppInterpreter.Interpreter
     /// </summary>
     public class AstSimpleVisitor : IAstVisitor
     {
+        public void VisitAs(As @as)
+        {
+            @as.Expression.Accept(this);
+        }
+
+        public virtual void VisitIs(Is @is)
+        {
+            @is.Expression.Accept(this);
+        }
+
         public virtual void VisitPrint(Print print)
         {
             foreach (var parameter in print.Parameters)

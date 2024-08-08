@@ -181,13 +181,105 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 ]]></Source>
 			</Method>
 			<Method>
+				<Name>As</Name>
+				<Source><![CDATA[
+    public System.Object As(System.Object _value, System.String _typeName)
+    {
+        if (this.Is(_value, _typeName))
+        {
+            return _value;
+        }
+
+        return null;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>Is</Name>
+				<Source><![CDATA[
+    public System.Boolean Is(System.Object _value, System.String _typeName)
+    {
+        if (className2Id(_typeName))
+        {
+            ClassId         classId,
+                            newClassId = className2Id(_typeName);
+            SysDictClass    sysDictClass;
+            boolean         ret;
+            
+            classId = classIdGet(_value);
+            if (classId == 0)
+            {
+                return false;
+            }
+
+            sysDictClass = new SysDictClass(classId);
+
+            ret = sysDictClass.isImplementing(newClassId);
+
+            if (!ret)
+            {
+                ret = SysDictClass::isEqualOrSuperclass(classId, newClassId);
+            }
+
+            return ret;
+        }
+        else if (tableName2Id(_typeName))
+        {
+            // Validate if it's common'
+            if (_value)
+            {
+                System.Type commonType = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType("Common");
+                System.Type valueType = _value.GetType();
+                boolean isCommonType = valueType == commonType || valueType.IsSubclassOf(commonType);
+
+                if (!isCommonType)
+                {
+                    return false;
+                }
+                else if (_typeName == 'Common')
+                {
+                    return true;
+                }
+            }
+
+            // Validate extends
+            TableId  sourceTableId = tableName2Id(_value.GetType().Name);
+            TableId  targetTableId = tablename2id(_typeName);
+            
+            if (sourceTableId == targetTableId)
+            {
+                return true;
+            }
+
+            while (sourceTableId)
+            {
+                DictTable dt = new DictTable(sourceTableId);
+
+                if (dt.extends() != targetTableId)
+                {
+                    sourceTableId = dt.extends();
+                }
+                else
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>GetDefaultValueForType</Name>
 				<Source><![CDATA[
-	public System.Object GetDefaultValueForType(System.String name)
+	public System.Object GetDefaultValueForType(System.String _name)
     {
-        if (name == 'boolean') return false;
+        if (_name == 'boolean') return false;
 
-        Types types = this.getXppTypeByTypeName(name);
+        Types types = this.getXppTypeByTypeName(_name);
         
         switch (types)
         {
@@ -203,8 +295,8 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
                     return val;
                 }
             case Types::String: return "";
-            case Types::Record: return DictTable::createRecord(name);
-            case Types::Enum: return SysDictEnum::newName(name).firstValue();
+            case Types::Record: return DictTable::createRecord(_name);
+            case Types::Enum: return SysDictEnum::newName(_name).firstValue();
         }
 
         return null;

@@ -243,7 +243,7 @@ public final class MXTXppCompletionProvider implements ICompletionProvider
     {
         SysDictClass  globalDict = SysDictClass::newName(_className);
         SetEnumerator globalMethodsEnumerator = globalDict.methods(_instance, _static, false).getEnumerator();
-
+        
         while (globalMethodsEnumerator.moveNext())
         {
             SysDictMethod method = globalMethodsEnumerator.current();

@@ -22,7 +22,6 @@ namespace XppInterpreter.Parser
 
         private bool _forAutoCompletion;
         private bool _forMetadata;
-        private bool _metadataFromMethodParams;
         private int _stopAtRow, _stopAtColumn;
         private XppTypeInferer _typeInferer = null;
 
@@ -1004,9 +1003,24 @@ namespace XppInterpreter.Parser
             }
         }
 
-        internal Expression Factor()
+        internal Expression As()
         {
             Expression expr = Primary();
+
+            if (currentToken.TokenType == TType.As)
+            {
+                Match(TType.As);
+                var identifier = Match(TType.Id);
+
+                expr = new As(expr, (identifier.Token as Word).Lexeme, SourceCodeBinding(expr.SourceCodeBinding, identifier));
+            }
+
+            return expr;
+        }
+
+        internal Expression Factor()
+        {
+            Expression expr = As();
 
             while (currentToken.TokenType == TType.Star
                 || currentToken.TokenType == TType.Division
@@ -1016,7 +1030,7 @@ namespace XppInterpreter.Parser
                 var result = Match(currentToken.TokenType);
                 expr = new BinaryOperation(
                     expr,
-                    Primary(),
+                    As(),
                     result.Token,
                     SourceCodeBinding(expr.SourceCodeBinding, lastScanResult));
             }
@@ -1084,7 +1098,8 @@ namespace XppInterpreter.Parser
             while (currentToken.TokenType == TType.Equal
                 || currentToken.TokenType == TType.NotEqual
                 || currentToken.TokenType == TType.In
-                || currentToken.TokenType == TType.Like)
+                || currentToken.TokenType == TType.Like
+                || currentToken.TokenType == TType.Is)
             {
                 if ((currentToken.TokenType == TType.Like
                    || currentToken.TokenType == TType.In)
@@ -1092,21 +1107,39 @@ namespace XppInterpreter.Parser
                 {
                     HandleParseError("In and Like statements can only be used in queries.");
                 }
+                else if (currentToken.TokenType == TType.Is &&
+                    isParsingWhereStatement)
+                {
+                    HandleParseError("Is statatement cannot be used in queries");
+                }
 
                 var result = Match(currentToken.TokenType);
-                var binaryExpr = new BinaryOperation(
-                    expr,
-                    Comparison(),
-                    result.Token,
-                    SourceCodeBinding(start, lastScanResult));
 
-                expr = binaryExpr;
-
-                if (currentToken.TokenType == TType.In &&
-                   (binaryExpr.LeftOperand.GetType() != typeof(Variable) ||
-                    binaryExpr.RightOperand.GetType() != typeof(Variable)))
+                if (lastScanResult.Token.TokenType == TType.Is)
                 {
-                    HandleParseError("In statement can only be compared to a container variable.");
+                    var identifier = Match(TType.Id).Token;
+                    string typeName = (identifier as Word).Lexeme;
+                    expr = new Is(
+                        expr, 
+                        typeName,
+                        SourceCodeBinding(start, lastScanResult));
+                }
+                else
+                { 
+                    var binaryExpr = new BinaryOperation(
+                        expr,
+                        Comparison(),
+                        result.Token,
+                        SourceCodeBinding(start, lastScanResult));
+
+                    expr = binaryExpr;
+
+                    if (currentToken.TokenType == TType.In &&
+                       (binaryExpr.LeftOperand.GetType() != typeof(Variable) ||
+                        binaryExpr.RightOperand.GetType() != typeof(Variable)))
+                    {
+                        HandleParseError("In statement can only be compared to a container variable.");
+                    }
                 }
             }
 

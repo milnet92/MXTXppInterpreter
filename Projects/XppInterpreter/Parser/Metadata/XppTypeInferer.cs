@@ -168,10 +168,21 @@ namespace XppInterpreter.Parser.Metadata
             return null;
         }
 
+
         private System.Type GetTypeFromWord(Word word)
         {
             if (word is null) return null;
             return _proxy.Casting.GetSystemTypeFromTypeName(word.Lexeme);
+        }
+
+        public System.Type VisitIs(Is @is)
+        {
+            return _proxy.Casting.GetSystemTypeFromTypeName(@is.TypeName);
+        }
+
+        public System.Type VisitAs(As @as)
+        {
+            return _proxy.Casting.GetSystemTypeFromTypeName(@as.TypeName);
         }
     }
 }

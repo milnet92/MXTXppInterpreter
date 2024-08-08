@@ -610,6 +610,8 @@ namespace XppInterpreter.Lexer
             Reserve(Word.Next);
             Reserve(Word.In);
             Reserve(Word.Like);
+            Reserve(Word.Is);
+            Reserve(Word.As);
 
             Reserve(Type.Int32);
             Reserve(Type.Int64);

@@ -81,6 +81,8 @@
     <Compile Include="Interpreter\Bytecode\InstanceFunctionCall.cs" />
     <Compile Include="Interpreter\Bytecode\InstanceLoad.cs" />
     <Compile Include="Interpreter\Bytecode\IntrinsicCall.cs" />
+    <Compile Include="Interpreter\Bytecode\Is - Copy.cs" />
+    <Compile Include="Interpreter\Bytecode\Is.cs" />
     <Compile Include="Interpreter\Bytecode\Jump.cs" />
     <Compile Include="Interpreter\Bytecode\JumpIfTrue.cs" />
     <Compile Include="Interpreter\Bytecode\JumpIfFalse.cs" />
@@ -147,6 +149,8 @@
     <Compile Include="Lexer\Word.cs" />
     <Compile Include="Lexer\XppLexer.cs" />
     <Compile Include="Parser\ArrayAccess.cs" />
+    <Compile Include="Parser\Is.cs" />
+    <Compile Include="Parser\As.cs" />
     <Compile Include="Parser\Assignment.cs" />
     <Compile Include="Parser\BinaryOperation.cs" />
     <Compile Include="Parser\Block.cs" />

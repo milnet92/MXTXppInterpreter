@@ -71,7 +71,9 @@ var keywords = [
     "in",
     "like",
     "void",
-    "return"
+    "return",
+    "is",
+    "as"
 ];
 
 var intrinsicFunctions = [
@@ -245,7 +247,7 @@ ace.define('ace/mode/xpp_highlight_rules', function (require, exports, module) {
                     regex: "[[({]"
                 }, {
                     token: "paren.rparen", 
-                    regex: "[[){]"
+                    regex: "[[)}]"
                 }, {
                     token: "text",
                     regex: "\\s+"
