@@ -1166,7 +1166,8 @@ var AcePopup = /** @class */ (function () {
                     "TableField": "table-field",
                     "Method": "method",
                     "StaticMethod": "method",
-                    "EnumValue": "enum-value"
+                    "EnumValue": "enum-value",
+                    "LocalVariable": "local-var",
                 };
 
                 value.type && tokens.push({

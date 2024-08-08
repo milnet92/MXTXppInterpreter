@@ -13,6 +13,8 @@
         GlobalFunctions: []
     }
 
+    const knownTypes = ["var", "anytype", "date", "int", "int64", "date", "utcdatetime", "timeofday", "boolean", "container"];
+
     const themes = {
         "XCode": "xcode",
         "Eclipse": "eclipse",
@@ -180,8 +182,54 @@
         /// Setup completer
         ace.require("ace/ext/language_tools");
         var xppCompleter = {
-            hideInlinePreview: true,
             getCompletions: (editor, session, pos, prefix, callback) => {
+                function getLocalVariables(editor, pos) {
+                    var TokenIterator = ace.require("ace/token_iterator").TokenIterator;
+                    var stream = new TokenIterator(editor.session, pos.row, pos.column);
+
+                    let lastIdentifier = false;
+                    let lastToken = null;
+                    var token = stream.getCurrentToken();
+                    var currentScope = 0;
+                    var localVariables = [];
+                    function match(t, v) {
+                        if (v instanceof Array)
+                            return t && t.type !== 'string' && t.type !== 'comment' && v.includes(t.value);
+                        return t && t.type !== 'string' && t.type !== 'comment' && t.value === v;
+                    }
+
+                    function matchType(t, types) {
+                        return t && types.includes(t.type);
+                    }
+
+                    while (token) {
+                        token = stream.stepBackward();
+                        if (token == null || token.type === 'text') continue;
+
+                        // Detect scopes
+                        if (match(token, '}')) currentScope++;
+                        else if (match(token, '{')) currentScope--;
+
+                        if (currentScope <= 0) {
+                            if (!lastIdentifier && !match(lastToken, '(') && token.type == 'identifier') {
+                                lastIdentifier = true;
+                            } else if (lastIdentifier) {
+                                lastIdentifier = false;
+                                if (matchType(token, ['identifier']) || match(token, knownTypes)) {
+                                    localVariables.push({
+                                        value: lastToken.value,
+                                        name: lastToken.value,
+                                        type: 'LocalVariable',
+                                        score: 1
+                                    });
+                                }
+                            }
+                        }
+                        lastToken = token;
+                    }
+
+                    return localVariables;
+                }
 
                 var TokenIterator = ace.require("ace/token_iterator").TokenIterator;
                 var stream = new TokenIterator(editor.session, pos.row, pos.column);
@@ -193,6 +241,17 @@
                     var triggerChar = currentToken.value;
                     var previousToken = stream.stepBackward();
                     const isNumeric = (string) => /^[+-]?\d+(\.\d+)?$/.test(string);
+
+                    // check if previous is identifier
+                    if (previousToken && (!triggerChar.includes(':') && !triggerChar.includes('.'))) {
+                        var storedPreviousToken = previousToken;
+                        if (previousToken.type == 'text') previousToken = stream.stepBackward();
+
+                        if (previousToken && (previousToken.type == 'identifier' || knownTypes.includes(previousToken.value))) {
+                            return callback(null, []);
+                        }
+                            
+                    }
                     // Ignore trigger for numbers (i.e. 132.45)
                     if (previousToken && isNumeric(previousToken.value)) return callback(null, []);
                     // Ignore if inside string or comment
@@ -217,6 +276,7 @@
                 }
 
                 callback(null, [
+                    ...getLocalVariables(editor, pos),
                     ...listObjects.Classes,
                     ...listObjects.Tables,
                     ...listObjects.Enums,
