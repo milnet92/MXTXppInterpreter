@@ -231,6 +231,32 @@
                     return localVariables;
                 }
 
+                function shouldSkipCompleter(editor, token, previousToken, stream, trigger) {
+
+                    if (!token || token.type == 'string' || token.type == 'comment') return true;
+
+                    const isNumeric = (string) => /^[+-]?\d+(\.\d+)?$/.test(string);
+                    var restoreState = false;
+                    if (previousToken) {
+                        if (previousToken.type == 'text') {
+                            previousToken = stream.stepBackward();
+                            restoreState = true;
+                        }
+
+                        if (previousToken &&
+                            (previousToken.type == 'identifier' || knownTypes.includes(previousToken.value)) &&
+                            !trigger.includes(':') &&
+                            !trigger.includes('.')) {
+                            return true;
+                        }
+
+                        if (restoreState) previousToken = stream.stepForward();
+                        else if (isNumeric(previousToken.value)) return true;
+                    }
+
+                    return false;
+                }
+
                 var TokenIterator = ace.require("ace/token_iterator").TokenIterator;
                 var stream = new TokenIterator(editor.session, pos.row, pos.column);
 
@@ -240,22 +266,10 @@
 
                     var triggerChar = currentToken.value;
                     var previousToken = stream.stepBackward();
-                    const isNumeric = (string) => /^[+-]?\d+(\.\d+)?$/.test(string);
 
-                    // check if previous is identifier
-                    if (previousToken && (!triggerChar.includes(':') && !triggerChar.includes('.'))) {
-                        var storedPreviousToken = previousToken;
-                        if (previousToken.type == 'text') previousToken = stream.stepBackward();
-
-                        if (previousToken && (previousToken.type == 'identifier' || knownTypes.includes(previousToken.value))) {
-                            return callback(null, []);
-                        }
-                            
+                    if (shouldSkipCompleter(editor, currentToken, previousToken, stream, triggerChar)) {
+                        return callback(null, []);
                     }
-                    // Ignore trigger for numbers (i.e. 132.45)
-                    if (previousToken && isNumeric(previousToken.value)) return callback(null, []);
-                    // Ignore if inside string or comment
-                    if (currentToken.type == 'string' || currentToken.type == 'comment') return callback(null, []);
 
                     if (previousToken && (previousToken.type == 'identifier' || previousToken.value.endsWith(')')) &&
                         (triggerChar.includes('::') || triggerChar.startsWith('.'))) {
