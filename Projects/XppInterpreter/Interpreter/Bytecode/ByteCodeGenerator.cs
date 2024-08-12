@@ -101,6 +101,7 @@ namespace XppInterpreter.Interpreter.Bytecode
 
         public void VisitThrow(Throw @throw)
         {
+            EmitDebugSymbol(@throw);
             @throw.Exception.Accept(this);
             Emit(new ThrowException());
         }
@@ -712,6 +713,59 @@ namespace XppInterpreter.Interpreter.Bytecode
         {
             @as.Expression.Accept(this);
             Emit(new As(@as.TypeName));
+        }
+
+        public void VisitTry(Try @try)
+        {
+            var catchBlockScopes = new List<System.Tuple<string, ByteCodeGenerationScope>>(@try.Catches.Count);
+
+            int totalCatchInstructions = 0;
+            foreach (var @catch in @try.Catches)
+            {
+                CreateScope();
+                @catch.Block.Accept(this);
+                ByteCodeGenerationScope catchScope = ReleaseScope();
+                catchBlockScopes.Add(new System.Tuple<string, ByteCodeGenerationScope>(@catch.ExceptionMember, catchScope));
+
+                totalCatchInstructions += catchScope.Count;
+            }
+
+            int tryOffset = totalCatchInstructions + catchBlockScopes.Count + 1 /* Jump instruction */;
+            CreateScope();
+            @try.TryBlock.Accept(this);
+            var tryScope = ReleaseScope();
+
+            var handler = new BeginHandleException(tryOffset + tryScope.Count + 1);
+            Emit(handler);
+            EmitScope(tryScope);
+            Emit(new Jump(tryOffset));
+
+            int accumulatedCatchOffset = tryScope.Count + 1 + 1 /* Jump instruction*/;
+            for (int i = 0; i < catchBlockScopes.Count; i++)
+            {
+                ByteCodeGenerationScope currentCatchScope = catchBlockScopes[i].Item2;
+
+                totalCatchInstructions -= currentCatchScope.Count;
+                int offset = totalCatchInstructions + (catchBlockScopes.Count - i) /* Jump instructions */;
+
+                EmitScope(currentCatchScope);
+                Emit(new Jump(offset));
+
+                if (i > 0)
+                {
+                    accumulatedCatchOffset += catchBlockScopes[i - 1].Item2.Count + 1 /* Jump instruction */;
+                }
+
+                handler.CatchReferences.Add(new ExceptionCatchReference(catchBlockScopes[i].Item1, accumulatedCatchOffset));
+            }
+
+            Emit(new EndHandleException(@try.HasFinally));
+
+            if (@try.HasFinally)
+            {
+                @try.Finally.Accept(this);
+                Emit(new Finally());
+            }
         }
     }
 }

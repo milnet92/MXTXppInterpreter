@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using XppInterpreter.Interpreter.Debug;
 
@@ -6,8 +7,12 @@ namespace XppInterpreter.Core
 {
     public sealed class ScopeHandler
     {
+        private readonly Stack<ExceptionHandler> _handlerStack = new Stack<ExceptionHandler>();
+
         internal readonly Scope GlobalScope = new Scope();
         public Scope CurrentScope { get; private set; }
+        public ExceptionHandler CurrentExceptionHandler => AreExceptionsHandled ? _handlerStack.Peek() : null;
+        public bool AreExceptionsHandled => _handlerStack.Count > 0;
 
         public ScopeHandler()
         {
@@ -47,9 +52,32 @@ namespace XppInterpreter.Core
             }
         }
 
+        public void AddExceptionHandler(ExceptionHandler exceptionHandler)
+        {
+            _handlerStack.Push(exceptionHandler);
+        }
+
+        public ExceptionHandler RemoveExceptionHandler()
+        {
+            if (AreExceptionsHandled)
+            {
+                return _handlerStack.Pop();
+            }
+
+            return null;
+        }
+
+
+        public void EndScope(int num)
+        {
+            for (int i = 0; i < num; i++)
+            {
+                EndScope();
+            }
+        }
+
         public VariableEditValueResponse TrySetVariableValueFromString(string name, string value)
         {
-            // First check if variable exist
             Scope currentScope = CurrentScope;
             NormalizedScopeEntry foundEntry = null;
 
@@ -126,7 +154,6 @@ namespace XppInterpreter.Core
 
                 CurrentScope.SetVar(name, parsedValue, false, false);
                 CurrentScope._hash.Update(name, normalizedValue);
-
 
                 return new VariableEditValueResponse()
                 {

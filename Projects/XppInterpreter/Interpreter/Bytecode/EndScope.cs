@@ -2,9 +2,9 @@
 {
     class EndScope : IInstruction
     {
-        public string OperationCode => "END_SCOPE";
+        public virtual string OperationCode => "END_SCOPE";
 
-        public void Execute(RuntimeContext context)
+        public virtual void Execute(RuntimeContext context)
         {
             context.ScopeHandler.EndScope();
         }

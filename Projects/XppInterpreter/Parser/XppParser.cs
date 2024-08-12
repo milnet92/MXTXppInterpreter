@@ -733,10 +733,87 @@ namespace XppInterpreter.Parser
             return new Print(parameters, SourceCodeBinding(start, lastScanResult), SourceCodeBinding(start, lastScanResult));
         }
 
+        internal Try Try()
+        {
+            var start = Match(TType.Try);
+            var tryBlock = Block();
+            var catches = new List<Catch>();
+
+            var tryOrCatch = MatchMultiple(TType.Catch, TType.Finally);
+
+            if (tryOrCatch.Token.TokenType == TType.Catch)
+            {
+                bool keepParsingCatch;
+
+                do
+                {
+                    string enumMember = null;
+                    if (currentToken.TokenType == TType.LeftParenthesis)
+                    {
+                        Match(TType.LeftParenthesis);
+                        var exceptionTypeExpression = Variable();
+
+                        if (exceptionTypeExpression is FunctionCall || exceptionTypeExpression is ArrayAccess ||
+                            (exceptionTypeExpression is Variable v &&
+                            (!v.StaticCall || v.Caller is null || (v.Caller as Variable).Caller != null)))
+                        {
+                            HandleParseError("Invalid catch exception type expression.");
+                        }
+
+                        var exceptionTypeVariable = exceptionTypeExpression as Variable;
+                        string exceptionEnum = ((Word)(exceptionTypeVariable.Caller as Variable).Token).Lexeme;
+
+                        // Enum must be Exception
+                        if (!CatchExceptionTypeHelper.IsExceptionEnum(exceptionEnum))
+                        {
+                            HandleParseError("Invalid Exception enum type.");
+                        }
+
+                        enumMember = ((Word)exceptionTypeExpression.Token).Lexeme;
+                        if (!CatchExceptionTypeHelper.IsExceptionMember(enumMember))
+                        {
+                            HandleParseError($"'{enumMember}' is not a member of Exception enum.");
+                        }
+
+                        Match(TType.RightParenthesis);
+                    }
+
+                    catches.Add(new Catch(enumMember, Block()));
+
+                    if (currentToken.TokenType == TType.Catch)
+                    {
+                        Match(TType.Catch);
+                        keepParsingCatch = true;
+                    }
+                    else
+                    {
+                        keepParsingCatch = false;
+                    }
+
+                } while (keepParsingCatch);
+            }
+
+            Block finallyBlock = null;
+            bool parseFinally = currentToken.TokenType == TType.Finally || tryOrCatch.Token.TokenType == TType.Finally;
+
+            if (parseFinally)
+            {
+                if (currentToken.TokenType == TType.Finally)
+                {
+                    Match(TType.Finally);
+                }
+
+                finallyBlock = Block();
+            }
+
+            return new Try(tryBlock,SourceCodeBinding(start, lastScanResult), catches, finallyBlock);
+        }
+
         internal Statement Statement(bool matchSemicolon = true)
         {
             switch (currentToken.TokenType)
             {
+                case TType.Try: return Try();
                 case TType.Print: return Print();
                 case TType.Return: return Return();
                 case TType.LeftBrace: return Block();
@@ -1054,6 +1131,7 @@ namespace XppInterpreter.Parser
 
             return expr;
         }
+
         internal Expression Term()
         {
             Expression node = Factor();

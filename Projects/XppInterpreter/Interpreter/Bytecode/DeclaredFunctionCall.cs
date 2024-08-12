@@ -29,10 +29,10 @@ namespace XppInterpreter.Interpreter.Bytecode
 
         public void Execute(RuntimeContext context)
         {
-            LastResult = Interpreter(context);
+            LastResult = Interpret(context);
         }
 
-        public InterpreterResult Interpreter(RuntimeContext context)
+        public InterpreterResult Interpret(RuntimeContext context)
         {
             RuntimeContext newContext = context.InnerContext;
             XppInterpreter interpreter = newContext?.Interpreter;
@@ -85,7 +85,7 @@ namespace XppInterpreter.Interpreter.Bytecode
 
             }
 
-            InterpreterResult result = null;
+            InterpreterResult result;
 
             // Actual interpretation
             if (firstTime)
@@ -96,10 +96,12 @@ namespace XppInterpreter.Interpreter.Bytecode
             {
                 result = interpreter.Continue(newContext.ByteCode, newContext, context.NextAction);
             }
+            
+            // Check if interpreter modified return flag
             if (newContext.Returned)
             {
-                var ret = context.InnerContext.Stack.Pop();
-                context.Stack.Push(ret);
+                // Push the inner context last value into current context stack
+                context.Stack.Push(context.InnerContext.Stack.Pop());
             }
 
             return result;

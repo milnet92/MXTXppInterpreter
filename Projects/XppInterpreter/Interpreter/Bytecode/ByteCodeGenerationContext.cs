@@ -5,7 +5,7 @@ namespace XppInterpreter.Interpreter.Bytecode
     class ByteCodeGenerationContext
     {
         private List<Parser.Select> _selectsInWhile = new List<Parser.Select>();
-
+        
         public void AddWhileSelect(Parser.Select select)
         {
             _selectsInWhile.Add(select);

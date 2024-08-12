@@ -103,7 +103,21 @@ namespace XppInterpreter.Interpreter
 
                 int pc = c.Counter;
 
-                instruction.Execute(c);
+                try
+                { 
+                    instruction.Execute(c);
+                }
+                catch (System.Exception ex)
+                {
+                    if (c.ScopeHandler.AreExceptionsHandled)
+                    {
+                        c.ScopeHandler.CurrentExceptionHandler.HandleException(ex, c);
+                    }
+                    else
+                    {
+                        throw ex;
+                    }
+                }
 
                 if (c.Returned)
                 {
@@ -138,7 +152,7 @@ namespace XppInterpreter.Interpreter
                 // If no jump was executed, then increment the counter
                 if (pc == c.Counter)
                 {
-                    c.moveCounter(1);
+                    c.MoveCounter(1);
                 }
             }
 
@@ -200,6 +214,11 @@ namespace XppInterpreter.Interpreter
             // We don't add declared functions as the bytecode generation
             // for the full program already include the ref functions
             fullByteCode.Instructions.AddRange(compiledProgram.Instructions);
+
+            foreach (var instruction in fullByteCode.Instructions)
+            {
+                System.Console.WriteLine(instruction.OperationCode);
+            }
 
             return fullByteCode;
         }

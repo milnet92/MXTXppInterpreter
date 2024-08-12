@@ -11,7 +11,7 @@
 
         public virtual void Execute(RuntimeContext context)
         {
-            context.moveCounter(Offset);
+            context.MoveCounter(Offset);
         }
     }
 }

@@ -18,18 +18,10 @@ namespace XppInterpreter.Interpreter.Bytecode
 
         public override void Execute(RuntimeContext context)
         {
-            // Closed un-balanced scopes
             int start = Offset < 0 ? Math.Abs(context.Counter + Offset) : context.Counter;
 
-            var rangeToCheck = context.ByteCode.Instructions.GetRange(start, Math.Abs(Offset));
-
-            int beginScopeCount = rangeToCheck.Count(instruction => instruction is BeginScope);
-            int endScopeCount = rangeToCheck.Count(instruction => instruction is EndScope);
-
-            for (int i = 0; i < Math.Abs(endScopeCount - beginScopeCount); i++)
-            {
-                context.ScopeHandler.EndScope();
-            }
+            // Close un-balanced scopes
+            context.EndScopeRange(start, Math.Abs(Offset));
 
             base.Execute(context);
         }

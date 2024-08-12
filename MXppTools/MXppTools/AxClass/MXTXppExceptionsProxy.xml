@@ -29,6 +29,55 @@ internal final class MXTXppExceptionsProxy implements XppInterpreter.Interpreter
 
 ]]></Source>
 			</Method>
+			<Method>
+				<Name>IsExceptionMember</Name>
+				<Source><![CDATA[
+    public boolean IsExceptionMember(System.Exception _exception, System.String _exceptionMember)
+    {
+        if (_exception == null)
+        {
+            return false;
+        }
+
+        Exception exception;
+
+        exception = str2Enum(Exception, _exceptionMember);
+
+        switch (exception)
+        {
+            case Exception::Break: return _exception is Microsoft.Dynamics.Ax.Xpp.BreakException;
+            case Exception::CLRError: return _exception is Microsoft.Dynamics.Ax.Xpp.ClrErrorException;
+            case Exception::CompanyAccessViolation: return _exception is Microsoft.Dynamics.Ax.Xpp.CompanyAccessViolationException;
+            case Exception::DDEerror: return _exception is Microsoft.Dynamics.Ax.Xpp.DDEException;
+            case Exception::Deadlock: return _exception is Microsoft.Dynamics.Ax.Xpp.DeadlockException;
+            case Exception::DuplicateKeyException: return _exception is Microsoft.Dynamics.Ax.Xpp.DuplicateKeyException;
+            case Exception::DuplicateKeyExceptionNotRecovered: return _exception is Microsoft.Dynamics.Ax.Xpp.DuplicateKeyNotRecoveredException;
+            case Exception::Error: return _exception is Microsoft.Dynamics.Ax.Xpp.ErrorException;
+            case Exception::FunctionArgument: return _exception is Microsoft.Dynamics.Ax.Xpp.FunctionArgumentException;
+            case Exception::Info: return _exception is Microsoft.Dynamics.Ax.Xpp.InfoException;
+            case Exception::Internal: return _exception is Microsoft.Dynamics.Ax.Xpp.InternalException;
+            case Exception::MaximumRetryCountExceeded: return _exception is Microsoft.Dynamics.Ax.Xpp.MaximumRetryCountExceededException;
+            case Exception::MethodNotFound: return _exception is Microsoft.Dynamics.Ax.Xpp.MethodNotFoundException;
+            case Exception::NoValidRunnableCode: return _exception is Microsoft.Dynamics.Ax.Xpp.NoValidRunnableCodeException;
+            case Exception::Numeric: return _exception is Microsoft.Dynamics.Ax.Xpp.NumericException;
+            case Exception::PassClrObjectAcrossTiers: return _exception is Microsoft.Dynamics.Ax.Xpp.PassClrObjectAcrossTiersException;
+            case Exception::PersistentSqlConnectionError: return _exception is Microsoft.Dynamics.Ax.Xpp.PersistentSqlConnectionErrorException;
+            case Exception::Sequence: return _exception is Microsoft.Dynamics.Ax.Xpp.SequenceException;
+            case Exception::SystemMaintenance: return _exception is Microsoft.Dynamics.Ax.Xpp.SystemMaintenanceException;
+            case Exception::Timeout: return _exception is Microsoft.Dynamics.Ax.Xpp.TimeoutException;
+            case Exception::TransientSqlConnectionError: return _exception is Microsoft.Dynamics.Ax.Xpp.TransientSqlConnectionError;
+            case Exception::TypeCast: return _exception is Microsoft.Dynamics.Ax.Xpp.TypeCastException;
+            case Exception::UpdateConflict: return _exception is Microsoft.Dynamics.Ax.Xpp.UpdateConflictException;
+            case Exception::UpdateConflictNotRecovered: return _exception is Microsoft.Dynamics.Ax.Xpp.UpdateConflictNotRecoveredException;
+            case Exception::ViewDataSourceValidation: return _exception is Microsoft.Dynamics.Ax.Xpp.ViewDataSourceValidationException;
+            case Exception::Warning: return _exception is Microsoft.Dynamics.Ax.Xpp.WarningException;
+        }
+
+        return false;
+    }
+
+]]></Source>
+			</Method>
 		</Methods>
 	</SourceCode>
 </AxClass>

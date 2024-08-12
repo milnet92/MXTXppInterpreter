@@ -37,5 +37,6 @@ namespace XppInterpreter.Interpreter
         void VisitVariableDeclarations(VariableDeclarations variableDeclaration);
         void VisitIs(Is @is);
         void VisitAs(As @as);
+        void VisitTry(Try @try);
     }
 }

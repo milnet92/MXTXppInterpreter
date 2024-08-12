@@ -551,9 +551,9 @@ namespace XppInterpreter.Lexer
             Reserve(Word.Breakpoint);
             Reserve(Word.Null);
             Reserve(Word.Try);
+            Reserve(Word.Finally);
             Reserve(Word.Catch);
             Reserve(Word.Throw);
-            Reserve(Word.Finally);
             Reserve(Word.IntegerDivision);
             Reserve(Word.Mod);
             Reserve(Word.Increment);

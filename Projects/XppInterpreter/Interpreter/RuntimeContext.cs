@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using XppInterpreter.Core;
 using XppInterpreter.Interpreter.Bytecode;
 using XppInterpreter.Interpreter.Debug;
@@ -18,6 +19,7 @@ namespace XppInterpreter.Interpreter
         public readonly ScopeHandler ScopeHandler;
         public readonly XppProxy Proxy;
         public readonly ByteCode ByteCode;
+        public Exception LastException;
 
         public bool Returned;
         public RuntimeContext InnerContext;
@@ -40,10 +42,10 @@ namespace XppInterpreter.Interpreter
 
         public RuntimeContext(XppProxy proxy, ByteCode bytecode, ScopeHandler scopeHandler, int counter) : this(proxy, bytecode, scopeHandler)
         {
-            setCounter(counter);
+            SetCounter(counter);
         }
 
-        public void moveCounter(int offset)
+        public void MoveCounter(int offset)
         {
             if (_pc + offset < 0)
             {
@@ -53,7 +55,7 @@ namespace XppInterpreter.Interpreter
             _pc += offset;
         }
 
-        public void setCounter(int counter)
+        public void SetCounter(int counter)
         {
             if (counter < 0)
             {
@@ -62,5 +64,18 @@ namespace XppInterpreter.Interpreter
 
             _pc = counter;
         }
+
+        public void EndScopeRange(int start, int end)
+        {
+            var rangeToCheck = ByteCode.Instructions.GetRange(start, end);
+
+            // Count the number of scope instructions
+            int beginScopeCount = rangeToCheck.Count(instruction => instruction is BeginScope);
+            int endScopeCount = rangeToCheck.Count(instruction => instruction is EndScope);
+
+            // The number of scopes to close is the number of orphane begin scope instructions
+            ScopeHandler.EndScope(Math.Abs(endScopeCount - beginScopeCount));
+        }
+
     }
 }

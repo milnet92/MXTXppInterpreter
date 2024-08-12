@@ -9,9 +9,9 @@ namespace XppInterpreter.Core
     public class Scope
     {
         internal readonly NormalizedScopeEntryHash _hash = new NormalizedScopeEntryHash();
-        internal VariableCollection VariableCollection = new VariableCollection();
+        internal readonly VariableCollection VariableCollection = new VariableCollection();
 
-        public Stack<object> Stack = new Stack<object>();
+        public readonly Stack<object> Stack = new Stack<object>();
         public Scope Parent { get; set; }
 
         public Scope Begin()

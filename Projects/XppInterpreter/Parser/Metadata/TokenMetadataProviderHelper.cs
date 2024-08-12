@@ -31,6 +31,7 @@ namespace XppInterpreter.Parser.Metadata
             ParseContext context)
         {
             ITokenMetadataProvider provider;
+
             if (isIntrinsic)
             {
                 provider = new IntrinsicMethodMetadataProvider(methodName);

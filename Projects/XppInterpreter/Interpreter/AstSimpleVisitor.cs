@@ -7,6 +7,18 @@ namespace XppInterpreter.Interpreter
     /// </summary>
     public class AstSimpleVisitor : IAstVisitor
     {
+        public void VisitTry(Try @try)
+        {
+            @try.TryBlock.Accept(this);
+
+            foreach (var @catch in @try.Catches)
+            {
+                @catch.Block.Accept(this);
+            }
+
+            @try.Finally?.Accept(this);
+        }
+
         public void VisitAs(As @as)
         {
             @as.Expression.Accept(this);
@@ -52,7 +64,6 @@ namespace XppInterpreter.Interpreter
 
         public virtual void VisitBreakpoint(Breakpoint breakpoint)
         {
-
         }
 
         public virtual void VisitChangeCompany(ChangeCompany changeCompany)

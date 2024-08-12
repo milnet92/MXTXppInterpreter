@@ -49,6 +49,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\ExceptionHandler.cs" />
     <Compile Include="Core\ParseException.cs" />
     <Compile Include="Core\ReflectionHelper.cs" />
     <Compile Include="Core\Scope.cs" />
@@ -59,12 +60,14 @@
     <Compile Include="Core\VariableEntry.cs" />
     <Compile Include="Interpreter\AstSimpleVisitor.cs" />
     <Compile Include="Interpreter\Bytecode\Arithmetic.cs" />
+    <Compile Include="Interpreter\Bytecode\BeginHandleException.cs" />
     <Compile Include="Interpreter\Bytecode\ByteCode.cs" />
     <Compile Include="Interpreter\Bytecode\ByteCodeGenerationContext.cs" />
     <Compile Include="Interpreter\Bytecode\ByteCodeGenerationScope.cs" />
     <Compile Include="Interpreter\Bytecode\ByteCodeGenerator.cs" />
     <Compile Include="Interpreter\Bytecode\Call.cs" />
     <Compile Include="Interpreter\Bytecode\Case.cs" />
+    <Compile Include="Interpreter\Bytecode\ExceptionCatchReference.cs" />
     <Compile Include="Interpreter\Bytecode\ChangeCompany.cs" />
     <Compile Include="Interpreter\Bytecode\ChangeCompanyDispose.cs" />
     <Compile Include="Interpreter\Bytecode\Container.cs" />
@@ -73,7 +76,9 @@
     <Compile Include="Interpreter\Bytecode\DefaultValue.cs" />
     <Compile Include="Interpreter\Bytecode\DefaultValueArray.cs" />
     <Compile Include="Interpreter\Bytecode\DeleteQuery.cs" />
+    <Compile Include="Interpreter\Bytecode\EndHandleException.cs" />
     <Compile Include="Interpreter\Bytecode\EndScope.cs" />
+    <Compile Include="Interpreter\Bytecode\Finally.cs" />
     <Compile Include="Interpreter\Bytecode\ICall.cs" />
     <Compile Include="Interpreter\Bytecode\IInstruction.cs" />
     <Compile Include="Interpreter\Bytecode\IInterpretableInstruction.cs" />
@@ -81,7 +86,7 @@
     <Compile Include="Interpreter\Bytecode\InstanceFunctionCall.cs" />
     <Compile Include="Interpreter\Bytecode\InstanceLoad.cs" />
     <Compile Include="Interpreter\Bytecode\IntrinsicCall.cs" />
-    <Compile Include="Interpreter\Bytecode\Is - Copy.cs" />
+    <Compile Include="Interpreter\Bytecode\As.cs" />
     <Compile Include="Interpreter\Bytecode\Is.cs" />
     <Compile Include="Interpreter\Bytecode\Jump.cs" />
     <Compile Include="Interpreter\Bytecode\JumpIfTrue.cs" />
@@ -197,6 +202,7 @@
     <Compile Include="Parser\Print.cs" />
     <Compile Include="Parser\Return.cs" />
     <Compile Include="Parser\Switch.cs" />
+    <Compile Include="Parser\Try.cs" />
     <Compile Include="Parser\UpdateRecordset.cs" />
     <Compile Include="Parser\Data\Join.cs" />
     <Compile Include="Parser\Data\OrderByField.cs" />

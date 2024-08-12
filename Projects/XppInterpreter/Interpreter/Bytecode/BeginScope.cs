@@ -2,9 +2,9 @@
 {
     class BeginScope : IInstruction
     {
-        public string OperationCode => "BEGIN_SCOPE";
+        public virtual string OperationCode => "BEGIN_SCOPE";
 
-        public void Execute(RuntimeContext context)
+        public virtual void Execute(RuntimeContext context)
         {
             context.ScopeHandler.BeginScope();
         }

@@ -23,7 +23,7 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
         {
             return Types::Enum;
         }
-        
+
         // Extended data types
         var dictType = SysDictType::newName(_name);
         if (dictType != null)
