@@ -161,6 +161,7 @@
     <Compile Include="Parser\Block.cs" />
     <Compile Include="Parser\Breakpoint.cs" />
     <Compile Include="Parser\ChangeCompany.cs" />
+    <Compile Include="Parser\LoopControlContext.cs" />
     <Compile Include="Parser\Metadata\AutoCompleteInterruption.cs" />
     <Compile Include="Parser\Metadata\CompleterExtensions.cs" />
     <Compile Include="Parser\Metadata\CompletionCollection.cs" />

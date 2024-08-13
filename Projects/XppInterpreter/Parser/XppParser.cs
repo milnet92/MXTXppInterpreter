@@ -507,9 +507,13 @@ namespace XppInterpreter.Parser
 
             var bindingEnds = Match(TType.RightParenthesis);
 
-            return new While(condition, Block(),
-                SourceCodeBinding(bindingStart, lastScanResult),
-                SourceCodeBinding(bindingStart, bindingEnds));
+            using (new LoopControlContext(_parseContext))
+            { 
+                return new While(condition, Block(),
+                    SourceCodeBinding(bindingStart, lastScanResult),
+                    SourceCodeBinding(bindingStart, bindingEnds));
+            }
+
         }
 
         internal For For()
@@ -523,19 +527,31 @@ namespace XppInterpreter.Parser
             Statement loopStmt = Statement(false);
             var end = Match(TType.RightParenthesis);
 
-            return new For(initialisation, expression, loopStmt, Block(), SourceCodeBinding(start, lastScanResult), SourceCodeBinding(start, end));
+            using (new LoopControlContext(_parseContext))
+            { 
+                return new For(initialisation, expression, loopStmt, Block(), 
+                    SourceCodeBinding(start, lastScanResult), 
+                    SourceCodeBinding(start, end));
+            }
         }
 
         internal Do Do()
         {
             var start = Match(TType.Do);
-            Block block = Block();
-            Match(TType.While);
-            Match(TType.LeftParenthesis);
-            Expression expression = Expression();
-            Match(TType.RightParenthesis);
-            Match(TType.Semicolon);
-            return new Do(expression, block, SourceCodeBinding(start, lastScanResult), DebuggeableBinding(start));
+
+            using (new LoopControlContext(_parseContext))
+            { 
+                Block block = Block();
+                Match(TType.While);
+                Match(TType.LeftParenthesis);
+                Expression expression = Expression();
+                Match(TType.RightParenthesis);
+                Match(TType.Semicolon);
+
+                return new Do(expression, block, 
+                    SourceCodeBinding(start, lastScanResult), 
+                    DebuggeableBinding(start));
+            }
         }
 
         internal VariableDeclarations VariableDeclaration(bool matchSemicolon = true)
@@ -625,6 +641,11 @@ namespace XppInterpreter.Parser
 
         internal LoopControl LoopControl()
         {
+            if (!_parseContext.CanLoopScape())
+            {
+                HandleParseError("Control cannot leave a finally block.");
+            }
+
             var start = currentScanResult;
             Token loopControlToken = currentToken;
 
@@ -700,6 +721,11 @@ namespace XppInterpreter.Parser
             if (_parseContext.FunctionDeclarationStack.Empty)
             {
                 HandleParseError("Return statement can only be used inside function declarations.");
+            }
+
+            if (!_parseContext.LoopStack.Empty)
+            {
+                HandleParseError("Control cannot leave a finally block.");
             }
 
             var start = currentScanResult;
@@ -798,12 +824,16 @@ namespace XppInterpreter.Parser
 
             if (parseFinally)
             {
+                // Match the finally token if not done before
                 if (currentToken.TokenType == TType.Finally)
                 {
                     Match(TType.Finally);
                 }
 
-                finallyBlock = Block();
+                using (new LoopControlContext(_parseContext, false))
+                { 
+                    finallyBlock = Block();
+                }
             }
 
             return new Try(tryBlock,SourceCodeBinding(start, lastScanResult), catches, finallyBlock);
