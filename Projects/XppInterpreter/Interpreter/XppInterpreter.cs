@@ -134,7 +134,7 @@ namespace XppInterpreter.Interpreter
 
                 if (instruction is IInterpretableInstruction interpretable)
                 {
-                    if (!interpretable.LastResult.HasFinished)
+                    if (!interpretable.LastResult?.HasFinished ?? false)
                     {
                         return new InterpreterResult(interpretable.LastResult.Breakpoint, new InterpreterSaveState(c, byteCode));
                     }
