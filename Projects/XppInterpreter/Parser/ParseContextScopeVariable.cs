@@ -7,16 +7,16 @@ using XppInterpreter.Lexer;
 
 namespace XppInterpreter.Parser
 {
-    public class ParseContextScopeVariable
+    public class ParseContextScopeVariable : ITypedObject
     {
-        public string VariableName { get; }
+        public string Name { get; }
         public Token Type { get; }
         public Expression Initialization { get; }
         public bool IsArray { get; }
 
         public ParseContextScopeVariable(string varName, Token type, bool isArray, Expression initialization = null)
         {
-            VariableName = varName;
+            Name = varName;
             Type = type;
             IsArray = isArray;
             Initialization = initialization;

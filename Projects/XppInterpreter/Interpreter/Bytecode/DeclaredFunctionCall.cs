@@ -11,7 +11,7 @@ namespace XppInterpreter.Interpreter.Bytecode
         public string Name => _ref.Declaration.Name;
 
         public int NArgs { get; set; }
-        public bool Alloc => _ref.Declaration.ReturnType.TokenType != TType.Void;
+        public bool Alloc => _ref.Declaration.Type.TokenType != TType.Void;
         public bool ProcessParameters => true;
         public InterpreterResult LastResult { get; private set; }
 

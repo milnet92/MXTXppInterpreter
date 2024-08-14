@@ -155,6 +155,7 @@
     <Compile Include="Lexer\Word.cs" />
     <Compile Include="Lexer\XppLexer.cs" />
     <Compile Include="Parser\ArrayAccess.cs" />
+    <Compile Include="Parser\FunctionDeclarationReference.cs" />
     <Compile Include="Parser\Is.cs" />
     <Compile Include="Parser\As.cs" />
     <Compile Include="Parser\Assignment.cs" />
@@ -162,6 +163,7 @@
     <Compile Include="Parser\Block.cs" />
     <Compile Include="Parser\Breakpoint.cs" />
     <Compile Include="Parser\ChangeCompany.cs" />
+    <Compile Include="Parser\ITypedObject.cs" />
     <Compile Include="Parser\LoopControlContext.cs" />
     <Compile Include="Parser\Metadata\AutoCompleteInterruption.cs" />
     <Compile Include="Parser\Metadata\CompleterExtensions.cs" />

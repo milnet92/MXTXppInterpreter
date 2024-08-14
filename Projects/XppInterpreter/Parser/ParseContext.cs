@@ -1,4 +1,6 @@
-﻿namespace XppInterpreter.Parser
+﻿using System;
+
+namespace XppInterpreter.Parser
 {
     public class ParseContext
     {

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 
 namespace XppInterpreter.Parser
 {
@@ -10,7 +11,7 @@ namespace XppInterpreter.Parser
         }
     }
 
-    public class ParseContextStack<T>
+    public class ParseContextStack<T> : IEnumerable<T>
     {
         protected readonly Stack<T> _stack = new Stack<T>();
         public bool Empty => _stack.Count == 0;
@@ -28,6 +29,16 @@ namespace XppInterpreter.Parser
         public T Peek()
         {
             return _stack.Peek();
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            return _stack.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return _stack.GetEnumerator();
         }
     }
 }

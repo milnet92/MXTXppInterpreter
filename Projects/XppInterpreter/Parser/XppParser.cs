@@ -272,12 +272,13 @@ namespace XppInterpreter.Parser
             return ret;
         }
 
-        internal Expression Variable(Expression caller = null, bool staticCall = false)
+        internal Expression Variable(Expression caller = null, bool staticCall = false, bool expectReturn = true)
         {
             IScanResult identifier = caller is null ? Match(TType.Id) : MatchAnyWord();
 
             Expression ret;
             SourceCodeBinding debuggeableStartBinding = caller?.SourceCodeBinding ?? new SourceCodeBinding(identifier.Line, identifier.Start, 0, 0);
+            bool validateVariableName = false;
 
             if (caller is Interpreter.Debug.IDebuggeable debuggeable)
             {
@@ -291,9 +292,7 @@ namespace XppInterpreter.Parser
                 _parseContext.CallFunctionScope.New();
 
                 string functionName = (identifier.Token as Word).Lexeme;
-
                 bool intrinsical = caller is null && Interpreter.Proxy.XppProxyHelper.IsIntrinsicFunction(functionName);
-
                 if (intrinsical)
                 {
                     ret = IntrinsicFunction(functionName);
@@ -323,15 +322,21 @@ namespace XppInterpreter.Parser
                         SourceCodeBinding(identifier, lastScanResult),
                         isInsideFunctionScope ? SourceCodeBinding(debuggeableStartBinding, lastScanResult) : null);
 
+                    if (expectReturn)
+                    {
+                        System.Type returnType = _typeInferer.InferType(ret, false, _parseContext);
+
+                        if (returnType is null || returnType == typeof(void))
+                        {
+                            HandleParseError("Return type cannot be 'void'.");
+                        }
+                    }
                 }
                 _parseContext.CallFunctionScope.Release();
             }
             else
             {
-                if (caller is null)
-                {
-                    HandleMetadataInterruption(identifier.Line, identifier.Start, identifier.End, identifier.Token, TokenMetadataType.Variable);
-                }
+                validateVariableName = caller is null;
 
                 if (currentToken.TokenType == TType.LeftBracket)
                 {
@@ -353,6 +358,18 @@ namespace XppInterpreter.Parser
                         caller,
                         staticCall,
                         SourceCodeBinding(identifier, lastScanResult));
+                }
+            }
+
+            // Static calls cannot be from instances, so skip validation
+            if (currentToken.TokenType != TType.StaticDoubleDot && validateVariableName)
+            {
+                string variableName = ((Word)identifier.Token).Lexeme;
+                var declaredVariable = _parseContext.CurrentScope.FindVariableDeclaration(variableName);
+
+                if (declaredVariable is null)
+                {
+                    HandleParseError($"Variable {variableName} is not declared.");
                 }
             }
 
@@ -516,8 +533,12 @@ namespace XppInterpreter.Parser
 
         internal For For()
         {
+            For @for;
             var start = Match(TType.For);
             Match(TType.LeftParenthesis);
+
+            _parseContext.BeginScope();
+
             Statement initialisation = Statement(false);
             Match(TType.Semicolon);
             Expression expression = Expression();
@@ -527,10 +548,14 @@ namespace XppInterpreter.Parser
 
             using (new LoopControlContext(_parseContext))
             { 
-                return new For(initialisation, expression, loopStmt, Block(), 
+                @for = new For(initialisation, expression, loopStmt, Block(), 
                     SourceCodeBinding(start, lastScanResult), 
                     SourceCodeBinding(start, end));
             }
+
+            _parseContext.EndScope();
+
+            return @for;
         }
 
         internal Do Do()
@@ -558,8 +583,7 @@ namespace XppInterpreter.Parser
             Word arrayIdentifier = null;
             Expression arraySize = null;
 
-            Token type = currentToken;
-            var start = MatchMultiple(
+            var typeResult = MatchMultiple(
                 TType.Id,
                 TType.TypeAnytype,
                 TType.TypeBoolean,
@@ -572,6 +596,13 @@ namespace XppInterpreter.Parser
                 TType.TypeTimeOfDay,
                 TType.TypeDatetime,
                 TType.Var);
+
+            Word type = typeResult.Token as Word;
+
+            if (type.TokenType != TType.Var && !_typeInferer.IsKnownType(type.Lexeme))
+            {
+                HandleParseError($"The name '{type.Lexeme}' does not denotate a class, a table, or an extended data type.");
+            }
 
             bool isArray = false;
             do
@@ -623,14 +654,14 @@ namespace XppInterpreter.Parser
 
             if (isArray)
             {
-                ret = new VariableArrayDeclaration((Word)type, arrayIdentifier, arraySize, SourceCodeBinding(start, lastScanResult));
+                ret = new VariableArrayDeclaration(type, arrayIdentifier, arraySize, SourceCodeBinding(typeResult, lastScanResult));
 
                 _parseContext.CurrentScope.VariableDeclarations.Add(
                     new ParseContextScopeVariable(arrayIdentifier.Lexeme, type, true, null));
             }
             else
             {
-                ret = new VariableDeclarations((Word)type, declarations, SourceCodeBinding(start, lastScanResult));
+                ret = new VariableDeclarations(type, declarations, SourceCodeBinding(typeResult, lastScanResult));
 
                 foreach (var identifier in ret.Identifiers)
                 {
@@ -722,6 +753,9 @@ namespace XppInterpreter.Parser
         internal Using Using()
         {
             var start = Match(TType.Using);
+
+            _parseContext.BeginScope();
+
             Match(TType.LeftParenthesis);
 
             var variable = VariableDeclaration(false);
@@ -735,7 +769,11 @@ namespace XppInterpreter.Parser
 
             Match(TType.RightParenthesis);
 
-            return new Using(variable, Block(), SourceCodeBinding(start, lastScanResult));
+            Using @using = new Using(variable, Block(), SourceCodeBinding(start, lastScanResult));
+
+            _parseContext.EndScope();
+
+            return @using;
         }
 
         internal Return Return()
@@ -956,8 +994,6 @@ namespace XppInterpreter.Parser
 
         internal FunctionDeclaration FunctionDeclaration()
         {
-            _parseContext.FunctionDeclarationStack.New();
-
             var start = MatchMultiple(
                 TType.Id,
                 TType.TypeAnytype,
@@ -970,16 +1006,17 @@ namespace XppInterpreter.Parser
                 TType.TypeStr,
                 TType.TypeTimeOfDay,
                 TType.TypeDatetime,
-                TType.Var,
                 TType.Void);
 
-            var funcNameToken = Match(TType.Id).Token;
+            Word funcNameToken = Match(TType.Id).Token as Word;
             Match(TType.LeftParenthesis);
 
-            List<FunctionDeclarationParameter> parameters = new List<FunctionDeclarationParameter>();
-
+            _parseContext.FunctionDeclarationStack.New();
+            _parseContext.CurrentScope.FunctionReferences.Add(
+                new FunctionDeclarationReference((funcNameToken).Lexeme, start.Token as Word));
             _parseContext.CurrentScope.Begin();
 
+            var parameters = new List<FunctionDeclarationParameter>();
             while (currentToken.TokenType != TType.RightParenthesis)
             {
                 parameters.Add(FunctionDeclarationParameter());
@@ -1011,7 +1048,7 @@ namespace XppInterpreter.Parser
         FunctionDeclarationParameter FunctionDeclarationParameter()
         {
             // TODO: allow array types to be function parameters
-            var start = MatchMultiple(
+            var typeResult = MatchMultiple(
                 TType.Id,
                 TType.TypeAnytype,
                 TType.TypeBoolean,
@@ -1024,12 +1061,19 @@ namespace XppInterpreter.Parser
                 TType.TypeTimeOfDay,
                 TType.TypeDatetime);
 
-            var id = Match(TType.Id).Token;
+            Word type = typeResult.Token as Word;
+
+            if (!_typeInferer.IsKnownType(type.Lexeme))
+            {
+                HandleParseError($"The name '{type.Lexeme}' does not denotate a class, a table, or an extended data type.");
+            }
+
+            Word id = Match(TType.Id).Token as Word;
 
             _parseContext.CurrentScope.VariableDeclarations.Add(
-                new ParseContextScopeVariable((id as Word).Lexeme, start.Token, false));
+                new ParseContextScopeVariable(id.Lexeme, typeResult.Token, false));
 
-            return new FunctionDeclarationParameter(start.Token, ((Word)id).Lexeme, SourceCodeBinding(start, lastScanResult));
+            return new FunctionDeclarationParameter(typeResult.Token, id.Lexeme, SourceCodeBinding(typeResult, lastScanResult));
         }
 
         internal ChangeCompany ChangeCompany()
@@ -1315,7 +1359,7 @@ namespace XppInterpreter.Parser
         internal Statement Assignment(bool matchSemicolon = true)
         {
             var start = currentScanResult;
-            Variable assignee = (Variable)Variable();
+            Variable assignee = (Variable)Variable(expectReturn: false);
             Token operand = currentToken;
             Statement ret = null;
             switch (currentToken.TokenType)

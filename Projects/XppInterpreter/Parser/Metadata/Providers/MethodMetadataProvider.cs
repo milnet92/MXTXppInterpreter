@@ -41,7 +41,7 @@ namespace XppInterpreter.Parser.Metadata.Providers
             FunctionDeclaration declaration = ParseContext.CurrentScope.FunctionDeclarations.FirstOrDefault(f => string.Equals(f.Name, MethodName, StringComparison.InvariantCultureIgnoreCase));
             StringBuilder stringBuilder = new StringBuilder();
 
-            stringBuilder.Append(((Lexer.Word)declaration.ReturnType).Lexeme);
+            stringBuilder.Append(((Lexer.Word)declaration.Type).Lexeme);
             stringBuilder.Append(' ');
             stringBuilder.Append(declaration.Name);
             stringBuilder.Append('(');

@@ -103,6 +103,10 @@ namespace XppInterpreter.Parser.Metadata
                     return globalMethod.ReturnType;
                 }
             }
+            else
+            {
+                return GetTypeFromUserFunctionDeclaration(functionCall.Name);
+            }
 
             return null;
         }
@@ -123,6 +127,11 @@ namespace XppInterpreter.Parser.Metadata
                 default:
                     return null;
             }
+        }
+
+        public bool IsKnownType(string typeName)
+        {
+            return _proxy.Casting.GetSystemTypeFromTypeName(typeName) != null;
         }
 
         public System.Type VisitVariable(Variable variable)
@@ -168,11 +177,22 @@ namespace XppInterpreter.Parser.Metadata
             return null;
         }
 
-
         private System.Type GetTypeFromWord(Word word)
         {
             if (word is null) return null;
             return _proxy.Casting.GetSystemTypeFromTypeName(word.Lexeme);
+        }
+
+        public System.Type GetTypeFromUserFunctionDeclaration(string functionName, ParseContext context = null)
+        {
+            var declarationReference = (context ?? _context).CurrentScope.FindFunctionDeclarationReference(functionName);
+
+            if (declarationReference != null)
+            {
+                return _proxy.Casting.GetSystemTypeFromTypeName(declarationReference.ReturnType.Lexeme);
+            }
+
+            return null;
         }
 
         public System.Type VisitIs(Is @is)
