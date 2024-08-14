@@ -717,6 +717,11 @@ namespace XppInterpreter.Interpreter.Bytecode
 
         public void VisitTry(Try @try)
         {
+            EmitTry(@try);
+        }
+
+        private void EmitTry(Try @try, IInstruction finallyInstruction = null)
+        {
             var catchBlockScopes = new List<System.Tuple<string, ByteCodeGenerationScope>>(@try.Catches.Count);
 
             int totalCatchInstructions = 0;
@@ -726,7 +731,6 @@ namespace XppInterpreter.Interpreter.Bytecode
                 @catch.Block.Accept(this);
                 ByteCodeGenerationScope catchScope = ReleaseScope();
                 catchBlockScopes.Add(new System.Tuple<string, ByteCodeGenerationScope>(@catch.ExceptionMember, catchScope));
-
                 totalCatchInstructions += catchScope.Count;
             }
 
@@ -761,11 +765,45 @@ namespace XppInterpreter.Interpreter.Bytecode
 
             Emit(new EndHandleException(@try.HasFinally));
 
+            bool emitFinally = @try.HasFinally || finallyInstruction != null;
+
             if (@try.HasFinally)
             {
                 @try.Finally.Accept(this);
+            }
+            else
+            {
+                Emit(finallyInstruction);
+            }
+
+            if (emitFinally)
+            {
                 Emit(new Finally());
             }
+        }
+
+        public void VisitUsing(Using @using)
+        {
+            /* using (var a = value) 
+             * {
+             *     ...
+             * } 
+             * is equial to:
+             * var a = value;
+             * try
+             * {
+             *    ...
+             * }
+             * finally { a.Dispose(); } 
+             */
+
+            Emit(new BeginScope());
+            @using.VariableDeclaration.Accept(this);
+
+            // Construct placeholder try
+            Try @try = new Try(@using.Block, @using.Block.SourceCodeBinding);
+            EmitTry(@try, new Dispose(@using.VariableName));
+            Emit(new EndScope());
         }
     }
 }

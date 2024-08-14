@@ -215,10 +215,12 @@ namespace XppInterpreter.Interpreter
             // for the full program already include the ref functions
             fullByteCode.Instructions.AddRange(compiledProgram.Instructions);
 
+#if DEBUG
             foreach (var instruction in fullByteCode.Instructions)
             {
                 System.Console.WriteLine(instruction.OperationCode);
             }
+#endif
 
             return fullByteCode;
         }

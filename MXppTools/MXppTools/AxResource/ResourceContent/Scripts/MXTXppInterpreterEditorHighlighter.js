@@ -13,6 +13,7 @@ var keywords = [
     "print",
     "null",
     "throw",
+    "using",
     "switch",
     "case",
     "default",

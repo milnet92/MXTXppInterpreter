@@ -35,8 +35,7 @@ namespace XppInterpreter.Interpreter
         void VisitWhile(While @while);
         void VisitFunctionCall(FunctionCall functionCall);
         void VisitVariableDeclarations(VariableDeclarations variableDeclaration);
-        void VisitIs(Is @is);
-        void VisitAs(As @as);
         void VisitTry(Try @try);
+        void VisitUsing(Using @using);
     }
 }

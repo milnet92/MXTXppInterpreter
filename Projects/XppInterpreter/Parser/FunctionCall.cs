@@ -31,6 +31,7 @@ namespace XppInterpreter.Parser
         {
             interpreter.VisitFunctionCall(this);
         }
+
         internal override System.Type Accept(ITypeInferExpressionVisitor inferer)
         {
             return inferer.VisitFunctionCall(this);

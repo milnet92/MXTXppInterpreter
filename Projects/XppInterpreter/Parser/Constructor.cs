@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using XppInterpreter.Interpreter;
 using XppInterpreter.Lexer;
+using XppInterpreter.Parser.Metadata;
 
 namespace XppInterpreter.Parser
 {
@@ -18,6 +19,11 @@ namespace XppInterpreter.Parser
         public override void Accept(IAstVisitor interpreter)
         {
             interpreter.VisitConstructor(this);
+        }
+
+        internal override System.Type Accept(ITypeInferExpressionVisitor inferer)
+        {
+            return inferer.VisitConstructor(this);
         }
     }
 }

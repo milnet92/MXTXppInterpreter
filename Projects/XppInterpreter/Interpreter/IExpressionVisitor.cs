@@ -16,5 +16,7 @@ namespace XppInterpreter.Interpreter
         void VisitTernary(Ternary ternary);
         void VisitUnaryOperation(UnaryOperation unaryOperation);
         void VisitVariable(Variable variable);
+        void VisitIs(Is @is);
+        void VisitAs(As @as);
     }
 }

@@ -59,8 +59,6 @@ namespace XppInterpreter.Parser
             _stopAtRow = row;
             _stopAtColumn = column;
 
-            _typeInferer = new XppTypeInferer(_proxy);
-
             try
             {
                 Parse();
@@ -554,7 +552,7 @@ namespace XppInterpreter.Parser
             }
         }
 
-        internal VariableDeclarations VariableDeclaration(bool matchSemicolon = true)
+        internal VariableDeclarations VariableDeclaration(bool matchSemicolon = true, bool isUsing = false)
         {
             Dictionary<Word, Expression> declarations = new Dictionary<Word, Expression>();
             Word arrayIdentifier = null;
@@ -578,6 +576,11 @@ namespace XppInterpreter.Parser
             bool isArray = false;
             do
             {
+                if (isUsing && (declarations.Count > 0 || isArray))
+                {
+                    HandleParseError("Invalid using expression.");
+                }
+
                 if (declarations.Count > 0 && !isArray)
                 {
                     Match(TType.Comma);
@@ -586,7 +589,7 @@ namespace XppInterpreter.Parser
                 Word id = (Word)Match(TType.Id).Token;
                 Expression initialisation = null;
 
-                if (currentToken.TokenType == TType.Assign)
+                if (isUsing || currentToken.TokenType == TType.Assign)
                 {
                     Match(TType.Assign);
                     initialisation = Expression();
@@ -716,6 +719,25 @@ namespace XppInterpreter.Parser
             return new TtsBegin(SourceCodeBinding(start, lastScanResult));
         }
 
+        internal Using Using()
+        {
+            var start = Match(TType.Using);
+            Match(TType.LeftParenthesis);
+
+            var variable = VariableDeclaration(false);
+
+            System.Type inferedType = _typeInferer.InferType(variable.Identifiers.First().Value, false, _parseContext);
+
+            if (!ReflectionHelper.TypeImplementsInterface(inferedType, typeof(IDisposable)))
+            {
+                HandleParseError("Expression type must implement IDisposable.");
+            }
+
+            Match(TType.RightParenthesis);
+
+            return new Using(variable, Block(), SourceCodeBinding(start, lastScanResult));
+        }
+
         internal Return Return()
         {
             if (_parseContext.FunctionDeclarationStack.Empty)
@@ -843,6 +865,7 @@ namespace XppInterpreter.Parser
         {
             switch (currentToken.TokenType)
             {
+                case TType.Using: return Using();
                 case TType.Try: return Try();
                 case TType.Print: return Print();
                 case TType.Return: return Return();
@@ -1423,6 +1446,8 @@ namespace XppInterpreter.Parser
         {
             if (!hasBeenInitialized)
             {
+                _typeInferer = new XppTypeInferer(_proxy);
+
                 hasBeenInitialized = true;
                 Move();
             }

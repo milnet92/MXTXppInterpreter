@@ -252,5 +252,11 @@ namespace XppInterpreter.Interpreter
             whileSelect.Select?.Accept(this);
             whileSelect.Block.Accept(this);
         }
+
+        public void VisitUsing(Using @using)
+        {
+            @using.VariableDeclaration.Accept(this);
+            @using.Block.Accept(this);
+        }
     }
 }

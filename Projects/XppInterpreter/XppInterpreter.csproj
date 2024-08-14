@@ -67,6 +67,7 @@
     <Compile Include="Interpreter\Bytecode\ByteCodeGenerator.cs" />
     <Compile Include="Interpreter\Bytecode\Call.cs" />
     <Compile Include="Interpreter\Bytecode\Case.cs" />
+    <Compile Include="Interpreter\Bytecode\Dispose.cs" />
     <Compile Include="Interpreter\Bytecode\ExceptionCatchReference.cs" />
     <Compile Include="Interpreter\Bytecode\ChangeCompany.cs" />
     <Compile Include="Interpreter\Bytecode\ChangeCompanyDispose.cs" />
@@ -236,6 +237,7 @@
     <Compile Include="Parser\TtsBegin.cs" />
     <Compile Include="Parser\TtsCommit.cs" />
     <Compile Include="Parser\UnaryOperation.cs" />
+    <Compile Include="Parser\Using.cs" />
     <Compile Include="Parser\Variable.cs" />
     <Compile Include="Parser\VariableArrayDeclaration.cs" />
     <Compile Include="Parser\VariableDeclarations.cs" />

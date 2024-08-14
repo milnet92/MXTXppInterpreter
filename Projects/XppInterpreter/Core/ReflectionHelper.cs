@@ -82,5 +82,13 @@ namespace XppInterpreter.Core
                 ? type.GetMethods().FirstOrDefault(m => m.Name.ToLowerInvariant() == methodName.ToLowerInvariant())
                 : null;
         }
+
+        public static bool TypeImplementsInterface(Type type, Type interfaceType)
+        {
+            if (type is null || interfaceType is null) return false;
+
+            TypeInfo typeInfo = type as TypeInfo;
+            return typeInfo != null && typeInfo.ImplementedInterfaces.Contains(interfaceType);
+        }
     }
 }
