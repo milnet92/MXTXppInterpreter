@@ -6,6 +6,10 @@
 using XppInterpreter.Interpreter.Proxy;
 using Microsoft.Dynamics.Ax;
 
+
+/// <summary>
+/// Cast proxy used by the interpreter
+/// </summary>
 internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Proxy.IXppCastingProxy
 {
     private System.Type edtArrayType = System.Type::GetType("Microsoft.Dynamics.Ax.Xpp.EdtArray`1, Microsoft.Dynamics.AX.Data.Core");
@@ -16,7 +20,12 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 			<Method>
 				<Name>getXppTypeByTypeName</Name>
 				<Source><![CDATA[
-    private anytype getXppTypeByTypeName(str _name)
+    /// <summary>
+    /// Retrieve the Types type by name
+    /// </summary>
+    /// <param name = "_name">Type name</param>
+    /// <returns>Types type</returns>
+    private Types getXppTypeByTypeName(str _name)
     {
         // Base Enums
         if (SysDictEnum::newName(_name) != null)
@@ -63,6 +72,11 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 			<Method>
 				<Name>GetSystemTypeFromTypeName</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Gets the System.Type by native type name (str, int, boolean...)
+    /// </summary>
+    /// <param name = "_typeName">Native type name</param>
+    /// <returns></returns>
     public System.Type GetSystemTypeFromTypeName(str _typeName)
     {
         // boolean is not a type for some reason
@@ -115,6 +129,11 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 			<Method>
 				<Name>ToBoolean</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Casts an object into a boolean
+    /// </summary>
+    /// <param name = "value"></param>
+    /// <returns></returns>
 	public boolean ToBoolean(System.Object value)
     {
         return value;
@@ -125,6 +144,11 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 			<Method>
 				<Name>CreateDynamicArray</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Creates a native dynamic array of the given type as string
+    /// </summary>
+    /// <param name = "typeName">Array type</param>
+    /// <returns>Dynamics array as an object</returns>
     public System.Object CreateDynamicArray(System.String typeName)
     {
         System.Type type = this.GetSystemTypeFromTypeName(typeName);
@@ -137,6 +161,12 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 			<Method>
 				<Name>CreateFixedArray</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Creates a native fixed sized array of the given type as string
+    /// </summary>
+    /// <param name = "typeName">Array type</param>
+    /// <param name = "size">Array size</param>
+    /// <returns>Fixed size array as an object</returns>
     public System.Object CreateFixedArray(System.String typeName, System.Int32 size)
     {
         System.Type type = this.GetSystemTypeFromTypeName(typeName);
@@ -149,6 +179,12 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 			<Method>
 				<Name>GetArrayIndexValue</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Gets the value of an array by index performing type and boundary checks
+    /// </summary>
+    /// <param name = "array">Array object</param>
+    /// <param name = "idx">Index</param>
+    /// <returns>Value</returns>
     public System.Object GetArrayIndexValue(System.Object array, System.Int32 idx)
     {
         if (!array.GetType().IsGenericType || array.GetType().GetGenericTypeDefinition() != edtArrayType)
@@ -166,6 +202,12 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 			<Method>
 				<Name>SetArrayIndexValue</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Sets the value of an array by index performing type and boundary checks
+    /// </summary>
+    /// <param name = "array">Array object</param>
+    /// <param name = "idx">Index</param>
+    /// <param name = "value">Value</param>
     public void SetArrayIndexValue(System.Object array, System.Int32 idx, System.Object value)
     {
         if (!array.GetType().IsGenericType || array.GetType().GetGenericTypeDefinition() != edtArrayType)
@@ -183,6 +225,12 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 			<Method>
 				<Name>As</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Executes the as statement
+    /// </summary>
+    /// <param name = "_value">Value to cast</param>
+    /// <param name = "_typeName">Type cast</param>
+    /// <returns></returns>
     public System.Object As(System.Object _value, System.String _typeName)
     {
         if (this.Is(_value, _typeName))
@@ -198,6 +246,12 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 			<Method>
 				<Name>Is</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Executes the is statement
+    /// </summary>
+    /// <param name = "_value">Value to check</param>
+    /// <param name = "_typeName">Type name to check</param>
+    /// <returns></returns>
     public System.Boolean Is(System.Object _value, System.String _typeName)
     {
         if (className2Id(_typeName))
@@ -275,6 +329,11 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 			<Method>
 				<Name>GetDefaultValueForType</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Gets the default value for the given type name (int: 0, boolean: false ...)
+    /// </summary>
+    /// <param name = "_name">Type name</param>
+    /// <returns></returns>
 	public System.Object GetDefaultValueForType(System.String _name)
     {
         if (_name == 'boolean') return false;

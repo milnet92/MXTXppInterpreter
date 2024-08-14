@@ -3,6 +3,9 @@
 	<Name>MXTXppImportProcess</Name>
 	<SourceCode>
 		<Declaration><![CDATA[
+/// <summary>
+/// MXT file import process class
+/// </summary>
 internal final class MXTXppImportProcess
 {
 }
@@ -29,7 +32,7 @@ internal final class MXTXppImportProcess
 
         if(uploadFileResult && uploadFileResult.getUploadStatus())
         {
-            this.processResult(uploadFileResult);
+            this.importFile(uploadFileResult);
         }
         else
         {
@@ -40,9 +43,13 @@ internal final class MXTXppImportProcess
 ]]></Source>
 			</Method>
 			<Method>
-				<Name>processResult</Name>
+				<Name>importFile</Name>
 				<Source><![CDATA[
-    private void processResult(FileUploadTemporaryStorageResult _result)
+    /// <summary>
+    /// Imports the file from the Azure file storage
+    /// </summary>
+    /// <param name = "_result">An instance of <c>FileUploadTemporaryStorageResult</c></param>
+    private void importFile(FileUploadTemporaryStorageResult _result)
     {
         str fileURL = _result.getDownloadUrl();
         System.IO.Stream stream = File::UseFileFromURL(fileURL);

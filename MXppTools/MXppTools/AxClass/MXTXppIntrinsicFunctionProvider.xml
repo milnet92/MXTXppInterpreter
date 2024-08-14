@@ -3,6 +3,9 @@
 	<Name>MXTXppIntrinsicFunctionProvider</Name>
 	<SourceCode>
 		<Declaration><![CDATA[
+/// <summary>
+/// Implementation of compile-time X++ functions
+/// </summary>
 internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.Interpreter.Proxy.IIntrinsicFunctionProvider
 {
 }

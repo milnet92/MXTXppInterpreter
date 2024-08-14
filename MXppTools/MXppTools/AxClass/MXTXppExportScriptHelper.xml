@@ -3,6 +3,9 @@
 	<Name>MXTXppExportScriptHelper</Name>
 	<SourceCode>
 		<Declaration><![CDATA[
+/// <summary>
+/// Utility functions used by the MXT export process
+/// </summary>
 internal final class MXTXppExportScriptHelper
 {
     private const str CLASS_TEMPLATE = @'<?xml version="1.0" encoding="utf-8"?>
@@ -46,10 +49,14 @@ internal final class %class_name%
 			<Method>
 				<Name>exportAsXpp</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Exports the given script into a runnable class X++ file.
+    /// </summary>
+    /// <param name = "_script">Script record to export</param>
 	public static void exportAsXpp(MXTXppInterpreterScript _script)
     {
         // Get the name for the form
-        str className = MXTXppExportScriptHelper::getUserFileName("@MXT:DownloadAsXml", "@MXT:ClassName");
+        str className = MXTXppExportScriptHelper::requestFileNameToUser("@MXT:DownloadAsXml", "@MXT:ClassName");
 
         if (className)
         {
@@ -87,9 +94,13 @@ internal final class %class_name%
 			<Method>
 				<Name>exportAsJson</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Exports the given scripts into an MXT json file
+    /// </summary>
+    /// <param name = "_scriptIds">Script ids container</param>
     public static void exportAsJson(container _scriptIds)
     {
-        str fileName = MXTXppExportScriptHelper::getUserFileName("@MXT:ExportAsJson", "File name");
+        str fileName = MXTXppExportScriptHelper::requestFileNameToUser("@MXT:ExportAsJson", "File name");
 
         if (!fileName)
         {
@@ -103,9 +114,15 @@ internal final class %class_name%
 ]]></Source>
 			</Method>
 			<Method>
-				<Name>getUserFileName</Name>
+				<Name>requestFileNameToUser</Name>
 				<Source><![CDATA[
-    public static str getUserFileName(str _dialogCaption, str _label)
+    /// <summary>
+    /// Shows a dialog to the user to request a file name
+    /// </summary>
+    /// <param name = "_dialogCaption">Dialog caption</param>
+    /// <param name = "_label">Label to show for the file name field</param>
+    /// <returns></returns>
+    public static str requestFileNameToUser(str _dialogCaption, str _label)
     {
         Dialog      dialog = new Dialog(_dialogCaption);
         DialogField nameField = dialog.addField(identifierStr(Name), _label);

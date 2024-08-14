@@ -5,6 +5,9 @@
 		<Declaration><![CDATA[
 using XppInterpreter.Interpreter.Proxy;
 
+/// <summary>
+/// Data access proxy used by the interpreter
+/// </summary>
 internal final class MXTXppDataAccessProxy implements XppInterpreter.Interpreter.Proxy.IXppDataAccessProxy
 {
 }
@@ -13,6 +16,9 @@ internal final class MXTXppDataAccessProxy implements XppInterpreter.Interpreter
 			<Method>
 				<Name>TtsBegin</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Executes the ttsbegin statement
+    /// </summary>
 	public void TtsBegin()
     {
         ttsbegin;
@@ -23,6 +29,9 @@ internal final class MXTXppDataAccessProxy implements XppInterpreter.Interpreter
 			<Method>
 				<Name>TtsCommit</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Executes the ttscommit statement
+    /// </summary>
     public void TtsCommit()
     {
         ttscommit;
@@ -33,6 +42,9 @@ internal final class MXTXppDataAccessProxy implements XppInterpreter.Interpreter
 			<Method>
 				<Name>TtsAbort</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Executes the ttsabort statement
+    /// </summary>
     public void TtsAbort()
     {
         ttsabort;
@@ -43,6 +55,11 @@ internal final class MXTXppDataAccessProxy implements XppInterpreter.Interpreter
 			<Method>
 				<Name>CreateChangeCompanyHandler</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Creates an instance of a change company as a IDisposable instance
+    /// </summary>
+    /// <param name = "newCompany"></param>
+    /// <returns></returns>
     public System.IDisposable CreateChangeCompanyHandler(System.String newCompany)
     {
         return Microsoft.Dynamics.Ax.Xpp.PredefinedFunctions::changecompany(newCompany);
@@ -53,6 +70,10 @@ internal final class MXTXppDataAccessProxy implements XppInterpreter.Interpreter
 			<Method>
 				<Name>Next</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Executes the next statement
+    /// </summary>
+    /// <param name = "_common"></param>
     public void Next(System.Object _common)
     {
         Common common = _common;

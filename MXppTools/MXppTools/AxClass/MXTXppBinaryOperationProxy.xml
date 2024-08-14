@@ -5,6 +5,9 @@
 		<Declaration><![CDATA[
 using XppInterpreter.Interpreter.Proxy;
 
+/// <summary>
+/// Binary operation proxy used by the interpreter
+/// </summary>
 internal final class MXTXppBinaryOperationProxy implements XppInterpreter.Interpreter.Proxy.IXppBinaryOperationProxy
 {
 }
@@ -13,6 +16,12 @@ internal final class MXTXppBinaryOperationProxy implements XppInterpreter.Interp
 			<Method>
 				<Name>Add</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Executes an addition of two objects
+    /// </summary>
+    /// <param name = "left">Left object</param>
+    /// <param name = "right">Right object</param>
+    /// <returns>Result as a System.Object</returns>
 	public System.Object Add(System.Object left, System.Object right)
     {
         anytype l = left, r = right;
@@ -24,6 +33,12 @@ internal final class MXTXppBinaryOperationProxy implements XppInterpreter.Interp
 			<Method>
 				<Name>Substract</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Executes a substraction of two objects
+    /// </summary>
+    /// <param name = "left">Left object</param>
+    /// <param name = "right">Right object</param>
+    /// <returns>Result as a System.Object</returns>
     public System.Object Substract(System.Object left, System.Object right)
     {
         anytype l = left, r = right;
@@ -35,6 +50,12 @@ internal final class MXTXppBinaryOperationProxy implements XppInterpreter.Interp
 			<Method>
 				<Name>Multiply</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Executes a multiplication of two objects
+    /// </summary>
+    /// <param name = "left">Left object</param>
+    /// <param name = "right">Right object</param>
+    /// <returns>Result as a System.Object</returns>
     public System.Object Multiply(System.Object left, System.Object right)
     {
         anytype l = left, r = right;
@@ -46,6 +67,12 @@ internal final class MXTXppBinaryOperationProxy implements XppInterpreter.Interp
 			<Method>
 				<Name>Divide</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Executes a division of two objects
+    /// </summary>
+    /// <param name = "left">Left object</param>
+    /// <param name = "right">Right object</param>
+    /// <returns>Result as a System.Object</returns>
     public System.Object Divide(System.Object left, System.Object right)
     {
         anytype l = left, r = right;
@@ -57,6 +84,12 @@ internal final class MXTXppBinaryOperationProxy implements XppInterpreter.Interp
 			<Method>
 				<Name>IntDivide</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Executes an integer division of two objects
+    /// </summary>
+    /// <param name = "left">Left object</param>
+    /// <param name = "right">Right object</param>
+    /// <returns>Result as a System.Object</returns>
     public System.Object IntDivide(System.Object left, System.Object right)
     {
         anytype l = left, r = right;
@@ -68,6 +101,12 @@ internal final class MXTXppBinaryOperationProxy implements XppInterpreter.Interp
 			<Method>
 				<Name>Mod</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Executes a modulus of two objects
+    /// </summary>
+    /// <param name = "left">Left object</param>
+    /// <param name = "right">Right object</param>
+    /// <returns>Result as a System.Object</returns>
     public System.Object Mod(System.Object left, System.Object right)
     {
         anytype l = left, r = right;
@@ -79,6 +118,12 @@ internal final class MXTXppBinaryOperationProxy implements XppInterpreter.Interp
 			<Method>
 				<Name>Greater</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Executes an boolean greater check to the two objects
+    /// </summary>
+    /// <param name = "left">Left object</param>
+    /// <param name = "right">Right object</param>
+    /// <returns>If left is greated than right, true, otherwise false</returns>
     public System.Boolean Greater(System.Object left, System.Object right)
     {
         anytype l = left, r = right;
@@ -90,6 +135,12 @@ internal final class MXTXppBinaryOperationProxy implements XppInterpreter.Interp
 			<Method>
 				<Name>AreEqual</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Checks if the two objects are equal
+    /// </summary>
+    /// <param name = "left">Left object</param>
+    /// <param name = "right">Right object</param>
+    /// <returns>If equal, true, otherwise false</returns>
     public System.Boolean AreEqual(System.Object left, System.Object right)
     {
         return left == right;

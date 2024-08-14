@@ -3,6 +3,9 @@
 	<Name>MXTXppInterpreterVariablesInspectorControlBuild</Name>
 	<SourceCode>
 		<Declaration><![CDATA[
+/// <summary>
+/// Variable inspector build control
+/// </summary>
 [FormDesignControlAttribute("X++ Variables Inspector")]
 public class MXTXppInterpreterVariablesInspectorControlBuild extends FormBuildControl
 {

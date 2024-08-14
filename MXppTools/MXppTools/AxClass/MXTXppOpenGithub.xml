@@ -3,6 +3,9 @@
 	<Name>MXTXppOpenGithub</Name>
 	<SourceCode>
 		<Declaration><![CDATA[
+/// <summary>
+/// Utility class to open the github repository URL
+/// </summary>
 internal final class MXTXppOpenGithub
 {
     private const str GITHUB_URL = "https://github.com/milnet92/MXTXppInterpreter";

@@ -3,6 +3,9 @@
 	<Name>MXTXppIntrinsicFunctionHelper</Name>
 	<SourceCode>
 		<Declaration><![CDATA[
+/// <summary>
+/// Intrinsic function parameter validator
+/// </summary>
 internal final class MXTXppIntrinsicFunctionHelper
 {
 }

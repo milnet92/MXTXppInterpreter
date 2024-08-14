@@ -3,18 +3,27 @@
 	<Name>MXTXppExportProcess</Name>
 	<SourceCode>
 		<Declaration><![CDATA[
+/// <summary>
+/// MXT file export process class
+/// </summary>
 internal final class MXTXppExportProcess
 {
-    container scriptsToExport;
-    boolean includeNotSelectedScritps,
-            dependenciesDialogShown;
-    str     fileName;
+    container   scriptsToExport;
+    boolean     includeNotSelectedScritps, 
+                dependenciesDialogShown;
+    str         fileName;
+
 }
 ]]></Declaration>
 		<Methods>
 			<Method>
 				<Name>new</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name = "_scripts">Script container</param>
+    /// <param name = "_fileName">Export file name</param>
     void new(container _scripts, str _fileName)
     {
         scriptsToExport = _scripts;
@@ -26,6 +35,9 @@ internal final class MXTXppExportProcess
 			<Method>
 				<Name>export</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Performs the export of the script and script dependencies 
+    /// </summary>
     public void export()
     {
         this.validateDependencies();
@@ -37,6 +49,9 @@ internal final class MXTXppExportProcess
 			<Method>
 				<Name>exportToFile</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Export the scripts into the given file name
+    /// </summary>
     private void exportToFile()
     {
         List scripts = new List(Types::Class);
@@ -84,6 +99,9 @@ internal final class MXTXppExportProcess
 			<Method>
 				<Name>validateDependencies</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Validates and tries to include all the dependencies for the script
+    /// </summary>
     private void validateDependencies()
     {
         int total = conLen(scriptsToExport);
@@ -98,6 +116,10 @@ internal final class MXTXppExportProcess
 			<Method>
 				<Name>addDependenciesToExport</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Initializes the script dependencies to export
+    /// </summary>
+    /// <param name = "_scriptId">Script Id</param>
     private void addDependenciesToExport(RecId _scriptId)
     {
         MXTXppInterpreterScriptDependency dependency;
@@ -125,7 +147,7 @@ internal final class MXTXppExportProcess
             }
 
             // Stop validating if the dialog is already shown and the option
-            // selected by the user is not include dependencies
+            // selected by the user is not to include dependencies
             if (dependenciesDialogShown && !includeNotSelectedScritps)
             {
                 return;

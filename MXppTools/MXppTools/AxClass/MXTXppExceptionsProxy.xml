@@ -5,6 +5,9 @@
 		<Declaration><![CDATA[
 using XppInterpreter.Interpreter.Proxy;
 
+/// <summary>
+/// Exception proxy used by the interpreter
+/// </summary>
 internal final class MXTXppExceptionsProxy implements XppInterpreter.Interpreter.Proxy.IXppExceptionsProxy
 {
 }
@@ -13,6 +16,10 @@ internal final class MXTXppExceptionsProxy implements XppInterpreter.Interpreter
 			<Method>
 				<Name>Throw</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Throws the given object as an exception
+    /// </summary>
+    /// <param name = "obj">Object to throw</param>
 	public void Throw(System.Object obj)
     {
         if (obj is System.Exception)
@@ -32,6 +39,12 @@ internal final class MXTXppExceptionsProxy implements XppInterpreter.Interpreter
 			<Method>
 				<Name>IsExceptionMember</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Checks if the given <c>System.Exception</c> is of the given Exception enum member 
+    /// </summary>
+    /// <param name = "_exception">Exception</param>
+    /// <param name = "_exceptionMember">Exception enum member as string</param>
+    /// <returns>True if it is of the given value, otherwise false</returns>
     public boolean IsExceptionMember(System.Exception _exception, System.String _exceptionMember)
     {
         if (_exception == null)

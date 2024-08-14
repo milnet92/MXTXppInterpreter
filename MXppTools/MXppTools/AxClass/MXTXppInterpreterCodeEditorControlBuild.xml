@@ -3,10 +3,13 @@
 	<Name>MXTXppInterpreterCodeEditorControlBuild</Name>
 	<SourceCode>
 		<Declaration><![CDATA[
+/// <summary>
+/// Build control for the X++ Code Editor
+/// </summary>
 [FormDesignControlAttribute("X++ Code Editor")]
 public class MXTXppInterpreterCodeEditorControlBuild extends FormBuildControl
 {
-    str sourceCode;
+    str                             sourceCode;
     MXTXppInterpreterEditorLanguage language;
 
 }

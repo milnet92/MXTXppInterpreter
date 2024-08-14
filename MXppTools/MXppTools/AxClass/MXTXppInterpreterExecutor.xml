@@ -3,6 +3,9 @@
 	<Name>MXTXppInterpreterExecutor</Name>
 	<SourceCode>
 		<Declaration><![CDATA[
+/// <summary>
+/// Utility class for X++ interpreter execution
+/// </summary>
 internal final class MXTXppInterpreterExecutor
 {
     private static XppInterpreter.Interpreter.Proxy.XppProxy proxy;
@@ -13,6 +16,9 @@ internal final class MXTXppInterpreterExecutor
 			<Method>
 				<Name>TypeNew</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Static constructor
+    /// </summary>
     static void TypeNew()
     {
         proxy = new XppInterpreter.Interpreter.Proxy.XppProxy(
@@ -31,6 +37,11 @@ internal final class MXTXppInterpreterExecutor
 			<Method>
 				<Name>base64Encode</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Encodes the given string into a base64 string
+    /// </summary>
+    /// <param name = "_sourceCode"></param>
+    /// <returns></returns>
     public static str base64Encode(str _sourceCode)
     {
         var plainTextBytes = System.Text.Encoding::UTF8.GetBytes(_sourceCode);
@@ -42,6 +53,11 @@ internal final class MXTXppInterpreterExecutor
 			<Method>
 				<Name>base64Decode</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Decodes the given base64 string
+    /// </summary>
+    /// <param name = "_base64SourceCode"></param>
+    /// <returns></returns>
     public static str base64Decode(str _base64SourceCode)
     {
         var base64EncodedBytes = System.Convert::FromBase64String(_base64SourceCode);
@@ -53,6 +69,11 @@ internal final class MXTXppInterpreterExecutor
 			<Method>
 				<Name>executeScript</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Executes the given script with the specified parameters
+    /// </summary>
+    /// <param name = "_script">A record of <c>MXTXppInterpreterScript</c></param>
+    /// <param name = "_parameters">A record of <c>MXTXppInterpreterParameters</c></param>
     public static void executeScript(MXTXppInterpreterScript _script, MXTXppInterpreterParameters _parameters)
     {
         var dependencies = MXTXppScriptDependencyManager::parseDependencies(_script.RecId);
@@ -65,6 +86,11 @@ internal final class MXTXppInterpreterExecutor
 			<Method>
 				<Name>parse</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Parse the given source code into a program AST
+    /// </summary>
+    /// <param name = "_sourceCode">Source code</param>
+    /// <returns>Program AST</returns>
     public static XppInterpreter.Parser.Program parse(str _sourceCode)
     {
         XppInterpreter.Lexer.XppLexer lexer = new XppInterpreter.Lexer.XppLexer(_sourceCode);
@@ -78,6 +104,13 @@ internal final class MXTXppInterpreterExecutor
 			<Method>
 				<Name>executeProgram</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Executes the given AST as a Program
+    /// </summary>
+    /// <param name = "_program">Program AST</param>
+    /// <param name = "_debugger">Debugger</param>
+    /// <param name = "_parameters">Configuration</param>
+    /// <param name = "_dependencies">Dependency scripts</param>
     public static void executeProgram(
         XppInterpreter.Parser.Program               _program, 
         XppInterpreter.Interpreter.Debug.IDebugger _debugger    = null, 
@@ -99,6 +132,13 @@ internal final class MXTXppInterpreterExecutor
 			<Method>
 				<Name>execute</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Executes the given source code
+    /// </summary>
+    /// <param name = "_sourceCode">X++ source code</param>
+    /// <param name = "_debugger">Debugger</param>
+    /// <param name = "_parameters">Configuration</param>
+    /// <param name = "_dependencies">Dependency scripts</param>
     public static void execute(
         str                                         _sourceCode, 
         XppInterpreter.Interpreter.Debug.IDebugger  _debugger = null, 
@@ -115,6 +155,10 @@ internal final class MXTXppInterpreterExecutor
 			<Method>
 				<Name>executeScriptInBatch</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Executes a script in batch
+    /// </summary>
+    /// <param name = "_script">A record of <c>MXTXppInterpreterScript</c></param>
     public static void executeScriptInBatch(MXTXppInterpreterScript _script)
     {
         Args args = new Args();
@@ -128,6 +172,9 @@ internal final class MXTXppInterpreterExecutor
 			<Method>
 				<Name>clearCurrentInfolog</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Clears the current infolog
+    /// </summary>
     private static void clearCurrentInfolog()
     {
         infolog.clear();

@@ -10,19 +10,21 @@ using XppInterpreter.Core;
 
 using System.Linq;
 
+/// <summary>
+/// Represents a debug / execution session initiated by the editor.
+/// </summary>
 public class MXTXppInterpreterDebugSession
 {
-    XppInterpreter interpreter;
-    Program program;
-    str sourceCode;
-    XppDebugger debugger;
-    MXTXppInterpreterCodeEditorParseException lastParseException;
-    MXTXppInterpreterCodeEditorControl editor;
-    MXTXppInterpreterVariablesInspectorControl inspector;
+    XppInterpreter  interpreter;
+    Program         program;
+    XppDebugger     debugger;
+    boolean         executing, stopOnBreakpoint;
+    str             sourceCode;
     InterpreterResult currentExecutionResult;
-    boolean executing;
-    boolean stopOnBreakpoint;
-    XppInterpreterDependencyCollection dependencyCollection = null;
+    MXTXppInterpreterCodeEditorParseException   lastParseException;
+    MXTXppInterpreterCodeEditorControl          editor;
+    MXTXppInterpreterVariablesInspectorControl  inspector;
+    XppInterpreterDependencyCollection          dependencyCollection = null;
 
     XppInterpreter.Interpreter.Proxy.XppProxy proxy = new XppInterpreter.Interpreter.Proxy.XppProxy(
                     new MXTXppIntrinsicFunctionProvider(),
@@ -51,6 +53,10 @@ public class MXTXppInterpreterDebugSession
 			<Method>
 				<Name>executionStarted</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Delegate for the execution started event. This event
+    /// is raised when the code execution has started.
+    /// </summary>
     delegate void executionStarted() {}
 
 ]]></Source>
@@ -58,6 +64,11 @@ public class MXTXppInterpreterDebugSession
 			<Method>
 				<Name>executionFinished</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Delegate for the execution finished event. This event
+    /// is raised when the code execution has finished with or without 
+    /// errors
+    /// </summary>
     delegate void executionFinished() {}
 
 ]]></Source>
@@ -65,6 +76,11 @@ public class MXTXppInterpreterDebugSession
 			<Method>
 				<Name>executionResumed</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Delegate for the execution resumed event. This event
+    /// is raised when the debugger resumes the execution after
+    /// a breakpoint
+    /// </summary>
     delegate void executionResumed() {}
 
 ]]></Source>
@@ -72,6 +88,11 @@ public class MXTXppInterpreterDebugSession
 			<Method>
 				<Name>breakpointHit</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Delegate for the breakpoint hit event. This event 
+    /// is raised when the debugger stops due to a breakpoint.
+    /// </summary>
+    /// <param name = "_hit"></param>
     delegate void breakpointHit(MXTXppInterpreterCodeEditorBreakpointHitContract _hit) {}
 
 ]]></Source>
@@ -79,6 +100,12 @@ public class MXTXppInterpreterDebugSession
 			<Method>
 				<Name>isExecuting</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// If the execution is in process. When the debugger
+    /// stopped the execution due to a breakpoint, this method
+    /// return true.
+    /// </summary>
+    /// <returns></returns>
     public boolean isExecuting()
     {
         return executing;
@@ -89,6 +116,10 @@ public class MXTXppInterpreterDebugSession
 			<Method>
 				<Name>parseDependencies</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Initialize the dependencies for the given script
+    /// </summary>
+    /// <param name = "_scriptId">Script Id</param>
     public void parseDependencies(RecId _scriptId)
     {
         dependencyCollection = MXTXppScriptDependencyManager::parseDependencies(_scriptId);
@@ -99,6 +130,9 @@ public class MXTXppInterpreterDebugSession
 			<Method>
 				<Name>execute</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Executes the program associated with the session
+    /// </summary>
     public void execute()
     {
         editor.executionPhase(MXTXppInterpreterExecutionPhase::Started);
@@ -151,6 +185,11 @@ public class MXTXppInterpreterDebugSession
 			<Method>
 				<Name>getCurrentScopeHandler</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Retrieves the current scope handler given the runtime context
+    /// </summary>
+    /// <param name = "_context">Runtime context</param>
+    /// <returns>A scope handler</returns>
     private ScopeHandler getCurrentScopeHandler(RuntimeContext _context)
     {
         RuntimeContext  currentContext = _context;
@@ -168,6 +207,11 @@ public class MXTXppInterpreterDebugSession
 			<Method>
 				<Name>currentVariableState</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Retrieves the local variable tree for the current scope. This method is used 
+    /// by the variable inspector.
+    /// </summary>
+    /// <returns></returns>
     public MXTXppInterpreterVariablesInspectorLocalsEntry currentVariableState()
     {
         MXTXppInterpreterVariablesInspectorLocalsEntry rootEntry = new MXTXppInterpreterVariablesInspectorLocalsEntry();
@@ -232,6 +276,9 @@ public class MXTXppInterpreterDebugSession
 			<Method>
 				<Name>handleExecutionFinished</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Takes care of the execution when finished
+    /// </summary>
     private void handleExecutionFinished()
     {
         currentExecutionResult = null;
@@ -254,6 +301,9 @@ public class MXTXppInterpreterDebugSession
 			<Method>
 				<Name>clear</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Clears the session
+    /// </summary>
     public void clear()
     {
         debugger = null;
@@ -268,6 +318,11 @@ public class MXTXppInterpreterDebugSession
 			<Method>
 				<Name>continueExecution</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Continues the execution of the program based with the given 
+    /// action performed by the consumer
+    /// </summary>
+    /// <param name = "_debugAction">Debug action</param>
     public void continueExecution(DebugAction _debugAction)
     {
         if (!this.stopOnBreakpoint) return;
@@ -303,7 +358,11 @@ public class MXTXppInterpreterDebugSession
 			<Method>
 				<Name>hitBreakpoint</Name>
 				<Source><![CDATA[
-    public void hitBreakpoint(XppInterpreter.Interpreter.Debug.Breakpoint _breakpoint)
+    /// <summary>
+    /// Inform the consumers about a breakpoint being hit
+    /// </summary>
+    /// <param name = "_breakpoint"></param>
+    private void hitBreakpoint(XppInterpreter.Interpreter.Debug.Breakpoint _breakpoint)
     {
         stopOnBreakpoint = true;
 
@@ -329,6 +388,10 @@ public class MXTXppInterpreterDebugSession
 			<Method>
 				<Name>hasAnyBreakpoint</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Checks if there is any breakpoint currently attached
+    /// </summary>
+    /// <returns>True if exists, otherwise false</returns>
     public boolean hasAnyBreakpoint()
     {
         boolean ret;
@@ -346,6 +409,12 @@ public class MXTXppInterpreterDebugSession
 			<Method>
 				<Name>tryParse</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Tries to parse the given X++ source code. Returns whatever exception
+    /// was rased by the parser
+    /// </summary>
+    /// <param name = "_sourceCode">X++ source code</param>
+    /// <returns></returns>
     public MXTXppInterpreterCodeEditorParseException tryParse(str _sourceCode)
     {
         MXTXppInterpreterCodeEditorParseException ex;
@@ -384,16 +453,24 @@ public class MXTXppInterpreterDebugSession
 			<Method>
 				<Name>addOrRemoveBreakpoint</Name>
 				<Source><![CDATA[
-    public MXTXppINterpreterCodeEditorBreakpointContract addOrRemoveBreakpoint(int _line, int _position, str _sourceCode)
+    /// <summary>
+    /// Tries to add or remove a breakpoint given the 
+    /// source code line and position
+    /// </summary>
+    /// <param name = "_line">Line of the request</param>
+    /// <param name = "_position">Position within the line of the request</param>
+    /// <param name = "_sourceCode">Source code</param>
+    /// <returns>An instance of <c>MXTXppInterpreterCodeEditorBreakpointContract</c></returns>
+    public MXTXppInterpreterCodeEditorBreakpointContract addOrRemoveBreakpoint(int _line, int _position, str _sourceCode)
     {
-        MXTXppINterpreterCodeEditorBreakpointContract ret;
+        MXTXppInterpreterCodeEditorBreakpointContract ret;
 
         if (_sourceCode == '' || this.tryParse(_sourceCode))
             return ret;
 
         BreakpointAction breakpointAction = debugger.TryAddBreakpoint(_line, _position);
 
-        ret = new MXTXppINterpreterCodeEditorBreakpointContract();
+        ret = new MXTXppInterpreterCodeEditorBreakpointContract();
 
         if (breakpointAction.NewBreakpoint != null)
         {
@@ -425,6 +502,12 @@ public class MXTXppInterpreterDebugSession
 			<Method>
 				<Name>tryUpdateVariableValue</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Tries to update the value at runtime of a local variable
+    /// </summary>
+    /// <param name = "_varName">Variable name</param>
+    /// <param name = "_newValue">New value for the variable as a string</param>
+    /// <returns>An instance of <c>MXTXppInterpreterVariableEditContract</c></returns>
     public MXTXppInterpreterVariableEditContract tryUpdateVariableValue(str _varName, str _newValue)
     {
         if (!stopOnBreakpoint) return null;
@@ -444,6 +527,14 @@ public class MXTXppInterpreterDebugSession
 			<Method>
 				<Name>getCompletions</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Get all the code editor completions given a line and position
+    /// </summary>
+    /// <param name = "_line">Line</param>
+    /// <param name = "_position">Position within the line</param>
+    /// <param name = "_staticCompletion">If complitions are for a static or instance call</param>
+    /// <param name = "_sourceCode">Source code</param>
+    /// <returns>Completions as an instance of <c>MXTXppCompletionsContract</c></returns>
     public MXTXppCompletionsContract getCompletions(int _line, int _position, boolean _staticCompletion, str _sourceCode)
     {
         XppInterpreter.Parser.Metadata.CompletionProvider completionProvider = new XppInterpreter.Parser.Metadata.CompletionProvider(this.proxy);
@@ -474,6 +565,15 @@ public class MXTXppInterpreterDebugSession
 			<Method>
 				<Name>getTokenMetadata</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Gets the token found in the line and position. Called by the
+    /// editor to display additional information about a token.
+    /// </summary>
+    /// <param name = "_line">Line</param>
+    /// <param name = "_position">Position within the line</param>
+    /// <param name = "_isMethodParameters">If the request is relative to the parameters of a function call</param>
+    /// <param name = "_sourceCode">Source code</param>
+    /// <returns></returns>
     public MXTXppTokenMetadata getTokenMetadata(int _line, int _position, boolean _isMethodParameters, str _sourceCode)
     {
         XppInterpreter.Lexer.XppLexer lexer = new XppInterpreter.Lexer.XppLexer(_sourceCode);

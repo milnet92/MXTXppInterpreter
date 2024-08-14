@@ -23,6 +23,11 @@ internal final class MXTXppInterpreterBatchProcess
 			<Method>
 				<Name>initializeExecutionParameters</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Initializes the parameter buffer based on the given contract
+    /// </summary>
+    /// <param name = "_dataContract">An instance of <c>MXTXppInterpreterBatchContract</c></param>
+    /// <returns>Buffer with the parameters updated</returns>
     protected MXTXppInterpreterParameters initializeExecutionParameters(MXTXppInterpreterBatchContract _dataContract)
     {
         MXTXppInterpreterParameters parameters;

@@ -7,6 +7,10 @@ using XppInterpreter.Interpreter.Query;
 using XppInterpreter.Interpreter;
 using XppInterpreter;
 
+/// <summary>
+/// Class to generate a SyDa query from an Xpp AST during execution. 
+/// Uses the visitor pattern.
+/// </summary>
 internal final class MXTXppQueryExpressionGenerator
 {
     private Set tablesInQuery;
@@ -18,6 +22,11 @@ internal final class MXTXppQueryExpressionGenerator
 			<Method>
 				<Name>new</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name = "_context">Runtime context</param>
+    /// <param name = "_tablesInQuery">Tables in query</param>
     void new(RuntimeContext _context, Set _tablesInQuery)
     {
         tablesInQuery = _tablesInQuery;
@@ -133,6 +142,11 @@ internal final class MXTXppQueryExpressionGenerator
 			<Method>
 				<Name>isVariableTable</Name>
 				<Source><![CDATA[
+    /// <summary>
+    /// Checks if the variable is a table buffer
+    /// </summary>
+    /// <param name = "_variable">Paser variable token</param>
+    /// <returns>If it references a table buffer, true, otherwise false</returns>
     private boolean isVariableTable(Parser.Variable _variable)
     {
         if (_variable.Caller != null && _variable.Caller.Token is Lexer.Word)
