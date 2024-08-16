@@ -11,7 +11,7 @@ namespace XppInterpreter.Parser.Metadata
 {
     class XppTypeInferer : ITypeInferExpressionVisitor
     {
-        private System.Type _globalType, _predefinedType;
+        private System.Type _globalType, _predefinedType, _customPredefinedType;
         private readonly XppProxy _proxy;
         private bool _calledStatically;
         private ParseContext _context;
@@ -23,6 +23,7 @@ namespace XppInterpreter.Parser.Metadata
             // initialize types
             _globalType = _proxy.Casting.GetSystemTypeFromTypeName("Global");
             _predefinedType = _proxy.Casting.GetSystemTypeFromTypeName("PredefinedFunctions");
+            _customPredefinedType = _proxy.Intrinsic.GetCustomPredefinedFunctionProvider();
         }
 
         public System.Type InferType(Expression expression, bool calledStatic, ParseContext context)
@@ -37,6 +38,13 @@ namespace XppInterpreter.Parser.Metadata
         {
             return Core.ReflectionHelper.TypeHasMethod(_globalType, methodName)
                 || Core.ReflectionHelper.TypeHasMethod(_predefinedType, methodName);
+        }
+
+        private bool IsCustomPredefinedFunction(string methodName)
+        {
+            if (_customPredefinedType is null) return false;
+
+            return Core.ReflectionHelper.TypeHasMethod(_customPredefinedType, methodName);
         }
 
         public System.Type VisitBinaryOperation(BinaryOperation binaryOperation)
@@ -102,6 +110,10 @@ namespace XppInterpreter.Parser.Metadata
                 {
                     return globalMethod.ReturnType;
                 }
+            }
+            else if (IsCustomPredefinedFunction(functionCall.Name))
+            {
+                return Core.ReflectionHelper.GetMethod(_customPredefinedType, functionCall.Name)?.ReturnType;
             }
             else
             {

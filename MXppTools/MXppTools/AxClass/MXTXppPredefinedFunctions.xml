@@ -14,6 +14,16 @@ internal final class MXTXppPredefinedFunctions
 ]]></Declaration>
 		<Methods>
 			<Method>
+				<Name>typeOf</Name>
+				<Source><![CDATA[
+    static Types typeOf(anytype obj)
+    {
+        return typeOf(obj);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>curUserId</Name>
 				<Source><![CDATA[
     static str curUserId()

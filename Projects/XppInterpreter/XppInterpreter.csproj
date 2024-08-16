@@ -127,6 +127,7 @@
     <Compile Include="Interpreter\IExpressionVisitor.cs" />
     <Compile Include="Interpreter\InterpreterResult.cs" />
     <Compile Include="Interpreter\InterpreterSaveState.cs" />
+    <Compile Include="Interpreter\Proxy\IgnoreIntrinsicAttribute.cs" />
     <Compile Include="Interpreter\Proxy\IXppQueryGenerationProxy.cs" />
     <Compile Include="Interpreter\Query\IQueryGenerator.cs" />
     <Compile Include="Interpreter\Query\ISearchInstance.cs" />
@@ -203,7 +204,6 @@
     <Compile Include="Parser\ParseContextStack.cs" />
     <Compile Include="Parser\ParseError.cs" />
     <Compile Include="Parser\ParseErrorCollection.cs" />
-    <Compile Include="Parser\ParseErrors.cs" />
     <Compile Include="Parser\Print.cs" />
     <Compile Include="Parser\Return.cs" />
     <Compile Include="Parser\Switch.cs" />

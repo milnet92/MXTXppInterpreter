@@ -2,6 +2,9 @@
 {
     public interface IIntrinsicFunctionProvider
     {
+        [IgnoreIntrinsic]
+        System.Type GetCustomPredefinedFunctionProvider();
+
         int classNum(string name);
         string classStr(string name);
         string formStr(string name);

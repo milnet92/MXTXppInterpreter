@@ -12,6 +12,16 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 ]]></Declaration>
 		<Methods>
 			<Method>
+				<Name>GetCustomPredefinedFunctionProvider</Name>
+				<Source><![CDATA[
+    System.Type GetCustomPredefinedFunctionProvider()
+    {
+        return MXTXppPredefinedFunctions::ThisType;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>classNum</Name>
 				<Source><![CDATA[
 	public int classNum(str name)
