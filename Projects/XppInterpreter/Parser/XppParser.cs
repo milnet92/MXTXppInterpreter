@@ -1008,12 +1008,19 @@ namespace XppInterpreter.Parser
                 TType.TypeDatetime,
                 TType.Void);
 
+            Word type = start.Token as Word;
+
+            if (type.TokenType != TType.Void && !_typeInferer.IsKnownType(type.Lexeme))
+            {
+                HandleParseError($"The name '{type.Lexeme}' does not denotate a class, a table, or an extended data type.");
+            }
+
             Word funcNameToken = Match(TType.Id).Token as Word;
+
             Match(TType.LeftParenthesis);
 
             _parseContext.FunctionDeclarationStack.New();
-            _parseContext.CurrentScope.FunctionReferences.Add(
-                new FunctionDeclarationReference((funcNameToken).Lexeme, start.Token as Word));
+            _parseContext.CurrentScope.FunctionReferences.Add(new FunctionDeclarationReference((funcNameToken).Lexeme, type));
             _parseContext.CurrentScope.Begin();
 
             var parameters = new List<FunctionDeclarationParameter>();

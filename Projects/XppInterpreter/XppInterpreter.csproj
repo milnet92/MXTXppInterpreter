@@ -203,6 +203,7 @@
     <Compile Include="Parser\ParseContextStack.cs" />
     <Compile Include="Parser\ParseError.cs" />
     <Compile Include="Parser\ParseErrorCollection.cs" />
+    <Compile Include="Parser\ParseErrors.cs" />
     <Compile Include="Parser\Print.cs" />
     <Compile Include="Parser\Return.cs" />
     <Compile Include="Parser\Switch.cs" />

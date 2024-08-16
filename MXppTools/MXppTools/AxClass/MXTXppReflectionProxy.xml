@@ -11,7 +11,6 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
     private System.Type predefinedFunctionsType = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType("PredefinedFunctions");
     private System.Type globalType = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType("Global");
 
-
 }
 ]]></Declaration>
 		<Methods>
@@ -349,7 +348,7 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 				<Source><![CDATA[
     public System.String LabelIdToValue(System.String _labelId, System.String _languageId)
     {
-        str languageId = _languageId ? _labelId : 'en-us';
+        str languageId = _languageId ? _labelId : Global::infolog().language();
         return SysLabel::labelId2String(_labelId, languageId);
     }
 
