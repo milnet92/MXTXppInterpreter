@@ -197,7 +197,6 @@
     <Compile Include="Parser\FunctionDeclaration.cs" />
     <Compile Include="Parser\FunctionDeclarationParameter.cs" />
     <Compile Include="Parser\InsertRecordset.cs" />
-    <Compile Include="Parser\IParseResult.cs" />
     <Compile Include="Parser\ParseContext.cs" />
     <Compile Include="Parser\ParseContextScope.cs" />
     <Compile Include="Parser\ParseContextScopeVariable.cs" />
@@ -247,7 +246,7 @@
     <Compile Include="Parser\While.cs" />
     <Compile Include="Parser\WhileSelect.cs" />
     <Compile Include="Parser\XppParser.cs" />
-    <Compile Include="Parser\XppParseResult.cs" />
+    <Compile Include="Parser\ParseResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

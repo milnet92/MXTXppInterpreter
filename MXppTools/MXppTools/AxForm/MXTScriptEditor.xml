@@ -190,11 +190,11 @@ public class MXTScriptEditor extends FormRun
             currentSession.parseDependencies(callerScript.RecId);
         }
 
-        var parseException = currentSession.tryParse(MXTXppInterpreterCodeEditorControl.sourceCode());
+        var parseExceptions = currentSession.tryParse(MXTXppInterpreterCodeEditorControl.sourceCode());
 
-        if (parseException)
+        if (parseExceptions)
         {
-            MXTXppInterpreterCodeEditorControl.parseError(parseException);
+            MXTXppInterpreterCodeEditorControl.parseError(parseExceptions);
             return;
         }
 

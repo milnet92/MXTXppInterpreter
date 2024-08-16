@@ -85,7 +85,7 @@ internal final class MXTXppScriptDependencyManager
                   dependency.ReferenceScriptId      == script.RecId
         {
             MXTXppScriptDependencyManager::parseDependenciesInternal(script.RecId, _dependencies);
-            XppInterpreter.Parser.Program dependencyProgram = MXTXppInterpreterExecutor::parse(script.SourceCode);
+            XppInterpreter.Parser.Program dependencyProgram = MXTXppInterpreterExecutor::parse(script.SourceCode).AST;
 
             _dependencies.Add(dependencyProgram);
         }

@@ -403,7 +403,7 @@
 
         editor.session.on('change', function (delta) {
             tokenMetadataCache = [];
-            clearErrors(editor);
+            
             var sc = editor.getValue();
 
             self.SourceCode(sc);
@@ -413,16 +413,24 @@
                 clearTimeout(change_timer);
                 change_timer = setTimeout(function () {
                     $dyn.callFunction(self.Parse, self, {}, function (value) {
+                        clearErrors(editor);
                         if (value !== null && typeof value !== 'undefined') {
-                            editor.session.setAnnotations([{
-                                row: value.Line,
-                                column: value.Column,
-                                text: value.Name,
-                                type: "error"
-                            }]);
+                            var annotataions = [];
+                            value.Exceptions.forEach(function (exception) {
+                                annotataions.push({
+                                    row: exception.Line,
+                                    column: exception.Column,
+                                    text: exception.Name,
+                                    type: "error" // also warning and information
+                                });
+                            });
+                            editor.session.setAnnotations(annotataions);
                         }
                     });
                 }, 400);
+            }
+            else {
+                clearErrors(editor);
             }
         });
 
@@ -464,13 +472,18 @@
         });
 
         $dyn.observe(this.ParseError, function (value) {
-            if (value !== null) {
-                editor.session.setAnnotations([{
-                    row: value.Line,
-                    column: value.Column,
-                    text: value.Name,
-                    type: "error" // also warning and information
-                }]);
+            clearErrors(editor);
+            if (value !== null && typeof value !== 'undefined') {
+                var annotataions = [];
+                value.Exceptions.forEach(function (exception) {
+                    annotataions.push({
+                        row: exception.Line,
+                        column: exception.Column,
+                        text: exception.Name,
+                        type: "error" // also warning and information
+                    });
+                });
+                editor.session.setAnnotations(annotataions);
             }
         });
 

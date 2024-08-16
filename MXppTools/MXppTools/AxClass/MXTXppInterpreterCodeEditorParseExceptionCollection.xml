@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppInterpreterCodeEditorParseExceptionCollection</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+[DataContract]
+public final class MXTXppInterpreterCodeEditorParseExceptionCollection
+{
+    List exceptions = new List(Types::Class);
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>parmExceptions</Name>
+				<Source><![CDATA[
+    [DataMember("Exceptions"),
+    AifCollectionType("_exceptions", Types::Class)]
+    public List parmExceptions(List _exceptions = exceptions)
+    {
+        exceptions = _exceptions;
+        return exceptions;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>add</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Adds a new exception to the collection
+    /// </summary>
+    /// <param name = "_exception">The exception</param>
+    public void add(MXTXppInterpreterCodeEditorParseException _exception)
+    {
+        exceptions.addEnd(_exception);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>fromParseResultErrors</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Constructs a new exception collection from the collection received from the parse result
+    /// </summary>
+    /// <param name = "_parseErrorCollection">Parse result error collection</param>
+    /// <returns>An instance of <c>MXTXppInterpreterCodeEditorParseExceptionCollection</c></returns>
+    public static MXTXppInterpreterCodeEditorParseExceptionCollection fromParseResultErrors(XppInterpreter.Parser.ParseErrorCollection _parseErrorCollection)
+    {
+        MXTXppInterpreterCodeEditorParseExceptionCollection collection = new MXTXppInterpreterCodeEditorParseExceptionCollection();
+
+        System.Collections.IEnumerator enumerator = _parseErrorCollection.GetEnumerator();
+
+        while (enumerator.MoveNext())
+        {
+            XppInterpreter.Parser.ParseError err = enumerator.Current;
+
+            collection.add(new MXTXppInterpreterCodeEditorParseException(err.Message, err.Line, err.Position));
+        }
+
+        return collection;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

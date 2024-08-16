@@ -21,10 +21,10 @@ public class MXTXppInterpreterDebugSession
     boolean         executing, stopOnBreakpoint;
     str             sourceCode;
     InterpreterResult currentExecutionResult;
-    MXTXppInterpreterCodeEditorParseException   lastParseException;
+    MXTXppInterpreterCodeEditorParseExceptionCollection lastParseExceptions;
     MXTXppInterpreterCodeEditorControl          editor;
     MXTXppInterpreterVariablesInspectorControl  inspector;
-    XppInterpreterDependencyCollection          dependencyCollection = null;
+    XppInterpreterDependencyCollection          dependencyCollection;
 
     XppInterpreter.Interpreter.Proxy.XppProxy proxy = new XppInterpreter.Interpreter.Proxy.XppProxy(
                     new MXTXppIntrinsicFunctionProvider(),
@@ -309,7 +309,7 @@ public class MXTXppInterpreterDebugSession
         debugger = null;
         sourceCode = "";
         program = null;
-        lastParseException = null;
+        lastParseExceptions = null;
         executing = false;
     }
 
@@ -415,13 +415,13 @@ public class MXTXppInterpreterDebugSession
     /// </summary>
     /// <param name = "_sourceCode">X++ source code</param>
     /// <returns></returns>
-    public MXTXppInterpreterCodeEditorParseException tryParse(str _sourceCode)
+    public MXTXppInterpreterCodeEditorParseExceptionCollection tryParse(str _sourceCode)
     {
         MXTXppInterpreterCodeEditorParseException ex;
 
         if (System.String::Compare(_sourceCode, sourceCode, false) == 0)
         {
-            return lastParseException;
+            return lastParseExceptions;
         }
 
         ParseException parseException;
@@ -432,20 +432,32 @@ public class MXTXppInterpreterDebugSession
 
         try
         {
-            program = MXTXppInterpreterExecutor::parse(_sourceCode) as Program;
-            debugger = new XppInterpreter.Interpreter.Debug.XppDebugger(program);
-            lastParseException = null;
+            var result = MXTXppInterpreterExecutor::parse(_sourceCode);
+
+            if (result.IsCorrect)
+            {
+                program = result.AST as XppInterpreter.Parser.Program;
+                lastParseExceptions = null;
+                debugger = new XppInterpreter.Interpreter.Debug.XppDebugger(program);
+            }
+            else
+            {
+                lastParseExceptions = MXTXppInterpreterCodeEditorParseExceptionCollection::fromParseResultErrors(result.Errors);
+                debugger = null;
+            }
         }
         catch(parseException)
         {
-            lastParseException = new MXTXppInterpreterCodeEditorParseException(parseException.Message, parseException.Line, parseException.Position );
+            lastParseExceptions = new MXTXppInterpreterCodeEditorParseExceptionCollection();
+            lastParseExceptions.add(new MXTXppInterpreterCodeEditorParseException(parseException.Message, parseException.Line, parseException.Position));
         }
         catch
         {
-            lastParseException = new MXTXppInterpreterCodeEditorParseException("An error occurred while parsing", 0, 0);
+            lastParseExceptions = new MXTXppInterpreterCodeEditorParseExceptionCollection();
+            lastParseExceptions.add(new MXTXppInterpreterCodeEditorParseException("An error occurred while parsing", 0, 0));
         }
 
-        return lastParseException;
+        return lastParseExceptions;
     }
 
 ]]></Source>

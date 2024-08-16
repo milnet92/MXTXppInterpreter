@@ -153,7 +153,7 @@ public class MXTXppInterpreterCodeEditorControl extends FormTemplateControl
 				<Name>parseError</Name>
 				<Source><![CDATA[
     [FormPropertyAttribute(FormPropertyKind::Value, "ParseError", true)]
-    public MXTXppInterpreterCodeEditorParseException parseError(MXTXppInterpreterCodeEditorParseException _value = parseErrorProperty.parmValue())
+    public MXTXppInterpreterCodeEditorParseExceptionCollection parseError(MXTXppInterpreterCodeEditorParseExceptionCollection _value = parseErrorProperty.parmValue())
     {
         if(!prmIsDefault(_value))
         {
@@ -287,7 +287,7 @@ public class MXTXppInterpreterCodeEditorControl extends FormTemplateControl
 				<Name>Parse</Name>
 				<Source><![CDATA[
     [FormCommand("Parse", true)]
-    public MXTXppInterpreterCodeEditorParseException Parse()
+    public MXTXppInterpreterCodeEditorParseExceptionCollection Parse()
     {
         if (debugSession == null) return null;
 

@@ -47,10 +47,22 @@ namespace XppInterpreter.Parser
             _proxy = xppProxy;
         }
 
-        public IAstNode Parse()
+        public ParseResult Parse()
         {
             Initialize();
-            return Program();
+
+            Program program = null;
+
+            try
+            {
+                program = Program();
+            }
+            catch (ParseException ex)
+            {
+                _parseErrors.Add(new ParseError(ex.Token, ex.Line, ex.Position, ex.Message));
+            }
+
+            return new ParseResult(program, _parseErrors);
         }
 
         public TokenMetadata GetTokenMetadataAt(int row, int column, bool isMethodParameters)
@@ -237,13 +249,14 @@ namespace XppInterpreter.Parser
             }
             catch (Exception ex)
             {
+                result = -1;
                 string message = ex.Message;
                 if (ex.InnerException != null)
                 {
                     message = ex.InnerException.Message;
                 }
 
-                HandleParseError(message, false);
+                HandleParseError(message, false, false);
             }
 
             var binding = SourceCodeBinding(start, lastScanResult);
@@ -263,10 +276,6 @@ namespace XppInterpreter.Parser
             else if (result != null)
             {
                 ret = new Constant(result, binding);
-            }
-            else
-            {
-                HandleParseError($"Unexpected compile-time function {functionName} result.");
             }
 
             return ret;
@@ -328,7 +337,7 @@ namespace XppInterpreter.Parser
 
                         if (returnType is null || returnType == typeof(void))
                         {
-                            HandleParseError("Return type cannot be 'void'.");
+                            HandleParseError("Return type cannot be 'void'.", stop: false);
                         }
                     }
                 }
@@ -369,7 +378,7 @@ namespace XppInterpreter.Parser
 
                 if (declaredVariable is null)
                 {
-                    HandleParseError($"Variable {variableName} is not declared.");
+                    HandleParseError($"Variable {variableName} is not declared.", stop: false);
                 }
             }
 
@@ -441,11 +450,11 @@ namespace XppInterpreter.Parser
                 {
                     if (currentToken.TokenType == TType.Case)
                     {
-                        HandleParseError("Default part must be the last case in switch statement.");
+                        HandleParseError("Default part must be the last case in switch statement.", stop: false);
                     }
                     else if (currentToken.TokenType == TType.Default)
                     {
-                        HandleParseError("Switch statements may not have multie default parts.");
+                        HandleParseError("Switch statements may not have multie default parts.", stop: false);
                     }
                 }
 
@@ -601,7 +610,7 @@ namespace XppInterpreter.Parser
 
             if (type.TokenType != TType.Var && !_typeInferer.IsKnownType(type.Lexeme))
             {
-                HandleParseError($"The name '{type.Lexeme}' does not denotate a class, a table, or an extended data type.");
+                HandleParseError($"The name '{type.Lexeme}' does not denotate a class, a table, or an extended data type.", stop: false);
             }
 
             bool isArray = false;
@@ -609,7 +618,7 @@ namespace XppInterpreter.Parser
             {
                 if (isUsing && (declarations.Count > 0 || isArray))
                 {
-                    HandleParseError("Invalid using expression.");
+                    HandleParseError("Invalid using expression.", stop: false);
                 }
 
                 if (declarations.Count > 0 && !isArray)
@@ -677,7 +686,7 @@ namespace XppInterpreter.Parser
         {
             if (!_parseContext.CanLoopScape())
             {
-                HandleParseError("Control cannot leave a finally block.");
+                HandleParseError("Control cannot leave a finally block.", stop: false);
             }
 
             var start = currentScanResult;
@@ -764,7 +773,7 @@ namespace XppInterpreter.Parser
 
             if (!ReflectionHelper.TypeImplementsInterface(inferedType, typeof(IDisposable)))
             {
-                HandleParseError("Expression type must implement IDisposable.");
+                HandleParseError("Expression type must implement IDisposable.", stop: false);
             }
 
             Match(TType.RightParenthesis);
@@ -780,12 +789,12 @@ namespace XppInterpreter.Parser
         {
             if (_parseContext.FunctionDeclarationStack.Empty)
             {
-                HandleParseError("Return statement can only be used inside function declarations.");
+                HandleParseError("Return statement can only be used inside function declarations.", stop: false);
             }
 
             if (!_parseContext.LoopStack.Empty)
             {
-                HandleParseError("Control cannot leave a finally block.");
+                HandleParseError("Control cannot leave a finally block.", stop: false);
             }
 
             var start = currentScanResult;
@@ -843,7 +852,7 @@ namespace XppInterpreter.Parser
                             (exceptionTypeExpression is Variable v &&
                             (!v.StaticCall || v.Caller is null || (v.Caller as Variable).Caller != null)))
                         {
-                            HandleParseError("Invalid catch exception type expression.");
+                            HandleParseError("Invalid catch exception type expression.", stop: false);
                         }
 
                         var exceptionTypeVariable = exceptionTypeExpression as Variable;
@@ -852,13 +861,13 @@ namespace XppInterpreter.Parser
                         // Enum must be Exception
                         if (!CatchExceptionTypeHelper.IsExceptionEnum(exceptionEnum))
                         {
-                            HandleParseError("Invalid Exception enum type.");
+                            HandleParseError("Invalid Exception enum type.", stop: false);
                         }
 
                         enumMember = ((Word)exceptionTypeExpression.Token).Lexeme;
                         if (!CatchExceptionTypeHelper.IsExceptionMember(enumMember))
                         {
-                            HandleParseError($"'{enumMember}' is not a member of Exception enum.");
+                            HandleParseError($"'{enumMember}' is not a member of Exception enum.", stop: false);
                         }
 
                         Match(TType.RightParenthesis);
@@ -1012,7 +1021,7 @@ namespace XppInterpreter.Parser
 
             if (type.TokenType != TType.Void && !_typeInferer.IsKnownType(type.Lexeme))
             {
-                HandleParseError($"The name '{type.Lexeme}' does not denotate a class, a table, or an extended data type.");
+                HandleParseError($"The name '{type.Lexeme}' does not denotate a class, a table, or an extended data type.", stop: false);
             }
 
             Word funcNameToken = Match(TType.Id).Token as Word;
@@ -1072,7 +1081,7 @@ namespace XppInterpreter.Parser
 
             if (!_typeInferer.IsKnownType(type.Lexeme))
             {
-                HandleParseError($"The name '{type.Lexeme}' does not denotate a class, a table, or an extended data type.");
+                HandleParseError($"The name '{type.Lexeme}' does not denotate a class, a table, or an extended data type.", stop: false);
             }
 
             Word id = Match(TType.Id).Token as Word;
@@ -1287,12 +1296,12 @@ namespace XppInterpreter.Parser
                    || currentToken.TokenType == TType.In)
                     && !isParsingWhereStatement)
                 {
-                    HandleParseError("In and Like statements can only be used in queries.");
+                    HandleParseError("In and Like statements can only be used in queries.", stop: false);
                 }
                 else if (currentToken.TokenType == TType.Is &&
                     isParsingWhereStatement)
                 {
-                    HandleParseError("Is statatement cannot be used in queries");
+                    HandleParseError("Is statatement cannot be used in queries", stop: false);
                 }
 
                 var result = Match(currentToken.TokenType);
@@ -1320,7 +1329,7 @@ namespace XppInterpreter.Parser
                        (binaryExpr.LeftOperand.GetType() != typeof(Variable) ||
                         binaryExpr.RightOperand.GetType() != typeof(Variable)))
                     {
-                        HandleParseError("In statement can only be compared to a container variable.");
+                        HandleParseError("In statement can only be compared to a container variable.", stop: false);
                     }
                 }
             }

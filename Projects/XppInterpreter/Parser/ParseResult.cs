@@ -6,34 +6,27 @@ using System.Threading.Tasks;
 
 namespace XppInterpreter.Parser
 {
-    public class XppParseResult : IParseResult
+    public class ParseResult
     {
         public IAstNode AST { get; set; }
         public ParseErrorCollection Errors { get; }
         public bool IsCorrect => Errors.Count == 0;
         public bool HasErrors => Errors.Count != 0;
 
-        public XppParseResult()
+        public ParseResult()
         {
             Errors = new ParseErrorCollection();
         }
 
-        public XppParseResult(IAstNode ast) : this()
+        public ParseResult(IAstNode ast) : this()
         {
             AST = ast;
         }
 
-        public XppParseResult(IAstNode ast, ParseErrorCollection parseErrors)
+        public ParseResult(IAstNode ast, ParseErrorCollection parseErrors)
         {
             AST = ast;
             Errors = parseErrors is null ? new ParseErrorCollection() : parseErrors;
-        }
-
-        public T ToNode<T>() where T : IAstNode
-        {
-            if (AST is null) return default(T);
-
-            return (T)AST;
         }
     }
 }

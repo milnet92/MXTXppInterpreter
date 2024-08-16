@@ -91,12 +91,12 @@ internal final class MXTXppInterpreterExecutor
     /// </summary>
     /// <param name = "_sourceCode">Source code</param>
     /// <returns>Program AST</returns>
-    public static XppInterpreter.Parser.Program parse(str _sourceCode)
+    public static XppInterpreter.Parser.ParseResult parse(str _sourceCode)
     {
         XppInterpreter.Lexer.XppLexer lexer = new XppInterpreter.Lexer.XppLexer(_sourceCode);
         XppInterpreter.Parser.XppParser parser = new XppInterpreter.Parser.XppParser(lexer, proxy);
         
-        return parser.Parse() as XppInterpreter.Parser.Program;
+        return parser.Parse();
     }
 
 ]]></Source>
@@ -146,8 +146,12 @@ internal final class MXTXppInterpreterExecutor
         XppInterpreter.Interpreter.XppInterpreterDependencyCollection _dependencies = null)
     {
         // Create lexer and parser
-        XppInterpreter.Parser.Program parseResult = MXTXppInterpreterExecutor::parse(_sourceCode);
-        MXTXppInterpreterExecutor::executeProgram(parseResult, _debugger, _parameters, _dependencies);
+        XppInterpreter.Parser.ParseResult parseResult = MXTXppInterpreterExecutor::parse(_sourceCode);
+
+        if (parseResult.IsCorrect)
+        {
+            MXTXppInterpreterExecutor::executeProgram(parseResult.AST as XppInterpreter.Parser.Program, _debugger, _parameters, _dependencies);
+        }
 	}
 
 ]]></Source>
