@@ -7,25 +7,26 @@ This tool allows you to write, execute and debug X++ code directly in the browse
 ## Getting started
 1. Clone the repo
 2. Build the **MXppTools** package included and apply it to your environment
-3. Navigate to https://[YOU_ENVIRONMENT]/?mi=**MXTScriptEditor** and start writing your code
+3. Synchronize the database
+4. Navigate to System Administration > Workspaces > **MXT - X++ Interpreter**
 
 # Interpreter
 This tool generates bytecode that is later interpreted directly during execution. The instructions that are interpreted are executed in native code using a series of proxies written in X++. That allows to simulate the execution *almost* exactly as native code would do it, without the need to compile.
 
-<p align="center"><img src="https://github.com/milnet92/MXTXppInterpreter/assets/10449294/d4d0eff0-0320-43f7-a2d8-0300b601e84a"</img></p>
+![arquitecture](Assets/simple_arquitecture.png)
 
 ### Code editor
 <p>The editor will highlight the reserved words and will indicate you which statement is being executed when debugging. It will also tell you if your code has any syntax error.</p>
 
 <p>Some keyboard shortcuts are implemented to easly execute, insert a breakpoint, step over and continue debugging. These can be found as standard shorcuts by Right click > View shorcuts on the editor.</p>
-<img width="400" src="https://github.com/milnet92/MXTXppInterpreter/assets/10449294/7440d562-db83-4972-b07b-97b9acdd05c9"/>
+![example](Assets/code_example.png)
 
 <p>The variable inspector will allow you to take a look to the variables that are currently on scope and will let you modify the values for primitive types.</p>
-<img width="700" src="https://github.com/milnet92/MXTXppInterpreter/assets/10449294/66b815ea-169a-4366-a1f0-1cac12b39fa7"/>
+![debugger](Assets/debugger.png)
 
 ### Script repository
 <p>You can save X++ scripts into the built-in repository to later execute them.</p>
-<img width="400" src="https://github.com/milnet92/MXTXppInterpreter/assets/10449294/dab3be52-5c99-4b57-932d-d298771793c3"/>
+![repo](Assets/script_repo.png)
 
 # Use cases
 * Execute, modify and save X++ scripts
@@ -36,5 +37,5 @@ This tool generates bytecode that is later interpreted directly during execution
 ## Limitations
 * **Macros** usage and declarations are not supported
 * **Class declarations** are not supported
-* **try**, **catch** and **finally** statements are not implemented
+* **retry** statement is not implemented
 * **.NET namespaces** cannot be referenced
