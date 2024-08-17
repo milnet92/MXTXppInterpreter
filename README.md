@@ -16,16 +16,16 @@ This tool generates bytecode that is later interpreted directly during execution
 ![arquitecture](Assets/simple_arquitecture.png)
 
 ### Code editor
-<p>The editor will highlight the reserved words and will indicate you which statement is being executed when debugging. It will also tell you if your code has any syntax error.</p>
+The editor will highlight the reserved words and will indicate you which statement is being executed when debugging. It will also tell you if your code has any syntax error.
 
-<p>Some keyboard shortcuts are implemented to easly execute, insert a breakpoint, step over and continue debugging. These can be found as standard shorcuts by Right click > View shorcuts on the editor.</p>
+Some keyboard shortcuts are implemented to easly execute, insert a breakpoint, step over and continue debugging. These can be found as standard shorcuts by Right click > View shorcuts on the editor.
 ![example](Assets/code_example.png)
 
-<p>The variable inspector will allow you to take a look to the variables that are currently on scope and will let you modify the values for primitive types.</p>
+The variable inspector will allow you to take a look to the variables that are currently on scope and will let you modify the values for primitive types.
 ![debugger](Assets/debugger.png)
 
 ### Script repository
-<p>You can save X++ scripts into the built-in repository to later execute them.</p>
+You can save X++ scripts into the built-in repository to later execute them.
 ![repo](Assets/script_repo.png)
 
 # Use cases
