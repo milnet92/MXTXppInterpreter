@@ -28,7 +28,6 @@ namespace XppInterpreter.Core
 
         public void SetValue(object value)
         {
-            // TODO: Check types
             Value = value;
         }
     }

@@ -13,5 +13,6 @@ namespace XppInterpreter.Interpreter.Proxy
         Type GetSystemTypeFromTypeName(string typeName);
         bool Is(object value, string typeName);
         object As(object value, string typeName);
+        bool ImplicitConversionExists(System.Type from, System.Type to);
     }
 }

@@ -12,8 +12,6 @@ using Microsoft.Dynamics.Ax;
 /// </summary>
 internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Proxy.IXppCastingProxy
 {
-    private System.Type edtArrayType = System.Type::GetType("Microsoft.Dynamics.Ax.Xpp.EdtArray`1, Microsoft.Dynamics.AX.Data.Core");
-
 }
 ]]></Declaration>
 		<Methods>
@@ -54,14 +52,14 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 
         switch(_name)
         {
-            case 'real': return Types::Real;
-            case 'int': return Types::Integer;
-            case 'guid': return Types::Guid;
-            case 'container': return Types::Container;
-            case 'int64': return Types::Int64;
-            case 'utcdatetime': return Types::UtcDateTime;
-            case 'str': return Types::String;
-            case 'date': return Types::Date;
+            case MXtXppTypes::RealTypeStr: return Types::Real;
+            case MXtXppTypes::Int32TypeStr: return Types::Integer;
+            case MXtXppTypes::GuidTypeStr: return Types::Guid;
+            case MXtXppTypes::ContainerTypeStr: return Types::Container;
+            case MXtXppTypes::Int64TypeStr: return Types::Int64;
+            case MXtXppTypes::DateTimeTypeStr: return Types::UtcDateTime;
+            case MXtXppTypes::StringTypeStr: return Types::String;
+            case MXtXppTypes::DateTypeStr : return Types::Date;
         }
 
         return Types::void;
@@ -80,10 +78,10 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
     public System.Type GetSystemTypeFromTypeName(str _typeName)
     {
         // boolean is not a type for some reason
-        boolean isBoolean = _typeName == 'boolean';
+        boolean isBoolean = _typeName == MXtXppTypes::BooleanTypeStr;
 
         if (isBoolean)
-            return System.Type::GetType('System.Boolean');
+            return MXTXppTypes::BooleanType;
 
         var xppType = this.getXppTypeByTypeName(_typeName);
 
@@ -96,29 +94,29 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
             case Types::Record:
                 return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType(_typeName);
 
-            case Types::Integer:
-                return System.Type::GetType('System.Int32');
+            case Types::Integer: 
+                return MXTXppTypes::Int32Type;
 
-            case Types::Int64:
-                return System.Type::GetType('System.Int64');
+            case Types::Int64: 
+                return MXTXppTypes::Int64Type;
 
-            case Types::Guid:
-                return System.Type::GetType('System.Guid');
+            case Types::Guid: 
+                return MXTXppTypes::GuidType;
 
             case Types::Real:
-                return System.Type::GetType('System.Decimal');
+                return MXTXppTypes::DecimalType;
 
             case Types::String:
-                return System.Type::GetType('System.String');
+                return MXTXppTypes::StringType;
 
             case Types::UtcDateTime:
-                return System.Type::GetType('System.DateTime');
+                return MXTXppTypes::DateTimeType;
 
             case Types::Container:
-                return System.Type::GetType("System.Object[]");
+                return MXTXppTypes::ContainerType;
 
             case Types::Date:
-                return System.Type::GetType("Microsoft.Dynamics.Ax.Xpp.AxShared.Date, Microsoft.Dynamics.Ax.Xpp.AxShared");
+                return MXTXppTypes::DateType;
         }
 
         return null;
@@ -153,7 +151,7 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
     {
         System.Type type = this.GetSystemTypeFromTypeName(typeName);
 
-        return XppInterpreter.Core.ReflectionHelper::MakeGenericInstance(edtArrayType, type);
+        return XppInterpreter.Core.ReflectionHelper::MakeGenericInstance(MXTXppTypes::ArrayType, type);
     }
 
 ]]></Source>
@@ -171,7 +169,7 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
     {
         System.Type type = this.GetSystemTypeFromTypeName(typeName);
 
-        return XppInterpreter.Core.ReflectionHelper::MakeGenericInstance(edtArrayType, type, size);
+        return XppInterpreter.Core.ReflectionHelper::MakeGenericInstance(MXTXppTypes::ArrayType, type, size);
     }
 
 ]]></Source>
@@ -187,7 +185,7 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
     /// <returns>Value</returns>
     public System.Object GetArrayIndexValue(System.Object array, System.Int32 idx)
     {
-        if (!array.GetType().IsGenericType || array.GetType().GetGenericTypeDefinition() != edtArrayType)
+        if (!array.GetType().IsGenericType || array.GetType().GetGenericTypeDefinition() != MXTXppTypes::ArrayType)
         {
             throw Error("The array indexing can only be applied to X++ array types.");
         }
@@ -210,7 +208,7 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
     /// <param name = "value">Value</param>
     public void SetArrayIndexValue(System.Object array, System.Int32 idx, System.Object value)
     {
-        if (!array.GetType().IsGenericType || array.GetType().GetGenericTypeDefinition() != edtArrayType)
+        if (!array.GetType().IsGenericType || array.GetType().GetGenericTypeDefinition() != MXTXppTypes::ArrayType)
         {
             throw Error("The array indexing can only be applied to X++ array types.");
         }
@@ -283,9 +281,8 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
             // Validate if it's common'
             if (_value)
             {
-                System.Type commonType = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType("Common");
                 System.Type valueType = _value.GetType();
-                boolean isCommonType = valueType == commonType || valueType.IsSubclassOf(commonType);
+                boolean isCommonType = valueType == MXTXppTypes::CommonType || valueType.IsSubclassOf(MXTXppTypes::CommonType);
 
                 if (!isCommonType)
                 {
@@ -336,7 +333,7 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
     /// <returns></returns>
 	public System.Object GetDefaultValueForType(System.String _name)
     {
-        if (_name == 'boolean') return false;
+        if (_name == MXTXppTypes::BooleanTypeStr) return false;
 
         Types types = this.getXppTypeByTypeName(_name);
         
@@ -360,6 +357,51 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 
         return null;
 	}
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>isEnumType</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Checks if the given System.Type is an enumeration
+    /// </summary>
+    /// <param name = "_type">Systen.Type to check</param>
+    /// <returns>True if it is an enum, otherwise false</returns>
+    private boolean isEnumType(System.Type _type)
+    {
+        return SysDictEnum::newName(_type.Name) != null;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>ImplicitConversionExists</Name>
+				<Source><![CDATA[
+    public System.Boolean ImplicitConversionExists(System.Type _fromType, System.Type _toType)
+    {
+        if (_toType == null) return false;
+        if (_fromType == _toType) return true;
+        if (_toType.IsAssignableFrom(_fromType) || _fromType.IsAssignableFrom(_toType)) return true;
+
+        // anytype is always convertible
+        if (_toType == MXTXppTypes::AnyTypeType) return true;
+
+        // int, int64, real, boolean and enum are all implicitly convertible
+        Set typeCheckSet = new Set(Types::Class);
+        typeCheckSet.add(MXTXppTypes::Int32Type);
+        typeCheckSet.add(MXTXppTypes::Int64Type);
+        typeCheckSet.add(MXTXppTypes::DecimalType);
+        typeCheckSet.add(MXTXppTypes::BooleanType);
+
+        if ((typeCheckSet.in(_fromType) || this.isEnumType(_fromType)) &&
+            (typeCheckSet.in(_toType) || this.isEnumType(_toType)))
+        {
+            return true;
+        }
+
+        return false;
+    }
 
 ]]></Source>
 			</Method>

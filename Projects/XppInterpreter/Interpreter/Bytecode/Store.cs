@@ -23,14 +23,16 @@ namespace XppInterpreter.Interpreter.Bytecode
         public bool FromStack { get; }
         public bool IsArray { get; }
         public string TypeName { get; }
+        public Type ClrType { get; }
 
-        public Store(string name, bool fromStack, bool top, bool isArray, string typeName)
+        public Store(string name, bool fromStack, bool top, bool isArray, string typeName, Type clrType)
         {
             Name = name;
             Top = top;
             FromStack = fromStack;
             IsArray = isArray;
             TypeName = typeName;
+            ClrType = clrType;
         }
 
         public void Execute(RuntimeContext context)
@@ -68,16 +70,14 @@ namespace XppInterpreter.Interpreter.Bytecode
 
                     if (declaration)
                     {
-                        var defaultValue = context.Proxy.Casting.GetDefaultValueForType(TypeName);
-                        Type declarationType = context.Proxy.Casting.GetSystemTypeFromTypeName(TypeName);
-
-                        if (value is null && context.Proxy.Reflection.IsCommonType(declarationType))
+                        if (value is null && context.Proxy.Reflection.IsCommonType(ClrType))
                         {
-                            context.ScopeHandler.CurrentScope.SetVar(Name, defaultValue, declaration, Top, declarationType);
+                            var defaultValue = context.Proxy.Casting.GetDefaultValueForType(TypeName);
+                            context.ScopeHandler.CurrentScope.SetVar(Name, defaultValue, Top, ClrType);
                         }
                         else
                         {
-                            context.ScopeHandler.CurrentScope.SetVar(Name, value, declaration, Top, declarationType);
+                            context.ScopeHandler.CurrentScope.SetVar(Name, value, Top, ClrType);
                         }
                     }
                     else
@@ -91,7 +91,7 @@ namespace XppInterpreter.Interpreter.Bytecode
                         }
                         else
                         {
-                            context.ScopeHandler.CurrentScope.SetVar(Name, value, false);
+                            context.ScopeHandler.CurrentScope.SetVar(Name, value);
                         }
                     }
                 }

@@ -24,6 +24,16 @@ internal final class MXTXppPredefinedFunctions
 ]]></Source>
 			</Method>
 			<Method>
+				<Name>curExt</Name>
+				<Source><![CDATA[
+    static str curExt()
+    {
+        return curExt();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>curUserId</Name>
 				<Source><![CDATA[
     static str curUserId()

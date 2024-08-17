@@ -53,7 +53,7 @@ namespace XppInterpreter.Parser.Metadata.Providers
                     stringBuilder.Append(", ");
                 }
 
-                stringBuilder.Append($"{((Lexer.Word)parameter.Type).Lexeme} {parameter.Name}");
+                stringBuilder.Append($"{parameter.DeclarationType} {parameter.Name}");
                 numParameter++;
             }
             stringBuilder.Append(')');

@@ -43,7 +43,7 @@ namespace XppInterpreter.Core
             throw new Exception($"Variable {varName} was not declared.");
         }
 
-        public void SetVar(string varName, object varValue, bool declaration, bool forceOnTop = false, Type declarationType = null)
+        public void SetVar(string varName, object varValue, bool forceOnTop = false, Type declarationType = null)
         {
             Scope current = this;
             bool found = false;
@@ -58,34 +58,20 @@ namespace XppInterpreter.Core
 
                     if (!exists)
                     {
-                        if (declaration)
+                        if (declarationType != null)
                         {
-                            if (declarationType is null && varValue is null)
+                            VariableEntry entry;
+
+                            if (varValue != null && varValue.GetType() != declarationType)
                             {
-                                throw new Exception($"Cannot declare an untyped variable without initialization.");
+                                entry = new VariableEntry(varName, declarationType, Convert.ChangeType(varValue, declarationType));
                             }
                             else
                             {
-                                VariableEntry entry;
-
-                                if (declarationType != null)
-                                {
-                                    if (varValue != null && varValue.GetType() != declarationType)
-                                    {
-                                        entry = new VariableEntry(varName, declarationType, Convert.ChangeType(varValue, declarationType));
-                                    }
-                                    else
-                                    {
-                                        entry = new VariableEntry(varName, declarationType, varValue);
-                                    }
-                                }
-                                else
-                                {
-                                    entry = new VariableEntry(varName, varValue);
-                                }
-
-                                current.VariableCollection.Add(entry);
+                                entry = new VariableEntry(varName, declarationType, varValue);
                             }
+
+                            current.VariableCollection.Add(entry);
                         }
                         else
                         {

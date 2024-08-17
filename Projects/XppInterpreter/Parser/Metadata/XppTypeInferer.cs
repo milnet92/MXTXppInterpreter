@@ -26,12 +26,32 @@ namespace XppInterpreter.Parser.Metadata
             _customPredefinedType = _proxy.Intrinsic.GetCustomPredefinedFunctionProvider();
         }
 
+        public System.Type InferType(Expression expression, ParseContext context)
+        {
+            bool calledStatic = false;
+
+            if (expression is Variable variable)
+            {
+                calledStatic = variable.StaticCall;
+            }
+
+            return InferType(expression, calledStatic, _context);
+        }
+
         public System.Type InferType(Expression expression, bool calledStatic, ParseContext context)
         {
+            if (expression.ReturnType != null)
+            {
+                return expression.ReturnType;
+            }
+
             _calledStatically = calledStatic;
             _context = context;
 
-            return expression.Accept(this);
+            var inferedType = expression.Accept(this);
+            expression.SetReturnType(inferedType);
+
+            return inferedType;
         }
 
         private bool IsGlobalFunction(string methodName)
@@ -150,7 +170,12 @@ namespace XppInterpreter.Parser.Metadata
         {
             if (variable.Caller != null)
             {
+                bool staticSave = _calledStatically;
+                _calledStatically = variable.StaticCall;
+
                 System.Type callerType = variable.Caller.Accept(this);
+
+                _calledStatically = staticSave;
 
                 if (Core.ReflectionHelper.TypeHasField(callerType, variable.Name))
                 {

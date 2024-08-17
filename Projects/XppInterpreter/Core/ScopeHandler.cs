@@ -152,7 +152,7 @@ namespace XppInterpreter.Core
             {
                 string normalizedValue = DebugHelper.GetDebugDisplayValue(parsedValue);
 
-                CurrentScope.SetVar(name, parsedValue, false, false);
+                CurrentScope.SetVar(name, parsedValue, false);
                 CurrentScope._hash.Update(name, normalizedValue);
 
                 return new VariableEditValueResponse()

@@ -6,15 +6,12 @@ namespace XppInterpreter.Interpreter.Bytecode
     internal class DeclaredFunctionCall : IInstruction, ICall, IInterpretableInstruction
     {
         private RefFunction _ref;
-
         public string OperationCode => "CALL";
         public string Name => _ref.Declaration.Name;
-
         public int NArgs { get; set; }
         public bool Alloc => _ref.Declaration.Type.TokenType != TType.Void;
         public bool ProcessParameters => true;
         public InterpreterResult LastResult { get; private set; }
-
 
         public DeclaredFunctionCall(RefFunction refFunction, int nArgs)
         {
@@ -61,17 +58,18 @@ namespace XppInterpreter.Interpreter.Bytecode
                 for (int numParam = 0; numParam < NArgs; numParam++)
                 {
                     var funcParameter = _ref.Declaration.Parameters[numParam];
-                    string typeName = (funcParameter.Type as Word).Lexeme;
-                    object defaultValue = context.Proxy.Casting.GetDefaultValueForType(typeName);
-                    System.Type declarationType = context.Proxy.Casting.GetSystemTypeFromTypeName(typeName);
+                    System.Type declarationType = _ref.Declaration.Parameters[numParam].DeclarationClrType;
+
+                    System.Diagnostics.Debug.Assert(declarationType != null); // We MUST have a declaration type
 
                     if (arguments[numParam] is null && context.Proxy.Reflection.IsCommonType(declarationType))
                     {
-                        newContext.ScopeHandler.CurrentScope.SetVar(funcParameter.Name, defaultValue, true, true, declarationType);
+                        object defaultValue = context.Proxy.Casting.GetDefaultValueForType(funcParameter.DeclarationType.Lexeme);
+                        newContext.ScopeHandler.CurrentScope.SetVar(funcParameter.Name, defaultValue, true, declarationType);
                     }
                     else
                     {
-                        newContext.ScopeHandler.CurrentScope.SetVar(funcParameter.Name, arguments[numParam], true, true, declarationType);
+                        newContext.ScopeHandler.CurrentScope.SetVar(funcParameter.Name, arguments[numParam], true, declarationType);
                     }
                 }
 

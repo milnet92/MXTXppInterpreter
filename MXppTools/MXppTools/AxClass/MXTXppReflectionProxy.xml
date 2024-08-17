@@ -88,7 +88,6 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
         }
         else
         {
-            DictClass dictClass = new DictClass(_instance);
             System.Reflection.PropertyInfo propertyInfo = _instance.GetType().GetProperty(_propertyName);
 
             if (propertyInfo)

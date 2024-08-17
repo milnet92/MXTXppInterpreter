@@ -217,7 +217,7 @@ namespace XppInterpreter.Interpreter.Bytecode
                 access.Index.Accept(this);
             }
 
-            Emit(new Store(assignment.Assignee.Name, fromCaller, false, isArray, null));
+            Emit(new Store(assignment.Assignee.Name, fromCaller, false, isArray, null, null));
         }
 
         public void VisitBinaryOperation(BinaryOperation binaryOperation)
@@ -570,14 +570,14 @@ namespace XppInterpreter.Interpreter.Bytecode
                 else if (variableDeclarations is VariableArrayDeclaration arrayDeclaration)
                 {
                     arrayDeclaration.Size?.Accept(this);
-                    Emit(new DefaultValueArray(variableDeclarations.VariableType.Lexeme, arrayDeclaration.Size != null));
+                    Emit(new DefaultValueArray(variableDeclarations.DeclarationType.Lexeme, arrayDeclaration.Size != null));
                 }
                 else
                 {
-                    Emit(new DefaultValue(variableDeclarations.VariableType.Lexeme));
+                    Emit(new DefaultValue(variableDeclarations.DeclarationType.Lexeme));
                 }
 
-                Emit(new Store(declaration.Key.Lexeme, false, true, false, variableDeclarations.VariableType.Lexeme));
+                Emit(new Store(declaration.Key.Lexeme, false, true, false, variableDeclarations.DeclarationType.Lexeme, variableDeclarations.DeclarationClrType));
             }
         }
 

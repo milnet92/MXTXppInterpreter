@@ -8,13 +8,15 @@ namespace XppInterpreter.Parser
 {
     public class VariableDeclarations : Statement
     {
-        public Word VariableType { get; }
+        public System.Type DeclarationClrType { get; }
+        public Word DeclarationType { get; }
         public Dictionary<Word, Expression> Identifiers { get; }
 
-        public VariableDeclarations(Word type, Dictionary<Word, Expression> identifiers, SourceCodeBinding sourceCodeBinding) : base(sourceCodeBinding, sourceCodeBinding)
+        public VariableDeclarations(Word declarationType, System.Type declarationClrType, Dictionary<Word, Expression> identifiers, SourceCodeBinding sourceCodeBinding) : base(sourceCodeBinding, sourceCodeBinding)
         {
-            VariableType = type;
+            DeclarationType = declarationType;
             Identifiers = identifiers;
+            DeclarationClrType = declarationClrType;
 
             // Invalidate debuggeable binding for idenfitiers
             foreach (var bindings in identifiers)

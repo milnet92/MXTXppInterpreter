@@ -46,6 +46,7 @@ namespace XppInterpreter.Parser.Metadata
                 else
                 {
                     completions.Union(nativeProvider.GetClassMethodCompletions(inferedType.Name, isStatic));
+                    completions.Union(nativeProvider.GetClassFieldCompletions(inferedType.Name, isStatic));
                 }
             }
 

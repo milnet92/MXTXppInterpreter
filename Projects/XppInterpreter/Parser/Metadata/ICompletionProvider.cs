@@ -11,6 +11,7 @@ namespace XppInterpreter.Parser.Metadata
         CompletionCollection GetTableMethodCompletions(string tableName, bool isStatic);
         CompletionCollection GetTableFieldsCompletions(string tableName);
         CompletionCollection GetClassMethodCompletions(string className, bool isStatic);
+        CompletionCollection GetClassFieldCompletions(string className, bool isStatic);
         CompletionCollection GetEnumCompletions(string enumName);
     }
 }

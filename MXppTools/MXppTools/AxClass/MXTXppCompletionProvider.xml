@@ -4,6 +4,7 @@
 	<SourceCode>
 		<Declaration><![CDATA[
 using XppInterpreter.Parser.Metadata;
+using Reflection = System.Reflection;
 
 public final class MXTXppCompletionProvider implements ICompletionProvider
 {
@@ -23,32 +24,6 @@ public final class MXTXppCompletionProvider implements ICompletionProvider
     private str getMethodDocumentation(SysDictMethod _method)
     {
         return _method.metadataSyntax();
-    }
-
-]]></Source>
-			</Method>
-			<Method>
-				<Name>fillMethodCompletions</Name>
-				<Source><![CDATA[
-    /// <summary>
-    /// Fills the given completion collection with the SysDictMethod set
-    /// </summary>
-    /// <param name = "_methods">Set of SysDictMethod</param>
-    /// <param name = "_isTable">If the request is for a table</param>
-    /// <param name = "_completions">Completions to fill</param>
-    private void fillMethodCompletions(Set _methods, boolean _isTable, CompletionCollection _completions)
-    {
-        SetEnumerator enumerator = _methods.getEnumerator();
-
-        while (enumerator.moveNext())
-        {
-            SysDictMethod method = enumerator.current() as SysDictMethod;
-
-            Completion completion = new Completion(method.name(), method.name(), method.isStatic() ? CompletionEntryType::StaticMethod : CompletionEntryType::Method);
-            completion.DocHtml = '<span>' + this.getMethodDocumentation(method) + '</span>';
-
-            _completions.Add(completion);
-        }
     }
 
 ]]></Source>
@@ -131,6 +106,65 @@ public final class MXTXppCompletionProvider implements ICompletionProvider
         if (!dictClass) return completions;
 
         this.fillMethodCompletions(dictClass.methods(!_isStatic, _isStatic, true), false, completions);
+
+        return completions;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetClassFieldCompletions</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Gets the fields / properties of a class name
+    /// </summary>
+    /// <param name = "_className">Class name</param>
+    /// <param name = "_isStatic">If the methods are static</param>
+    /// <returns>Collection of fields / properties</returns>
+    CompletionCollection GetClassFieldCompletions(str _className, boolean _isStatic)
+    {
+        CompletionCollection completions = new CompletionCollection();
+
+        System.Type type =  Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::GetTypeFromClassName(_className);
+
+        if (type == null) return completions;
+
+        // Construct binding flags
+        Reflection.BindingFlags flags = Reflection.BindingFlags::Public;
+
+        flags = flags | (_isStatic ? Reflection.BindingFlags::Static : Reflection.BindingFlags::Instance);
+        
+        var tmpFields = type.GetFields();
+        var tmpProps = type.GetProperties();
+
+        var fields = type.GetFields(flags);
+        for (int i = 0; i < fields.Length; i++)
+        {
+            Reflection.FieldInfo fieldInfo = fields.Get(i);
+            
+            // Skip kernel fields
+            if (fieldInfo.Name.StartsWith("__FO_") ||
+                fieldInfo.DeclaringType.Name == "XppObjectBase")
+            {
+                continue;
+            }
+
+            Completion completion = new Completion(fieldInfo.Name, fieldInfo.Name, CompletionEntryType::ClassProperty);
+            Completion.DocHtml = '<span>' + fieldInfo.FieldType.Name + " " + fieldInfo.Name + '</span>';
+
+            completions.Add(completion);
+        }
+
+        var properties = type.GetProperties(flags);
+        for (int i = 0; i < properties.Length; i++)
+        {
+            Reflection.PropertyInfo property = properties.Get(i);
+            
+            Completion completion = new Completion(property.Name, property.Name, CompletionEntryType::ClassProperty);
+            Completion.DocHtml = '<span>' + property.PropertyType.Name + " " + property.Name + '</span>';
+
+            completions.Add(completion);
+        }
 
         return completions;
     }
@@ -314,6 +348,32 @@ public final class MXTXppCompletionProvider implements ICompletionProvider
             SysDictMethod method = globalMethodsEnumerator.current();
 
             _list.addEnd(method.name());
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>fillMethodCompletions</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Fills the given completion collection with the SysDictMethod set
+    /// </summary>
+    /// <param name = "_methods">Set of SysDictMethod</param>
+    /// <param name = "_isTable">If the request is for a table</param>
+    /// <param name = "_completions">Completions to fill</param>
+    private void fillMethodCompletions(Set _methods, boolean _isTable, CompletionCollection _completions)
+    {
+        SetEnumerator enumerator = _methods.getEnumerator();
+
+        while (enumerator.moveNext())
+        {
+            SysDictMethod method = enumerator.current() as SysDictMethod;
+
+            Completion completion = new Completion(method.name(), method.name(), method.isStatic() ? CompletionEntryType::StaticMethod : CompletionEntryType::Method);
+            completion.DocHtml = '<span>' + this.getMethodDocumentation(method) + '</span>';
+
+            _completions.Add(completion);
         }
     }
 

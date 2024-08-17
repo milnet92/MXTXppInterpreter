@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppTypes</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+internal static final class MXTXppTypes
+{
+    public static System.Type ArrayType = System.Type::GetType("Microsoft.Dynamics.Ax.Xpp.EdtArray`1, Microsoft.Dynamics.AX.Data.Core");
+    public static System.Type Int32Type = System.Type::GetType("System.Int32");
+    public static System.Type Int64Type = System.Type::GetType("System.Int64");
+    public static System.Type BooleanType = System.Type::GetType("System.Boolean");
+    public static System.Type GuidType = System.Type::GetType("System.Guid");
+    public static System.Type DecimalType = System.Type::GetType("System.Decimal");
+    public static System.Type StringType = System.Type::GetType("System.String");
+    public static System.Type DateTimeType = System.Type::GetType("System.DateTime");
+    public static System.Type DateType = System.Type::GetType("Microsoft.Dynamics.Ax.Xpp.AxShared.Date, Microsoft.Dynamics.Ax.Xpp.AxShared");
+    public static System.Type ContainerType = System.Type::GetType("Systen.Object[]");
+    public static System.Type AnyTypeType = System.Type::GetType("System.Object");
+    public static System.Type CommonType = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType(CommonTypeStr);
+
+    public const str RealTypeStr = "real";
+    public const str Int32TypeStr = "int";
+    public const str GuidTypeStr = "guid";
+    public const str ContainerTypeStr = "container";
+    public const str Int64TypeStr = "int64";
+    public const str DateTimeTypeStr = "utcdatetime";
+    public const str StringTypeStr = "str";
+    public const str DateTypeStr = "date";
+    public const str AnyTypeTypeStr = "anytype";
+    public const str BooleanTypeStr = "boolean";
+    public const str CommonTypeStr = "common";
+}
+]]></Declaration>
+		<Methods />
+	</SourceCode>
+</AxClass>

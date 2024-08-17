@@ -330,17 +330,8 @@ namespace XppInterpreter.Parser
                         false,
                         SourceCodeBinding(identifier, lastScanResult),
                         isInsideFunctionScope ? SourceCodeBinding(debuggeableStartBinding, lastScanResult) : null);
-
-                    if (expectReturn)
-                    {
-                        System.Type returnType = _typeInferer.InferType(ret, false, _parseContext);
-
-                        if (returnType is null || returnType == typeof(void))
-                        {
-                            HandleParseError("Return type cannot be 'void'.", stop: false);
-                        }
-                    }
                 }
+
                 _parseContext.CallFunctionScope.Release();
             }
             else
@@ -382,6 +373,13 @@ namespace XppInterpreter.Parser
                 }
             }
 
+            System.Type returnType = _typeInferer.InferType(ret, currentToken.TokenType == TType.StaticDoubleDot, _parseContext);
+
+            if (ret is FunctionCall && expectReturn && (returnType is null || returnType == typeof(void)))
+            {
+                HandleParseError("Return type cannot be 'void'.", stop: false);
+            }
+
             if (currentToken.TokenType == TType.Dot || currentToken.TokenType == TType.StaticDoubleDot)
             {
                 if (currentToken.TokenType == TType.StaticDoubleDot &&
@@ -393,7 +391,7 @@ namespace XppInterpreter.Parser
                 MatchMultiple(TType.Dot, TType.StaticDoubleDot);
                 HandleAutocompletion(ret);
 
-                ret = Variable(ret, lastScanResult.Token.TokenType == TType.StaticDoubleDot);
+                ret = Variable(ret, lastScanResult.Token.TokenType == TType.StaticDoubleDot, expectReturn: expectReturn);
             }
 
 
@@ -606,12 +604,15 @@ namespace XppInterpreter.Parser
                 TType.TypeDatetime,
                 TType.Var);
 
-            Word type = typeResult.Token as Word;
+            Word typeWord = typeResult.Token as Word;
 
-            if (type.TokenType != TType.Var && !_typeInferer.IsKnownType(type.Lexeme))
+            if (typeWord.TokenType != TType.Var && !_typeInferer.IsKnownType(typeWord.Lexeme))
             {
-                HandleParseError($"The name '{type.Lexeme}' does not denotate a class, a table, or an extended data type.", stop: false);
+                HandleParseError($"The name '{typeWord.Lexeme}' does not denotate a class, a table, or an extended data type.", stop: false);
             }
+
+            // Get type from type declaration if it's a known type
+            System.Type declarationType = typeWord.TokenType != TType.Var && _typeInferer.IsKnownType(typeWord.Lexeme) ? _proxy.Casting.GetSystemTypeFromTypeName(typeWord.Lexeme) : null;
 
             bool isArray = false;
             do
@@ -651,8 +652,30 @@ namespace XppInterpreter.Parser
                 }
 
                 declarations[id] = initialisation;
-            } while (currentToken.TokenType == TType.Comma);
 
+                // Type checking
+                if (initialisation != null)
+                { 
+                    var initializationType = _typeInferer.InferType(initialisation, false, _parseContext);
+
+                    if (declarationType is null)
+                    {
+                        if (initializationType is null)
+                        {
+                            HandleParseError("Cannot determine type from initialization.", stop: false);
+                            declarationType = typeof(object);
+                        }
+                        else
+                        {
+                            declarationType = initializationType;
+                        }
+                    }
+                    else if (initializationType != null && !_proxy.Casting.ImplicitConversionExists(initializationType, declarationType))
+                    {
+                        HandleParseError($"Cannot implicitly convert from type '{initializationType.Name}' to type '{declarationType.Name}'", stop: false);
+                    }
+                }
+            } while (currentToken.TokenType == TType.Comma);
 
             if (matchSemicolon)
             {
@@ -663,19 +686,19 @@ namespace XppInterpreter.Parser
 
             if (isArray)
             {
-                ret = new VariableArrayDeclaration(type, arrayIdentifier, arraySize, SourceCodeBinding(typeResult, lastScanResult));
+                ret = new VariableArrayDeclaration(typeWord, declarationType, arrayIdentifier, arraySize, SourceCodeBinding(typeResult, lastScanResult));
 
                 _parseContext.CurrentScope.VariableDeclarations.Add(
-                    new ParseContextScopeVariable(arrayIdentifier.Lexeme, type, true, null));
+                    new ParseContextScopeVariable(arrayIdentifier.Lexeme, typeWord, declarationType, true, null));
             }
             else
             {
-                ret = new VariableDeclarations(type, declarations, SourceCodeBinding(typeResult, lastScanResult));
+                ret = new VariableDeclarations(typeWord, declarationType, declarations, SourceCodeBinding(typeResult, lastScanResult));
 
                 foreach (var identifier in ret.Identifiers)
                 {
                     _parseContext.CurrentScope.VariableDeclarations.Add(
-                        new ParseContextScopeVariable(identifier.Key.Lexeme, ret.VariableType, false, identifier.Value));
+                        new ParseContextScopeVariable(identifier.Key.Lexeme, ret.DeclarationType, ret.DeclarationClrType, false, identifier.Value));
                 }
             }
 
@@ -1084,12 +1107,14 @@ namespace XppInterpreter.Parser
                 HandleParseError($"The name '{type.Lexeme}' does not denotate a class, a table, or an extended data type.", stop: false);
             }
 
+            System.Type inferedType = _proxy.Casting.GetSystemTypeFromTypeName(type.Lexeme);
+
             Word id = Match(TType.Id).Token as Word;
 
             _parseContext.CurrentScope.VariableDeclarations.Add(
-                new ParseContextScopeVariable(id.Lexeme, typeResult.Token, false));
+                new ParseContextScopeVariable(id.Lexeme, type, inferedType, false));
 
-            return new FunctionDeclarationParameter(typeResult.Token, id.Lexeme, SourceCodeBinding(typeResult, lastScanResult));
+            return new FunctionDeclarationParameter(type, inferedType, id.Lexeme, SourceCodeBinding(typeResult, lastScanResult));
         }
 
         internal ChangeCompany ChangeCompany()
@@ -1378,12 +1403,16 @@ namespace XppInterpreter.Parser
             Variable assignee = (Variable)Variable(expectReturn: false);
             Token operand = currentToken;
             Statement ret = null;
+            Expression assignedExpression = null;
+
             switch (currentToken.TokenType)
             {
                 case TType.Assign:
                     {
+
                         Match(TType.Assign);
-                        ret = new Assignment(assignee, Expression(), SourceCodeBinding(start, lastScanResult));
+                        assignedExpression = Expression();
+                        ret = new Assignment(assignee, assignedExpression, SourceCodeBinding(start, lastScanResult));
                     }
                     break;
 
@@ -1391,7 +1420,8 @@ namespace XppInterpreter.Parser
                 case TType.Decrement:
                     {
                         Match(currentToken.TokenType);
-                        ret = new Assignment(assignee, new BinaryOperation(assignee, new Constant(1, null), operand, null), SourceCodeBinding(start, lastScanResult));
+                        assignedExpression = new BinaryOperation(assignee, new Constant(1, null), operand, null);
+                        ret = new Assignment(assignee, assignedExpression , SourceCodeBinding(start, lastScanResult));
                     }
                     break;
 
@@ -1400,10 +1430,11 @@ namespace XppInterpreter.Parser
                     {
                         Match(currentToken.TokenType);
                         var binding = SourceCodeBinding(start, currentScanResult);
+                        assignedExpression = new BinaryOperation(assignee, Expression(), operand, SourceCodeBinding(start, currentScanResult));
                         ret = new Assignment(
                             assignee,
-                            new BinaryOperation(assignee, Expression(), operand, SourceCodeBinding(start, currentScanResult)),
-                            binding);
+                            assignedExpression,
+                            binding);;
                     }
                     break;
 
@@ -1419,6 +1450,21 @@ namespace XppInterpreter.Parser
                         }
                     }
                     break;
+            }
+
+            if (assignedExpression != null)
+            {
+                var assigneeType = _typeInferer.InferType(assignee, false, _parseContext);
+
+                if (assigneeType != null)
+                { 
+                    var assignedType = _typeInferer.InferType(assignedExpression, false, _parseContext);
+
+                    if (!_proxy.Casting.ImplicitConversionExists(assignedType, assigneeType))
+                    {
+                        HandleParseError($"Cannot implicitly convert from type '{assignedType.Name}' to type '{assignee.Name}'", stop: false);
+                    }
+                }
             }
 
             if (matchSemicolon)

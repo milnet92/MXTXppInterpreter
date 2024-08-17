@@ -5,21 +5,17 @@ using XppInterpreter.Lexer;
 
 namespace XppInterpreter.Parser
 {
-    public class FunctionDeclarationParameter : Statement
+    public class FunctionDeclarationParameter
     {
-        public Token Type { get; }
+        public Word DeclarationType { get; }
+        public System.Type DeclarationClrType { get; }
         public string Name { get; }
 
-        public FunctionDeclarationParameter(Token type, string name, SourceCodeBinding sourceCodeBinding) : base(sourceCodeBinding, null)
+        public FunctionDeclarationParameter(Word declarationType, System.Type clrType, string name, SourceCodeBinding sourceCodeBinding)
         {
-            Type = type;
+            DeclarationType = declarationType;
             Name = name;
-        }
-
-        [DebuggerHidden]
-        public override void Accept(IAstVisitor interpreter)
-        {
-            throw new NotImplementedException();
+            DeclarationClrType = clrType;
         }
     }
 }

@@ -13,13 +13,15 @@ namespace XppInterpreter.Parser
         public Token Type { get; }
         public Expression Initialization { get; }
         public bool IsArray { get; }
+        public System.Type ClrType { get; }
 
-        public ParseContextScopeVariable(string varName, Token type, bool isArray, Expression initialization = null)
+        public ParseContextScopeVariable(string varName, Word type, System.Type clrType, bool isArray, Expression initialization = null)
         {
             Name = varName;
             Type = type;
             IsArray = isArray;
             Initialization = initialization;
+            ClrType = clrType;
         }
     }
 }
