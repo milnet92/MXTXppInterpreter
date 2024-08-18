@@ -17,13 +17,15 @@ public class MXTXppInterpreterScriptExecutionLog extends common
         MXTXppInterpreterScriptExecutionLog  executionLogUpd;
         ;
 
+        ttsbegin;
+
         executionLog.initValue();
-        executionLog.SourceCode = 'Clean operation executed';
+        executionLog.SourceCode = '@MXT:ExecutionLogCleanOperation';
         executionLog.insert();
 
-        ttsbegin;
         delete_from executionLogUpd
             where executionLogUpd.RecId != executionLog.RecId;
+
         ttscommit;
     
     }
@@ -62,7 +64,7 @@ public class MXTXppInterpreterScriptExecutionLog extends common
 			</Method>
 		</Methods>
 	</SourceCode>
-	<Label>Script execution log</Label>
+	<Label>@MXT:ExecutionLog</Label>
 	<SubscriberAccessLevel>
 		<Read>Allow</Read>
 	</SubscriberAccessLevel>
