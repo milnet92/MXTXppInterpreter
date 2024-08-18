@@ -110,7 +110,7 @@
     <Compile Include="Interpreter\Bytecode\TtsAbort.cs" />
     <Compile Include="Interpreter\Bytecode\TtsBegin.cs" />
     <Compile Include="Interpreter\Bytecode\TtsCommit.cs" />
-    <Compile Include="Interpreter\Bytecode\Unary.cs" />
+    <Compile Include="Interpreter\Bytecode\Negation.cs" />
     <Compile Include="Interpreter\Bytecode\UpdateQuery.cs" />
     <Compile Include="Interpreter\Bytecode\VariableLoad.cs" />
     <Compile Include="Interpreter\Debug\AST2SourceCodeBindableCollection.cs" />

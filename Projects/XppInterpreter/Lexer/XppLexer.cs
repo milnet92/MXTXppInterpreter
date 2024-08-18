@@ -373,27 +373,43 @@ namespace XppInterpreter.Lexer
                     }
                 case '<':
                     {
-                        if (ReadChar('='))
+                        char found = ReadChar('=', '<');
+
+                        if (found != '\0')
                         {
                             ReadChar();
-                            return ScanResult(Word.LessOrEqual);
+
+                            if (found == '=')
+                            {
+                                return ScanResult(Word.LessOrEqual);
+                            }
+                            else if (found == '<')
+                            {
+                                return ScanResult(Word.LeftShift);
+                            }
                         }
-                        else
-                        {
-                            return ScanResult(new Token(TType.Smaller));
-                        }
+
+                        return ScanResult(new Token(TType.Smaller));
                     }
                 case '>':
                     {
-                        if (ReadChar('='))
+                        char found = ReadChar('=', '>');
+
+                        if (found != '\0')
                         {
                             ReadChar();
-                            return ScanResult(Word.GreaterOrEqual);
+
+                            if (found == '=')
+                            {
+                                return ScanResult(Word.GreaterOrEqual);
+                            }
+                            else if (found == '>')
+                            {
+                                return ScanResult(Word.RightShift);
+                            }
                         }
-                        else
-                        {
-                            return ScanResult(new Token(TType.Greater));
-                        }
+
+                        return ScanResult(new Token(TType.Greater));
                     }
                 case '+':
                     {
@@ -450,11 +466,27 @@ namespace XppInterpreter.Lexer
                     }
                 case '&':
                     {
-                        ReadChar('&'); ReadChar(); return ScanResult(new Token(TType.And));
+                        if (ReadChar('&'))
+                        {
+                            ReadChar(); 
+                            return ScanResult(new Token(TType.And));
+                        }
+                        else
+                        {
+                            return ScanResult(new Token(TType.BinaryAnd));
+                        }
                     }
                 case '|':
                     {
-                        ReadChar('|'); ReadChar(); return ScanResult(new Token(TType.Or));
+                        if (ReadChar('|'))
+                        {
+                            ReadChar(); 
+                            return ScanResult(new Token(TType.Or));
+                        }
+                        else
+                        {
+                            return ScanResult(new Token(TType.BinaryOr));
+                        }
                     }
                 default:
                     {

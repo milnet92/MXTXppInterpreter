@@ -99,6 +99,93 @@ internal final class MXTXppBinaryOperationProxy implements XppInterpreter.Interp
 ]]></Source>
 			</Method>
 			<Method>
+				<Name>BinaryAnd</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Executes a binary AND of two objects
+    /// </summary>
+    /// <param name = "left">Left object</param>
+    /// <param name = "right">Right object</param>
+    /// <returns>Result as a System.Object</returns>
+    public System.Object BinaryAnd(System.Object left, System.Object right)
+    {
+        anytype l = left, r = right;
+        return l & r;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>BinaryOr</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Executes a binary OR of two objects
+    /// </summary>
+    /// <param name = "left">Left object</param>
+    /// <param name = "right">Right object</param>
+    /// <returns>Result as a System.Object</returns>
+    public System.Object BinaryOr(System.Object left, System.Object right)
+    {
+        anytype l = left, r = right;
+        return l | r;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>BinaryXOr</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Executes a binary XOR of two objects
+    /// </summary>
+    /// <param name = "left">Left object</param>
+    /// <param name = "right">Right object</param>
+    /// <returns>Result as a System.Object</returns>
+    public System.Object BinaryXOr(System.Object left, System.Object right)
+    {
+        anytype l = left, r = right;
+        return l ^ r;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>LeftShift</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Executes a left shift of two objects
+    /// </summary>
+    /// <param name = "left">Left object</param>
+    /// <param name = "right">Right object</param>
+    /// <returns>Result as a System.Object</returns>
+    public System.Object LeftShift(System.Object left, System.Object right)
+    {
+        int r = right;
+        anytype l = left;
+        return l << r;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>RightShift</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Executes a right shift of two objects
+    /// </summary>
+    /// <param name = "left">Left object</param>
+    /// <param name = "right">Right object</param>
+    /// <returns>Result as a System.Object</returns>
+    public System.Object RightShift(System.Object left, System.Object right)
+    {
+        int r = right;
+        anytype l = left;
+        return l >> r;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>Mod</Name>
 				<Source><![CDATA[
     /// <summary>

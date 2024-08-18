@@ -22,6 +22,8 @@ namespace XppInterpreter.Lexer
         public static readonly Word MinusAssignment = new Word("-=", TType.MinusAssignment);
         public static readonly Word Increment = new Word("++", TType.Increment);
         public static readonly Word Decrement = new Word("--", TType.GreaterOrEqual);
+        public static readonly Word LeftShift = new Word("<<", TType.LeftShift);
+        public static readonly Word RightShift = new Word(">>", TType.RightShift);
         #endregion
 
         #region Misc tokens

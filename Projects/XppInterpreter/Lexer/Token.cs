@@ -43,6 +43,7 @@ namespace XppInterpreter.Lexer
                 { ':', TType.Colon },
                 { '=', TType.Assign },
                 { '?', TType.QuestionMark },
+                { '^', TType.BinaryXOr},
             };
 
             public static char GetChar(TType tokenType)
@@ -108,6 +109,9 @@ namespace XppInterpreter.Lexer
         RightParenthesis,
         BinaryOr,
         BinaryAnd,
+        BinaryXOr,
+        LeftShift,
+        RightShift,
         LeftBrace,
         RightBrace,
         String,

@@ -239,7 +239,7 @@ ace.define('ace/mode/xpp_highlight_rules', function (require, exports, module) {
                     regex: "[a-zA-Z_$][a-zA-Z0-9_$]*\\b"
                 }, {
                     token: "keyword.operator",
-                    regex: "!|%|div|\\*|\\-\\-|\\-|\\+\\+|\\+|=|==|!=|<=|>=|<|>|!|&&|\\|\\||\\?\\:|\\*=|%=|\\+=|\\-=|&=|\\^=|\\b(?:new)"
+                    regex: "!|%|div|\\*|\\-\\-|\\-|\\+\\+|\\+|=|==|!=|<=|>=|<<|>>|<|>|!|&&|\\|\\||\\?\\:|=|\\+=|\\-=|&|\\||\\^|\\b(?:new)"
                 }, {
                     token: "keyword",
                     regex: "^\\s*#(if|else)"

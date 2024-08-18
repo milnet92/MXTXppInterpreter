@@ -20,6 +20,8 @@ public final class MXTXppCompletionsContract
     {
         completions = _completions;
         return completions;
+
+        var a = 3 << 4;
     }
 
 ]]></Source>

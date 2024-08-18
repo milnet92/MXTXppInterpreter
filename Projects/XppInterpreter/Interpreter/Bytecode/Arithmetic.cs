@@ -54,6 +54,26 @@ namespace XppInterpreter.Interpreter.Bytecode
                     result = context.Proxy.Binary.Divide(left, right);
                     break;
 
+                case TType.LeftShift:
+                    result = context.Proxy.Binary.LeftShift(left, right);
+                    break;
+
+                case TType.RightShift:
+                    result = context.Proxy.Binary.RightShift(left, right);
+                    break;
+
+                case TType.BinaryAnd:
+                    result = context.Proxy.Binary.BinaryAnd(left, right);
+                    break;
+
+                case TType.BinaryOr:
+                    result = context.Proxy.Binary.BinaryOr(left, right);
+                    break;
+
+                case TType.BinaryXOr:
+                    result = context.Proxy.Binary.BinaryXOr(left, right);
+                    break;
+
                 case TType.Mod:
                     result = context.Proxy.Binary.Mod(left, right);
                     break;
@@ -109,6 +129,11 @@ namespace XppInterpreter.Interpreter.Bytecode
             { TType.GreaterOrEqual, "GE" },
             { TType.Smaller, "SM" },
             { TType.SmallerOrEqual, "SME" },
+            { TType.LeftShift, "LS" },
+            { TType.RightShift, "RS" },
+            { TType.BinaryOr, "BOR" },
+            { TType.BinaryAnd, "BAND" },
+            { TType.BinaryXOr, "BXOR" },
         };
     }
 }

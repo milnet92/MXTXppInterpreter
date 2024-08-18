@@ -1240,7 +1240,11 @@ namespace XppInterpreter.Parser
             while (currentToken.TokenType == TType.Star
                 || currentToken.TokenType == TType.Division
                 || currentToken.TokenType == TType.Mod
-                || currentToken.TokenType == TType.IntegerDivision)
+                || currentToken.TokenType == TType.IntegerDivision
+                || currentToken.TokenType == TType.LeftShift
+                || currentToken.TokenType == TType.RightShift
+                || currentToken.TokenType == TType.BinaryAnd
+                || currentToken.TokenType == TType.BinaryXOr)
             {
                 var result = Match(currentToken.TokenType);
                 expr = new BinaryOperation(
@@ -1274,7 +1278,9 @@ namespace XppInterpreter.Parser
         {
             Expression node = Factor();
 
-            while (currentToken.TokenType == TType.Plus || currentToken.TokenType == TType.Minus)
+            while (currentToken.TokenType == TType.Plus 
+                || currentToken.TokenType == TType.Minus
+                || currentToken.TokenType == TType.BinaryOr)
             {
                 var result = Match(currentToken.TokenType);
                 node = new BinaryOperation(

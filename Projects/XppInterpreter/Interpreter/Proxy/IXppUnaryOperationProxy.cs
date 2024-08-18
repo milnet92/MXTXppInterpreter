@@ -3,5 +3,6 @@
     public interface IXppUnaryOperationProxy
     {
         object Negate(object value);
+        object BinaryNegate(object value);
     }
 }

@@ -8,7 +8,6 @@ using XppInterpreter.Interpreter.Proxy;
 internal final class MXTXppUnaryOperationProxy implements XppInterpreter.Interpreter.Proxy.IXppUnaryOperationProxy
 {
 }
-
 ]]></Declaration>
 		<Methods>
 			<Method>
