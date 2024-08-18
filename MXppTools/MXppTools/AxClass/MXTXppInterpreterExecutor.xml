@@ -150,6 +150,8 @@ internal final class MXTXppInterpreterExecutor
 
         if (parseResult.IsCorrect)
         {
+            MXTXppInterpreterScriptExecutionLog::startLog(_sourceCode, _parameters.EmitGlobalTtsAbort);
+
             MXTXppInterpreterExecutor::executeProgram(parseResult.AST as XppInterpreter.Parser.Program, _debugger, _parameters, _dependencies);
         }
 	}
