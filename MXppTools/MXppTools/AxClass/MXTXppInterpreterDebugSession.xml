@@ -152,6 +152,8 @@ public class MXTXppInterpreterDebugSession
         interpreter = new XppInterpreter.Interpreter.XppInterpreter(proxy, options);
         interpreter.Debugger = debugger;
 
+        MXTXppInterpreterScriptExecutionLog::startLog(sourceCode, parameters.EmitGlobalTtsAbort);
+
         this.executionStarted();
 
         executing = true;
