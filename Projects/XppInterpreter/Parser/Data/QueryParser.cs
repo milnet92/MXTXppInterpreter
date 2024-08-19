@@ -130,10 +130,10 @@ namespace XppInterpreter.Parser
                     Match(TType.Asc);
                     orderByType = OrderByType.Ascending;
                 }
-                else if (currentToken.TokenType == TType.Asc)
+                else if (currentToken.TokenType == TType.Desc)
                 {
-                    Match(TType.Asc);
-                    orderByType = OrderByType.Ascending;
+                    Match(TType.Desc);
+                    orderByType = OrderByType.Descending;
                 }
 
                 ret.Add(new OrderByField(tableNameVar.Lexeme, fieldNameVar.Lexeme, orderByType));
