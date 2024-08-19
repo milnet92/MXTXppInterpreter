@@ -240,7 +240,7 @@ ace.define('ace/mode/xpp_highlight_rules', function (require, exports, module) {
                 {
                     token: ["punctuation.operator", "identifier"],
                     regex: "(\\.)([a-zA-Z_$][a-zA-Z0-9_$]*\\b)"
-                }, {
+                },{
                     token: function (value) {
                         if (appObjects.includes(value)) {
                             return "support.class";
@@ -266,10 +266,6 @@ ace.define('ace/mode/xpp_highlight_rules', function (require, exports, module) {
                 }, {
                     token: "text",
                     regex: "\\s+"
-                }, {
-                    defaultToken: function (value) {
-                        return "support.class";
-                    }
                 }
             ],
             "comment": [

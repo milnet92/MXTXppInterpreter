@@ -389,12 +389,18 @@
 
         // Retrieve metadata list
         $dyn.callFunction(this.GetMetadataElements, self, {}, function (ret) {
+
             appObjects = [
                 ...ret.Classes,
                 ...ret.Tables,
                 ...ret.Enums,
                 ...ret.Edts
             ];
+
+            setTimeout(function(){
+                clearTimeout(change_timer);
+                editor.setValue(editor.getValue(), -1);
+            });
 
             listObjects = {
                 Classes: ret.Classes.map(function (e) { return { value: e, name: e, type: 'Class' } }),
