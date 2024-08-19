@@ -13,7 +13,7 @@
         GlobalFunctions: []
     }
 
-    const knownTypes = ["var", "anytype", "date", "int", "int64", "date", "utcdatetime", "timeofday", "boolean", "container"];
+    const knownTypes = ["var", "anytype", "date", "int", "int64", "date", "utcdatetime", "timeofday", "boolean", "container", "guid"];
 
     const themes = {
         "XCode": "xcode",
