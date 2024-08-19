@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxSecurityRole xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppInterpreterRole</Name>
+	<Description>Users in this role can run MXT X++ Interpreter</Description>
+	<Label>MXT X++ Interpreter</Label>
+	<DirectAccessPermissions />
+	<Duties />
+	<Privileges />
+	<SubRoles />
+</AxSecurityRole>
