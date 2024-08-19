@@ -109,6 +109,14 @@ public class MXTXppInterpreterParameters extends common
 			<Name>MaxLoopIteratations</Name>
 			<Label>@MXT:MaxLoopIterations</Label>
 		</AxTableField>
+		<AxTableField xmlns=""
+			i:type="AxTableFieldEnum">
+			<Name>DoNotLogOnDevEnv</Name>
+			<ExtendedDataType>NoYesId</ExtendedDataType>
+			<HelpText>Skip loggging on Dev env.</HelpText>
+			<Label>Skip log on Dev env.</Label>
+			<EnumType>NoYes</EnumType>
+		</AxTableField>
 	</Fields>
 	<FullTextIndexes />
 	<Indexes>

@@ -39,6 +39,9 @@ public class MXTInterpreterParameters extends FormRun
 			<Table>MXTXppInterpreterParameters</Table>
 			<Fields>
 				<AxFormDataSourceField>
+					<DataField>DoNotLogOnDevEnv</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
 					<DataField>EmitGlobalTtsAbort</DataField>
 				</AxFormDataSourceField>
 				<AxFormDataSourceField>
@@ -179,6 +182,15 @@ public class MXTInterpreterParameters extends FormRun
 										<FormControlExtension
 											i:nil="true" />
 										<DataField>EmitGlobalTtsAbort</DataField>
+										<DataSource>MXTXppInterpreterParameters</DataSource>
+									</AxFormControl>
+									<AxFormControl xmlns=""
+										i:type="AxFormCheckBoxControl">
+										<Name>MXTXppInterpreterParameters_DoNotLogOnDevEnv</Name>
+										<Type>CheckBox</Type>
+										<FormControlExtension
+											i:nil="true" />
+										<DataField>DoNotLogOnDevEnv</DataField>
 										<DataSource>MXTXppInterpreterParameters</DataSource>
 									</AxFormControl>
 								</Controls>

@@ -45,18 +45,78 @@ public class MXTXppInterpreterScriptExecutionLog extends common
 ]]></Source>
 			</Method>
 			<Method>
+				<Name>isUserInRole</Name>
+				<Source><![CDATA[
+    public static boolean isUserInRole(Description  _roleName)
+    {
+        boolean                 res;
+        SecurityUserRole        securityUserRole;
+        SecurityRole            securityRole;
+        ;
+        select firstonly RecId from securityUserRole
+            where  securityUserRole.User    == curUserId()
+            join RecId from securityRole
+                where  securityRole.RecId == securityUserRole.SecurityRole
+                    && (   securityRole.AotName == _roleName
+                    )    ;
+        if (securityUserRole.RecId)
+        {
+            res = true;
+        }
+        return res;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>checkSecurityRights</Name>
+				<Source><![CDATA[
+    public static boolean checkSecurityRights()
+    {
+        boolean res;
+        if (isSystemAdministrator()) 
+        {   
+            //we are on the dev version, do not check the group
+            if (isDeveloper())
+            {
+                res = true;
+            }
+            else
+            {
+                if (! MXTXppInterpreterScriptExecutionLog::isUserInRole(roleStr(MXTXppInterpreterRole)) )
+                {
+                    throw error(strFmt("User %1 should be included to %2 role",
+                        curUserId(), roleStr(MXTXppInterpreterRole)));
+                }
+            }
+        }
+        else
+        {
+            throw error("Only System Administrator can run this tool");
+        }
+
+        return res;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>startLog</Name>
 				<Source><![CDATA[
     public static MXTXppInterpreterScriptExecutionLog startLog(str _sourceCode, boolean  _emitGlobalTtsAbort)
     {
         MXTXppInterpreterScriptExecutionLog         scriptExecutionLog;
 
-        scriptExecutionLog = null;
-        scriptExecutionLog.initValue();
-        scriptExecutionLog.SourceCode         = _sourceCode;
-        scriptExecutionLog.EmitGlobalTtsAbort = _emitGlobalTtsAbort;
-        scriptExecutionLog.insert();
+        MXTXppInterpreterScriptExecutionLog::checkSecurityRights();
 
+        if (! (isSystemAdministrator() && isDeveloper() && MXTXppInterpreterParameters::find().DoNotLogOnDevEnv))
+        {
+            scriptExecutionLog = null;
+            scriptExecutionLog.initValue();
+            scriptExecutionLog.SourceCode         = _sourceCode;
+            scriptExecutionLog.EmitGlobalTtsAbort = _emitGlobalTtsAbort;
+            scriptExecutionLog.insert();
+        }
         return scriptExecutionLog;
     }
 
