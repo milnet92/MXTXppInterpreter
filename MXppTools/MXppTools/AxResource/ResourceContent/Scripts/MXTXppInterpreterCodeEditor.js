@@ -139,7 +139,8 @@
 
         var previousToken = stream.stepBackward();
 
-        if ((currentToken.value == '(' && previousToken && (previousToken.type == 'identifier' || previousToken.type == 'keyword.other')) ||
+        if ((currentToken.value == '(' && previousToken && (
+            previousToken.type == 'identifier' || previousToken.type == 'keyword.other' || previousToken.type == 'support.class')) ||
             (currentToken.value == ',')) {
             clearTimeout(change_timer);
 
@@ -211,11 +212,11 @@
                         else if (match(token, '{')) currentScope--;
 
                         if (currentScope <= 0) {
-                            if (!lastIdentifier && !match(lastToken, '(') && token.type == 'identifier') {
+                            if (!lastIdentifier && !match(lastToken, '(') && (token.type == 'identifier' || token.type == 'support.class')) {
                                 lastIdentifier = true;
                             } else if (lastIdentifier) {
                                 lastIdentifier = false;
-                                if (matchType(token, ['identifier']) || match(token, knownTypes)) {
+                                if (matchType(token, ['identifier', 'support.class']) || match(token, knownTypes)) {
                                     localVariables.push({
                                         value: lastToken.value,
                                         name: lastToken.value,
@@ -244,7 +245,7 @@
                         }
 
                         if (previousToken &&
-                            (previousToken.type == 'identifier' || knownTypes.includes(previousToken.value)) &&
+                            (previousToken.type == 'support.class' || previousToken.type == 'identifier' || knownTypes.includes(previousToken.value)) &&
                             !trigger.includes(':') &&
                             !trigger.includes('.')) {
                             return true;
@@ -271,7 +272,7 @@
                         return callback(null, []);
                     }
 
-                    if (previousToken && (previousToken.type == 'identifier' || previousToken.value.endsWith(')')) &&
+                    if (previousToken && (previousToken.type == 'identifier' || previousToken.type == 'support.class' || previousToken.value.endsWith(')')) &&
                         (triggerChar.includes('::') || triggerChar.startsWith('.'))) {
 
                         clearTimeout(change_timer);
@@ -360,6 +361,7 @@
                     case 'keyword':
                         showTooTip(hoverToolTip, last.x, last.y, '(keyword) ' + '<span style="color:blue">' + currentToken.value + '</span>');
                         break;
+                    case 'support.class':
                     case 'keyword.other':
                     case 'identifier':
                         $dyn.callFunction(self.GetTokenMetadata, self, { _line: last.$pos.row, _position: last.$pos.column, _isMethodParameters: false}, function (ret) {
@@ -387,6 +389,13 @@
 
         // Retrieve metadata list
         $dyn.callFunction(this.GetMetadataElements, self, {}, function (ret) {
+            appObjects = [
+                ...ret.Classes,
+                ...ret.Tables,
+                ...ret.Enums,
+                ...ret.Edts
+            ];
+
             listObjects = {
                 Classes: ret.Classes.map(function (e) { return { value: e, name: e, type: 'Class' } }),
                 Tables: ret.Tables.map(function (e) { return { value: e, name: e, type: 'Table' } }),

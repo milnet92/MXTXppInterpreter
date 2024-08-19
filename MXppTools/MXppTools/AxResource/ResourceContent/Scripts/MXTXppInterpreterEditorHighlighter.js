@@ -167,6 +167,8 @@ var intrinsicFunctionString = intrinsicFunctions.join("|");
 var keywordsCompleterList = keywords.map(function (e) { return { value: e, name: e, type: "Keyword" } });
 var intrinsicCompleterList = intrinsicFunctions.map(function (e) { return { value: e, name: e, type: "PredefinedFunction" } });
 
+var appObjects = [];
+
 
 ace.define('ace/mode/xpp', function (require, exports, module) {
 
@@ -234,8 +236,17 @@ ace.define('ace/mode/xpp_highlight_rules', function (require, exports, module) {
                 }, {
                     token: "constant.language.boolean",
                     regex: "(?:true|false)\\b"
+                },
+                {
+                    token: ["punctuation.operator", "identifier"],
+                    regex: "(\\.)([a-zA-Z_$][a-zA-Z0-9_$]*\\b)"
                 }, {
-                    token: keywordMapper,
+                    token: function (value) {
+                        if (appObjects.includes(value)) {
+                            return "support.class";
+                        }
+                        return keywordMapper(value);
+                    },
                     regex: "[a-zA-Z_$][a-zA-Z0-9_$]*\\b"
                 }, {
                     token: "keyword.operator",
@@ -250,11 +261,15 @@ ace.define('ace/mode/xpp_highlight_rules', function (require, exports, module) {
                     token: "paren.lparen",
                     regex: "[[({]"
                 }, {
-                    token: "paren.rparen", 
+                    token: "paren.rparen",
                     regex: "[[)}]"
                 }, {
                     token: "text",
                     regex: "\\s+"
+                }, {
+                    defaultToken: function (value) {
+                        return "support.class";
+                    }
                 }
             ],
             "comment": [
