@@ -24,6 +24,8 @@ public class MXTInterpreterParameters extends FormRun
 
         MXTXppInterpreterParameters::find();
         MXTEditorParameters::find();
+
+        MXTXppInterpreterParameters_DoNotLogOnDevEnv.visible(isDeveloper());
     }
 
 ]]></Source>
@@ -187,6 +189,7 @@ public class MXTInterpreterParameters extends FormRun
 									<AxFormControl xmlns=""
 										i:type="AxFormCheckBoxControl">
 										<Name>MXTXppInterpreterParameters_DoNotLogOnDevEnv</Name>
+										<AutoDeclaration>Yes</AutoDeclaration>
 										<Type>CheckBox</Type>
 										<FormControlExtension
 											i:nil="true" />

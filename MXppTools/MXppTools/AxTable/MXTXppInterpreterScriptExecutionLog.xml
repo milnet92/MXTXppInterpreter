@@ -52,18 +52,14 @@ public class MXTXppInterpreterScriptExecutionLog extends common
         boolean                 res;
         SecurityUserRole        securityUserRole;
         SecurityRole            securityRole;
-        ;
+        
         select firstonly RecId from securityUserRole
             where  securityUserRole.User    == curUserId()
             join RecId from securityRole
-                where  securityRole.RecId == securityUserRole.SecurityRole
-                    && (   securityRole.AotName == _roleName
-                    )    ;
-        if (securityUserRole.RecId)
-        {
-            res = true;
-        }
-        return res;
+                where  securityRole.RecId == securityUserRole.SecurityRole &&
+                       securityRole.AotName == _roleName;
+
+        return securityUserRole.RecId;
     }
 
 ]]></Source>
@@ -83,16 +79,16 @@ public class MXTXppInterpreterScriptExecutionLog extends common
             }
             else
             {
-                if (! MXTXppInterpreterScriptExecutionLog::isUserInRole(roleStr(MXTXppInterpreterRole)) )
+                if (!MXTXppInterpreterScriptExecutionLog::isUserInRole(roleStr(MXTXppInterpreterRole)) )
                 {
-                    throw error(strFmt("User %1 should be included to %2 role",
+                    throw error(strFmt("@MXT:ExecutionRoleException",
                         curUserId(), roleStr(MXTXppInterpreterRole)));
                 }
             }
         }
         else
         {
-            throw error("Only System Administrator can run this tool");
+            throw error("@MXT:SysAdminExecutionException");
         }
 
         return res;
@@ -109,7 +105,7 @@ public class MXTXppInterpreterScriptExecutionLog extends common
 
         MXTXppInterpreterScriptExecutionLog::checkSecurityRights();
 
-        if (! (isSystemAdministrator() && isDeveloper() && MXTXppInterpreterParameters::find().DoNotLogOnDevEnv))
+        if (!(isSystemAdministrator() && isDeveloper() && MXTXppInterpreterParameters::find().DoNotLogOnDevEnv))
         {
             scriptExecutionLog = null;
             scriptExecutionLog.initValue();
@@ -117,6 +113,7 @@ public class MXTXppInterpreterScriptExecutionLog extends common
             scriptExecutionLog.EmitGlobalTtsAbort = _emitGlobalTtsAbort;
             scriptExecutionLog.insert();
         }
+
         return scriptExecutionLog;
     }
 
