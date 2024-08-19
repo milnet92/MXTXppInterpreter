@@ -253,7 +253,7 @@ public class MXTInterpreterParameters extends FormRun
 									</AxFormControl>
 								</Controls>
 								<ColumnsMode>Fill</ColumnsMode>
-								<DataSource>MXTXppInterpreterParameters</DataSource>
+								<DataSource>MXTEditorParameters</DataSource>
 								<FrameType>None</FrameType>
 							</AxFormControl>
 						</Controls>
