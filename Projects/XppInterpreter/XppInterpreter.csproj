@@ -55,6 +55,7 @@
     <Compile Include="Core\Scope.cs" />
     <Compile Include="Core\ScopeHandler.cs" />
     <Compile Include="Core\SourceCodeRange.cs" />
+    <Compile Include="Core\MessageProvider.cs" />
     <Compile Include="Core\VariableCollection.cs" />
     <Compile Include="Core\VariableEditValueResponse.cs" />
     <Compile Include="Core\VariableEntry.cs" />
@@ -248,9 +249,20 @@
     <Compile Include="Parser\XppParser.cs" />
     <Compile Include="Parser\ParseResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Resources\Strings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Strings.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Strings.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
