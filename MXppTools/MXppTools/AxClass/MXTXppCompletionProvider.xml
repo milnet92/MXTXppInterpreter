@@ -29,6 +29,21 @@ public final class MXTXppCompletionProvider implements ICompletionProvider
 ]]></Source>
 			</Method>
 			<Method>
+				<Name>isValidFieldName</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Checks if a name is valid for a field name
+    /// </summary>
+    /// <param name = "_name">Name</param>
+    /// <returns>True if valid, otherwise false</returns>
+    private static boolean isValidFieldName(str _name)
+    {
+        return !strStartsWith(_name, "_") && !strStartsWith(_name, "$");
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>GetTableMethodCompletions</Name>
 				<Source><![CDATA[
     /// <summary>
@@ -143,7 +158,7 @@ public final class MXTXppCompletionProvider implements ICompletionProvider
             Reflection.FieldInfo fieldInfo = fields.Get(i);
             
             // Skip kernel fields
-            if (fieldInfo.Name.StartsWith("__FO_") ||
+            if (!MXTXppCompletionProvider::isValidFieldName(fieldInfo.Name) ||
                 fieldInfo.DeclaringType.Name == "XppObjectBase")
             {
                 continue;
@@ -322,7 +337,7 @@ public final class MXTXppCompletionProvider implements ICompletionProvider
 
         MXTXppCompletionProvider::fillClassMethodList(globalFunctions, classStr(Global), true, false);
         MXTXppCompletionProvider::fillClassMethodList(globalFunctions, classStr(MXTXppPredefinedFunctions), true, false);
-
+        
         return globalFunctions;
     }
 

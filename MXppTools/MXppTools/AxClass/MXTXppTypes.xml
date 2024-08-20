@@ -5,6 +5,8 @@
 		<Declaration><![CDATA[
 internal static final class MXTXppTypes
 {
+    public static System.Type GlobalType = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType("Global");
+
     public static System.Type ArrayType = System.Type::GetType("Microsoft.Dynamics.Ax.Xpp.EdtArray`1, Microsoft.Dynamics.AX.Data.Core");
     public static System.Type Int32Type = System.Type::GetType("System.Int32");
     public static System.Type Int64Type = System.Type::GetType("System.Int64");

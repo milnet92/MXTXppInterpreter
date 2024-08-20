@@ -9,10 +9,955 @@
 internal final class MXTXppPredefinedFunctions
 {
     public static System.Type ThisType = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::GetTypeFromClassName(classStr(MXTXppPredefinedFunctions));
-    
+
 }
 ]]></Declaration>
 		<Methods>
+			<Method>
+				<Name>cTerm</Name>
+				<Source><![CDATA[
+    /*
+        Business run-time functions
+    */
+    static real cTerm(real interest, real future_value, real current_value)
+    {
+        return cTerm(interest, future_value, current_value);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>ddb</Name>
+				<Source><![CDATA[
+    static real ddb(real price, real scrap, real life, int preiod)
+    {
+        return ddb(price, scrap, life, preiod);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>dg</Name>
+				<Source><![CDATA[
+    static real dg(real sales, real purchase)
+    {
+        return dg(sales, purchase);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>fV</Name>
+				<Source><![CDATA[
+    static real fV(real amount, real interest, real life)
+    {
+        return fv(Amount, interest, life);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>idg</Name>
+				<Source><![CDATA[
+    static real idg(real purchase, real contribution_ratio)
+    {
+        return idg(purchase, contribution_ratio);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>intvMax</Name>
+				<Source><![CDATA[
+    static int intvMax(date input_date, date ref_date, int func)
+    {
+        return intvMax(input_date, ref_date, func);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>intvName</Name>
+				<Source><![CDATA[
+    static str intvName(date ref_date, int col, int func)
+    {
+        return intvName(ref_date, col, func);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>intvNo</Name>
+				<Source><![CDATA[
+    static int intvNo(date input_date, date ref_date, int func)
+    {
+        return intvNo(input_date, ref_date, func);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>intvNorm</Name>
+				<Source><![CDATA[
+    static date intvNorm(date input_date, date ref_date, int func)
+    {
+        return intvNorm(input_date, ref_date, func);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>pmt</Name>
+				<Source><![CDATA[
+    static real pmt(real principal, real interest, real life)
+    {
+        return pmt(principal, interest, life);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>pt</Name>
+				<Source><![CDATA[
+    static real pt(real amount, real percentage)
+    {
+        return pt(Amount, percentage);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>pv</Name>
+				<Source><![CDATA[
+    static real pv(real amount, real interest, real life)
+    {
+        return pv(Amount, interest, life);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>rate</Name>
+				<Source><![CDATA[
+    static real rate(real future_value, real current_value, real terms)
+    {
+        return rate(future_value, current_value, terms);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>sln</Name>
+				<Source><![CDATA[
+    static real sln(real price, real scrap, real life)
+    {
+        return sln(price, scrap, life);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>syd</Name>
+				<Source><![CDATA[
+    static real syd(real price, real scrap, real life, int period)
+    {
+        return syd(price, scrap, life, period);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>term</Name>
+				<Source><![CDATA[
+    static real term(real amount, real interest, real future_value)
+    {
+        return term(amount, interest, future_value);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>any2Date</Name>
+				<Source><![CDATA[
+    /*
+        Conversion run-time functions
+    */
+    static date any2Date(anytype arg)
+    {
+        return any2Date(arg);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>any2Enum</Name>
+				<Source><![CDATA[
+    static anytype any2Enum(anytype arg)
+    {
+        return any2Enum(arg);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>any2Guid</Name>
+				<Source><![CDATA[
+    static guid any2Guid(anytype object)
+    {
+        return any2Guid(object);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>any2Int</Name>
+				<Source><![CDATA[
+    static int any2Int(anytype arg)
+    {
+        return any2Int(arg);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>any2Int64</Name>
+				<Source><![CDATA[
+    static int64 any2Int64(anytype arg)
+    {
+        return any2Int64(arg);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>any2Real</Name>
+				<Source><![CDATA[
+    static real any2Real(anytype arg)
+    {
+        return any2Real(arg);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>char2Num</Name>
+				<Source><![CDATA[
+    static int char2Num(str text, int position)
+    {
+        return char2Num(text, position);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>date2Num</Name>
+				<Source><![CDATA[
+    static int date2Num(date date_)
+    {
+        return date2Num(date_);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>any2Str</Name>
+				<Source><![CDATA[
+    static str any2Str(anytype arg)
+    {
+        return any2Str(arg);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>date2Str</Name>
+				<Source><![CDATA[
+    static str date2Str(date date_, int sequence, int day, int separator1, int month, int separator2, int year, int flags = 0)
+    {
+        return date2Str(date_, sequence, day, separator1, month, separator2, year, flags);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>datetime2Str</Name>
+				<Source><![CDATA[
+    static str datetime2Str(utcdatetime arg, int flags = 0)
+    {
+        return datetime2Str(arg, flags);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>enum2str</Name>
+				<Source><![CDATA[
+    static str enum2str(anytype enum)
+    {
+        return enum2str(enum);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>guid2Str</Name>
+				<Source><![CDATA[
+    static str guid2Str(guid uuid)
+    {
+        return guid2Str(uuid);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>int2Str</Name>
+				<Source><![CDATA[
+    static str int2Str(int integer)
+    {
+        return int2Str(integer);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>int642Str</Name>
+				<Source><![CDATA[
+    static str int642Str(int64 integer)
+    {
+        return int642Str(integer);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>num2Char</Name>
+				<Source><![CDATA[
+    static str num2Char(int figure)
+    {
+        return num2Char(figure);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>num2Date</Name>
+				<Source><![CDATA[
+    static date num2Date(int days)
+    {
+        return num2Date(days);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>num2Str</Name>
+				<Source><![CDATA[
+    static str num2Str(real number, int characters, int decimals, int separator1, int separator2)
+    {
+        return num2Str(number, characters, decimals, separator1, separator2);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>str2Date</Name>
+				<Source><![CDATA[
+    static date str2Date(str text, int sequence)
+    {
+        return str2Date(text, sequence);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>str2Datetime</Name>
+				<Source><![CDATA[
+    static utcdatetime str2Datetime(str text, int sequence)
+    {
+        return str2Datetime(text, sequence);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>str2Enum</Name>
+				<Source><![CDATA[
+    static anytype str2Enum(anytype type, str text)
+    {
+        return str2Enum(type, text);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>str2Guid</Name>
+				<Source><![CDATA[
+    static guid str2Guid(str text)
+    {
+        return str2Guid(text);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>str2Int</Name>
+				<Source><![CDATA[
+    static int str2Int(str text)
+    {
+        return str2Int(text);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>str2Int64</Name>
+				<Source><![CDATA[
+    static int64 str2Int64(str text)
+    {
+        return str2Int64(text);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>str2Num</Name>
+				<Source><![CDATA[
+    static real str2Num(str text)
+    {
+        return str2Num(text);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>str2Time</Name>
+				<Source><![CDATA[
+    static int str2Time(str text)
+    {
+        return str2Time(text);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>time2Str</Name>
+				<Source><![CDATA[
+    static str time2Str(int time, int separator1, int separator2)
+    {
+        return time2Str(time, separator1, separator2);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>uint2Str</Name>
+				<Source><![CDATA[
+    static str uint2Str(int integer)
+    {
+        return uint2Str(integer);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>dayName</Name>
+				<Source><![CDATA[
+    /*
+        Date run-time functions
+    */
+    static str dayName(int number)
+    {
+        return dayName(number);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>dayOfMth</Name>
+				<Source><![CDATA[
+    static int dayOfMth(date date_)
+    {
+        return dayOfMth(date_);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>dayOfWk</Name>
+				<Source><![CDATA[
+    static int dayOfWk(date date_)
+    {
+        return dayOfWk(date_);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>dayOfYr</Name>
+				<Source><![CDATA[
+    static int dayOfYr(date date_)
+    {
+        return dayOfYr(date_);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>endMth</Name>
+				<Source><![CDATA[
+    static date endMth(date date_)
+    {
+        return endMth(date_);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>mkDate</Name>
+				<Source><![CDATA[
+    static date mkDate(int day, int month, int year)
+    {
+        return mkDate(day, month, year);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>mthName</Name>
+				<Source><![CDATA[
+    static str mthName(int number)
+    {
+        return mthName(number);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>mthOfYr</Name>
+				<Source><![CDATA[
+    static int mthOfYr(date date_)
+    {
+        return mthOfYr(date_);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>nextMth</Name>
+				<Source><![CDATA[
+    static date nextMth(date date_)
+    {
+        return nextMth(date_);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>nextQtr</Name>
+				<Source><![CDATA[
+    static date nextQtr(date date_)
+    {
+        return nextQtr(date_);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>nextYr</Name>
+				<Source><![CDATA[
+    static date nextYr(date date_)
+    {
+        return nextYr(date_);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>prevMth</Name>
+				<Source><![CDATA[
+    static date prevMth(date date_)
+    {
+        return prevMth(date_);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>prevQtr</Name>
+				<Source><![CDATA[
+    static date prevQtr(date date_)
+    {
+        return prevQtr(date_);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>prevYr</Name>
+				<Source><![CDATA[
+    static date prevYr(date date_)
+    {
+        return prevYr(date_);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>systemDateGet</Name>
+				<Source><![CDATA[
+    static date systemDateGet()
+    {
+        return systemDateGet();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>systemDateSet</Name>
+				<Source><![CDATA[
+    static date systemDateSet(date date_)
+    {
+        return systemDateSet(date_);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>timeNow</Name>
+				<Source><![CDATA[
+    static int timeNow()
+    {
+        return timeNow();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>today</Name>
+				<Source><![CDATA[
+    static date today()
+    {
+        return today();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>wkOfYr</Name>
+				<Source><![CDATA[
+    static int wkOfYr(date date_)
+    {
+        return wkOfYr(date_);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>year</Name>
+				<Source><![CDATA[
+    static int year(date date_)
+    {
+        return year(date_);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>abs</Name>
+				<Source><![CDATA[
+    /*
+        Math run-time functions
+    */
+    static real abs(real arg)
+    {
+        return abs(arg);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>acos</Name>
+				<Source><![CDATA[
+    static real acos(real arg)
+    {
+        return acos(arg);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>asin</Name>
+				<Source><![CDATA[
+    static real asin(real arg)
+    {
+        return asin(arg);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>atan</Name>
+				<Source><![CDATA[
+    static real atan(real arg)
+    {
+        return atan(arg);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>cos</Name>
+				<Source><![CDATA[
+    static real cos(real arg)
+    {
+        return cos(arg);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>cosh</Name>
+				<Source><![CDATA[
+    static real cosh(real arg)
+    {
+        return cosh(arg);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>decRound</Name>
+				<Source><![CDATA[
+    static real decRound(real figure, int decimals)
+    {
+        return decRound(figure, decimals);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>exp</Name>
+				<Source><![CDATA[
+    static real exp(real arg)
+    {
+        return exp(arg);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>exp10</Name>
+				<Source><![CDATA[
+    static real exp10(real decimal)
+    {
+        return exp10(decimal);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>frac</Name>
+				<Source><![CDATA[
+    static real frac(real decimal)
+    {
+        return frac(decimal);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>log10</Name>
+				<Source><![CDATA[
+    static real log10(real arg)
+    {
+        return log10(arg);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>logN</Name>
+				<Source><![CDATA[
+    static real logN(real arg)
+    {
+        return logN(arg);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>max</Name>
+				<Source><![CDATA[
+    static anytype max(System.Object[] _parameters)
+    {
+        return Microsoft.Dynamics.Ax.Xpp.PredefinedFunctions::Max(_parameters);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>min</Name>
+				<Source><![CDATA[
+    static real min(System.Object[] _parameters)
+    {
+        return Microsoft.Dynamics.Ax.Xpp.PredefinedFunctions::Min(_parameters);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>power</Name>
+				<Source><![CDATA[
+    static real power(real arg, real exponent)
+    {
+        return power(arg, exponent);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>round</Name>
+				<Source><![CDATA[
+    static real round(real arg, real decimals)
+    {
+        return round(arg, decimals);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>sin</Name>
+				<Source><![CDATA[
+    static real sin(real arg)
+    {
+        return sin(arg);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>sinh</Name>
+				<Source><![CDATA[
+    static real sinh(real arg)
+    {
+        return sinh(arg);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>tan</Name>
+				<Source><![CDATA[
+    static real tan(real arg)
+    {
+        return tan(arg);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>tanh</Name>
+				<Source><![CDATA[
+    static real tanh(real arg)
+    {
+        return tanh(arg);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>trunc</Name>
+				<Source><![CDATA[
+    static real trunc(real decimal)
+    {
+        return trunc(decimal);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>classIdGet</Name>
+				<Source><![CDATA[
+    /*
+        Reflection run-time functions
+    */
+    static int classIdGet(System.Object obj)
+    {
+        return classIdGet(obj);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>dimOf</Name>
+				<Source><![CDATA[
+    static int dimOf(System.Object obj)
+    {
+        return dimOf(obj);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>fieldId2Name</Name>
+				<Source><![CDATA[
+    static str fieldId2Name(int tableId, int fieldId, int arratIndex = 0)
+    {
+        return fieldId2Name(tableId, fieldId, arratIndex);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>fieldId2PName</Name>
+				<Source><![CDATA[
+    static str fieldId2PName(int tableId, int fieldId, int arrayIndex = 0)
+    {
+        return fieldId2PName(tableId, fieldId, arrayIndex);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>fieldName2Id</Name>
+				<Source><![CDATA[
+    static int fieldName2Id(int tableId, str fieldName)
+    {
+        return fieldName2Id(tableId, fieldName);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>indexId2Name</Name>
+				<Source><![CDATA[
+    static str indexId2Name(int tableId, int indexId)
+    {
+        return indexId2Name(tableId, indexId);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>indexName2Id</Name>
+				<Source><![CDATA[
+    static int indexName2Id(int tableId, str indexName)
+    {
+        return indexName2Id(tableId, indexName);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>tableId2PName</Name>
+				<Source><![CDATA[
+    static str tableId2PName(int tableId)
+    {
+        return tableId2PName(tableId);
+    }
+
+]]></Source>
+			</Method>
 			<Method>
 				<Name>typeOf</Name>
 				<Source><![CDATA[
@@ -26,6 +971,11 @@ internal final class MXTXppPredefinedFunctions
 			<Method>
 				<Name>curExt</Name>
 				<Source><![CDATA[
+    /*
+        Session run-time functions
+    */
+
+
     static str curExt()
     {
         return curExt();
@@ -44,9 +994,345 @@ internal final class MXTXppPredefinedFunctions
 ]]></Source>
 			</Method>
 			<Method>
+				<Name>funcName</Name>
+				<Source><![CDATA[
+    public str funcName()
+    {
+        return "";
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getCurrentPartition</Name>
+				<Source><![CDATA[
+    public str getCurrentPartition()
+    {
+        return getCurrentPartition();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getCurrentPartitionRecId</Name>
+				<Source><![CDATA[
+    public int64 getCurrentPartitionRecId()
+    {
+        return getCurrentPartitionRecId();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getPrefix</Name>
+				<Source><![CDATA[
+    public str getPrefix()
+    {
+        return getPrefix();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>sessionId</Name>
+				<Source><![CDATA[
+    public int sessionId()
+    {
+        return sessionId();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>prmIsDefault</Name>
+				<Source><![CDATA[
+    public NoYes prmIsDefault(anytype arg)
+    {
+        return NoYes::No;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>runAs</Name>
+				<Source><![CDATA[
+    public container runAs(str userId, int classId, str staticMethodName, container params, str company = "", str language = "", str partition = "")
+    {
+        return runAs(userId, classId, staticMethodName, params, company, language, partition);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>setPrefix</Name>
+				<Source><![CDATA[
+    public int setPrefix(str prefix)
+    {
+        return setPrefix(prefix);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>match</Name>
+				<Source><![CDATA[
+    /*
+        String run-time functions
+    */
+    public boolean match(str pattern, str text)
+    {
+        return match(pattern, text);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>strAlpha</Name>
+				<Source><![CDATA[
+    static str strAlpha(str text1)
+    {
+        return strAlpha(text1);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>strCmp</Name>
+				<Source><![CDATA[
+    static int strCmp(str text1, str text2)
+    {
+        return strCmp(text1, text2);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>strColSeq</Name>
+				<Source><![CDATA[
+    static str strColSeq(str text)
+    {
+        return strColSeq(text);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>strDel</Name>
+				<Source><![CDATA[
+    static str strDel(str text, int position, int number)
+    {
+        return strDel(text, position, number);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>strFind</Name>
+				<Source><![CDATA[
+    static int strFind(str text, str characters, int position, int number)
+    {
+        return strFind(text, characters, position, number);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>strFmt</Name>
+				<Source><![CDATA[
+    static System.String strFmt(System.Object[] _parameters)
+    {
+        System.Object[] dynamicArgs = new System.Object[_parameters.Length - 1]();
+
+        for (int i = 1; i < _parameters.Length; i++)
+        {
+            dynamicArgs.SetValue(_parameters.Get(i), i - 1);
+        }
+
+        return Microsoft.Dynamics.Ax.Xpp.PredefinedFunctions::strfmt(_parameters.Get(0), dynamicArgs);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>strIns</Name>
+				<Source><![CDATA[
+    static str strIns(str text1, str text2, int position)
+    {
+        return strIns(text1, text2, position);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>strKeep</Name>
+				<Source><![CDATA[
+    static str strKeep(str text1, str text2)
+    {
+        return strKeep(text1, text2);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>strLen</Name>
+				<Source><![CDATA[
+    static int strLen(str text)
+    {
+        return strLen(text);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>strLine</Name>
+				<Source><![CDATA[
+    static str strLine(str string, int cnt)
+    {
+        return strLine(string, cnt);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>strLTrim</Name>
+				<Source><![CDATA[
+    static str strLTrim(str text)
+    {
+        return strLTrim(text);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>strLwr</Name>
+				<Source><![CDATA[
+    static str strLwr(str text)
+    {
+        return strLwr(text);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>strNFind</Name>
+				<Source><![CDATA[
+    static int strNFind(str text, str characters, int position, int number)
+    {
+        return strNFind(text, characters, position, number);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>strPoke</Name>
+				<Source><![CDATA[
+    static str strPoke(str text1, str text2, int position)
+    {
+        return strPoke(text1, text2, position);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>strPrompt</Name>
+				<Source><![CDATA[
+    static str strPrompt(str string, int len)
+    {
+        return strPrompt(string, len);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>strRem</Name>
+				<Source><![CDATA[
+    static str strRem(str text1, str text2)
+    {
+        return strRem(text1, text2);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>strRep</Name>
+				<Source><![CDATA[
+    static str strRep(str text, int number)
+    {
+        return strRep(text, number);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>strRTrim</Name>
+				<Source><![CDATA[
+    static str strRTrim(str text)
+    {
+        return strRTrim(text);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>strScan</Name>
+				<Source><![CDATA[
+    static int strScan(str text1, str text2, int position, int number)
+    {
+        return strScan(text1, text2, position, number);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>strUpr</Name>
+				<Source><![CDATA[
+    static str strUpr(str text)
+    {
+        return strUpr(text);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>subStr</Name>
+				<Source><![CDATA[
+    static str subStr(str text, int position, int number)
+    {
+        return subStr(text, position, number);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>beep</Name>
+				<Source><![CDATA[
+    /* 
+        Miscelaneous run-time functions
+    */
+    static void beep()
+    {
+        beep();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>newGuid</Name>
+				<Source><![CDATA[
+    static guid newGuid()
+    {
+        return newGuid();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>conDel</Name>
 				<Source><![CDATA[
-    static System.Object conDel(container con, int start, int number)
+    /* 
+        Container run-time functions
+    */
+    static container conDel(container con, int start, int number)
     {
         return conDel(con, start, number);
     }
@@ -66,7 +1352,7 @@ internal final class MXTXppPredefinedFunctions
 			<Method>
 				<Name>conIns</Name>
 				<Source><![CDATA[
-    static System.Object conIns(container con, int start, System.Object value)
+    static container conIns(container con, int start, System.Object value)
     {
         return conIns(con, start, value);
     }
@@ -96,26 +1382,9 @@ internal final class MXTXppPredefinedFunctions
 			<Method>
 				<Name>conPoke</Name>
 				<Source><![CDATA[
-    static System.Object conPoke(container con, int start, System.Object value)
+    static container conPoke(container con, int start, System.Object value)
     {
         return conPoke(con, start, value);
-    }
-
-]]></Source>
-			</Method>
-			<Method>
-				<Name>strFmt</Name>
-				<Source><![CDATA[
-    static System.String strFmt(System.Object[] _parameters)
-    {
-        System.Object[] dynamicArgs = new System.Object[_parameters.Length - 1]();
-
-        for (int i = 1; i < _parameters.Length; i++)
-        {
-            dynamicArgs.SetValue(_parameters.Get(i), i - 1);
-        }
-
-        return Microsoft.Dynamics.Ax.Xpp.PredefinedFunctions::strfmt(_parameters.Get(0), dynamicArgs);
     }
 
 ]]></Source>

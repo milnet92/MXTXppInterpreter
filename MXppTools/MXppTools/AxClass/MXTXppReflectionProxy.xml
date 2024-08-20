@@ -8,9 +8,6 @@ using CArray = Microsoft.Dynamics.Ax.Xpp.Array;
 
 public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.Proxy.IXppReflectionProxy
 {
-    private System.Type predefinedFunctionsType = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType("PredefinedFunctions");
-    private System.Type globalType = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType("Global");
-
 }
 ]]></Declaration>
 		<Methods>
@@ -198,15 +195,10 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
         {
             return MXTXppPredefinedFunctions::callMethod(_methodName, _parameters);
         }
-        else if (this.isPredefinedFunction(_methodName))
-        {
-            System.String invariantMethodName = XppInterpreter.Core.ReflectionHelper::GetMethodInvariantName(predefinedFunctionsType, _methodName);
-            return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeStaticCall(predefinedFunctionsType, invariantMethodName, _parameters);
-        }
         else if (this.isGlobalFunction(_methodName))
         {
-            System.String invariantMethodName = XppInterpreter.Core.ReflectionHelper::GetMethodInvariantName(globalType, _methodName);
-            return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeStaticCall(globalType, invariantMethodName, _parameters);
+            System.String invariantMethodName = XppInterpreter.Core.ReflectionHelper::GetMethodInvariantName(MXTXppTypes::GlobalType, _methodName);
+            return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeStaticCall(MXTXppTypes::GlobalType, invariantMethodName, _parameters);
         }
 
         throw new System.Exception(strFmt("Function '%1' was not found.", _methodName));
@@ -219,17 +211,7 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 				<Source><![CDATA[
     private boolean isGlobalFunction(str _methodName)
     {
-        return XppInterpreter.Core.ReflectionHelper::GetMethodInvariantName(globalType, _methodName) != null;
-    }
-
-]]></Source>
-			</Method>
-			<Method>
-				<Name>isPredefinedFunction</Name>
-				<Source><![CDATA[
-    private boolean isPredefinedFunction(str _methodName)
-    {
-        return XppInterpreter.Core.ReflectionHelper::GetMethodInvariantName(predefinedFunctionsType, _methodName) != null;
+        return XppInterpreter.Core.ReflectionHelper::GetMethodInvariantName(MXTXppTypes::GlobalType, _methodName) != null;
     }
 
 ]]></Source>
@@ -329,7 +311,7 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
         {
             if (this.isGlobalFunction(_methodName))
             {
-                dictMethod = new SysDictMethod(UtilElementType::ClassStaticMethod, className2Id(globalType.Name), _methodName);
+                dictMethod = new SysDictMethod(UtilElementType::ClassStaticMethod, className2Id(MXTXppTypes::GlobalType.Name), _methodName);
             }
             else if (MXTXppPredefinedFunctions::isCustomPredefinedFunction(_methodName))
             {
