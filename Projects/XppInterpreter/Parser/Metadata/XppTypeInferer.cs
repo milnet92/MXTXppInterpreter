@@ -177,7 +177,13 @@ namespace XppInterpreter.Parser.Metadata
 
                 _calledStatically = staticSave;
 
-                if (Core.ReflectionHelper.TypeHasField(callerType, variable.Name))
+                if (callerType is null) return null;
+
+                if (callerType.IsEnum)
+                {
+                    return _proxy.Reflection.GetEnumValue(callerType.Name, variable.Name).GetType();
+                }
+                else if (Core.ReflectionHelper.TypeHasField(callerType, variable.Name))
                 {
                     return Core.ReflectionHelper.GetField(callerType, variable.Name).FieldType;
                 }

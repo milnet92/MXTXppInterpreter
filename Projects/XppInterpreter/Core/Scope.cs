@@ -60,18 +60,25 @@ namespace XppInterpreter.Core
                     {
                         if (declarationType != null)
                         {
-                            VariableEntry entry;
+                            object value;
 
                             if (varValue != null && varValue.GetType() != declarationType)
                             {
-                                entry = new VariableEntry(varName, declarationType, Convert.ChangeType(varValue, declarationType));
+                                if (declarationType.IsEnum)
+                                {
+                                    value = Enum.ToObject(declarationType, varValue);
+                                }
+                                else
+                                {
+                                    value = Convert.ChangeType(varValue, declarationType);
+                                }
                             }
                             else
                             {
-                                entry = new VariableEntry(varName, declarationType, varValue);
+                                value = varValue;
                             }
 
-                            current.VariableCollection.Add(entry);
+                            current.VariableCollection.Add(new VariableEntry(varName, declarationType, value));
                         }
                         else
                         {
