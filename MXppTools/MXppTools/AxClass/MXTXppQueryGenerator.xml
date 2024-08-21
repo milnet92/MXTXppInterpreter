@@ -211,7 +211,7 @@ internal final class MXTXppQueryGenerator implements XppInterpreter.Interpreter.
             var selectionFields = _query.SelectionFields.ToArray();
             for (int i = 0; i < selectionFields.Length; i++)
             {
-                this.AddSelectionField(sysDaQuery.projection(), selectionFields.GetValue(i));
+                this.AddSelectionField(sysDaQuery.projection(), sysDaQuery.table().TableId, selectionFields.GetValue(i), _runtimeContext);
             }
 
         }
@@ -296,7 +296,7 @@ internal final class MXTXppQueryGenerator implements XppInterpreter.Interpreter.
 			<Method>
 				<Name>addSelectionField</Name>
 				<Source><![CDATA[
-    private void addSelectionField(SysDaSelection _selection, Parser.Data.SelectionField _selectionField)
+    private void addSelectionField(SysDaSelection _selection, TableId _tableId, Parser.Data.SelectionField _selectionField, RuntimeContext _runtimeContext)
     {
         switch (_selectionField.AggregateFunction)
         {
@@ -316,9 +316,27 @@ internal final class MXTXppQueryGenerator implements XppInterpreter.Interpreter.
                 _selection.addMin(_selectionField.Field.Name);
                 break;
             case Parser.Data.AggregateFunction::None:
-                _selection.add(_selectionField.Field.Name);
+                if (this.isTableField(_tableId, _selectionField.Field.Name))
+                {
+                    _selection.add(_selectionField.Field.Name);
+                }
+                else
+                {
+                    var value = _runtimeContext.ScopeHandler.CurrentScope.GetVar(_selectionField.Field.Name);
+                    _selection.addValue(value);
+                }
                 break;
         }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>isTableField</Name>
+				<Source><![CDATA[
+    private boolean isTableField(TableId _tableId, str _fieldName)
+    {
+        return fieldName2Id(_tableId, _fieldName) != 0;
     }
 
 ]]></Source>
