@@ -8,22 +8,33 @@ namespace XppInterpreter.Parser
 {
     internal class LoopControlContext : IDisposable
     {
-        private readonly bool _needToDispose;
+        private readonly bool _needToReleaseLoop;
+        private readonly bool _needToReleaseFinally;
         private readonly ParseContext _context;
-
         public LoopControlContext(ParseContext parseContext, bool isLoop = true)
         {
             _context = parseContext;
-            _needToDispose = !isLoop || !_context.LoopStack.Empty;
+            _needToReleaseLoop = !isLoop || !_context.LoopStack.Empty;
+            
+            if (!isLoop)
+            {
+                _needToReleaseFinally = true;
+                _context.FinallyStack.New();
+            }
 
             _context.LoopStack.New(isLoop);
         }
 
         public void Dispose()
         {
-            if (_needToDispose)
+            if (_needToReleaseLoop)
             {
                 _context.LoopStack.Release();
+            }
+
+            if (_needToReleaseFinally)
+            {
+                _context.FinallyStack.Release();
             }
         }
     }

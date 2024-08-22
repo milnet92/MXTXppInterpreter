@@ -707,7 +707,7 @@ namespace XppInterpreter.Parser
 
         internal LoopControl LoopControl()
         {
-            if (!_parseContext.CanLoopScape())
+            if (!_parseContext.CanScapeLoop())
             {
                 HandleParseError(MessageProvider.ExceptionLeaveFinally, stop: false);
             }
@@ -815,7 +815,7 @@ namespace XppInterpreter.Parser
                 HandleParseError(MessageProvider.ExceptionReturnOutOfFunction, stop: false);
             }
 
-            if (!_parseContext.LoopStack.Empty)
+            if (_parseContext.WithinFinally())
             {
                 HandleParseError(MessageProvider.ExceptionLeaveFinally, stop: false);
             }
