@@ -342,7 +342,8 @@
             wrapBehavioursEnabled: true,
             enableBasicAutocompletion: true,
             enableLiveAutocompletion: true,
-            cursorStyle: 'smooth'
+            cursorStyle: 'smooth',
+            copyWithEmptySelection: true
         });
         
         // Setup hover tooltip
