@@ -60,6 +60,7 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
             case MXtXppTypes::DateTimeTypeStr: return Types::UtcDateTime;
             case MXtXppTypes::StringTypeStr: return Types::String;
             case MXtXppTypes::DateTypeStr : return Types::Date;
+            case MXtXppTypes::AnyTypeTypeStr: return Types::AnyType;
         }
 
         return Types::void;
@@ -117,6 +118,9 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 
             case Types::Date:
                 return MXTXppTypes::DateType;
+
+            case Types::AnyType:
+                return MXTXppTypes::AnyTypeType;
         }
 
         return null;
@@ -380,7 +384,7 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 				<Source><![CDATA[
     public System.Boolean ImplicitConversionExists(System.Type _fromType, System.Type _toType)
     {
-        if (_toType == null) return false;
+        if (_toType == null ) return false;
         if (_fromType == _toType) return true;
         if (_toType.IsAssignableFrom(_fromType) || _fromType.IsAssignableFrom(_toType)) return true;
 
