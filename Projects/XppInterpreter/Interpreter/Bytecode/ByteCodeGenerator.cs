@@ -771,7 +771,7 @@ namespace XppInterpreter.Interpreter.Bytecode
             {
                 @try.Finally.Accept(this);
             }
-            else
+            else if (finallyInstruction != null)
             {
                 Emit(finallyInstruction);
             }
