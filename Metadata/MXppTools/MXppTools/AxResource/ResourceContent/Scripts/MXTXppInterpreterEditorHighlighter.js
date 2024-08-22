@@ -70,6 +70,7 @@ var keywords = [
     "int",
     "int64",
     "real",
+    "anytype",
     "str",
     "boolean",
     "in",

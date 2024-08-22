@@ -403,4 +403,6 @@ FodyWeavers.xsd
 /MXppTools/CompileLabels.xml
 /MXppTools/BuildModelResult.xml
 /MXppTools/BuildProjectResult.err.xml
-!/Metadata/**/bin
+
+!/Metadata/MXppTools/bin/XppInterpreter.dll
+!/Metadata/MXppTools/bin/Z.Expressions.Eval.dll
