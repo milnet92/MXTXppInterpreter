@@ -86,16 +86,19 @@ namespace XppInterpreter.Interpreter.Bytecode
 
         public void VisitInsertRecordset(InsertRecordset insertRecordset)
         {
+            EmitDebugSymbol(insertRecordset);
             Emit(new InserQuery(insertRecordset));
         }
 
         public void VisitDeleteFrom(DeleteFrom deleteFrom)
         {
+            EmitDebugSymbol(deleteFrom);
             Emit(new DeleteQuery(deleteFrom));
         }
 
         public void VisitUpdateRecordset(UpdateRecordset updateRecordset)
         {
+            EmitDebugSymbol(updateRecordset);
             Emit(new UpdateQuery(updateRecordset));
         }
 
