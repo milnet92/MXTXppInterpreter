@@ -405,5 +405,3 @@ FodyWeavers.xsd
 /Metadata/**/CompileLabels.xml
 /Metadata/**/BuildModelResult.xml
 /Metadata/**/BuildProjectResult.err.xml
-
-!/Metadata/**/bin/ 
