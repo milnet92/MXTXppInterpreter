@@ -87,7 +87,7 @@ namespace XppInterpreter.Interpreter.Bytecode
         public void VisitInsertRecordset(InsertRecordset insertRecordset)
         {
             EmitDebugSymbol(insertRecordset);
-            Emit(new InserQuery(insertRecordset));
+            Emit(new InsertQuery(insertRecordset));
         }
 
         public void VisitDeleteFrom(DeleteFrom deleteFrom)
@@ -809,9 +809,10 @@ namespace XppInterpreter.Interpreter.Bytecode
             Emit(new EndScope());
         }
 
-        public void VisitRetry(Retry retry)
+        public void VisitRetry(Parser.Retry retry)
         {
-            throw new System.NotImplementedException("Retry statement is not implemented.");
+            EmitDebugSymbol(retry);
+            Emit(new Retry());
         }
     }
 }

@@ -84,7 +84,7 @@
     <Compile Include="Interpreter\Bytecode\ICall.cs" />
     <Compile Include="Interpreter\Bytecode\IInstruction.cs" />
     <Compile Include="Interpreter\Bytecode\IInterpretableInstruction.cs" />
-    <Compile Include="Interpreter\Bytecode\InserQuery.cs" />
+    <Compile Include="Interpreter\Bytecode\InsertQuery.cs" />
     <Compile Include="Interpreter\Bytecode\InstanceFunctionCall.cs" />
     <Compile Include="Interpreter\Bytecode\InstanceLoad.cs" />
     <Compile Include="Interpreter\Bytecode\IntrinsicCall.cs" />
@@ -101,6 +101,7 @@
     <Compile Include="Interpreter\Bytecode\Next.cs" />
     <Compile Include="Interpreter\Bytecode\Push.cs" />
     <Compile Include="Interpreter\Bytecode\RefFunction.cs" />
+    <Compile Include="Interpreter\Bytecode\Retry.cs" />
     <Compile Include="Interpreter\Bytecode\Return.cs" />
     <Compile Include="Interpreter\Bytecode\SelectQuery.cs" />
     <Compile Include="Interpreter\Bytecode\StaticFunctionCall.cs" />
