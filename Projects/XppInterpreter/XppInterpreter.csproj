@@ -157,6 +157,7 @@
     <Compile Include="Lexer\Word.cs" />
     <Compile Include="Lexer\XppLexer.cs" />
     <Compile Include="Parser\ArrayAccess.cs" />
+    <Compile Include="Parser\CatchContext.cs" />
     <Compile Include="Parser\FunctionDeclarationReference.cs" />
     <Compile Include="Parser\Is.cs" />
     <Compile Include="Parser\As.cs" />
@@ -208,6 +209,7 @@
     <Compile Include="Parser\Return.cs" />
     <Compile Include="Parser\Switch.cs" />
     <Compile Include="Parser\Try.cs" />
+    <Compile Include="Parser\Retry.cs" />
     <Compile Include="Parser\UpdateRecordset.cs" />
     <Compile Include="Parser\Data\Join.cs" />
     <Compile Include="Parser\Data\OrderByField.cs" />

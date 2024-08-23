@@ -187,6 +187,15 @@ namespace XppInterpreter.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Retry statement can only be used within a catch statement..
+        /// </summary>
+        internal static string ExceptionRetryNotInCatch {
+            get {
+                return ResourceManager.GetString("ExceptionRetryNotInCatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Return statement can only be used inside function declarations..
         /// </summary>
         internal static string ExceptionReturnOutOfFunction {

@@ -10,6 +10,7 @@ var keywords = [
     "try",
     "catch",
     "finally",
+    "retry",
     "print",
     "null",
     "throw",

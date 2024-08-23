@@ -808,5 +808,10 @@ namespace XppInterpreter.Interpreter.Bytecode
             EmitTry(@try, new Dispose(@using.VariableName));
             Emit(new EndScope());
         }
+
+        public void VisitRetry(Retry retry)
+        {
+            throw new System.NotImplementedException("Retry statement is not implemented.");
+        }
     }
 }

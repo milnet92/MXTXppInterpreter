@@ -159,6 +159,9 @@
   <data name="ExceptionNotExceptionMember" xml:space="preserve">
     <value>'{0}' is not a member of Exception enum.</value>
   </data>
+  <data name="ExceptionRetryNotInCatch" xml:space="preserve">
+    <value>Retry statement can only be used within a catch statement.</value>
+  </data>
   <data name="ExceptionReturnOutOfFunction" xml:space="preserve">
     <value>Return statement can only be used inside function declarations.</value>
   </data>

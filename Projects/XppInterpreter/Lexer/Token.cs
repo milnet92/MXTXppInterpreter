@@ -135,6 +135,7 @@ namespace XppInterpreter.Lexer
         Catch,
         Finally,
         Throw,
+        Retry,
         Using,
         PlusAssignment,
         MinusAssignment,

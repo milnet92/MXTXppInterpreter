@@ -42,6 +42,7 @@ namespace XppInterpreter.Lexer
         public static readonly Word Throw = new Word("throw", TType.Throw);
         public static readonly Word Try = new Word("try", TType.Try);
         public static readonly Word Catch = new Word("catch", TType.Catch);
+        public static readonly Word Retry = new Word("retry", TType.Retry);
         public static readonly Word Finally = new Word("finally", TType.Finally);
         public static readonly Word Switch = new Word("switch", TType.Switch);
         public static readonly Word Default = new Word("default", TType.Default);
