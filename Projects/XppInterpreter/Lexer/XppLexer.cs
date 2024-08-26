@@ -586,6 +586,7 @@ namespace XppInterpreter.Lexer
             Reserve(Word.Finally);
             Reserve(Word.Catch);
             Reserve(Word.Throw);
+            Reserve(Word.Retry);
             Reserve(Word.Using);
             Reserve(Word.IntegerDivision);
             Reserve(Word.Mod);

@@ -11,6 +11,7 @@ namespace XppInterpreter.Parser
         public ParseContextStack FunctionDeclarationStack { get; } = new ParseContextStack();
         public ParseContextStack<bool> LoopStack { get; } = new ParseContextStack<bool>();
         internal readonly ParseContextStack FinallyStack = new ParseContextStack();
+        internal readonly ParseContextStack CatchStack = new ParseContextStack();
 
         public ParseContext()
         {
@@ -25,6 +26,11 @@ namespace XppInterpreter.Parser
         public bool WithinFinally()
         {
             return !FinallyStack.Empty;
+        }
+
+        public bool WithinCatch()
+        {
+            return !CatchStack.Empty;
         }
 
         public void BeginScope()

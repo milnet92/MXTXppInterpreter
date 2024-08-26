@@ -36,6 +36,7 @@ namespace XppInterpreter.Interpreter
         void VisitFunctionCall(FunctionCall functionCall);
         void VisitVariableDeclarations(VariableDeclarations variableDeclaration);
         void VisitTry(Try @try);
+        void VisitRetry(Retry retry);
         void VisitUsing(Using @using);
     }
 }

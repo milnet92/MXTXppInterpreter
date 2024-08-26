@@ -2,12 +2,12 @@
 
 namespace XppInterpreter.Interpreter.Bytecode
 {
-    class InserQuery : IInstruction
+    class InsertQuery : IInstruction
     {
         public string OperationCode => "INSERT_QUERY";
         public Parser.InsertRecordset InsertRecordset { get; }
 
-        public InserQuery(Parser.InsertRecordset insertRecordset)
+        public InsertQuery(Parser.InsertRecordset insertRecordset)
         {
             InsertRecordset = insertRecordset;
         }

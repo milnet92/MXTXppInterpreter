@@ -87,7 +87,7 @@ namespace XppInterpreter.Interpreter.Bytecode
         public void VisitInsertRecordset(InsertRecordset insertRecordset)
         {
             EmitDebugSymbol(insertRecordset);
-            Emit(new InserQuery(insertRecordset));
+            Emit(new InsertQuery(insertRecordset));
         }
 
         public void VisitDeleteFrom(DeleteFrom deleteFrom)
@@ -807,6 +807,12 @@ namespace XppInterpreter.Interpreter.Bytecode
             Try @try = new Try(@using.Block, @using.Block.SourceCodeBinding);
             EmitTry(@try, new Dispose(@using.VariableName));
             Emit(new EndScope());
+        }
+
+        public void VisitRetry(Parser.Retry retry)
+        {
+            EmitDebugSymbol(retry);
+            Emit(new Retry());
         }
     }
 }

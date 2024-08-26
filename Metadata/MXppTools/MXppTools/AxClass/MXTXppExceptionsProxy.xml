@@ -91,6 +91,16 @@ internal final class MXTXppExceptionsProxy implements XppInterpreter.Interpreter
 
 ]]></Source>
 			</Method>
+			<Method>
+				<Name>SetRetryCount</Name>
+				<Source><![CDATA[
+    public void SetRetryCount(int _retryCount)
+    {
+        Microsoft.Dynamics.Ax.Xpp.PredefinedFunctions::ReplaceRetryCount(_retryCount);
+    }
+
+]]></Source>
+			</Method>
 		</Methods>
 	</SourceCode>
 </AxClass>

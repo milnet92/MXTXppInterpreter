@@ -851,6 +851,21 @@ namespace XppInterpreter.Parser
             return new Print(parameters, SourceCodeBinding(start, lastScanResult), SourceCodeBinding(start, lastScanResult));
         }
 
+        internal Retry Retry()
+        {
+            if (!_parseContext.WithinCatch())
+            {
+                HandleParseError(MessageProvider.ExceptionRetryNotInCatch, stop: false);
+            }
+
+            var start = currentScanResult;
+
+            Match(TType.Retry);
+            Match(TType.Semicolon);
+
+            return new Retry(SourceCodeBinding(start, lastScanResult));
+        }
+
         internal Try Try()
         {
             var start = Match(TType.Try);
@@ -896,7 +911,10 @@ namespace XppInterpreter.Parser
                         Match(TType.RightParenthesis);
                     }
 
-                    catches.Add(new Catch(enumMember, Block()));
+                    using (var catchContext = new CatchContext(_parseContext))
+                    { 
+                        catches.Add(new Catch(enumMember, Block()));
+                    }
 
                     if (currentToken.TokenType == TType.Catch)
                     {
@@ -935,6 +953,7 @@ namespace XppInterpreter.Parser
         {
             switch (currentToken.TokenType)
             {
+                case TType.Retry: return Retry();
                 case TType.Using: return Using();
                 case TType.Try: return Try();
                 case TType.Print: return Print();

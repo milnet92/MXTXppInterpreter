@@ -7,7 +7,11 @@ namespace XppInterpreter.Interpreter
     /// </summary>
     public class AstSimpleVisitor : IAstVisitor
     {
-        public void VisitTry(Try @try)
+        public virtual void VisitRetry(Retry retry)
+        {
+        }
+
+        public virtual void VisitTry(Try @try)
         {
             @try.TryBlock.Accept(this);
 
@@ -19,7 +23,7 @@ namespace XppInterpreter.Interpreter
             @try.Finally?.Accept(this);
         }
 
-        public void VisitAs(As @as)
+        public virtual void VisitAs(As @as)
         {
             @as.Expression.Accept(this);
         }

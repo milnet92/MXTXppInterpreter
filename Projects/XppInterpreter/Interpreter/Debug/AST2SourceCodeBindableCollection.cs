@@ -260,5 +260,11 @@ namespace XppInterpreter.Interpreter.Debug
             AddToCollection(print);
             base.VisitPrint(print);
         }
+
+        public override void VisitRetry(Retry retry)
+        {
+            AddToCollection(retry);
+            base.VisitRetry(retry);
+        }
     }
 }
