@@ -40,7 +40,7 @@ namespace XppInterpreter.Core
         public static string ExceptionInitializationUnknown => GetString(nameof(ExceptionInitializationUnknown));
         public static string ExceptionImplicitConversion => GetString(nameof(ExceptionImplicitConversion));
         public static string ExceptionLeaveFinally => GetString(nameof(ExceptionLeaveFinally));
-        public static string ExceptionExpressiIDisposable => GetString(nameof(ExceptionExpressiIDisposable));
+        public static string ExceptionExpressionIDisposable => GetString(nameof(ExceptionExpressionIDisposable));
         public static string ExceptionReturnOutOfFunction => GetString(nameof(ExceptionReturnOutOfFunction));
         public static string ExceptionInvalidCatchExpr => GetString(nameof(ExceptionInvalidCatchExpr));
         public static string ExceptionNotExceptionMember => GetString(nameof(ExceptionNotExceptionMember));
@@ -51,5 +51,6 @@ namespace XppInterpreter.Core
         public static string ExceptionTokenExpected => GetString(nameof(ExceptionTokenExpected));
         public static string ExceptionInvalidExceptionEnum => GetString(nameof(ExceptionInvalidExceptionEnum));
         public static string ExceptionRetryNotInCatch => GetString(nameof(ExceptionRetryNotInCatch));
+        public static string ExceptionRefTypeContainer => GetString(nameof(ExceptionRefTypeContainer));
     }
 }

@@ -409,6 +409,52 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 
 ]]></Source>
 			</Method>
+			<Method>
+				<Name>IsReferenceType</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Checks if the System.Type provided is a reference type
+    /// </summary>
+    /// <param name = "_type">System.Type</param>
+    /// <returns>True if it's a reference type, otherwise false</returns>
+    public System.Boolean IsReferenceType(System.Type _type)
+    {
+        if (_type == null) return false;
+
+        switch (_type)
+        {
+            case MXTXppTypes::AnyTypeType:
+            case MXTXppTypes::ArrayType:
+            case MXTXppTypes::BooleanType:
+            case MXTXppTypes::CommonType:
+            case MXTXppTypes::ContainerType:
+            case MXTXppTypes::DateTimeType:
+            case MXTXppTypes::DecimalType:
+            case MXTXppTypes::GuidType:
+            case MXTXppTypes::Int32Type:
+            case MXTXppTypes::Int64Type:
+            case MXTXppTypes::StringType:
+                return false;
+        }
+
+        Types type = this.getXppTypeByTypeName(_type.Name);
+
+        switch (type)
+        {
+            case Types::BLOB:
+            case Types::Class:
+            case Types::UserType:
+            case Types::VarString:
+            case Types::VarArg:
+            case Types::void:
+                return true;
+        }
+
+        return false;
+    }
+
+]]></Source>
+			</Method>
 		</Methods>
 	</SourceCode>
 </AxClass>
