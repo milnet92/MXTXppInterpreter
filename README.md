@@ -37,5 +37,4 @@ You can save X++ scripts into the built-in repository to later execute them.
 ## Limitations
 * **Macros** usage and declarations are not supported
 * **Class declarations** are not supported
-* **retry** statement is not implemented
 * **.NET namespaces** cannot be referenced
