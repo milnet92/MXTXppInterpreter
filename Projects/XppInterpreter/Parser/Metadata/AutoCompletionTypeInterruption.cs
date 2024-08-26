@@ -6,11 +6,19 @@ using System.Threading.Tasks;
 
 namespace XppInterpreter.Parser.Metadata
 {
-    class AutoCompleteInterruption : Exception
+    public enum AutoCompletionPurpose
+    {
+        InstanceMembers,
+        StaticMembers,
+        TableIndexes,
+        TableFields
+    }
+
+    class AutoCompletionTypeInterruption : Exception
     {
         public Type InferedType { get; }
 
-        public AutoCompleteInterruption(Type type)
+        public AutoCompletionTypeInterruption(Type type)
         {
             InferedType = type;
         }

@@ -187,6 +187,29 @@ public final class MXTXppCompletionProvider implements ICompletionProvider
 ]]></Source>
 			</Method>
 			<Method>
+				<Name>GetIndexCompletions</Name>
+				<Source><![CDATA[
+    CompletionCollection GetIndexCompletions(str _tableName)
+    {
+        CompletionCollection completions = new CompletionCollection();
+
+        SysDictTable dictTable = SysDictTable::newName(_tableName);
+
+        if (!dictTable) return completions;
+
+        for (int i = 1; i <= dictTable.indexCnt(); i++)
+        {
+            int indexId = dictTable.indexCnt2Id(i);
+            str indexName = indexId2Name(dictTable.id(), IndexId);
+            completions.Add(new Completion(indexName, indexName, CompletionEntryType::TableIndex));
+        }
+
+        return completions;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>GetEnumCompletions</Name>
 				<Source><![CDATA[
     /// <summary>

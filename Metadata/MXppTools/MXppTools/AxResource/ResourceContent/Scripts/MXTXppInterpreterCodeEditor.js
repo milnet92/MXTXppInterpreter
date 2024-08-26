@@ -258,6 +258,26 @@
                     return false;
                 }
 
+                function getAutoCompletions(slf, row, column, isStatic, isIndexTable) {
+                    clearTimeout(change_timer);
+                    return $dyn.callFunction(slf.GetAutocompletions, slf,
+                        {
+                            _line: row,
+                            _position: column,
+                            _staticCompletion: isStatic,
+                            _isIndexTable: isIndexTable
+                        }, function (ret) {
+                        ret && callback(null, ret.Completions.map(function (c) {
+                            return {
+                                value: c.Value,
+                                name: c.Value,
+                                type: c.Type,
+                                docHTML: c.DocHtml
+                            };
+                        }));
+                    });
+                }
+
                 var TokenIterator = ace.require("ace/token_iterator").TokenIterator;
                 var stream = new TokenIterator(editor.session, pos.row, pos.column);
 
@@ -274,18 +294,10 @@
 
                     if (previousToken && (previousToken.type == 'identifier' || previousToken.type == 'support.class' || previousToken.value.endsWith(')')) &&
                         (triggerChar.includes('::') || triggerChar.startsWith('.'))) {
-
-                        clearTimeout(change_timer);
-                        return $dyn.callFunction(self.GetAutocompletions, self, { _line: pos.row, _position: pos.column - 1, _staticCompletion: triggerChar.includes('::') }, function (ret) {
-                            ret && callback(null, ret.Completions.map(function (c) {
-                                return {
-                                    value: c.Value,
-                                    name: c.Value,
-                                    type: c.Type,
-                                    docHTML: c.DocHtml
-                                };
-                            }));
-                        });
+                        return getAutoCompletions(self, pos.row, pos.column - 1, triggerChar.includes('::'), false);
+                    }
+                    else if (previousToken && previousToken.type == 'keyword' && previousToken.value == 'index') {
+                        return getAutoCompletions(self, pos.row, pos.column - 1, false, true);
                     }
                     else if (previousToken && triggerChar.includes(':')) return callback(null, []);
                 }
@@ -312,10 +324,21 @@
             if (e.args !== ' ') methodTooltip.hide();
 
             if (e.command.name == "insertstring") {
-                if (e.args == ':' || e.args == '.') {
-                    if (!editor.completer) {
-                        editor.completer = new Autocomplete();
-                    }
+                if (!editor.completer) {
+                    editor.completer = new Autocomplete();
+                }
+
+                var forcePopup = e.args == ':' || e.args == '.';
+
+                // Handle case of index
+                if (e.args == ' ') {
+                    var position = editor.getCursorPosition();
+                    var previousToken = editor.session.getTokenAt(position.row, position.column - 1);
+
+                    forcePopup = previousToken && previousToken.type == 'keyword' && previousToken.value == 'index';
+                }
+
+                if (forcePopup) {
                     editor.completer.showPopup(editor);
                 } else if (e.args == '(' || e.args == ',') {
                     showMethodToolTip(editor, self);

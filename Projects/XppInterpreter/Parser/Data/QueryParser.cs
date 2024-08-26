@@ -421,9 +421,10 @@ namespace XppInterpreter.Parser
             return ret;
         }
 
-        string Index()
+        string Index(Word tableNameVar)
         {
             Match(TType.Index);
+            HandleAutocompletion(new Variable(tableNameVar, null, false, null));
             return (Match(TType.Id).Token as Word).Lexeme;
         }
 
@@ -448,7 +449,7 @@ namespace XppInterpreter.Parser
 
             if (currentToken.TokenType == TType.Index)
             {
-                index = Index();
+                index = Index(tableVarName);
             }
 
             // Iterate two time, since group by and order by can be in any order

@@ -16,6 +16,7 @@ namespace XppInterpreter.Parser.Metadata
         GlobalOrDefinedMethod,
         Type,
         Variable,
-        Label
+        Label,
+        TableIndex
     }
 }

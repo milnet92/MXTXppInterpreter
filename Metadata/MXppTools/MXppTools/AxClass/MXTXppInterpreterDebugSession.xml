@@ -549,10 +549,14 @@ public class MXTXppInterpreterDebugSession
     /// <param name = "_staticCompletion">If complitions are for a static or instance call</param>
     /// <param name = "_sourceCode">Source code</param>
     /// <returns>Completions as an instance of <c>MXTXppCompletionsContract</c></returns>
-    public MXTXppCompletionsContract getCompletions(int _line, int _position, boolean _staticCompletion, str _sourceCode)
+    public MXTXppCompletionsContract getCompletions(int _line, int _position, boolean _staticCompletion, boolean _tableIndex, str _sourceCode)
     {
+        XppInterpreter.Parser.Metadata.AutoCompletionPurpose purpose = _staticCompletion ? 
+            XppInterpreter.Parser.Metadata.AutoCompletionPurpose::StaticMembers :
+            _tableIndex ? XppInterpreter.Parser.Metadata.AutoCompletionPurpose::TableIndexes : XppInterpreter.Parser.Metadata.AutoCompletionPurpose::InstanceMembers;
+
         XppInterpreter.Parser.Metadata.CompletionProvider completionProvider = new XppInterpreter.Parser.Metadata.CompletionProvider(this.proxy);
-        XppInterpreter.Parser.Metadata.CompletionCollection completionCollection = completionProvider.GetCompletions(new MXTXppCompletionProvider(), _sourceCode, _line, _position, _staticCompletion);
+        XppInterpreter.Parser.Metadata.CompletionCollection completionCollection = completionProvider.GetCompletions(new MXTXppCompletionProvider(), _sourceCode, _line, _position, purpose);
 
         MXTXppCompletionsContract ret = new MXTXppCompletionsContract();
         List completions = new List(Types::Class);

@@ -22,9 +22,9 @@ namespace XppInterpreter.Parser
 
         private bool _forAutoCompletion;
         private bool _forMetadata;
+        private AutoCompletionPurpose _autoCompletionPurpose;
         private int _stopAtRow, _stopAtColumn;
         private XppTypeInferer _typeInferer = null;
-
         IScanResult AdvancePeek(bool reset = false)
         {
             currentPeekOffset++;
@@ -87,19 +87,18 @@ namespace XppInterpreter.Parser
             return null;
         }
 
-        public System.Type ParseForAutoCompletion(int row, int column)
+        public System.Type ParseForAutoCompletion(int row, int column, AutoCompletionPurpose purpose)
         {
             _forAutoCompletion = true;
             _stopAtRow = row;
             _stopAtColumn = column;
-
-            _typeInferer = new XppTypeInferer(_proxy);
+            _autoCompletionPurpose = purpose;
 
             try
             {
                 Parse();
             }
-            catch (AutoCompleteInterruption interruption)
+            catch (AutoCompletionTypeInterruption interruption)
             {
                 return interruption.InferedType;
             }
@@ -166,7 +165,7 @@ namespace XppInterpreter.Parser
 
             int parameterCount = 0;
 
-            HandleMetadata(start.Line, start.Start, start.Start + 1, null, methodName, parameterCount, true, false, false);
+            HandleMetadataInterruption(start.Line, start.Start, start.Start + 1, null, methodName, parameterCount, true, false, false);
 
             while (currentToken.TokenType != TType.RightParenthesis)
             {
@@ -189,7 +188,7 @@ namespace XppInterpreter.Parser
                 {
                     var comma = Match(TType.Comma);
                     parameterCount ++;
-                    HandleMetadata(comma.Line, comma.Start, comma.Start + 1, null, methodName, parameterCount, true, false, false);
+                    HandleMetadataInterruption(comma.Line, comma.Start, comma.Start + 1, null, methodName, parameterCount, true, false, false);
                 }
             }
 
@@ -206,7 +205,7 @@ namespace XppInterpreter.Parser
 
             int parameterCount = 0;
 
-            HandleMetadata(start.Line, start.Start, start.Start + 1, caller, tokenName, parameterCount, false, isStatic, isConstructor);
+            HandleMetadataInterruption(start.Line, start.Start, start.Start + 1, caller, tokenName, parameterCount, false, isStatic, isConstructor);
 
             while (currentToken.TokenType != TType.RightParenthesis)
             {
@@ -217,7 +216,7 @@ namespace XppInterpreter.Parser
                     var comma = Match(TType.Comma);
 
                     parameterCount++;
-                    HandleMetadata(comma.Line, comma.Start, comma.Start + 1, caller, tokenName, parameterCount, false, isStatic, isConstructor);
+                    HandleMetadataInterruption(comma.Line, comma.Start, comma.Start + 1, caller, tokenName, parameterCount, false, isStatic, isConstructor);
                 }
             }
 
@@ -1591,7 +1590,7 @@ namespace XppInterpreter.Parser
             currentToken = currentScanResult.Token;
         }
 
-        internal void HandleMetadata(int line, int start, int end, Expression caller, string methodName, int parameterPosition, bool isIntrinsic, bool isStatic, bool isConstructor)
+        internal void HandleMetadataInterruption(int line, int start, int end, Expression caller, string methodName, int parameterPosition, bool isIntrinsic, bool isStatic, bool isConstructor)
         {
             if (!_forMetadata) return;
 
@@ -1672,7 +1671,7 @@ namespace XppInterpreter.Parser
                 lastScanResult.Start <= _stopAtColumn &&
                 lastScanResult.End >= _stopAtColumn)
             {
-                throw new AutoCompleteInterruption(_typeInferer.InferType(expression, lastScanResult.Token.TokenType == TType.StaticDoubleDot, _parseContext));
+                throw new AutoCompletionTypeInterruption(_typeInferer.InferType(expression, lastScanResult.Token.TokenType == TType.StaticDoubleDot, _parseContext));
             }
         }
 

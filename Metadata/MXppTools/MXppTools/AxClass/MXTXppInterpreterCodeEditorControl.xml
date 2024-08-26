@@ -300,11 +300,11 @@ public class MXTXppInterpreterCodeEditorControl extends FormTemplateControl
 				<Name>GetAutoCompletions</Name>
 				<Source><![CDATA[
     [FormCommand("GetAutocompletions", true)]
-    public MXTXppCompletionsContract GetAutoCompletions(int _line, int _position, boolean _staticCompletion)
+    public MXTXppCompletionsContract GetAutoCompletions(int _line, int _position, boolean _staticCompletion, boolean _isIndexTable)
     {
         if (debugSession == null) return null;
 
-        return debugSession.getCompletions(_line, _position, _staticCompletion, this.sourceCode());
+        return debugSession.getCompletions(_line, _position, _staticCompletion, _isIndexTable, this.sourceCode());
     }
 
 ]]></Source>
