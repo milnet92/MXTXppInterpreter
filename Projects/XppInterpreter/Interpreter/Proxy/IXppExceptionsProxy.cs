@@ -6,6 +6,6 @@ namespace XppInterpreter.Interpreter.Proxy
     {
         void Throw(object obj);
         bool IsExceptionMember(Exception exception, string exceptionMember);
-
+        void SetRetryCount(int retryCount);
     }
 }

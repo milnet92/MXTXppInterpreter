@@ -12,7 +12,7 @@ namespace XppInterpreter.Interpreter.Bytecode
 
         public void Execute(RuntimeContext context)
         {
-            throw new NotImplementedException("Retry statement is not implemented.");
+            context.ScopeHandler.CurrentExceptionHandler.ExecuteRetry(context);
         }
     }
 }

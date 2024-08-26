@@ -105,6 +105,11 @@ namespace XppInterpreter.Interpreter
 
                 try
                 { 
+                    if (c.ScopeHandler.AreExceptionsHandled)
+                    {
+                        c.ScopeHandler.CurrentExceptionHandler.SetNativeRetryCount(c);
+                    }
+
                     instruction.Execute(c);
                 }
                 catch (System.Exception ex)
