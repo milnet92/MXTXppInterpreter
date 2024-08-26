@@ -1424,7 +1424,7 @@ namespace XppInterpreter.Parser
         internal Statement Assignment(bool matchSemicolon = true)
         {
             var start = currentScanResult;
-            Variable assignee = (Variable)Variable(expectReturn: false);
+            Expression assignee = Variable(expectReturn: false);
             Token operand = currentToken;
             Statement ret = null;
             Expression assignedExpression = null;
@@ -1436,7 +1436,7 @@ namespace XppInterpreter.Parser
 
                         Match(TType.Assign);
                         assignedExpression = Expression();
-                        ret = new Assignment(assignee, assignedExpression, SourceCodeBinding(start, lastScanResult));
+                        ret = new Assignment((Variable)assignee, assignedExpression, SourceCodeBinding(start, lastScanResult));
                     }
                     break;
 
@@ -1445,7 +1445,7 @@ namespace XppInterpreter.Parser
                     {
                         Match(currentToken.TokenType);
                         assignedExpression = new BinaryOperation(assignee, new Constant(1, null), operand, null);
-                        ret = new Assignment(assignee, assignedExpression , SourceCodeBinding(start, lastScanResult));
+                        ret = new Assignment((Variable)assignee, assignedExpression , SourceCodeBinding(start, lastScanResult));
                     }
                     break;
 
@@ -1456,7 +1456,7 @@ namespace XppInterpreter.Parser
                         var binding = SourceCodeBinding(start, currentScanResult);
                         assignedExpression = new BinaryOperation(assignee, Expression(), operand, SourceCodeBinding(start, currentScanResult));
                         ret = new Assignment(
-                            assignee,
+                            (Variable)assignee,
                             assignedExpression,
                             binding);;
                     }
@@ -1476,7 +1476,7 @@ namespace XppInterpreter.Parser
                     break;
             }
 
-            if (assignedExpression != null)
+            if (assignee is Variable assigneeVar && assignedExpression != null)
             {
                 var assigneeType = _typeInferer.InferType(assignee, false, _parseContext);
 
@@ -1486,7 +1486,7 @@ namespace XppInterpreter.Parser
 
                     if (!_proxy.Casting.ImplicitConversionExists(assignedType, assigneeType))
                     {
-                        HandleParseError(string.Format(MessageProvider.ExceptionImplicitConversion, assignedType.Name, assignee.Name), stop: false);
+                        HandleParseError(string.Format(MessageProvider.ExceptionImplicitConversion, assignedType.Name, assigneeVar.Name), stop: false);
                     }
                 }
             }
