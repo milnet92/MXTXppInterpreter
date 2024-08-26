@@ -72,9 +72,9 @@ namespace XppInterpreter.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Expression type must implement IDisposable..
         /// </summary>
-        internal static string ExceptionExpressiIDisposable {
+        internal static string ExceptionExpressionIDisposable {
             get {
-                return ResourceManager.GetString("ExceptionExpressiIDisposable", resourceCulture);
+                return ResourceManager.GetString("ExceptionExpressionIDisposable", resourceCulture);
             }
         }
         
@@ -183,6 +183,15 @@ namespace XppInterpreter.Resources {
         internal static string ExceptionNotExceptionMember {
             get {
                 return ResourceManager.GetString("ExceptionNotExceptionMember", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Instances of type &apos;{0}&apos; cannot be added to a container..
+        /// </summary>
+        internal static string ExceptionRefTypeContainer {
+            get {
+                return ResourceManager.GetString("ExceptionRefTypeContainer", resourceCulture);
             }
         }
         

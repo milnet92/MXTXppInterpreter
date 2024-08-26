@@ -795,7 +795,7 @@ namespace XppInterpreter.Parser
 
             if (!ReflectionHelper.TypeImplementsInterface(inferedType, typeof(IDisposable)))
             {
-                HandleParseError(MessageProvider.ExceptionExpressiIDisposable, stop: false);
+                HandleParseError(MessageProvider.ExceptionExpressionIDisposable, stop: false);
             }
 
             Match(TType.RightParenthesis);
@@ -1161,7 +1161,17 @@ namespace XppInterpreter.Parser
 
             while (currentToken.TokenType != TType.RightBracket)
             {
-                elements.Add(Expression());
+                var expression = Expression();
+
+                // Check type
+                var elementType = _typeInferer.InferType(expression, _parseContext);
+
+                if (_proxy.Casting.IsReferenceType(elementType))
+                {
+                    HandleParseError(string.Format(MessageProvider.ExceptionRefTypeContainer, elementType.Name), stop: false);
+                }
+
+                elements.Add(expression);
 
                 if (currentToken.TokenType != TType.RightBracket)
                 {
