@@ -626,6 +626,8 @@ namespace XppInterpreter.Lexer
             Reserve(Word.ForceLiterals);
             Reserve(Word.ForceNestedLoops);
             Reserve(Word.ForcePlaceHolders);
+            Reserve(Word.OptimisticLock);
+            Reserve(Word.PessimisticLock);
             Reserve(Word.GenerateOnly);
             Reserve(Word.ForceSelectOrder);
             Reserve(Word.ForUpdate);

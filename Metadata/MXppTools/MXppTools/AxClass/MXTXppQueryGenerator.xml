@@ -213,7 +213,10 @@ internal final class MXTXppQueryGenerator implements XppInterpreter.Interpreter.
             {
                 this.AddSelectionField(sysDaQuery.projection(), sysDaQuery.table().TableId, selectionFields.GetValue(i), _runtimeContext);
             }
-
+        }
+        else
+        {
+            this.addAllSelectionFields(sysDaQuery.projection(), sysDaQuery.table().TableId);
         }
 
         // Group by
@@ -262,6 +265,20 @@ internal final class MXTXppQueryGenerator implements XppInterpreter.Interpreter.
         }
 
         return sysDaQuery;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>addAllSelectionFields</Name>
+				<Source><![CDATA[
+    private void addAllSelectionFields(SysDaSelection selection, TableId _tableId)
+    {
+        SysDictTable dictTable = SysDictTable::newTableId(_tableId);
+        for (int i = 1; i <= dictTable.fieldCnt(TableScope::IncludeBaseTables); i++)
+        {
+            selection.add(fieldId2Name(_tableId, dictTable.fieldCnt2Id(i, TableScope::IncludeBaseTables)));
+        }
     }
 
 ]]></Source>
