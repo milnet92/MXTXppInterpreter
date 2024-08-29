@@ -11,6 +11,17 @@ namespace XppInterpreter.Interpreter
         {
         }
 
+        public virtual void VisitContainerAssignment(ContainerAssignment containerAssignment)
+        {
+            foreach (var assignee in containerAssignment.Assignees)
+            {
+                assignee.Accept(this);
+            }
+
+            containerAssignment.Expression.Accept(this);
+        }
+
+
         public virtual void VisitTry(Try @try)
         {
             @try.TryBlock.Accept(this);

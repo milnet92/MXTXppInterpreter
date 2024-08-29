@@ -68,6 +68,7 @@
     <Compile Include="Interpreter\Bytecode\ByteCodeGenerator.cs" />
     <Compile Include="Interpreter\Bytecode\Call.cs" />
     <Compile Include="Interpreter\Bytecode\Case.cs" />
+    <Compile Include="Interpreter\Bytecode\ContainerStore.cs" />
     <Compile Include="Interpreter\Bytecode\Dispose.cs" />
     <Compile Include="Interpreter\Bytecode\ExceptionCatchReference.cs" />
     <Compile Include="Interpreter\Bytecode\ChangeCompany.cs" />
@@ -159,6 +160,7 @@
     <Compile Include="Lexer\XppLexer.cs" />
     <Compile Include="Parser\ArrayAccess.cs" />
     <Compile Include="Parser\CatchContext.cs" />
+    <Compile Include="Parser\ContainerAssignment.cs" />
     <Compile Include="Parser\FunctionDeclarationReference.cs" />
     <Compile Include="Parser\Is.cs" />
     <Compile Include="Parser\As.cs" />

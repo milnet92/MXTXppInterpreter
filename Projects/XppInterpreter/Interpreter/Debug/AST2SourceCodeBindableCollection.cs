@@ -100,6 +100,12 @@ namespace XppInterpreter.Interpreter.Debug
             base.VisitContainerInitialisation(containerInitialisation);
         }
 
+        public override void VisitContainerAssignment(ContainerAssignment containerAssignment)
+        {
+            AddToCollection(containerAssignment);
+            base.VisitContainerAssignment(containerAssignment);
+        }
+
         public override void VisitDeleteFrom(DeleteFrom deleteFrom)
         {
             AddToCollection(deleteFrom);

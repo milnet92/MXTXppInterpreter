@@ -20,6 +20,7 @@ namespace XppInterpreter.Interpreter
         void VisitWhileSelect(WhileSelect whileSelect);
         void VisitChangeCompany(ChangeCompany changeCompany);
         void VisitTtsCommit(TtsCommit ttsCommit);
+        void VisitContainerAssignment(ContainerAssignment containerAssignment);
         void VisitSwitch(Switch @switch);
         void VisitTtsBegin(TtsBegin ttsBegin);
         void VisitTtsAbort(TtsAbort ttsAbort);

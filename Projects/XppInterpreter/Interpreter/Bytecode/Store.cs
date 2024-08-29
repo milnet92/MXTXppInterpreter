@@ -35,6 +35,11 @@ namespace XppInterpreter.Interpreter.Bytecode
             ClrType = clrType;
         }
 
+        internal virtual object GetValue(RuntimeContext context)
+        {
+            return context.Stack.Pop();
+        }
+
         public void Execute(RuntimeContext context)
         {
             int index = IsArray ? (int)context.Stack.Pop() : 0;
@@ -42,7 +47,7 @@ namespace XppInterpreter.Interpreter.Bytecode
             if (FromStack)
             {
                 var caller = context.Stack.Pop();
-                var value = context.Stack.Pop();
+                var value = GetValue(context);
 
                 if (IsArray)
                 {
@@ -57,7 +62,7 @@ namespace XppInterpreter.Interpreter.Bytecode
             }
             else
             {
-                var value = context.Stack.Pop();
+                var value = GetValue(context);
 
                 if (IsArray)
                 {
