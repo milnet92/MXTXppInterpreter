@@ -423,7 +423,9 @@
 
             setTimeout(function(){
                 clearTimeout(change_timer);
-                editor.setValue(editor.getValue(), -1);
+                var savedPosition = editor.getCursorPosition();
+                editor.setValue(editor.getValue(), 1);
+                editor.moveCursorToPosition(savedPosition);
             });
 
             listObjects = {
