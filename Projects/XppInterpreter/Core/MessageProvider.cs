@@ -52,5 +52,6 @@ namespace XppInterpreter.Core
         public static string ExceptionInvalidExceptionEnum => GetString(nameof(ExceptionInvalidExceptionEnum));
         public static string ExceptionRetryNotInCatch => GetString(nameof(ExceptionRetryNotInCatch));
         public static string ExceptionRefTypeContainer => GetString(nameof(ExceptionRefTypeContainer));
+        public static string ExceptionAssignmentNotContainer => GetString(nameof(ExceptionAssignmentNotContainer));
     }
 }

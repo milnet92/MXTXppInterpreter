@@ -952,6 +952,7 @@ namespace XppInterpreter.Parser
         {
             switch (currentToken.TokenType)
             {
+                case TType.LeftBracket: return ContainerAssignment();
                 case TType.Retry: return Retry();
                 case TType.Using: return Using();
                 case TType.Try: return Try();
@@ -1429,6 +1430,45 @@ namespace XppInterpreter.Parser
             }
 
             return expr;
+        }
+
+        internal ContainerAssignment ContainerAssignment()
+        {
+            var start = currentScanResult;
+            Match(TType.LeftBracket);
+            List<Variable> assignees = new List<Variable>();
+            do
+            {
+                if (currentToken.TokenType == TType.Comma)
+                {
+                    Match(TType.Comma);
+                }
+
+                Expression assignee = Variable();
+                
+                if (assignee is FunctionCall || !(assignee is Variable))
+                {
+                    HandleParseError(MessageProvider.ExceptionInvalidSyntax);
+                }
+
+                assignees.Add((Variable)assignee);
+
+            } while (currentToken.TokenType == TType.Comma);
+
+            Match(TType.RightBracket);
+            Match(TType.Assign);
+
+            Expression expr = Expression();
+            var exprType = _typeInferer.InferType(expr, _parseContext);
+
+            if (exprType != _proxy.Casting.GetSystemTypeFromTypeName("container"))
+            {
+                HandleParseError(MessageProvider.ExceptionAssignmentNotContainer, stop: false);
+            }
+
+            Match(TType.Semicolon);
+
+            return new ContainerAssignment(assignees, expr, SourceCodeBinding(start, lastScanResult));
         }
 
         internal Statement Assignment(bool matchSemicolon = true)

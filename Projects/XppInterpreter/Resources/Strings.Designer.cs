@@ -61,6 +61,15 @@ namespace XppInterpreter.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Right side of the assignment must be a container..
+        /// </summary>
+        internal static string ExceptionAssignmentNotContainer {
+            get {
+                return ResourceManager.GetString("ExceptionAssignmentNotContainer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Default part must be the last case in switch statement..
         /// </summary>
         internal static string ExceptionDefaultSwitchStmt {

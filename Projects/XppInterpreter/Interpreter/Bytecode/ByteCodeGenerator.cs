@@ -223,6 +223,36 @@ namespace XppInterpreter.Interpreter.Bytecode
             Emit(new Store(assignment.Assignee.Name, fromCaller, false, isArray, null, null));
         }
 
+        public void VisitContainerAssignment(ContainerAssignment containerAssignment)
+        {
+            EmitDebugSymbol(containerAssignment);
+
+            containerAssignment.Expression.Accept(this);
+
+            int containerIndex = 1;
+            int maxIndex = containerAssignment.Assignees.Count;
+
+            foreach (var assignee in containerAssignment.Assignees)
+            {
+                bool fromCaller = assignee.Caller != null;
+                if (fromCaller)
+                {
+                    assignee.Caller.Accept(this);
+                }
+
+                bool isArray = false;
+                if (assignee is ArrayAccess access)
+                {
+                    isArray = true;
+                    access.Index.Accept(this);
+                }
+
+                Emit(new ContainerStore(assignee.Name, containerIndex, containerIndex == maxIndex, fromCaller, false, isArray, null, null));
+
+                containerIndex++;
+            }
+        }
+
         public void VisitBinaryOperation(BinaryOperation binaryOperation)
         {
             binaryOperation.LeftOperand.Accept(this);
