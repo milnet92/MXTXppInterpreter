@@ -337,6 +337,14 @@ namespace XppInterpreter.Parser
             {
                 validateVariableName = caller is null;
 
+                HandleMetadataInterruption(
+                    identifier.Line,
+                    identifier.Start,
+                    identifier.End,
+                    identifier.Token,
+                    TokenMetadataType.Variable,
+                    caller);
+
                 if (currentToken.TokenType == TType.LeftBracket)
                 {
                     Match(TType.LeftBracket);
