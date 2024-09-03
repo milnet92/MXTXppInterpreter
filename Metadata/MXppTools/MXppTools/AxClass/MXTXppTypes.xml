@@ -14,7 +14,7 @@ internal static final class MXTXppTypes
     public static System.Type GuidType = System.Type::GetType("System.Guid");
     public static System.Type DecimalType = System.Type::GetType("System.Decimal");
     public static System.Type StringType = System.Type::GetType("System.String");
-    public static System.Type DateTimeType = System.Type::GetType("System.DateTime");
+    public static System.Type DateTimeType = System.Type::GetType("Microsoft.Dynamics.Ax.Xpp.AxShared.utcdatetime, Microsoft.Dynamics.Ax.Xpp.AxShared");
     public static System.Type DateType = System.Type::GetType("Microsoft.Dynamics.Ax.Xpp.AxShared.Date, Microsoft.Dynamics.Ax.Xpp.AxShared");
     public static System.Type ContainerType = System.Type::GetType("System.Object[]");
     public static System.Type AnyTypeType = System.Type::GetType("System.Object");

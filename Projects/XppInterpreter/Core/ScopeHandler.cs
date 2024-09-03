@@ -13,10 +13,12 @@ namespace XppInterpreter.Core
         public Scope CurrentScope { get; private set; }
         public ExceptionHandler CurrentExceptionHandler => AreExceptionsHandled ? _handlerStack.Peek() : null;
         public bool AreExceptionsHandled => _handlerStack.Count > 0;
+        private readonly Interpreter.Proxy.XppProxy _proxy;
 
-        public ScopeHandler()
+        public ScopeHandler(Interpreter.Proxy.XppProxy proxy)
         {
             CurrentScope = GlobalScope;
+            _proxy = proxy;
         }
 
         private object InternalGetVar(Scope scope, string varName)
@@ -152,7 +154,7 @@ namespace XppInterpreter.Core
             {
                 string normalizedValue = DebugHelper.GetDebugDisplayValue(parsedValue);
 
-                CurrentScope.SetVar(name, parsedValue, false);
+                CurrentScope.SetVar(name, parsedValue, _proxy.Casting, false);
                 CurrentScope._hash.Update(name, normalizedValue);
 
                 return new VariableEditValueResponse()

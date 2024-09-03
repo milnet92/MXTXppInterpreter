@@ -91,7 +91,6 @@ namespace XppInterpreter.Lexer
         Int32,
         Int64,
         Container,
-        Date,
         Long,
         Star,
         Division,
@@ -160,6 +159,7 @@ namespace XppInterpreter.Lexer
         TypeBoolean,
         TypeDatetime,
         TypeContainer,
+        TypeDate,
         #endregion
 
         #region Query tokens

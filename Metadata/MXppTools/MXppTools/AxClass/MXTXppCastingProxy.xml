@@ -392,14 +392,21 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
         if (_toType == MXTXppTypes::AnyTypeType) return true;
 
         // int, int64, real, boolean and enum are all implicitly convertible
-        Set typeCheckSet = new Set(Types::Class);
-        typeCheckSet.add(MXTXppTypes::Int32Type);
-        typeCheckSet.add(MXTXppTypes::Int64Type);
-        typeCheckSet.add(MXTXppTypes::DecimalType);
-        typeCheckSet.add(MXTXppTypes::BooleanType);
+        Set numCheckSet = new Set(Types::Class);
+        numCheckSet.add(MXTXppTypes::Int32Type);
+        numCheckSet.add(MXTXppTypes::Int64Type);
+        numCheckSet.add(MXTXppTypes::DecimalType);
+        numCheckSet.add(MXTXppTypes::BooleanType);
 
-        if ((typeCheckSet.in(_fromType) || this.isEnumType(_fromType)) &&
-            (typeCheckSet.in(_toType) || this.isEnumType(_toType)))
+        if ((numCheckSet.in(_fromType) || this.isEnumType(_fromType)) &&
+            (numCheckSet.in(_toType) || this.isEnumType(_toType)))
+        {
+            return true;
+        }
+
+        // date and datetime are convertible
+        if ((_toType == MXTXppTypes::DateType && _fromType == MXTXppTypes::DateTimeType) ||
+            (_toType == MXTXppTypes::DateTimeType && _fromType == MXTXppTypes::DateType))
         {
             return true;
         }
@@ -429,6 +436,7 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
             case MXTXppTypes::CommonType:
             case MXTXppTypes::ContainerType:
             case MXTXppTypes::DateTimeType:
+            case MXTXppTypes::DateType:
             case MXTXppTypes::DecimalType:
             case MXTXppTypes::GuidType:
             case MXTXppTypes::Int32Type:
@@ -451,6 +459,35 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
         }
 
         return false;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>Cast</Name>
+				<Source><![CDATA[
+    public System.Object Cast(System.Object _value, System.Type _toType)
+    {
+        boolean isCommonType = _toType == MXTXppTypes::CommonType || _toType.IsSubclassOf(MXTXppTypes::CommonType);
+        
+        if (this.isEnumType(_toType))
+        {
+            return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToInt(_value);
+        }
+
+        switch (_toType)
+        {
+            case MXTXppTypes::BooleanType: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ToBoolean(_value);
+            case MXTXppTypes::DateType: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToDate(_value, false);
+            case MXTXppTypes::DateTimeType: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToDateTime(_value, false);
+            case MXTXppTypes::DecimalType: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToReal(_value);
+            case MXTXppTypes::GuidType: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToGuid(_value);
+            case MXTXppTypes::Int32Type: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToInt(_value);
+            case MXTXppTypes::Int64Type: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToInt64(_value);
+            case MXTXppTypes::StringType: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToString(_value);
+        }
+
+        return System.Convert::ChangeType(_value, _toType);
     }
 
 ]]></Source>

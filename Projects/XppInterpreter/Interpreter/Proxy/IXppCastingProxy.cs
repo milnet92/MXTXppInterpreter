@@ -15,5 +15,7 @@ namespace XppInterpreter.Interpreter.Proxy
         object As(object value, string typeName);
         bool ImplicitConversionExists(Type from, Type to);
         bool IsReferenceType(Type type);
+        object Cast(object value, Type toType);
+
     }
 }

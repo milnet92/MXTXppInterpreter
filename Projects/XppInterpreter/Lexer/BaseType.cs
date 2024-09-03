@@ -51,9 +51,4 @@
     {
         public Container(object[] container) : base(container, TType.Container) { }
     }
-
-    public class Date : BaseType
-    {
-        public Date(object date) : base(date, TType.Date) { }
-    }
 }

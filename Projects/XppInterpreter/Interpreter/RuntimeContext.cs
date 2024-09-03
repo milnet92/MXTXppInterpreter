@@ -29,7 +29,7 @@ namespace XppInterpreter.Interpreter
         public RuntimeContext(XppProxy proxy, ByteCode bytecode)
         {
             Proxy = proxy;
-            ScopeHandler = new ScopeHandler();
+            ScopeHandler = new ScopeHandler(proxy);
             ByteCode = bytecode;
         }
 

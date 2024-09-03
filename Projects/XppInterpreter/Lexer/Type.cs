@@ -11,6 +11,7 @@
         public static readonly Type Container = new Type("container", TType.TypeContainer);
         public static readonly Type Real = new Type("real", TType.TypeReal);
         public static readonly Type DateTime = new Type("utcdatetime", TType.TypeDatetime);
+        public static readonly Type Date = new Type("date", TType.TypeDate);
         public static readonly Type TimeOfDay = new Type("timeofday", TType.TypeTimeOfDay);
         public static readonly Type Str = new Type("str", TType.TypeStr);
         public static readonly Type Var = new Type("var", TType.Var);

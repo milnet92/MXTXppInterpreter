@@ -43,7 +43,7 @@ namespace XppInterpreter.Core
             throw new Exception($"Variable {varName} was not declared.");
         }
 
-        public void SetVar(string varName, object varValue, bool forceOnTop = false, Type declarationType = null)
+        public void SetVar(string varName, object varValue, Interpreter.Proxy.IXppCastingProxy castingProxy, bool forceOnTop = false, Type declarationType = null)
         {
             Scope current = this;
             bool found = false;
@@ -70,7 +70,7 @@ namespace XppInterpreter.Core
                                 }
                                 else
                                 {
-                                    value = Convert.ChangeType(varValue, declarationType);
+                                    value = castingProxy.Cast(varValue, declarationType);
                                 }
                             }
                             else

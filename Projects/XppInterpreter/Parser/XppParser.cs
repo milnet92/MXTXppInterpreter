@@ -231,7 +231,7 @@ namespace XppInterpreter.Parser
             HandleMetadataInterruption(start.Line, start.Start, start.End, start.Token, TokenMetadataType.IntrinsicMethod);
 
             var parameters = IntrinsicParameters(functionName);
-            object result = null;
+            object result;
             Expression ret = null;
 
             try
@@ -271,10 +271,6 @@ namespace XppInterpreter.Parser
             else if (result is object[] conValue)
             {
                 ret = new Constant(conValue, binding);
-            }
-            else if (result != null)
-            {
-                ret = new Constant(result, binding);
             }
 
             return ret;
@@ -608,6 +604,7 @@ namespace XppInterpreter.Parser
                 TType.TypeReal,
                 TType.TypeStr,
                 TType.TypeTimeOfDay,
+                TType.TypeDate,
                 TType.TypeDatetime,
                 TType.Var);
 
@@ -1022,6 +1019,7 @@ namespace XppInterpreter.Parser
                 case TType.ChangeCompany: return ChangeCompany();
                 case TType.Var:
                 case TType.TypeStr:
+                case TType.TypeDate:
                 case TType.TypeDatetime:
                 case TType.TypeTimeOfDay:
                 case TType.TypeContainer:
@@ -1064,6 +1062,7 @@ namespace XppInterpreter.Parser
                 TType.TypeReal,
                 TType.TypeStr,
                 TType.TypeTimeOfDay,
+                TType.TypeDate,
                 TType.TypeDatetime,
                 TType.Void);
 
@@ -1125,6 +1124,7 @@ namespace XppInterpreter.Parser
                 TType.TypeReal,
                 TType.TypeStr,
                 TType.TypeTimeOfDay,
+                TType.TypeDate,
                 TType.TypeDatetime);
 
             Word type = typeResult.Token as Word;

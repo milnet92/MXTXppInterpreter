@@ -655,6 +655,7 @@ namespace XppInterpreter.Lexer
             Reserve(Type.Container);
             Reserve(Type.Real);
             Reserve(Type.DateTime);
+            Reserve(Type.Date);
             Reserve(Type.TimeOfDay);
             Reserve(Type.Str);
             Reserve(Type.Var);
