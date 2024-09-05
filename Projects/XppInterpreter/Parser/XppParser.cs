@@ -690,6 +690,8 @@ namespace XppInterpreter.Parser
 
             if (isArray)
             {
+                declarationType = _proxy.Casting.GetArrayType(declarationType);
+
                 ret = new VariableArrayDeclaration(typeWord, declarationType, arrayIdentifier, arraySize, SourceCodeBinding(typeResult, lastScanResult));
 
                 _parseContext.CurrentScope.VariableDeclarations.Add(
@@ -1544,7 +1546,7 @@ namespace XppInterpreter.Parser
 
                     if (!_proxy.Casting.ImplicitConversionExists(assignedType, assigneeType))
                     {
-                        HandleParseError(string.Format(MessageProvider.ExceptionImplicitConversion, assignedType.Name, assigneeVar.Name), stop: false);
+                        HandleParseError(string.Format(MessageProvider.ExceptionImplicitConversion, assignedType.Name, assigneeVar.ReturnType.Name), stop: false);
                     }
                 }
             }

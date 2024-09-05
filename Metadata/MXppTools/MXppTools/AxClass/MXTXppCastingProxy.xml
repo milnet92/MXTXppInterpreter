@@ -492,6 +492,18 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 
 ]]></Source>
 			</Method>
+			<Method>
+				<Name>GetArrayType</Name>
+				<Source><![CDATA[
+    public System.Type GetArrayType(System.Type _type)
+    {
+        if (_type == null) return null;
+
+        return MXTXppTypes::ArrayType.MakeGenericType(_type);
+    }
+
+]]></Source>
+			</Method>
 		</Methods>
 	</SourceCode>
 </AxClass>

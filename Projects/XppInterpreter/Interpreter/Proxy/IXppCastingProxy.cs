@@ -16,6 +16,6 @@ namespace XppInterpreter.Interpreter.Proxy
         bool ImplicitConversionExists(Type from, Type to);
         bool IsReferenceType(Type type);
         object Cast(object value, Type toType);
-
+        Type GetArrayType(Type type);
     }
 }
