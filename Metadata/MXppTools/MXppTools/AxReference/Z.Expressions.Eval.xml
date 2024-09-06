@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<AxReference xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
-	<Name>Z.Expressions.Eval</Name>
-	<AssemblyName>Z.Expressions.Eval</AssemblyName>
-	<AssemblyDisplayName>Z.Expressions.Eval, Version=6.1.4.0, Culture=neutral, PublicKeyToken=59b66d028979105b</AssemblyDisplayName>
-	<PublicKeyToken>59b66d028979105b</PublicKeyToken>
-	<Version>6.1.4.0</Version>
-</AxReference>

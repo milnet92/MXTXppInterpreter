@@ -1,12 +1,17 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using Z.Expressions;
 
 namespace XppInterpreter.Interpreter.Debug
 {
     public static class DebugHelper
     {
+        public static string GetEdtArrayDebugDisplay(object array)
+        {
+            return $"Size = {array.GetType().GetProperty("Size").GetValue(array)}";
+        }
+
         public static string GetDebugDisplayValue(object instance)
         {
             if (instance is null)
@@ -14,18 +19,9 @@ namespace XppInterpreter.Interpreter.Debug
                 return "null";
             }
 
-            if (instance.GetType().GetCustomAttributes(typeof(DebuggerDisplayAttribute), true).Any())
+            if (instance.GetType().Name.Contains("EdtArray"))
             {
-                var displayAttribute = (DebuggerDisplayAttribute)instance.GetType().GetCustomAttributes(typeof(DebuggerDisplayAttribute), true).First();
-
-                try
-                {
-                    return Eval.Execute<string>($"$\"{displayAttribute.Value}\"", instance);
-                }
-                catch
-                {
-                    // Do nothing
-                }
+                return GetEdtArrayDebugDisplay(instance);
             }
             else if (instance is object[] objArray) // Containers
             {
