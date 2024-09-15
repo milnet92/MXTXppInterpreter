@@ -124,11 +124,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PACKAGE_NAME }}
-          path: ${{ env.ARTIFACTS_PATH }}
+          path: ${{ env.ARTIFACTS_PATH }}/*.zip
 
       - name: Add logs to job summary
         run: |
-          $logFiles = Get-ChildItem -Path "C:\Temp\_bld" -Recurse -Filter *.log
+          $logFiles = Get-ChildItem -Path "${{ env.ARTIFACTS_PATH }}\Logs" -Recurse -Filter *.log
           $summary = "# Logs `n`n"
           if ($logFiles) {
               foreach ($logFile in $logFiles) {
