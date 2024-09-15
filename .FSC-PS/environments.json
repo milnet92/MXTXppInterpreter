@@ -1,0 +1,13 @@
+[
+    {
+      "name":"Dummy",
+      "settings":{
+        "buildVersion": "10.0.39",
+        "sourceBranch": "main",
+        "lcsEnvironmentId": "12345678-1234-1234-1234-123456789012",
+        "azVmname" : "Dummy",
+        "azVmrg" : "Dummy",
+        "cron":"0 0 31 2 *"
+      }
+    }
+  ]

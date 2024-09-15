@@ -1,0 +1,6 @@
+{
+    "templateUrl":  "https://github.com/fscpscollaborative/fscps",
+    "templateBranch":  "main",
+    "runs-on":  "windows-latest",
+    "metadataPath": "Metadata"
+}
