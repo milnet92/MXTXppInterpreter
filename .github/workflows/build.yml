@@ -1,0 +1,169 @@
+on:
+  pull_request:
+  workflow_dispatch:
+   inputs:
+      version:
+        description: 'Select FSCM Version. Use wildcard * to let settings .json files decide.'
+        required: false
+        default: '10.0.39'
+
+      includeTestModels:
+        type: boolean
+        default: false
+        description: Include test models
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: pwsh
+    
+env:
+  FORCE_COLOR: 3
+
+jobs:
+   Initialization:
+    runs-on: [ windows-latest ]
+    outputs:
+      type: ${{ steps.ReadSettings.outputs.type }}
+      source_branch: ${{ steps.ReadSettings.outputs.source_branch }}
+      versions: ${{ steps.ReadSettings.outputs.VersionsJson }}
+      environments: ${{ steps.ReadSettings.outputs.EnvironmentsJson }}
+      githubRunner: ${{ steps.ReadSettings.outputs.GitHubRunnerJson }}
+    steps:
+      - name: Support longpaths
+        run: git config --system core.longpaths true
+        
+      - name: Checkout
+        uses: actions/checkout@v4.1.1
+
+      - name: Initialize the workflow
+        uses: fscpscollaborative/fscps.gh/WorkflowInitialize@v2.1
+        id: init
+        env:
+          secrets: ${{ toJson(secrets) }}    
+
+      - name: Read settings
+        id: ReadSettings
+        uses: fscpscollaborative/fscps.gh/ReadSettings@v2.1
+        with:
+          version: ${{ inputs.version }}
+          
+   BuildDotNet:
+    needs: [ Initialization ]
+    runs-on: ${{ fromJson(needs.Initialization.outputs.githubRunner) }}
+    strategy:
+      matrix:
+        version: ${{ fromJson(needs.Initialization.outputs.versions) }}
+      fail-fast: false
+    name: Build .NET ${{ matrix.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.1
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v2
+
+      - name: Restore NuGet packages
+        run: nuget restore Projects/XppInterpreter/XppInterpreter.csproj -PackagesDirectory Projects/XppInterpreter/packages
+
+      - name: Build
+        run: msbuild Projects/XppInterpreter/XppInterpreter.csproj /p:VersionSuffix=pr /p:Configuration=Release /p:Version=0.0.0.${{ github.event.pull_request.number }} /p:InformationalVersion=0.0.0.${{ github.event.pull_request.number }}-pr -fileLogger
+
+      - name: Upload XppInterpreter
+        uses: actions/upload-artifact@v4
+        with:
+          name: XppInterpreter
+          path: Projects/XppInterpreter/bin/Release 
+
+   Build:
+    needs: [ Initialization, BuildDotNet ]
+    runs-on: ${{ fromJson(needs.Initialization.outputs.githubRunner) }}
+    strategy:
+      matrix:
+        version: ${{ fromJson(needs.Initialization.outputs.versions) }}
+      fail-fast: false
+    name: Build ${{ matrix.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.1
+
+      - name: Download XppInterpreter
+        uses: actions/download-artifact@v4
+        with:
+          name: XppInterpreter
+          path: Metadata/MXppTools/bin
+
+      - name: Read settings
+        uses: fscpscollaborative/fscps.gh/ReadSettings@v2.1
+        with:
+          version: ${{ matrix.version }}
+          
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v2
+        with:
+          nuget-version: 5.10.x    
+          
+      - name: Run pipeline
+        uses: fscpscollaborative/fscps.gh/RunPipeline@v2.1
+        id: runpipeline
+        with:
+          type: ${{ needs.Initialization.outputs.type}}
+          version: ${{ matrix.version }}
+          settingsJson: ${{ env.Settings }}
+          secretsJson: ${{ env.RepoSecrets }}
+      
+      - name: Publish artifacts  
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PACKAGE_NAME }}
+          path: ${{ env.ARTIFACTS_PATH }}
+
+      - name: Add logs to job summary
+        run: |
+          $logFiles = Get-ChildItem -Path "C:\Temp\_bld" -Recurse -Filter *.log
+          $summary = "# Logs `n`n"
+          if ($logFiles) {
+              foreach ($logFile in $logFiles) {
+                  $content = Get-Content -Path $logFile
+                  $summary += "## $logFile `n"
+                  foreach ($line in $content) {
+                      # if the line consists only of = or - characters 
+                      # (which would be interpreted as a setext heading 
+                      # (https://github.github.com/gfm/#setext-headings)), 
+                      # add a new line before it
+                      if ($line -match "^[=-]+$") {
+                          $summary += "`n$line`n"
+                      } else {
+                        $summary += $line + "`n"
+                      } 
+                  }
+              }
+          }
+          $summary >> $env:GITHUB_STEP_SUMMARY
+          
+   PostProcess: 
+    if: ${{ !cancelled() }}
+    runs-on: ${{ fromJson(needs.Initialization.outputs.githubRunner) }}
+    needs: [ Initialization,  Build ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.1
+
+      - name: Read settings
+        uses: fscpscollaborative/fscps.gh/ReadSettings@v2.1
+
+      - name: Finalize the workflow
+        id: PostProcess
+        uses: fscpscollaborative/fscps.gh/WorkflowPostProcess@v2.1
+        with:
+          remove_current: ${{ needs.Initialization.outputs.environments == '' }}
+          settingsJson: ${{ env.Settings }}
+          secretsJson: ${{ env.RepoSecrets }}

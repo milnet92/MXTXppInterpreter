@@ -41,3 +41,9 @@ For development environments no additional security is needed, but if you run th
 * **Macros** usage and declarations are not supported
 * **Class declarations** are not supported
 * **.NET namespaces** cannot be referenced
+
+# Build Action
+The GitHub build action is based on [FSC-PS for GitHub](https://github.com/fscpscollaborative/fscps).
+
+# Build Status
+[![(BUILD)](../../actions/workflows/build.yml/badge.svg)](../../actions/workflows/build.yml)
