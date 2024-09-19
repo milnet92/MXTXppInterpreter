@@ -43,7 +43,7 @@ var keywords = [
     "count",
     "update_recordset",
     "insert_recordset",
-    "delete_recordset",
+    "delete_from",
     "setting",
     "firstfast",
     "firstonly",
