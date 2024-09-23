@@ -177,7 +177,8 @@
             },
             exec: function () {
                 editor.insert("\n");
-            }
+            },
+            scrollIntoView: "cursor"
         }
 
         /// Setup completer
