@@ -198,6 +198,12 @@ public class MXTScriptEditor extends FormRun
             return;
         }
 
+        // Force save when we have a script
+        if (MXTXppInterpreterScript)
+        {
+            MXTXppInterpreterScript_ds.write();
+        }
+
         ExecuteButton.enabled(false);
         MXTXppInterpreterCodeEditorControl.enabled(false);
 
