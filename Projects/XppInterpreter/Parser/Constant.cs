@@ -15,6 +15,7 @@ namespace XppInterpreter.Parser
         public Constant(decimal value, SourceCodeBinding sourceCodeBinding) : base(new Lexer.Real(value), sourceCodeBinding) { }
         public Constant(Word value, SourceCodeBinding sourceCodeBinding) : base(value, sourceCodeBinding) { }
         public Constant(object[] container, SourceCodeBinding sourceCodeBinding) : base(new Lexer.Container(container), sourceCodeBinding) { }
+        public Constant(BaseType tokenType, SourceCodeBinding sourceCodeBinding) : base(tokenType, sourceCodeBinding) { }
 
         [DebuggerHidden]
         public override void Accept(IAstVisitor interpreter)

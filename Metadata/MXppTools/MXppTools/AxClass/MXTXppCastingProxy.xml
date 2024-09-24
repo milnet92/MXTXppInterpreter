@@ -504,6 +504,16 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 
 ]]></Source>
 			</Method>
+			<Method>
+				<Name>CreateDate</Name>
+				<Source><![CDATA[
+    public System.Object CreateDate(System.Int32 day, System.Int32 month, System.Int32 year)
+    {
+        return mkDate(day, month, year);
+    }
+
+]]></Source>
+			</Method>
 		</Methods>
 	</SourceCode>
 </AxClass>

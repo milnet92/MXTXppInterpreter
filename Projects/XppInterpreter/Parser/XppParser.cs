@@ -1236,6 +1236,11 @@ namespace XppInterpreter.Parser
                     HandleMetadataInterruption(stringScan.Line, stringScan.Start, stringScan.End, stringScan.Token, TokenMetadataType.Label);
                     return new Constant((string)(stringScan.Token as BaseType).Value, SourceCodeBinding(stringScan));
 
+                case TType.Date:
+                    var dateScan = Match(TType.Date);
+                    var date = (DateLiteral)(dateScan.Token as Date).Value;
+                    return new Constant(new BaseType(_proxy.Casting.CreateDate(date.Day, date.Month, date.Year), TType.Date), SourceCodeBinding(dateScan));
+
                 case TType.True:
                 case TType.False:
                     var boolScan = Match(currentToken.TokenType);

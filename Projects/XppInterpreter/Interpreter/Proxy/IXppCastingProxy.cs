@@ -17,5 +17,6 @@ namespace XppInterpreter.Interpreter.Proxy
         bool IsReferenceType(Type type);
         object Cast(object value, Type toType);
         Type GetArrayType(Type type);
+        object CreateDate(int day, int month, int year);
     }
 }
