@@ -42,13 +42,42 @@
         public Int64(long value) : base(value, TType.Int64) { }
     }
 
+    /// <summary>
+    /// Real (decimal) base type token
+    /// </summary>
     public class Real : BaseType
     {
         public Real(decimal value) : base(value, TType.Real) { }
     }
 
+    /// <summary>
+    /// Container base type token
+    /// </summary>
     public class Container : BaseType
     {
         public Container(object[] container) : base(container, TType.Container) { }
+    }
+
+
+    /// <summary>
+    /// Date base type token
+    /// </summary>
+    public class Date : BaseType
+    {
+        public Date(DateLiteral date) : base(date, TType.Date) { }
+    }
+
+    public readonly struct DateLiteral
+    {
+        public int Day { get; }
+        public int Month { get; }
+        public int Year { get; }
+
+        public DateLiteral(int day, int month, int year)
+        {
+            Day = day;
+            Month = month;
+            Year = year;
+        }
     }
 }

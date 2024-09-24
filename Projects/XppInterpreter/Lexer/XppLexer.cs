@@ -26,6 +26,9 @@ namespace XppInterpreter.Lexer
         int previousPositionStart = -1;
         int previousPositionEnd = -1;
 
+        private static DateTime MIN_DATE = new DateTime(1900, 1, 1);
+        private static DateTime MAX_DATE = new DateTime(2154, 12, 31);
+
         public XppLexer(string source)
         {
             _sourceCode = source;
@@ -236,6 +239,59 @@ namespace XppInterpreter.Lexer
             line++;
             positionStart = 0;
             positionEnd = 0;
+        }
+
+        /// <summary>
+        /// Scans a date literal
+        /// </summary>
+        /// <param name="day">Day part of the date</param>
+        /// <returns>Parsed date literal</returns>
+        public DateLiteral ScanDate(int day)
+        {
+            ReadChar();
+            long month = ScanNumber();
+            if (peek != '\\')
+            {
+                throw new ParseException($"Expected \\ in date literal.", new Token(TType.Date), line, positionEnd);
+            }
+
+            ReadChar();
+            long year = ScanNumber();
+
+            try
+            {
+                var dateTime = new DateTime((int)year, (int)month, (int)day);
+
+                if (dateTime < MIN_DATE || dateTime > MAX_DATE)
+                {
+                    throw new ParseException("Date out of range.", new Token(TType.Date), line, positionEnd);
+                }
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                // Invalid date
+                throw new ParseException($"Invalid date literal \"{day}\\{month}\\{year}\"", new Token(TType.Date), line, positionEnd);
+            }
+
+            return new DateLiteral((int)day, (int)month, (int)year);
+        }
+
+        /// <summary>
+        /// Scans a number
+        /// </summary>
+        /// <returns></returns>
+        public long ScanNumber()
+        {
+            long value = 0;
+            do
+            {
+                // Converts char to his number representation
+                value = 10 * value + (peek - '0');
+                ReadChar();
+
+            } while (char.IsDigit(peek));
+
+            return value;
         }
 
         /// <summary>
@@ -503,17 +559,15 @@ namespace XppInterpreter.Lexer
 
             if (char.IsDigit(peek))
             {
-                long value = 0;
-                do
-                {
-                    // Converts char to his number representation
-                    value = 10 * value + (peek - '0');
-                    ReadChar();
-
-                } while (char.IsDigit(peek));
+                long value = ScanNumber();
 
                 if (peek != '.')
                 {
+                    if (peek == '\\')
+                    {
+                        return ScanResult(new Date(ScanDate((int)value)));
+                    }
+
                     if (value > int.MaxValue)
                     {
                         return ScanResult(new Int64(value));
