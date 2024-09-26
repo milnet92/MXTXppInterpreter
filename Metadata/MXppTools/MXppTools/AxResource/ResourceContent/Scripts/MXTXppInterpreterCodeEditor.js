@@ -1,5 +1,6 @@
 (function () {
     'use strict';
+
     var Range = ace.require('ace/range').Range;
 
     var methodTooltip;
@@ -123,12 +124,7 @@
             }
         }
     }
-
-    var tokenMetadataCache = [];
-    var getTokenFromCache = function (row, column) {
-        return tokenMetadataCache.find((element) => element.Row == row && element.Column == column);
-    }
-
+    
     var showMethodToolTip = function (editor, self) {
         var TokenIterator = ace.require("ace/token_iterator").TokenIterator;
         var pos = editor.getCursorPosition();
@@ -444,8 +440,7 @@
         editor.clearSelection();
 
         editor.session.on('change', function (delta) {
-            tokenMetadataCache = [];
-            
+
             var sc = editor.getValue();
 
             self.SourceCode(sc);
@@ -495,6 +490,17 @@
             });
 
             e.stop();
+        });
+
+        var skipText = true;
+        $dyn.observe(this.Text, function (value) {
+            var isActualValue = value !== null && typeof value != 'undefined';
+
+            if ((!skipText && isActualValue) ||  (skipText && value !== "")) {
+                editor.setValue(value);
+            }
+
+            skipText = false;
         });
 
         $dyn.observe(this.Enabled, function (value) {

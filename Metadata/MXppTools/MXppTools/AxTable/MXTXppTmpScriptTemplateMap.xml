@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxTable xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppTmpScriptTemplateMap</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+public class MXTXppTmpScriptTemplateMap extends common
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>fillFromTemplateId</Name>
+				<Source><![CDATA[
+    /// <summary>
+    ///
+    /// </summary>
+    public static MXTXppTmpScriptTemplateMap fillFromTemplateId(MXTTemplateId _templateId)
+    {
+        MXTXppScriptTemplateMap     templateMap;
+        MXTXppTmpScriptTemplateMap  tmp;
+
+        insert_recordset tmp (Placeholder, LookupType, Name)
+        select Placeholder, LookupType, Name from templateMap
+            where templateMap.TemplateId == _templateId;
+
+        return tmp;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>performValueLookup</Name>
+				<Source><![CDATA[
+    public static void performValueLookup(MXTTemplateMapLookupType _lookupType, FormControl _control)
+    {
+        TableId tableId = MXTXppTmpScriptTemplateMap::getTableIdFromLookupType(_lookupType);
+        
+        if (!tableId) return;
+        
+        SysTableLookup sysLookup = SysTableLookup::newParameters(tableId, _control);
+
+        sysLookup.addLookupfield(MXTXppTmpScriptTemplateMap::getLookupField(tableId), true);
+
+        sysLookup.performFormLookup();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getLookupField</Name>
+				<Source><![CDATA[
+    private static FieldId getLookupField(TableId _tableId)
+    {
+        switch (_tableId)
+        {
+            case tableNum(SysSecDutyLookup):
+            case tableNum(SysSecPrivilegeLookup):
+            case tableNum(SysSecRoleLookup):
+                return fieldName2Id(_tableId, "Identifier");
+            
+            default:
+                return fieldName2Id(_tableId, "Name");
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getTableIdFromLookupType</Name>
+				<Source><![CDATA[
+    private static TableId getTableIdFromLookupType(MXTTemplateMapLookupType _lookupType)
+    {
+        switch (_lookupType)
+        {
+            case MXTTemplateMapLookupType::Class: return tableNum(SysMetaClassNameLookup);
+            case MXTTemplateMapLookupType::Table: return tableNum(SysMetaTableNameLookup);
+            case MXTTemplateMapLookupType::Query: return tableNum(SysMetaQueryNameLookup);
+            case MXTTemplateMapLookupType::MenuItemAction: return tableNum(SysMetaMenuItemActionNameLookup);
+            case MXTTemplateMapLookupType::MenuItemDisplay: return tableNum(SysMetaMenuItemDisplayNameLookup);
+            case MXTTemplateMapLookupType::MenuItemOutput: return tableNum(SysMetaMenuItemOutputNameLookup);
+            case MXTTemplateMapLookupType::SSRSReport: return tableNum(SysMetaReportNameLookup);
+            case MXTTemplateMapLookupType::SecDuty: return tableNum(SysSecDutyLookup);
+            case MXTTemplateMapLookupType::SecPrivilege: return tableNum(SysSecPrivilegeLookup);
+            case MXTTemplateMapLookupType::SecRole: return tableNum(SysSecRoleLookup);
+            case MXTTemplateMapLookupType::Enum: return tableNum(SysMetaEnumNameLookup);
+            case MXTTemplateMapLookupType::Edt: return tableNum(SysMetaEdtNameLookup);
+            case MXTTemplateMapLookupType::Form: return tableNum(SysMetaFormNameLookup);
+            case MXTTemplateMapLookupType::ConfigurationKey: return tableNum(SysMetaConfigurationKeyNameLookup);
+        }
+
+        return 0;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+	<SubscriberAccessLevel>
+		<Read>Allow</Read>
+	</SubscriberAccessLevel>
+	<SaveDataPerCompany>No</SaveDataPerCompany>
+	<TableType>InMemory</TableType>
+	<DeleteActions />
+	<FieldGroups>
+		<AxTableFieldGroup>
+			<Name>AutoReport</Name>
+			<Fields />
+		</AxTableFieldGroup>
+		<AxTableFieldGroup>
+			<Name>AutoLookup</Name>
+			<Fields />
+		</AxTableFieldGroup>
+		<AxTableFieldGroup>
+			<Name>AutoIdentification</Name>
+			<AutoPopulate>Yes</AutoPopulate>
+			<Fields />
+		</AxTableFieldGroup>
+		<AxTableFieldGroup>
+			<Name>AutoSummary</Name>
+			<Fields />
+		</AxTableFieldGroup>
+		<AxTableFieldGroup>
+			<Name>AutoBrowse</Name>
+			<Fields />
+		</AxTableFieldGroup>
+	</FieldGroups>
+	<Fields>
+		<AxTableField xmlns=""
+			i:type="AxTableFieldString">
+			<Name>Placeholder</Name>
+			<ExtendedDataType>MXTTemplatePlaceholder</ExtendedDataType>
+			<IgnoreEDTRelation>Yes</IgnoreEDTRelation>
+		</AxTableField>
+		<AxTableField xmlns=""
+			i:type="AxTableFieldEnum">
+			<Name>LookupType</Name>
+			<Visible>No</Visible>
+			<EnumType>MXTTemplateMapLookupType</EnumType>
+		</AxTableField>
+		<AxTableField xmlns=""
+			i:type="AxTableFieldString">
+			<Name>Value</Name>
+			<ExtendedDataType>String255</ExtendedDataType>
+			<IgnoreEDTRelation>Yes</IgnoreEDTRelation>
+			<Label>Value</Label>
+		</AxTableField>
+		<AxTableField xmlns=""
+			i:type="AxTableFieldString">
+			<Name>Name</Name>
+			<AllowEdit>No</AllowEdit>
+			<AllowEditOnCreate>No</AllowEditOnCreate>
+			<ExtendedDataType>Name</ExtendedDataType>
+			<IgnoreEDTRelation>Yes</IgnoreEDTRelation>
+		</AxTableField>
+	</Fields>
+	<FullTextIndexes />
+	<Indexes />
+	<Mappings />
+	<Relations />
+	<StateMachines />
+</AxTable>
