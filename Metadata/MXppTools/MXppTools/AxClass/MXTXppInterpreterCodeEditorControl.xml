@@ -15,6 +15,7 @@ public class MXTXppInterpreterCodeEditorControl extends FormTemplateControl
     FormProperty executionPhaseProperty;
     FormProperty themeProperty;
     FormProperty fontSizeProperty;
+    FormProperty textProperty;
 
     MXTXppInterpreterDebugSession debugSession;
 
@@ -42,6 +43,7 @@ public class MXTXppInterpreterCodeEditorControl extends FormTemplateControl
         this.setResourceBundleName("/resources/html/MXTXppInterpreterCodeEditor");
 
         sourceCodeProperty = properties.addProperty(methodStr(MXTXppInterpreterCodeEditorControl, sourceCode), Types::String);
+        textProperty = properties.addProperty(methodStr(MXTXppInterpreterCodeEditorControl, text), Types::String);
         modeProperty = properties.addProperty(methodStr(MXTXppInterpreterCodeEditorControl, mode), Types::String);
         parseErrorProperty = properties.addProperty(methodStr(MXTXppInterpreterCodeEditorControl, parseError), Types::Class);
         breakpointHitProperty = properties.addProperty(methodStr(MXTXppInterpreterCodeEditorControl, breakpointHit), Types::Class);
@@ -66,6 +68,7 @@ public class MXTXppInterpreterCodeEditorControl extends FormTemplateControl
 
         if(build)
         {
+            this.text(null);
             this.sourceCode(build.sourceCode());
             this.mode(this.getModeFromLanguage(build.Language()));
         }
@@ -97,6 +100,22 @@ public class MXTXppInterpreterCodeEditorControl extends FormTemplateControl
         }
 
         return sourceCodeProperty.parmValue();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>text</Name>
+				<Source><![CDATA[
+    [FormPropertyAttribute(FormPropertyKind::Value, "Text")]
+    public str text(str _text = textProperty.parmValue())
+    {
+        if (!prmIsDefault(_text))
+        {
+            textProperty.setValueOrBinding(_text);
+        }
+
+        return _text;
     }
 
 ]]></Source>
@@ -241,6 +260,8 @@ public class MXTXppInterpreterCodeEditorControl extends FormTemplateControl
     [FormCommand("ContinueExecution", true)]
     public void ContinueExecution()
     {
+        if (debugSession == null) return;
+
         debugSession.continueExecution(DebugAction::Continue);
     }
 
@@ -252,6 +273,8 @@ public class MXTXppInterpreterCodeEditorControl extends FormTemplateControl
     [FormCommand("StopExecution", true)]
     public void StopExecution()
     {
+        if (debugSession == null) return;
+
         debugSession.continueExecution(DebugAction::CancelExecution);
     }
 

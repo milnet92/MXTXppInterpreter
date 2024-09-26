@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxEnum xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTTemplateMapLookupType</Name>
+	<Label>@MXT:LookupType</Label>
+	<UseEnumValue>No</UseEnumValue>
+	<EnumValues>
+		<AxEnumValue>
+			<Name>None</Name>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Class</Name>
+			<Label>Classes</Label>
+			<Value>1</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Table</Name>
+			<Label>Tables</Label>
+			<Value>2</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Query</Name>
+			<Label>Queries</Label>
+			<Value>3</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Enum</Name>
+			<Label>Base enums</Label>
+			<Value>11</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Form</Name>
+			<Label>Forms</Label>
+			<Value>12</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Edt</Name>
+			<Label>EDTs</Label>
+			<Value>13</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>ConfigurationKey</Name>
+			<Label>Configuration keys</Label>
+			<Value>14</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>MenuItemAction</Name>
+			<Label>Action menu items</Label>
+			<Value>4</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>MenuItemDisplay</Name>
+			<Label>Display menu items</Label>
+			<Value>5</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>MenuItemOutput</Name>
+			<Label>Output menu items</Label>
+			<Value>6</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>SSRSReport</Name>
+			<Label>SSRS Reports</Label>
+			<Value>7</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>SecDuty</Name>
+			<Label>Security duties</Label>
+			<Value>8</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>SecPrivilege</Name>
+			<Label>Security privileges</Label>
+			<Value>9</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>SecRole</Name>
+			<Label>Security roles</Label>
+			<Value>10</Value>
+		</AxEnumValue>
+	</EnumValues>
+	<IsExtensible>true</IsExtensible>
+</AxEnum>

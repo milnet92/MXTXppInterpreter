@@ -10,7 +10,6 @@
 public class MXTScriptWorkspace extends FormRun
 {
 }
-
 ]]></Source>
 			</Method>
 		</Methods>
@@ -118,6 +117,30 @@ public class MXTScriptWorkspace extends FormRun
 								<NormalImage>Draft</NormalImage>
 								<OpenMode>New</OpenMode>
 								<Text>@MXT:Editor</Text>
+							</AxFormControl>
+							<AxFormControl xmlns=""
+								i:type="AxFormMenuFunctionButtonControl">
+								<Name>Templates</Name>
+								<Type>MenuFunctionButton</Type>
+								<FormControlExtension>
+									<Name>TileButtonControl</Name>
+									<ExtensionComponents />
+									<ExtensionProperties>
+										<AxFormControlExtensionProperty>
+											<Name>tile</Name>
+											<Type>String</Type>
+											<Value>MXTScriptTemplates</Value>
+										</AxFormControlExtensionProperty>
+										<AxFormControlExtensionProperty>
+											<Name>tileDisplay</Name>
+											<Type>Enum</Type>
+											<TypeName>TileDisplay</TypeName>
+											<Value>TextAndImage</Value>
+										</AxFormControlExtensionProperty>
+									</ExtensionProperties>
+								</FormControlExtension>
+								<CopyCallerQuery>No</CopyCallerQuery>
+								<OpenMode>Edit</OpenMode>
 							</AxFormControl>
 							<AxFormControl xmlns=""
 								i:type="AxFormMenuFunctionButtonControl">
