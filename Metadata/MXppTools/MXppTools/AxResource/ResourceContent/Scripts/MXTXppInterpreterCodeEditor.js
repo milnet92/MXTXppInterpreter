@@ -30,7 +30,7 @@
         "GithubDark": "github_dark"
     };
 
-    var removeMarker = function(editor, fromLine, fromPosition, toLine, toPosition, className) {
+    var removeMarker = function (editor, fromLine, fromPosition, toLine, toPosition, className) {
         const prevMarkers = editor.session.getMarkers();
         if (prevMarkers) {
             const prevMarkersArr = Object.keys(prevMarkers);
@@ -48,7 +48,7 @@
         }
     }
 
-    var removeLastBreakpointHitMarkerIfAny = function(editor) {
+    var removeLastBreakpointHitMarkerIfAny = function (editor) {
         if (lastBreakpointHit !== null) {
             removeMarker(
                 editor,
@@ -62,7 +62,7 @@
         }
     }
 
-    var addBreakpointHitMarker = function(editor, breakpointHit) {
+    var addBreakpointHitMarker = function (editor, breakpointHit) {
 
         // Remove last breakpointhit
         if (lastBreakpointHit !== null) {
@@ -87,7 +87,8 @@
             "text");
     }
 
-    var addOrRemoveBreakpointMarker = function(editor, breakpoint) {
+    var addOrRemoveBreakpointMarker = function (editor, breakpoint) {
+
         if (breakpoint.Removed) {
             editor.session.clearBreakpoint(breakpoint.RemovedFromLine);
             removeMarker(
@@ -98,6 +99,7 @@
                 breakpoint.RemovedToPosition,
                 "breakpointMarker");
         }
+
         if (breakpoint.Created) {
             editor.session.setBreakpoint(breakpoint.FromLine);
             editor.session.addMarker(new Range(
@@ -108,9 +110,35 @@
                 "breakpointMarker",
                 "text");
         }
+
+        if (breakpoint.Created || breakpoint.Removed) {
+            editor.renderer.updateFull(true);
+        }
     }
 
-    var clearErrors = function(editor) {
+    var addTokenCssClass = function (editor, clazz, fromLine, fromPosition, toLine, toPosition) {
+        var allRange = new Range(fromLine, fromPosition, toLine, toPosition);
+
+        for (let row = fromLine; row <= toLine; row++) {
+            var accLength = 0;
+            var lineElement = editor.renderer.$textLayer.$lines.get(row).element;
+
+            for (let i = 0; i < lineElement.childNodes.length; i++) {
+                var span = lineElement.childNodes[i];
+                var spanLength = span.textContent.length;
+
+                if (typeof span.classList !== "undefined" && (allRange.insideStart(row, accLength) || allRange.insideEnd(row, accLength))) {
+                    span.classList.add(clazz);
+                    span.classList.remove("ace_class"); // Remove ace_class as is set as !important
+                }
+
+                accLength += spanLength;
+            }
+        }
+    }
+
+
+    var clearErrors = function (editor) {
 
         editor.session.clearAnnotations();
         editor.session.clearBreakpoints();
@@ -122,9 +150,11 @@
             for (let item of prevMarkersArr) {
                 editor.session.removeMarker(prevMarkers[item].id);
             }
+
+            editor.renderer.updateFull(true);
         }
     }
-    
+
     var showMethodToolTip = function (editor, self) {
         var TokenIterator = ace.require("ace/token_iterator").TokenIterator;
         var pos = editor.getCursorPosition();
@@ -151,8 +181,7 @@
 
     }
 
-    var showTooTip = function(tooltip, x, y, message)
-    {
+    var showTooTip = function (tooltip, x, y, message) {
         tooltip.setHtml(message);
         tooltip.show(null, x, y - 30);
     }
@@ -264,15 +293,15 @@
                             _staticCompletion: isStatic,
                             _isIndexTable: isIndexTable
                         }, function (ret) {
-                        ret && callback(null, ret.Completions.map(function (c) {
-                            return {
-                                value: c.Value,
-                                name: c.Value,
-                                type: c.Type,
-                                docHTML: c.DocHtml
-                            };
-                        }));
-                    });
+                            ret && callback(null, ret.Completions.map(function (c) {
+                                return {
+                                    value: c.Value,
+                                    name: c.Value,
+                                    type: c.Type,
+                                    docHTML: c.DocHtml
+                                };
+                            }));
+                        });
                 }
 
                 var TokenIterator = ace.require("ace/token_iterator").TokenIterator;
@@ -365,13 +394,13 @@
             cursorStyle: 'smooth',
             copyWithEmptySelection: true
         });
-        
+
         // Setup hover tooltip
         var HoverTooltip = ace.require('./tooltip').HoverTooltip;
         var hoverToolTip = new HoverTooltip();
 
         hoverToolTip.$gatherData = function (last, editor) {
-            
+
             var TokenIterator = ace.require('ace/token_iterator').TokenIterator;
             var stream = new TokenIterator(editor.session, last.$pos.row, last.$pos.column);
             var currentToken = stream.getCurrentToken();
@@ -385,8 +414,8 @@
                     case 'support.class':
                     case 'keyword.other':
                     case 'identifier':
-                        $dyn.callFunction(self.GetTokenMetadata, self, { _line: last.$pos.row, _position: last.$pos.column, _isMethodParameters: false}, function (ret) {
-                            
+                        $dyn.callFunction(self.GetTokenMetadata, self, { _line: last.$pos.row, _position: last.$pos.column, _isMethodParameters: false }, function (ret) {
+
                             if (ret && ret.DocHtml !== '') {
                                 showTooTip(hoverToolTip, last.x, last.y, ret.DocHtml);
                             }
@@ -396,7 +425,7 @@
                         // Label case
                         if (currentToken.type == 'string' && currentToken.value.startsWith('@')) {
                             $dyn.callFunction(self.GetTokenMetadata, self, { _line: last.$pos.row, _position: last.$pos.column, _isMethodParameters: false }, function (ret) {
-                                
+
                                 if (ret && ret.DocHtml !== '') {
                                     showTooTip(hoverToolTip, last.x, last.y, ret.DocHtml);
                                 }
@@ -418,7 +447,7 @@
                 ...ret.Edts
             ];
 
-            setTimeout(function(){
+            setTimeout(function () {
                 clearTimeout(change_timer);
                 var savedPosition = editor.getCursorPosition();
                 editor.setValue(editor.getValue(), 1);
@@ -432,6 +461,8 @@
                 Edts: ret.Edts.map(function (e) { return { value: e, name: e, type: 'Edt' } }),
                 GlobalFunctions: ret.GlobalFunctions.map(function (e) { return { value: e, name: e, type: 'GlobalFunction' } }),
             };
+
+            console.log("MXT:", "Finished receiving elements metadata.");
         });
 
         var ToolTip = ace.require('./tooltip').Tooltip;
@@ -478,9 +509,6 @@
             if (target.className.indexOf("ace_gutter-cell") == -1 || !editor.isFocused())
                 return;
 
-            if (e.clientX > 25 + target.getBoundingClientRect().left)
-                return;
-
             var row = e.getDocumentPosition().row;
             var column = e.getDocumentPosition().column;
 
@@ -492,11 +520,30 @@
             e.stop();
         });
 
+        editor.renderer.on("afterRender", function () {
+
+            // Add class to tokens for the rest of markers
+            const prevMarkers = editor.session.getMarkers();
+            if (prevMarkers) {
+                const prevMarkersArr = Object.keys(prevMarkers);
+                for (let item of prevMarkersArr) {
+                    var marker = prevMarkers[item];
+
+                    if (marker.clazz == "breakpointMarker") {
+                        var start = marker.range.start;
+                        var end = marker.range.end;
+
+                        addTokenCssClass(editor, "hasBreakpoint",
+                            start.row, start.column, end.row, end.column);
+                    }
+                }
+            }
+        });
         var skipText = true;
         $dyn.observe(this.Text, function (value) {
             var isActualValue = value !== null && typeof value != 'undefined';
 
-            if ((!skipText && isActualValue) ||  (skipText && value !== "")) {
+            if ((!skipText && isActualValue) || (skipText && value !== "")) {
                 editor.setValue(value);
             }
 

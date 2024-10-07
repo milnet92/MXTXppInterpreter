@@ -76,28 +76,41 @@
 
     .ace_gutter-cell.ace_breakpoint {
         border-radius: 20px 0px 0px 20px;
-        box-shadow: 0px 0px 10px 10px #ff0000 inset;
+        box-shadow: 0px 0px 10px 10px rgba(255, 0, 0, 1) inset;
+    }
+
+    .ace_gutter-cell:hover:not(.ace_breakpoint) {
+        box-shadow: 0px 0px 10px 10px rgba(255, 0, 0, 0.3) inset;
+        border-radius: 20px 0px 0px 20px;
+    }
+
+    .hasBreakpoint {
+        color: white !important;
+    }
+
+    .ace_gutter-cell {
+        cursor: pointer;
     }
 
     .ace_support.ace_class {
-        color: #08A4A7 !important;
+        color: #08A4A7 !important; 
     }
 
     .errorMarker {
         position: absolute;
-        border-bottom: 100px solid red;
+        border-bottom: 100px solid rgba(255, 0, 0, 0.8);
         z-index: 20;
     }
 
     .breakpointMarker {
         position: absolute;
-        background: #b65252;
+        background: rgb(182, 82, 82);
         z-index: 20;
     }
 
     .breakpointHitMarked {
         position: absolute;
-        background: #d8d16a;
+        background: rgb(194, 186, 73);
         z-index: 20;
     }
 
