@@ -996,7 +996,7 @@ internal final class MXTXppPredefinedFunctions
 			<Method>
 				<Name>funcName</Name>
 				<Source><![CDATA[
-    public str funcName()
+    static str funcName()
     {
         return "";
     }
@@ -1006,7 +1006,7 @@ internal final class MXTXppPredefinedFunctions
 			<Method>
 				<Name>getCurrentPartition</Name>
 				<Source><![CDATA[
-    public str getCurrentPartition()
+    static str getCurrentPartition()
     {
         return getCurrentPartition();
     }
@@ -1016,7 +1016,7 @@ internal final class MXTXppPredefinedFunctions
 			<Method>
 				<Name>getCurrentPartitionRecId</Name>
 				<Source><![CDATA[
-    public int64 getCurrentPartitionRecId()
+    static int64 getCurrentPartitionRecId()
     {
         return getCurrentPartitionRecId();
     }
@@ -1026,7 +1026,7 @@ internal final class MXTXppPredefinedFunctions
 			<Method>
 				<Name>getPrefix</Name>
 				<Source><![CDATA[
-    public str getPrefix()
+    static str getPrefix()
     {
         return getPrefix();
     }
@@ -1036,7 +1036,7 @@ internal final class MXTXppPredefinedFunctions
 			<Method>
 				<Name>sessionId</Name>
 				<Source><![CDATA[
-    public int sessionId()
+    static int sessionId()
     {
         return sessionId();
     }
@@ -1046,7 +1046,7 @@ internal final class MXTXppPredefinedFunctions
 			<Method>
 				<Name>prmIsDefault</Name>
 				<Source><![CDATA[
-    public NoYes prmIsDefault(anytype arg)
+    static NoYes prmIsDefault(anytype arg)
     {
         return NoYes::No;
     }
@@ -1056,7 +1056,7 @@ internal final class MXTXppPredefinedFunctions
 			<Method>
 				<Name>runAs</Name>
 				<Source><![CDATA[
-    public container runAs(str userId, int classId, str staticMethodName, container params, str company = "", str language = "", str partition = "")
+    static container runAs(str userId, int classId, str staticMethodName, container params, str company = "", str language = "", str partition = "")
     {
         return runAs(userId, classId, staticMethodName, params, company, language, partition);
     }
@@ -1066,7 +1066,7 @@ internal final class MXTXppPredefinedFunctions
 			<Method>
 				<Name>setPrefix</Name>
 				<Source><![CDATA[
-    public int setPrefix(str prefix)
+    static int setPrefix(str prefix)
     {
         return setPrefix(prefix);
     }
@@ -1079,7 +1079,7 @@ internal final class MXTXppPredefinedFunctions
     /*
         String run-time functions
     */
-    public boolean match(str pattern, str text)
+    static boolean match(str pattern, str text)
     {
         return match(pattern, text);
     }
