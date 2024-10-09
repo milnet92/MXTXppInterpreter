@@ -12,7 +12,7 @@
         {
             if (string.IsNullOrEmpty(ClassName))
             {
-                return context.Proxy.Reflection.CallGlobalOrPredefinedFunction(Name, arguments);
+                return context.Proxy.Reflection.CallGlobalOrPredefinedFunction(context, Name, arguments);
             }
             else
             {

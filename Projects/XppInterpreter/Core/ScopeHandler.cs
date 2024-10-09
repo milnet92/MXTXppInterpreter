@@ -54,6 +54,16 @@ namespace XppInterpreter.Core
             }
         }
 
+        public object GetDisposableByType(Type type)
+        {
+            return CurrentScope.disposables.Where(d => d.GetType() == type).FirstOrDefault();
+        }
+
+        public void AddDisposable(object disposable)
+        {
+            CurrentScope.disposables.Add(disposable);
+        }
+
         public void AddExceptionHandler(ExceptionHandler exceptionHandler)
         {
             _handlerStack.Push(exceptionHandler);

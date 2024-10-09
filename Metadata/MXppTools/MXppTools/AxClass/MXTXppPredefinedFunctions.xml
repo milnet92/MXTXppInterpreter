@@ -1074,6 +1074,34 @@ internal final class MXTXppPredefinedFunctions
 ]]></Source>
 			</Method>
 			<Method>
+				<Name>setPrefixInternal</Name>
+				<Source><![CDATA[
+    private static int setPrefixInternal(str _prefix, XppInterpreter.Interpreter.RuntimeContext _context)
+    {
+        System.Object  objGuard = _context.ScopeHandler.GetDisposableByType(MXTXppTypes::PrefixGuardType);
+        int     ret = 0;
+
+        if (!objGuard)
+        {
+            Microsoft.Dynamics.Ax.Xpp.SetPrefixGuard guard = Microsoft.Dynamics.Ax.Xpp.SetPrefixGuard::CreateSetPrefixGuard();
+            XppInterpreter.Core.ScopeHandler handler = _context.ScopeHandler;
+            handler.AddDisposable(guard);
+
+            ret = guard.PushPrefix(_prefix);
+        }
+        else
+        {
+            System.Object[] params = new System.Object[1]();
+            params.SetValue(_prefix, 0);
+            ret = objGuard.GetType().GetMethod("PushPrefix").Invoke(objGuard, params);
+        }
+
+        return ret;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>match</Name>
 				<Source><![CDATA[
     /*
@@ -1413,7 +1441,7 @@ internal final class MXTXppPredefinedFunctions
     /// <param name = "_methodName">Method name</param>
     /// <param name = "_parameters">Parameters</param>
     /// <returns>Call return object</returns>
-    public static System.Object callMethod(str _methodName, System.Object[] _parameters)
+    public static System.Object callMethod(XppInterpreter.Interpreter.RuntimeContext _context, str _methodName, System.Object[] _parameters)
     {
         System.String invariantMethodName = XppInterpreter.Core.ReflectionHelper::GetMethodInvariantName(ThisType, _methodName);
 
@@ -1424,6 +1452,11 @@ internal final class MXTXppPredefinedFunctions
             params.SetValue(_parameters, 0);
 
             return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeStaticCall(ThisType, invariantMethodName, params);
+        }
+        else if (invariantMethodName == 'setPrefix')
+        {
+            str prefix = _parameters.GetValue(0);
+            return MXTXppPredefinedFunctions::setPrefixInternal(prefix, _context);
         }
 
         return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeStaticCall(ThisType, invariantMethodName, _parameters);

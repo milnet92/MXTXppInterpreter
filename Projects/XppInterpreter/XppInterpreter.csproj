@@ -137,7 +137,6 @@
     <Compile Include="Interpreter\Query\ISearchInstance.cs" />
     <Compile Include="Interpreter\Query\QueryGenerationHelper.cs" />
     <Compile Include="Interpreter\RuntimeContext.cs" />
-    <Compile Include="Interpreter\Proxy\ChangeCompanyCallback.cs" />
     <Compile Include="Interpreter\Proxy\IIntrinsicFunctionProvider.cs" />
     <Compile Include="Interpreter\Proxy\IXppBinaryOperationProxy.cs" />
     <Compile Include="Interpreter\Proxy\IXppCastingProxy.cs" />
@@ -271,4 +270,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy /Y $(TargetDir)\$(TargetName).pdb C:\D365UnifiedExperienceEnvironments\AEA-UE-01\LocalPackageDirectory\MXppTools\bin\$(TargetName).pdb</PostBuildEvent>
+  </PropertyGroup>
 </Project>

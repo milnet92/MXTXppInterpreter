@@ -23,7 +23,7 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
     /// </summary>
     /// <param name = "_name">Type name</param>
     /// <returns>Types type</returns>
-    private Types getXppTypeByTypeName(str _name)
+    private static Types getXppTypeByTypeName(str _name)
     {
         // Base Enums
         if (SysDictEnum::newName(_name) != null)
@@ -69,39 +69,19 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 ]]></Source>
 			</Method>
 			<Method>
-				<Name>GetSystemTypeFromTypeName</Name>
+				<Name>getSystemTypeFromTypes</Name>
 				<Source><![CDATA[
-    /// <summary>
-    /// Gets the System.Type by native type name (str, int, boolean...)
-    /// </summary>
-    /// <param name = "_typeName">Native type name</param>
-    /// <returns></returns>
-    public System.Type GetSystemTypeFromTypeName(str _typeName)
+    public static System.Type getSystemTypeFromTypes(Types _type)
     {
-        // boolean is not a type for some reason
-        boolean isBoolean = _typeName == MXtXppTypes::BooleanTypeStr;
-
-        if (isBoolean)
-            return MXTXppTypes::BooleanType;
-
-        var xppType = this.getXppTypeByTypeName(_typeName);
-
-        switch (xppType)
+        switch (_type)
         {
-            case Types::Class:
-                return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::GetTypeFromClassName(_typeName);
-
-            case Types::Enum:
-            case Types::Record:
-                return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType(_typeName);
-
-            case Types::Integer: 
+            case Types::Integer:
                 return MXTXppTypes::Int32Type;
 
-            case Types::Int64: 
+            case Types::Int64:
                 return MXTXppTypes::Int64Type;
 
-            case Types::Guid: 
+            case Types::Guid:
                 return MXTXppTypes::GuidType;
 
             case Types::Real:
@@ -124,6 +104,59 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
         }
 
         return null;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getClrTypeFromTypeName</Name>
+				<Source><![CDATA[
+    public static System.Type getClrTypeFromTypeName(str _typeName)
+    {
+        // boolean is not a type for some reason
+        boolean isBoolean = _typeName == MXtXppTypes::BooleanTypeStr;
+
+        if (isBoolean)
+            return MXTXppTypes::BooleanType;
+
+        var xppType = MXTXppCastingProxy::getXppTypeByTypeName(_typeName);
+
+        switch (xppType)
+        {
+            case Types::Class:
+                return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::GetTypeFromClassName(_typeName);
+
+            case Types::Enum:
+                str enumName = _typeName;
+                if (extendedTypeName2Id(_typeName))
+                {
+                    enumName = enumId2Name(SysDictType::newName(_typeName).enumId());
+                }
+                return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType(enumName);
+
+            case Types::Record:
+                return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType(_typeName);
+
+            default:
+                return MXTXppCastingProxy::getSystemTypeFromTypes(xppType);
+        }
+
+        return null;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetSystemTypeFromTypeName</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Gets the System.Type by native type name (str, int, boolean...)
+    /// </summary>
+    /// <param name = "_typeName">Native type name</param>
+    /// <returns></returns>
+    public System.Type GetSystemTypeFromTypeName(str _typeName)
+    {
+        return MXTXppCastingProxy::getClrTypeFromTypeName(_typeName);
     }
 
 ]]></Source>
@@ -339,7 +372,7 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
     {
         if (_name == MXTXppTypes::BooleanTypeStr) return false;
 
-        Types types = this.getXppTypeByTypeName(_name);
+        Types types = MXTXppCastingProxy::getXppTypeByTypeName(_name);
         
         switch (types)
         {
@@ -445,7 +478,7 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
                 return false;
         }
 
-        Types type = this.getXppTypeByTypeName(_type.Name);
+        Types type = MXTXppCastingProxy::getXppTypeByTypeName(_type.Name);
 
         switch (type)
         {

@@ -117,7 +117,7 @@ namespace XppInterpreter.Parser.Metadata
 
                 if (callerType != null)
                 {
-                    return Core.ReflectionHelper.GetMethod(callerType, functionCall.Name)?.ReturnType;
+                    return _proxy.Reflection.GetMethodReturnType(callerType, functionCall.Name);
                 }
             }
             else if (IsGlobalFunction(functionCall.Name))
@@ -183,13 +183,9 @@ namespace XppInterpreter.Parser.Metadata
                 {
                     return _proxy.Reflection.GetEnumValue(callerType.Name, variable.Name).GetType();
                 }
-                else if (Core.ReflectionHelper.TypeHasField(callerType, variable.Name))
+                else
                 {
-                    return Core.ReflectionHelper.GetField(callerType, variable.Name).FieldType;
-                }
-                else if (Core.ReflectionHelper.TypeHasProperty(callerType, variable.Name))
-                {
-                    return Core.ReflectionHelper.GetProperty(callerType, variable.Name).PropertyType;
+                    return _proxy.Reflection.GetFieldReturnType(callerType, variable.Name);
                 }
             }
             else

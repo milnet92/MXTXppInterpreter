@@ -10,6 +10,7 @@ namespace XppInterpreter.Core
     {
         internal readonly NormalizedScopeEntryHash _hash = new NormalizedScopeEntryHash();
         internal readonly VariableCollection VariableCollection = new VariableCollection();
+        internal readonly List<object> disposables = new List<object>();
 
         public readonly Stack<object> Stack = new Stack<object>();
         public Scope Parent { get; set; }
@@ -26,6 +27,16 @@ namespace XppInterpreter.Core
 
         public Scope End()
         {
+            foreach (var obj in disposables)
+            {
+                IDisposable disposable = obj as IDisposable;
+
+                if (disposable != null)
+                {
+                    disposable.Dispose();
+                }
+            }
+
             return Parent;
         }
 

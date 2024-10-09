@@ -395,10 +395,44 @@ namespace XppInterpreter.Parser
                 HandleAutocompletion(ret);
 
                 ret = Variable(ret, lastScanResult.Token.TokenType == TType.StaticDoubleDot, expectReturn: expectReturn);
+
+                ValidateVariableMember(returnType, ret);
             }
 
-
             return ret;
+        }
+
+        private void ValidateVariableMember(System.Type callerType, Expression expression)
+        {
+            if (callerType is null) return;
+
+            if (callerType.IsEnum)
+            {
+                if (expression is FunctionCall)
+                {
+                    HandleParseError("Cannot call a function from an Enum", stop: false);
+                }
+                else if (expression is Variable variable && !_proxy.Reflection.EnumHasMember(callerType.Name, variable.Name))
+                {
+                    HandleParseError($"Enum {callerType.Name} does not have a member called {variable.Name}", stop: false);
+                }
+
+                return;
+            }
+            else if (expression is FunctionCall functionCall)
+            {
+                if (!_proxy.Reflection.TypeHasMethod(callerType, functionCall.Name))
+                {
+                    HandleParseError($"Type '{callerType.Name}' does not have a method called '{functionCall.Name}'.", stop: false);
+                }
+            }
+            else if (expression is Variable variable)
+            {
+                if (!_proxy.Reflection.TypeHasProperty(callerType, variable.Name))
+                {
+                    HandleParseError($"Type '{callerType.Name}' does not have a member called '{variable.Name}'.", stop: false);
+                }
+            }
         }
 
         internal List<Statement> Default()
@@ -1549,7 +1583,7 @@ namespace XppInterpreter.Parser
                 { 
                     var assignedType = _typeInferer.InferType(assignedExpression, false, _parseContext);
 
-                    if (!_proxy.Casting.ImplicitConversionExists(assignedType, assigneeType))
+                    if (assignedType != null && !_proxy.Casting.ImplicitConversionExists(assignedType, assigneeType))
                     {
                         HandleParseError(string.Format(MessageProvider.ExceptionImplicitConversion, assignedType.Name, assigneeVar.ReturnType.Name), stop: false);
                     }

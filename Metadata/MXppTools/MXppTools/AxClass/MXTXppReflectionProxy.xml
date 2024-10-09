@@ -189,11 +189,11 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 			<Method>
 				<Name>CallGlobalOrPredefinedFunction</Name>
 				<Source><![CDATA[
-    public System.Object CallGlobalOrPredefinedFunction(System.String _methodName, System.Object[] _parameters)
+    public System.Object CallGlobalOrPredefinedFunction(XppInterpreter.Interpreter.RuntimeContext _context, System.String _methodName, System.Object[] _parameters)
     {
         if (MXTXppPredefinedFunctions::isCustomPredefinedFunction(_methodName))
         {
-            return MXTXppPredefinedFunctions::callMethod(_methodName, _parameters);
+            return MXTXppPredefinedFunctions::callMethod(_context, _methodName, _parameters);
         }
         else if (this.isGlobalFunction(_methodName))
         {
@@ -275,6 +275,18 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 				<Source><![CDATA[
     public System.String GetMethodSyntax(System.String _typeName, System.String _methodName)
     {
+        SysDictMethod dictMethod = this.getDictMethod(_typeName, _methodName);
+
+        return dictMethod ? dictMethod.metadataSyntax() : '';
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getDictMethod</Name>
+				<Source><![CDATA[
+    private SysDictMethod getDictMethod(str _typeName, str _methodName)
+    {
         SysDictMethod dictMethod = null;
 
         if (this.IsInstantiable(_typeName))
@@ -319,7 +331,7 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
             }
         }
 
-        return dictMethod ? dictMethod.metadataSyntax() : '';
+        return dictMethod;
     }
 
 ]]></Source>
@@ -331,6 +343,126 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
     {
         str languageId = _languageId ? _labelId : Global::infolog().language();
         return SysLabel::labelId2String(_labelId, languageId);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>TypeHasMethod</Name>
+				<Source><![CDATA[
+    public boolean TypeHasMethod(System.Type _caller, System.String _methodName)
+    {
+        if (!_caller) return false;
+
+        return this.getDictMethod(_caller.Name, _methodName) ||
+               XppInterpreter.Core.ReflectionHelper::TypeHasMethod(_caller, _methodName);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>TypeHasProperty</Name>
+				<Source><![CDATA[
+    public boolean TypeHasProperty(System.Type _caller, System.String _propertyName)
+    {
+        if (this.IsCommonType(_caller))
+        {
+            return fieldName2Id(tableName2Id(_caller.Name), _propertyName);
+        }
+        else if (_caller)
+        {
+            return XppInterpreter.Core.ReflectionHelper::TypeHasField(_caller, _propertyName) ||
+                   XppInterpreter.Core.ReflectionHelper::TypeHasProperty(_caller, _propertyName);
+        }
+
+        return false;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>EnumHasMember</Name>
+				<Source><![CDATA[
+    public boolean EnumHasMember(System.String _enumName, System.String _memberName)
+    {
+        if (!_enumName) return false;
+
+        SysDictEnum enum = SysDictEnum::newName(_enumName);
+
+        if (!enum) return false;
+
+        return enum.symbol2Value(_memberName) != 255;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetMethodReturnType</Name>
+				<Source><![CDATA[
+    public System.Type GetMethodReturnType(System.Type _caller, System.String _methodName)
+    {
+        if (!_caller) return null;
+
+        DictMethod dictMethod = this.getDictMethod(_caller.Name, _methodName);
+
+        if (dictMethod)
+        {
+            if (dictMethod.returnTypeName())
+            {
+                return MXTXppCastingProxy::getClrTypeFromTypeName(dictMethod.returnTypeName());
+            }
+            else
+            {
+                return MXTXppCastingProxy::getSystemTypeFromTypes(dictMethod.returnType());
+            }
+        }
+        else
+        {
+            System.Reflection.MethodInfo methodInfo = XppInterpreter.Core.ReflectionHelper::GetMethod(_caller, _methodName);
+
+            if (methodInfo)
+            {
+                return methodInfo.ReturnType;
+            }
+        }
+
+        return null;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetFieldReturnType</Name>
+				<Source><![CDATA[
+    public System.Type GetFieldReturnType(System.Type _caller, System.String _fieldName)
+    {
+        if (!_caller) return null;
+
+        str typeName = _caller.Name;
+
+        if (fieldName2Id(tableName2Id(typeName), _fieldName))
+        {
+            SysDictField dictField = SysDictField::findFieldByName(typeName, _fieldName);
+
+            if (dictField.typeName())
+            {
+                return MXTXppCastingProxy::getClrTypeFromTypeName(dictField.typeName());
+            }
+            else
+            {
+                return MXTXppCastingProxy::getSystemTypeFromTypes(dictField.type());
+            }
+        }
+        else if (XppInterpreter.Core.ReflectionHelper::TypeHasField(_caller, _fieldName))
+        {
+            return XppInterpreter.Core.ReflectionHelper::GetField(_caller, _fieldName).FieldType;
+        }
+        else if (XppInterpreter.Core.ReflectionHelper::TypeHasProperty(_caller, _fieldName))
+        {
+            return XppInterpreter.Core.ReflectionHelper::GetProperty(_caller, _fieldName).PropertyType;
+        }
+
+        return null;
     }
 
 ]]></Source>

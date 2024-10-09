@@ -289,11 +289,14 @@ namespace XppInterpreter.Interpreter.Bytecode
             EmitDebugSymbol(block);
             Emit(new BeginScope());
 
+            CreateScope();
             foreach (var statement in block.Statements)
             {
                 statement.Accept(this);
             }
+            var blockScope = ReleaseScope();
 
+            EmitScope(blockScope);
             Emit(new EndScope());
         }
 
@@ -391,10 +394,14 @@ namespace XppInterpreter.Interpreter.Bytecode
 
         public void VisitProgram(Program program)
         {
+            Emit(new BeginScope());
+
             foreach (var statement in program.Statements)
             {
                 statement.Accept(this);
             }
+
+            Emit(new EndScope());
         }
 
         public void VisitIf(If @if)
