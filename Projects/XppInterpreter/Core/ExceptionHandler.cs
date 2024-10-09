@@ -10,6 +10,7 @@ namespace XppInterpreter.Core
 {
     public class ExceptionHandler
     {
+        private int _transactionCounter = 0;
         public List<ExceptionCatchReference> ExceptionCatchReferences { get; }
 
         /// <summary>
@@ -42,6 +43,19 @@ namespace XppInterpreter.Core
             ExceptionCatchReferences = references;
         }
 
+        public void IncreaseTransactionCounter()
+        {
+            _transactionCounter++;
+        }
+
+        public void DecreaseTransactionCounter()
+        {
+            if (_transactionCounter > 0)
+            {
+                _transactionCounter--;
+            }
+        }
+
         public void HandleException(Exception exception, RuntimeContext context)
         {
             Exception = exception;
@@ -58,6 +72,12 @@ namespace XppInterpreter.Core
                         Catched = true;
 
                         int catchOffset = catchReference.Offset - (context.Counter - TryPointer);
+
+                        while (_transactionCounter > 0)
+                        {
+                            _transactionCounter--;
+                            context.Proxy.Data.TtsAbort();
+                        }
 
                         // Close any unbalanced scope
                         context.EndScopeRange(context.Counter, catchOffset);

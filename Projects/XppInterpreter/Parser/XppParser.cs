@@ -383,6 +383,12 @@ namespace XppInterpreter.Parser
                 HandleParseError(MessageProvider.ExceptionTypeCannotBeNull, stop: false);
             }
 
+            if (ret is Variable variable && variable.Caller != null)
+            {
+                var callerType = _typeInferer.InferType(variable.Caller, variable.StaticCall, _parseContext);
+                ValidateVariableMember(callerType, ret);
+            }
+
             if (currentToken.TokenType == TType.Dot || currentToken.TokenType == TType.StaticDoubleDot)
             {
                 if (currentToken.TokenType == TType.StaticDoubleDot &&
@@ -395,8 +401,6 @@ namespace XppInterpreter.Parser
                 HandleAutocompletion(ret);
 
                 ret = Variable(ret, lastScanResult.Token.TokenType == TType.StaticDoubleDot, expectReturn: expectReturn);
-
-                ValidateVariableMember(returnType, ret);
             }
 
             return ret;

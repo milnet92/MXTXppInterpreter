@@ -7,6 +7,11 @@
         public void Execute(RuntimeContext context)
         {
             context.Proxy.Data.TtsBegin();
+
+            if (context.ScopeHandler.AreExceptionsHandled)
+            {
+                context.ScopeHandler.CurrentExceptionHandler.IncreaseTransactionCounter();
+            }
         }
     }
 }
