@@ -271,6 +271,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /Y $(TargetDir)\$(TargetName).pdb C:\D365UnifiedExperienceEnvironments\AEA-UE-01\LocalPackageDirectory\MXppTools\bin\$(TargetName).pdb</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
 </Project>
