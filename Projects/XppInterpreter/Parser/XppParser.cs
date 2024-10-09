@@ -410,11 +410,11 @@ namespace XppInterpreter.Parser
             {
                 if (expression is FunctionCall)
                 {
-                    HandleParseError("Cannot call a function from an Enum", stop: false);
+                    HandleParseError(MessageProvider.ExceptionCannotCallEnumMethod, stop: false);
                 }
                 else if (expression is Variable variable && !_proxy.Reflection.EnumHasMember(callerType.Name, variable.Name))
                 {
-                    HandleParseError($"Enum {callerType.Name} does not have a member called {variable.Name}", stop: false);
+                    HandleParseError(string.Format(MessageProvider.ExceptionInvalidEnumMember, callerType.Name, variable.Name), stop: false);
                 }
 
                 return;
@@ -423,14 +423,14 @@ namespace XppInterpreter.Parser
             {
                 if (!_proxy.Reflection.TypeHasMethod(callerType, functionCall.Name))
                 {
-                    HandleParseError($"Type '{callerType.Name}' does not have a method called '{functionCall.Name}'.", stop: false);
+                    HandleParseError(string.Format(MessageProvider.ExceptionInvalidTypeMethod, callerType.Name, functionCall.Name), stop: false);
                 }
             }
             else if (expression is Variable variable)
             {
                 if (!_proxy.Reflection.TypeHasProperty(callerType, variable.Name))
                 {
-                    HandleParseError($"Type '{callerType.Name}' does not have a member called '{variable.Name}'.", stop: false);
+                    HandleParseError(string.Format(MessageProvider.ExceptionInvalidTypeField, callerType.Name, variable.Name), stop: false);
                 }
             }
         }

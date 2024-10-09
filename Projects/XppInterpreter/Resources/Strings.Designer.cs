@@ -19,7 +19,7 @@ namespace XppInterpreter.Resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -66,6 +66,15 @@ namespace XppInterpreter.Resources {
         internal static string ExceptionAssignmentNotContainer {
             get {
                 return ResourceManager.GetString("ExceptionAssignmentNotContainer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot call a function from an Enum..
+        /// </summary>
+        internal static string ExceptionCannotCallEnumMethod {
+            get {
+                return ResourceManager.GetString("ExceptionCannotCallEnumMethod", resourceCulture);
             }
         }
         
@@ -133,6 +142,15 @@ namespace XppInterpreter.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Enum &apos;{0}&apos; does not have a member called &apos;{1}&apos;..
+        /// </summary>
+        internal static string ExceptionInvalidEnumMember {
+            get {
+                return ResourceManager.GetString("ExceptionInvalidEnumMember", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid Exception enum.
         /// </summary>
         internal static string ExceptionInvalidExceptionEnum {
@@ -147,6 +165,24 @@ namespace XppInterpreter.Resources {
         internal static string ExceptionInvalidSyntax {
             get {
                 return ResourceManager.GetString("ExceptionInvalidSyntax", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Type &apos;{0}&apos; does not have a field named &apos;{1}&apos;..
+        /// </summary>
+        internal static string ExceptionInvalidTypeField {
+            get {
+                return ResourceManager.GetString("ExceptionInvalidTypeField", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Type &apos;{0}&apos; does not have a method called &apos;{1}&apos;..
+        /// </summary>
+        internal static string ExceptionInvalidTypeMethod {
+            get {
+                return ResourceManager.GetString("ExceptionInvalidTypeMethod", resourceCulture);
             }
         }
         

@@ -186,4 +186,16 @@
   <data name="ExceptionVariableNotDeclared" xml:space="preserve">
     <value>Variable {0} is not declared.</value>
   </data>
+  <data name="ExceptionCannotCallEnumMethod" xml:space="preserve">
+    <value>Cannot call a function from an Enum.</value>
+  </data>
+  <data name="ExceptionInvalidEnumMember" xml:space="preserve">
+    <value>Enum '{0}' does not have a member called '{1}'.</value>
+  </data>
+  <data name="ExceptionInvalidTypeMethod" xml:space="preserve">
+    <value>Type '{0}' does not have a method called '{1}'.</value>
+  </data>
+  <data name="ExceptionInvalidTypeField" xml:space="preserve">
+    <value>Type '{0}' does not have a field named '{1}'.</value>
+  </data>
 </root>
