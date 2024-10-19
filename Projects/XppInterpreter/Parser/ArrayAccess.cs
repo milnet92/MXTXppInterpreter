@@ -8,7 +8,7 @@ namespace XppInterpreter.Parser
     {
         public Expression Index { get; }
 
-        public ArrayAccess(Word identifier, Expression caller, Expression index, bool staticCall, SourceCodeBinding sourceCodeBinding) : base(identifier, caller, staticCall, sourceCodeBinding)
+        public ArrayAccess(Word identifier, Expression caller, Expression index, bool staticCall, SourceCodeBinding sourceCodeBinding) : base(identifier, caller, staticCall, "", sourceCodeBinding)
         {
             Index = index;
         }

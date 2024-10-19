@@ -10,13 +10,14 @@ namespace XppInterpreter.Interpreter.Bytecode
         public int NArgs { get; }
         public bool Alloc { get; }
         public bool ProcessParameters { get; }
-
-        public Call(string name, int nArgs, bool allocate, bool processParameters = true)
+        public string Namespace { get;  }
+        public Call(string name, int nArgs, bool allocate, string nameSpace, bool processParameters = true)
         {
             Name = name;
             NArgs = nArgs;
             Alloc = allocate;
             ProcessParameters = processParameters;
+            Namespace = nameSpace;
         }
 
         protected object[] GetParametersFromStack(Stack<object> stack)

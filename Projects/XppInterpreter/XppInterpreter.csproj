@@ -206,6 +206,7 @@
     <Compile Include="Parser\ParseContextScope.cs" />
     <Compile Include="Parser\ParseContextScopeVariable.cs" />
     <Compile Include="Parser\ParseContextStack.cs" />
+    <Compile Include="Parser\ParsedTypeDefinition.cs" />
     <Compile Include="Parser\ParseError.cs" />
     <Compile Include="Parser\ParseErrorCollection.cs" />
     <Compile Include="Parser\Print.cs" />
@@ -271,7 +272,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>copy /Y $(TargetDir)\$(TargetName).pdb C:\D365UnifiedExperienceEnvironments\AEA-UE-01\LocalPackageDirectory\MXppTools\bin\$(TargetName).pdb</PostBuildEvent>
   </PropertyGroup>
 </Project>

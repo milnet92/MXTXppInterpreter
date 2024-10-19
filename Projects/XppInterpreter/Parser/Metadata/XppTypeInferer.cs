@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using XppInterpreter.Interpreter;
@@ -26,6 +27,19 @@ namespace XppInterpreter.Parser.Metadata
             _customPredefinedType = _proxy.Intrinsic.GetCustomPredefinedFunctionProvider();
         }
 
+        public System.Type InferType(ParsedTypeDefinition typeDefinition)
+        {
+            string typeName = ((Word)typeDefinition.TypeResult.Token).Lexeme;
+
+            if (string.IsNullOrEmpty(typeDefinition.Namespace))
+            {
+                return _proxy.Casting.GetSystemTypeFromTypeName(typeName);
+            }
+            else
+            {
+                return _proxy.Reflection.GetTypeFromNamespace(typeDefinition.Namespace, typeName);
+            }
+        }
         public System.Type InferType(Expression expression, ParseContext context)
         {
             bool calledStatic = false;
@@ -96,7 +110,14 @@ namespace XppInterpreter.Parser.Metadata
 
         public System.Type VisitConstructor(Constructor constructor)
         {
-            return _proxy.Casting.GetSystemTypeFromTypeName(constructor.ClassName);
+            if (!string.IsNullOrEmpty(constructor.Namespace))
+            {
+                return _proxy.Reflection.GetTypeFromNamespace(constructor.Namespace, constructor.ClassName);
+            }
+            else
+            {
+                return _proxy.Casting.GetSystemTypeFromTypeName(constructor.ClassName);
+            }
         }
 
         public System.Type VisitContainerInitialisation(ContainerInitialisation containerInitialisation)
@@ -161,14 +182,19 @@ namespace XppInterpreter.Parser.Metadata
             }
         }
 
-        public bool IsKnownType(string typeName)
+        public bool IsKnownType(ParsedTypeDefinition typeDefinition)
         {
-            return _proxy.Casting.GetSystemTypeFromTypeName(typeName) != null;
+            return InferType(typeDefinition) != null;
         }
 
         public System.Type VisitVariable(Variable variable)
         {
-            if (variable.Caller != null)
+            if (!string.IsNullOrEmpty(variable.Namespace))
+            {
+                return _proxy.Reflection.GetTypeFromNamespace(variable.Namespace, variable.Name);
+            }
+
+            else if (variable.Caller != null)
             {
                 bool staticSave = _calledStatically;
                 _calledStatically = variable.StaticCall;
@@ -194,6 +220,7 @@ namespace XppInterpreter.Parser.Metadata
                 {
                     return GetTypeFromWord(variable.Token as Word);
                 }
+
                 // Infer from variables
                 else
                 {
@@ -207,7 +234,7 @@ namespace XppInterpreter.Parser.Metadata
                             return InferType(declaration.Initialization, false, _context);
                         }
 
-                        return GetTypeFromWord((Word)declaration.Type);
+                        return declaration.ClrType != null ? declaration.ClrType : GetTypeFromWord((Word)declaration.Type);
 
                     }
                 }

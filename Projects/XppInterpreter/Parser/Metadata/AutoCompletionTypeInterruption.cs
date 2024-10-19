@@ -14,13 +14,19 @@ namespace XppInterpreter.Parser.Metadata
         TableFields
     }
 
-    class AutoCompletionTypeInterruption : Exception
+    public class AutoCompletionTypeInterruption : Exception
     {
         public Type InferedType { get; }
+        public string Namespace { get; }
 
         public AutoCompletionTypeInterruption(Type type)
         {
             InferedType = type;
+        }
+
+        public AutoCompletionTypeInterruption(string @namespace)
+        {
+            Namespace = @namespace;
         }
     }
 }

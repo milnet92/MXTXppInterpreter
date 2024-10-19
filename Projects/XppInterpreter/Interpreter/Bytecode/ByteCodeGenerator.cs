@@ -195,7 +195,7 @@ namespace XppInterpreter.Interpreter.Bytecode
                 constructor.Parameters[narg].Accept(this);
             }
 
-            Emit(new NewObject(constructor.ClassName, constructor.Parameters.Count, true));
+            Emit(new NewObject(constructor.ClassName, constructor.Parameters.Count, constructor.Namespace, true));
         }
 
         public void VisitAssignment(Assignment assignment)
@@ -522,12 +522,13 @@ namespace XppInterpreter.Interpreter.Bytecode
             }
             else if (functionCall.Caller is null)
             {
-                Emit(new StaticFunctionCall(functionCall.Name, nArgs, allocate));
+                Emit(new StaticFunctionCall(functionCall.Name, nArgs, allocate, ""));
             }
             else if (functionCall.StaticCall)
             {
-                string callerName = ((Word)(functionCall.Caller as Variable).Token).Lexeme;
-                Emit(new StaticFunctionCall(functionCall.Name, nArgs, allocate, callerName));
+                Variable caller = functionCall.Caller as Variable;
+                string callerName = ((Word)caller.Token).Lexeme;
+                Emit(new StaticFunctionCall(functionCall.Name, nArgs, allocate, callerName, caller.Namespace));
             }
             else
             {
@@ -594,7 +595,14 @@ namespace XppInterpreter.Interpreter.Bytecode
             else
             {
                 string callerName = (variable.Caller.Token as Word).Lexeme;
-                Emit(new StaticLoad(variable.Name, callerName, isArray));
+                string nameSpace = "";
+
+                if (variable.Caller is Variable caller)
+                {
+                    nameSpace = caller.Namespace;
+                }
+
+                Emit(new StaticLoad(variable.Name, callerName,nameSpace, isArray));
             }
         }
 
@@ -739,8 +747,8 @@ namespace XppInterpreter.Interpreter.Bytecode
             }
 
             Emit(new Push(sb.ToString()));
-            Emit(new StaticFunctionCall("strFmt", print.Parameters.Count + 1, true));
-            Emit(new StaticFunctionCall("info", 1, false));
+            Emit(new StaticFunctionCall("strFmt", print.Parameters.Count + 1, true, ""));
+            Emit(new StaticFunctionCall("info", 1, false, ""));
         }
 
         public void VisitIs(Parser.Is @is)

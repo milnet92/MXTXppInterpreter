@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTRefreshMetadataAssemblyCache</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+using System.Reflection;
+using MetaModel = Microsoft.Dynamics.AX.Metadata.MetaModel;
+
+internal final class MXTRefreshMetadataAssemblyCache
+{
+    private Microsoft.Dynamics.AX.Metadata.Providers.IMetadataProvider metadataProvider;
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>run</Name>
+				<Source><![CDATA[
+    public void run(MXTRefreshMetadataAssemblyCacheContract _contract)
+    {
+        this.initializeRuntimeProvider();
+
+        this.refreshAssemblies(_contract.parmReferenceName());
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>refreshAssemblies</Name>
+				<Source><![CDATA[
+    private void refreshAssemblies(SysReferenceName _referenceName = '')
+    {
+        this.clean(_referenceName);
+
+        if (_referenceName)
+        {
+            MetaModel.AxReference reference = metadataProvider.References.Read(_referenceName);
+
+            if (reference)
+            {
+                Assembly assembly = Assembly::Load(reference.AssemblyDisplayName);
+                this.addReferenceAssemblyToCache(assembly, _referenceName);
+            }
+            else
+            {
+                warning(strFmt("Reference %1 was not found. Skipping refresh.", _referenceName));
+            }
+        }
+        else
+        {
+            // Load mscorlib
+            this.addReferenceAssemblyToCache(Assembly::Load("mscorlib"), "");
+
+            var referenceNames = metadataProvider.References.GetPrimaryKeys();
+
+            System.Collections.IEnumerator enumerator = referenceNames.GetEnumerator();
+
+            while (enumerator.MoveNext())
+            {
+                str referenceName = enumerator.Current;
+
+                MetaModel.AxReference reference = metadataProvider.References.Read(referenceName);
+
+                try
+                {
+                    if (!reference) continue;
+
+                    Assembly assembly = Assembly::Load(reference.AssemblyDisplayName);
+                    this.addReferenceAssemblyToCache(assembly, referenceName);
+                }
+                catch
+                {
+                    warning(strFmt("Assembly '%1' cannot be loaded", reference.AssemblyDisplayName));
+                }
+            }
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>addReferenceAssemblyToCache</Name>
+				<Source><![CDATA[
+    private void addReferenceAssemblyToCache(Assembly _assembly, str _referenceName)
+    {
+        if (!_assembly) return;
+
+        MXTXppMetadataAssemblyCache cache;
+
+        System.Type[]               types = _assembly.GetTypes();
+
+        for (int i = 0; i < types.Length; i++)
+        {
+            System.Type type = types.GetValue(i);
+
+            if (type
+            && type.Namespace
+            && type.IsPublic
+            && !strStartsWith(type.Name, "$")
+            && !strStartsWith(type.Name, "<")
+            && !strStartsWith(type.Name, "_"))
+            {
+                cache.clear();
+
+                cache.AssemblyDisplayName = _assembly.FullName;
+                cache.ReferenceName       = _referenceName;
+                cache.AssemblyNamespace   = type.Namespace;
+                cache.TypeName            = type.Name;
+
+                cache.insert();
+            }
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>initializeRuntimeProvider</Name>
+				<Source><![CDATA[
+    private void initializeRuntimeProvider()
+    {
+        var environment = Microsoft.Dynamics.ApplicationPlatform.Environment.EnvironmentFactory::GetApplicationEnvironment();
+        str packageDir = environment.get_Aos().get_PackageDirectory();
+
+        var configuration = new Microsoft.Dynamics.AX.Metadata.Storage.Runtime.RuntimeProviderConfiguration(packageDir, true, true);
+        var metadataProviderFactory =  New Microsoft.Dynamics.AX.Metadata.Storage.MetadataProviderFactory();
+        metadataProvider = metadataProviderFactory.CreateRuntimeProvider(configuration);
+        
+        Debug::assert(metadataProvider != null);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>clean</Name>
+				<Source><![CDATA[
+    private void clean(SysReferenceName _referenceName)
+    {
+        MXTXppMetadataAssemblyCache cache;
+
+        if (_referenceName)
+        {
+            delete_from cache where cache.ReferenceName == _referenceName;
+        }
+        else
+        {
+            delete_from cache;
+        }
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

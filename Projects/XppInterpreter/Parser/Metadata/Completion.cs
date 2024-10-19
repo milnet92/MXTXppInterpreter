@@ -28,6 +28,8 @@ namespace XppInterpreter.Parser.Metadata
         Method,
         StaticMethod,
         EnumValue,
-        TableIndex
+        TableIndex,
+        Class,
+        Namespace
     }
 }

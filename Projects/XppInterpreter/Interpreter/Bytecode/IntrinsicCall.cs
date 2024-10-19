@@ -6,7 +6,7 @@ namespace XppInterpreter.Interpreter.Bytecode
     {
         public override string OperationCode => $"CALL {Name} {NArgs}";
 
-        public IntrinsicCall(string funcName, int nArgs, bool alloc) : base(funcName, nArgs, alloc) { }
+        public IntrinsicCall(string funcName, int nArgs, bool alloc) : base(funcName, nArgs, alloc, "") { }
 
         public override object MakeCall(RuntimeContext context, object[] arguments)
         {

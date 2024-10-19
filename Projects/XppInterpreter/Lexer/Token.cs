@@ -147,6 +147,7 @@ namespace XppInterpreter.Lexer
         Print,
         Is,
         As,
+        Namespace,
 
         #region Type identification
         TypeAnytype,

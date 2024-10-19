@@ -23,7 +23,7 @@ namespace XppInterpreter.Parser.Metadata
             _list.Add(completion);
         }
 
-        public void Union(CompletionCollection completions)
+        public void AddRange(CompletionCollection completions)
         {
             this._list.AddRange(completions._list);
         }

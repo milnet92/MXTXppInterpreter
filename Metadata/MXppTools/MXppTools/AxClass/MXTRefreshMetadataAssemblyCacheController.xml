@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTRefreshMetadataAssemblyCacheController</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+internal final class MXTRefreshMetadataAssemblyCacheController extends SysOperationServiceController
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>construct</Name>
+				<Source><![CDATA[
+    public static MXTRefreshMetadataAssemblyCacheController construct()
+    {
+        MXTRefreshMetadataAssemblyCacheController controller;
+        
+        controller  = new MXTRefreshMetadataAssemblyCacheController(
+        classStr(MXTRefreshMetadataAssemblyCache),
+        methodStr(MXTRefreshMetadataAssemblyCache, run));
+        
+
+        return controller;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>main</Name>
+				<Source><![CDATA[
+    public static void main(Args _args)
+    {
+        MXTRefreshMetadataAssemblyCacheController   controller  = MXTRefreshMetadataAssemblyCacheController::construct();
+        MXTRefreshMetadataAssemblyCacheContract contract = controller.getDataContractObject() as MXTRefreshMetadataAssemblyCacheContract;
+
+        if (_args.dataset() == tableNum(MXTXppMetadataAssemblyCache))
+        {
+            MXTXppMetadataAssemblyCache cache = _args.record();
+
+            contract.parmReferenceName(cache.ReferenceName);
+        }
+
+        controller.parmDialogCaption("@MXT:RefreshAssemblyMetadataCache");
+        controller.startOperation();
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

@@ -19,7 +19,7 @@ namespace XppInterpreter.Parser
             bool staticCall,
             bool intrinsical,
             SourceCodeBinding sourceCodeBinding,
-            SourceCodeBinding debuggeableBinding) : base(identifier, caller, staticCall, sourceCodeBinding)
+            SourceCodeBinding debuggeableBinding) : base(identifier, caller, staticCall, "", sourceCodeBinding)
         {
             Parameters = parameters;
             Intrinsical = intrinsical;

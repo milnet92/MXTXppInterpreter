@@ -1,4 +1,7 @@
 ﻿AllScripts=Todos los scripts
+AssemblyDisplayName=Nombre de ensamblado
+AssemblyNamespace=Espacio de nombres de ensamblado
+AssemblyTypeName=Tipo
 Body=Cuerpo
 ClassName=Nombre de la clase
 CodeRunning=El código está ejecutándose...
@@ -48,6 +51,7 @@ OpenInEditor=Abrir en el Editor
 Operations=Operaciones
 Placeholder=Marcador
 Placeholders=Marcadores
+RefreshAssemblyMetadataCache=Refrescar caché de ensamblados
 Schedule=Lote
 Script=Script
 ScriptId=Script ID
