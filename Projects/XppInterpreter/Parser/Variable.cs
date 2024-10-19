@@ -11,11 +11,12 @@ namespace XppInterpreter.Parser
         public string Name => (Token as Word).Lexeme;
         public Expression Caller { get; }
         public bool StaticCall { get; }
-
-        public Variable(Word identifier, Expression caller, bool staticCall, SourceCodeBinding sourceCodeBinding) : base(identifier, sourceCodeBinding)
+        public string Namespace { get; set; }
+        public Variable(Word identifier, Expression caller, bool staticCall, string nameSpace, SourceCodeBinding sourceCodeBinding) : base(identifier, sourceCodeBinding)
         {
             Caller = caller;
             StaticCall = staticCall;
+            Namespace = nameSpace;
         }
 
         [DebuggerHidden]

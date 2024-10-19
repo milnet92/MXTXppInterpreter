@@ -91,7 +91,7 @@ namespace XppInterpreter.Parser
                 var tableNameVar = (Word)tableResult.Token;
                 HandleMetadataInterruption(tableResult.Line, tableResult.Start, tableResult.End, tableResult.Token, Metadata.TokenMetadataType.Variable);
                 Match(TType.Dot);
-                HandleAutocompletion(new Variable(tableNameVar, null, false, null));
+                HandleAutocompletion(new Variable(tableNameVar, null, false, "", null));
 
                 var fieldNameVar = (Word)Match(TType.Id).Token;
 
@@ -119,7 +119,7 @@ namespace XppInterpreter.Parser
                 var tableNameVar = (Word)tableResult.Token;
                 HandleMetadataInterruption(tableResult.Line, tableResult.Start, tableResult.End, tableResult.Token, Metadata.TokenMetadataType.Variable);
                 Match(TType.Dot);
-                HandleAutocompletion(new Variable(tableNameVar, null, false, null));
+                HandleAutocompletion(new Variable(tableNameVar, null, false, "", null));
 
                 var fieldNameVar = (Word)Match(TType.Id).Token;
 
@@ -424,7 +424,7 @@ namespace XppInterpreter.Parser
         string Index(Word tableNameVar)
         {
             Match(TType.Index);
-            HandleAutocompletion(new Variable(tableNameVar, null, false, null));
+            HandleAutocompletion(new Variable(tableNameVar, null, false, "", null));
             return (Match(TType.Id).Token as Word).Lexeme;
         }
 

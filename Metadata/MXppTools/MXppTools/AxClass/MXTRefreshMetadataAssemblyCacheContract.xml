@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTRefreshMetadataAssemblyCacheContract</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+[DataContract]
+internal final class MXTRefreshMetadataAssemblyCacheContract
+{
+    SysReferenceName referenceName;
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>parmReferenceName</Name>
+				<Source><![CDATA[
+    [DataMember]
+    public SysReferenceName parmReferenceName(SysReferenceName _referenceName = referenceName)
+    {
+        referenceName = _referenceName;
+
+        return referenceName;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 using XppInterpreter.Core;
 using XppInterpreter.Lexer;
 using XppInterpreter.Parser.Metadata;
@@ -87,7 +88,7 @@ namespace XppInterpreter.Parser
             return null;
         }
 
-        public System.Type ParseForAutoCompletion(int row, int column, AutoCompletionPurpose purpose)
+        public AutoCompletionTypeInterruption ParseForAutoCompletion(int row, int column, AutoCompletionPurpose purpose)
         {
             _forAutoCompletion = true;
             _stopAtRow = row;
@@ -100,7 +101,7 @@ namespace XppInterpreter.Parser
             }
             catch (AutoCompletionTypeInterruption interruption)
             {
-                return interruption.InferedType;
+                return interruption;
             }
             catch
             {
@@ -147,10 +148,12 @@ namespace XppInterpreter.Parser
             var start = currentScanResult;
 
             Match(TType.New);
-            Word identifier = (Word)Match(TType.Id).Token;
+            ParsedTypeDefinition typeDef = TypeDefinition(TType.Id);
 
+            Word identifier = typeDef.TypeResult.Token as Word;
             return new Constructor(
                 identifier,
+                typeDef.Namespace,
                 Parameters(null, identifier.Lexeme, false, true),
                 null,
                 false,
@@ -276,12 +279,61 @@ namespace XppInterpreter.Parser
             return ret;
         }
 
+        private ParsedTypeDefinition TypeDefinition(params TType[] tokens)
+        {
+            IScanResult result = tokens.Length > 0 ? MatchMultiple(tokens) : MatchAnyWord();
+            string ns = string.Empty;
+
+            string name = ((Word)result.Token).Lexeme;
+
+            if (currentToken.TokenType == TType.Dot && _proxy.Reflection.IsAssemblyNamespace(name, true))
+            {
+                ns = ParseNamespace(name, out result);
+            }
+
+            return new ParsedTypeDefinition(result, ns);
+        }
+
+        private string ParseNamespace(string baseNamespace, out IScanResult scanResult)
+        {
+            string ns = baseNamespace;
+            IScanResult lastScanResult = null;
+
+            Match(TType.Dot);
+            HandleAutocompletion(baseNamespace);
+
+            lastScanResult = MatchAnyWord();
+
+            if (currentToken.TokenType != TType.Dot)
+            {
+                scanResult = lastScanResult;
+                return ns;
+            }
+            else
+            {
+                string name = ((Word)lastScanResult.Token).Lexeme;
+                string nsCheck = $"{ns}.{name}";
+
+                if (_proxy.Reflection.IsAssemblyNamespace(nsCheck, true))
+                {
+                    ns = ParseNamespace(nsCheck, out scanResult);
+                }
+                else
+                {
+                    scanResult = lastScanResult;
+                }
+            }
+
+            return ns;
+        }
+
         internal Expression Variable(Expression caller = null, bool staticCall = false, bool expectReturn = true)
         {
-            IScanResult identifier = caller is null ? Match(TType.Id) : MatchAnyWord();
+            ParsedTypeDefinition typeDef = caller is null ? TypeDefinition(TType.Id) : TypeDefinition();
+            IScanResult typeScanResult = typeDef.TypeResult;
 
             Expression ret;
-            SourceCodeBinding debuggeableStartBinding = caller?.SourceCodeBinding ?? new SourceCodeBinding(identifier.Line, identifier.Start, 0, 0);
+            SourceCodeBinding debuggeableStartBinding = caller?.SourceCodeBinding ?? new SourceCodeBinding(typeScanResult.Line, typeScanResult.Start, 0, 0);
             bool validateVariableName = false;
 
             if (caller is Interpreter.Debug.IDebuggeable debuggeable)
@@ -295,7 +347,7 @@ namespace XppInterpreter.Parser
 
                 _parseContext.CallFunctionScope.New();
 
-                string functionName = (identifier.Token as Word).Lexeme;
+                string functionName = (typeScanResult.Token as Word).Lexeme;
                 bool intrinsical = caller is null && Interpreter.Proxy.XppProxyHelper.IsIntrinsicFunction(functionName);
                 if (intrinsical)
                 {
@@ -303,13 +355,13 @@ namespace XppInterpreter.Parser
                 }
                 else
                 {
-                    var funcName = (Word)identifier.Token;
+                    var funcName = (Word)typeScanResult.Token;
 
                     HandleMetadataInterruption(
-                        identifier.Line, 
-                        identifier.Start, 
-                        identifier.End, 
-                        identifier.Token,
+                        typeScanResult.Line, 
+                        typeScanResult.Start, 
+                        typeScanResult.End, 
+                        typeScanResult.Token,
                         staticCall ? TokenMetadataType.StaticMethod : 
                             caller is null ? TokenMetadataType.GlobalOrDefinedMethod : 
                                              TokenMetadataType.InstanceMethod,
@@ -323,7 +375,7 @@ namespace XppInterpreter.Parser
                         caller,
                         staticCall,
                         false,
-                        SourceCodeBinding(identifier, lastScanResult),
+                        SourceCodeBinding(typeScanResult, lastScanResult),
                         isInsideFunctionScope ? SourceCodeBinding(debuggeableStartBinding, lastScanResult) : null);
                 }
 
@@ -331,13 +383,13 @@ namespace XppInterpreter.Parser
             }
             else
             {
-                validateVariableName = caller is null;
+                validateVariableName = caller is null && !typeDef.IsExternalType;
 
                 HandleMetadataInterruption(
-                    identifier.Line,
-                    identifier.Start,
-                    identifier.End,
-                    identifier.Token,
+                    typeScanResult.Line,
+                    typeScanResult.Start,
+                    typeScanResult.End,
+                    typeScanResult.Token,
                     TokenMetadataType.Variable,
                     caller);
 
@@ -348,26 +400,29 @@ namespace XppInterpreter.Parser
                     Match(TType.RightBracket);
 
                     ret = new ArrayAccess(
-                        (Word)identifier.Token,
+                        (Word)typeScanResult.Token,
                         caller,
                         index,
                         staticCall,
-                        SourceCodeBinding(identifier, lastScanResult));
+                        SourceCodeBinding(typeScanResult, lastScanResult));
                 }
                 else
                 {
+                    var nameToken = (Word)typeScanResult.Token;
+
                     ret = new Variable(
-                        (Word)identifier.Token,
-                        caller,
-                        staticCall,
-                        SourceCodeBinding(identifier, lastScanResult));
+                                nameToken,
+                                caller,
+                                staticCall,
+                                typeDef.Namespace,
+                                SourceCodeBinding(typeScanResult, lastScanResult));
                 }
             }
 
             // Static calls cannot be from instances, so skip validation
             if (currentToken.TokenType != TType.StaticDoubleDot && validateVariableName)
             {
-                string variableName = ((Word)identifier.Token).Lexeme;
+                string variableName = ((Word)typeScanResult.Token).Lexeme;
                 var declaredVariable = _parseContext.CurrentScope.FindVariableDeclaration(variableName);
 
                 if (declaredVariable is null)
@@ -576,7 +631,6 @@ namespace XppInterpreter.Parser
                     SourceCodeBinding(bindingStart, lastScanResult),
                     SourceCodeBinding(bindingStart, bindingEnds));
             }
-
         }
 
         internal For For()
@@ -631,7 +685,7 @@ namespace XppInterpreter.Parser
             Word arrayIdentifier = null;
             Expression arraySize = null;
 
-            var typeResult = MatchMultiple(
+            ParsedTypeDefinition typeDef = TypeDefinition(
                 TType.Id,
                 TType.TypeAnytype,
                 TType.TypeBoolean,
@@ -646,15 +700,21 @@ namespace XppInterpreter.Parser
                 TType.TypeDatetime,
                 TType.Var);
 
+            var typeResult = typeDef.TypeResult;
             Word typeWord = typeResult.Token as Word;
+            System.Type declarationType = null;
 
-            if (typeWord.TokenType != TType.Var && !_typeInferer.IsKnownType(typeWord.Lexeme))
+            if (typeWord.TokenType != TType.Var)
             {
-                HandleParseError(string.Format(MessageProvider.ExceptionTypeNotFound, typeWord.Lexeme), stop: false);
+                if (!_typeInferer.IsKnownType(typeDef))
+                {
+                    HandleParseError(string.Format(MessageProvider.ExceptionTypeNotFound, typeWord.Lexeme), stop: false);
+                }
+                else
+                {
+                    declarationType = _typeInferer.InferType(typeDef);
+                }
             }
-
-            // Get type from type declaration if it's a known type
-            System.Type declarationType = typeWord.TokenType != TType.Var && _typeInferer.IsKnownType(typeWord.Lexeme) ? _proxy.Casting.GetSystemTypeFromTypeName(typeWord.Lexeme) : null;
 
             bool isArray = false;
             do
@@ -993,6 +1053,26 @@ namespace XppInterpreter.Parser
             return new Try(tryBlock,SourceCodeBinding(start, lastScanResult), catches, finallyBlock);
         }
 
+        private Token SkipNamespace()
+        {
+            Token token = currentToken;
+            while (currentToken.TokenType == TType.Id)
+            {
+                token = AdvancePeek().Token;
+
+                if (token.TokenType == TType.Dot)
+                {
+                    token = AdvancePeek().Token;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return token;
+        }
+
         internal Statement Statement(bool matchSemicolon = true)
         {
             switch (currentToken.TokenType)
@@ -1008,10 +1088,10 @@ namespace XppInterpreter.Parser
                 case TType.Id:
                     {
                         // Check if the next token is an Id
-                        var nextToken = AdvancePeek(false).Token;
+                        var nextToken = SkipNamespace();
                         if (nextToken.TokenType == TType.Id)
                         {
-                            nextToken = AdvancePeek(true).Token;
+                            nextToken = AdvancePeek(reset: true).Token;
                             if (nextToken.TokenType == TType.LeftParenthesis)
                             {
                                 return FunctionDeclaration();
@@ -1091,7 +1171,7 @@ namespace XppInterpreter.Parser
 
         internal FunctionDeclaration FunctionDeclaration()
         {
-            var start = MatchMultiple(
+            ParsedTypeDefinition typeDef = TypeDefinition(
                 TType.Id,
                 TType.TypeAnytype,
                 TType.TypeBoolean,
@@ -1106,9 +1186,10 @@ namespace XppInterpreter.Parser
                 TType.TypeDatetime,
                 TType.Void);
 
+            var start = typeDef.TypeResult;
             Word type = start.Token as Word;
 
-            if (type.TokenType != TType.Void && !_typeInferer.IsKnownType(type.Lexeme))
+            if (type.TokenType != TType.Void && !_typeInferer.IsKnownType(typeDef))
             {
                 HandleParseError(string.Format(MessageProvider.ExceptionTypeNotFound, type.Lexeme), stop: false);
             }
@@ -1152,8 +1233,7 @@ namespace XppInterpreter.Parser
 
         FunctionDeclarationParameter FunctionDeclarationParameter()
         {
-            // TODO: allow array types to be function parameters
-            var typeResult = MatchMultiple(
+            ParsedTypeDefinition typeDef = TypeDefinition(
                 TType.Id,
                 TType.TypeAnytype,
                 TType.TypeBoolean,
@@ -1166,15 +1246,15 @@ namespace XppInterpreter.Parser
                 TType.TypeTimeOfDay,
                 TType.TypeDate,
                 TType.TypeDatetime);
-
+            var typeResult = typeDef.TypeResult;
             Word type = typeResult.Token as Word;
 
-            if (!_typeInferer.IsKnownType(type.Lexeme))
+            if (!_typeInferer.IsKnownType(typeDef))
             {
                 HandleParseError(string.Format(MessageProvider.ExceptionTypeNotFound, type.Lexeme), stop: false);
             }
 
-            System.Type inferedType = _proxy.Casting.GetSystemTypeFromTypeName(type.Lexeme);
+            System.Type inferedType = _typeInferer.InferType(typeDef);
 
             Word id = Match(TType.Id).Token as Word;
 
@@ -1766,13 +1846,26 @@ namespace XppInterpreter.Parser
                 }
             }
         }
+
+        private bool AutocompleteHit()
+        {
+            return _forAutoCompletion &&
+                lastScanResult.Line == _stopAtRow &&
+                lastScanResult.Start <= _stopAtColumn &&
+                lastScanResult.End >= _stopAtColumn;
+        }
+
+        internal void HandleAutocompletion(string @namespace)
+        {
+            if (AutocompleteHit())
+            {
+                throw new AutoCompletionTypeInterruption(@namespace);
+            }
+        }
+
         internal void HandleAutocompletion(Expression expression)
         {
-            if (!_forAutoCompletion) return;
-
-            if (lastScanResult.Line == _stopAtRow &&
-                lastScanResult.Start <= _stopAtColumn &&
-                lastScanResult.End >= _stopAtColumn)
+            if (AutocompleteHit())
             {
                 throw new AutoCompletionTypeInterruption(_typeInferer.InferType(expression, lastScanResult.Token.TokenType == TType.StaticDoubleDot, _parseContext));
             }

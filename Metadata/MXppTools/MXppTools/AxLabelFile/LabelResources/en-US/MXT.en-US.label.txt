@@ -1,4 +1,7 @@
 ﻿AllScripts=All scripts
+AssemblyDisplayName=Assembly name
+AssemblyNamespace=Namespace
+AssemblyTypeName=Type
 Body=Body
 ClassName=Class name
 CodeRunning=Code is running...
@@ -48,6 +51,7 @@ OpenInEditor=Open in Editor
 Operations=Operations
 Placeholder=Placeholder
 Placeholders=Placeholders
+RefreshAssemblyMetadataCache=Refresh assembly cache
 Schedule=Schedule
 Script=Script
 ScriptId=Script ID

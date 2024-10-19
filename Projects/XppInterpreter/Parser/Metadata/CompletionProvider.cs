@@ -22,45 +22,54 @@ namespace XppInterpreter.Parser.Metadata
             XppLexer lexer = new XppLexer(sourceCode);
             XppParser parser = new XppParser(lexer, _proxy);
 
-            System.Type inferedType = parser.ParseForAutoCompletion(row, column, purpose);
+            AutoCompletionTypeInterruption interruption = parser.ParseForAutoCompletion(row, column, purpose);
 
-            if (inferedType is null) return new CompletionCollection();
+            if (interruption is null) return new CompletionCollection();
 
             CompletionCollection completions = new CompletionCollection();
 
-            if (purpose == AutoCompletionPurpose.InstanceMembers ||
-                purpose == AutoCompletionPurpose.StaticMembers)
-            { 
-                bool @static = purpose == AutoCompletionPurpose.StaticMembers;
+            if (interruption.InferedType != null)
+            {
+                System.Type inferedType = interruption.InferedType;
 
-                if (_proxy.Reflection.IsCommonType(inferedType))
+                if (purpose == AutoCompletionPurpose.InstanceMembers ||
+                    purpose == AutoCompletionPurpose.StaticMembers)
                 {
-                    completions.Union(nativeProvider.GetTableMethodCompletions(inferedType.Name, @static));
+                    bool @static = purpose == AutoCompletionPurpose.StaticMembers;
 
-                    if (!@static)
+                    if (_proxy.Reflection.IsCommonType(inferedType))
                     {
-                        completions.Union(nativeProvider.GetTableFieldsCompletions(inferedType.Name));
-                    }
-                }
-                else
-                {
-                    if (@static && _proxy.Reflection.IsEnum(inferedType.Name))
-                    {
-                        completions.Union(nativeProvider.GetEnumCompletions(inferedType.Name));
+                        completions.AddRange(nativeProvider.GetTableMethodCompletions(inferedType.Name, @static));
+
+                        if (!@static)
+                        {
+                            completions.AddRange(nativeProvider.GetTableFieldsCompletions(inferedType.Name));
+                        }
                     }
                     else
                     {
-                        completions.Union(nativeProvider.GetClassMethodCompletions(inferedType.Name, @static));
-                        completions.Union(nativeProvider.GetClassFieldCompletions(inferedType.Name, @static));
+                        if (@static && _proxy.Reflection.IsEnum(inferedType.Name))
+                        {
+                            completions.AddRange(nativeProvider.GetEnumCompletions(inferedType.Name));
+                        }
+                        else
+                        {
+                            completions.AddRange(nativeProvider.GetClassMethodCompletions(inferedType.Namespace, inferedType.Name, @static));
+                            completions.AddRange(nativeProvider.GetClassFieldCompletions(inferedType.Namespace, inferedType.Name, @static));
+                        }
+                    }
+                }
+                else if (purpose == AutoCompletionPurpose.TableIndexes)
+                {
+                    if (_proxy.Reflection.IsCommonType(inferedType))
+                    {
+                        completions.AddRange(nativeProvider.GetIndexCompletions(inferedType.Name));
                     }
                 }
             }
-            else if (purpose == AutoCompletionPurpose.TableIndexes)
+            else if (!string.IsNullOrEmpty(interruption.Namespace) && purpose == AutoCompletionPurpose.InstanceMembers)
             {
-                if (_proxy.Reflection.IsCommonType(inferedType))
-                { 
-                    completions.Union(nativeProvider.GetIndexCompletions(inferedType.Name));
-                }
+                completions.AddRange(nativeProvider.GetNamespaceCompletions(interruption.Namespace));
             }
 
             return completions;

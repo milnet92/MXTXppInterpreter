@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTInitializeAssemblyCache</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+using System.Reflection;
+
+internal final class MXTInitializeAssemblyCache
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>main</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Class entry point. The system will call this method when a designated menu 
+    /// is selected or when execution starts and this class is set as the startup class.
+    /// </summary>
+    /// <param name = "_args">The specified arguments.</param>
+    public static void main(Args _args)
+    {
+        // Delete cache
+        MXTXppMetadataAssemblyCache cache;
+
+        delete_from cache;
+        
+        var environment = Microsoft.Dynamics.ApplicationPlatform.Environment.EnvironmentFactory::GetApplicationEnvironment();
+        str packageDir = environment.get_Aos().get_PackageDirectory();
+
+        var configuration = new Microsoft.Dynamics.AX.Metadata.Storage.Runtime.RuntimeProviderConfiguration(packageDir, true, true);
+        Microsoft.Dynamics.AX.Metadata.Storage.MetadataProviderFactory metadataProviderFactory =  New Microsoft.Dynamics.AX.Metadata.Storage.MetadataProviderFactory();
+        Microsoft.Dynamics.AX.Metadata.Providers.IMetadataProvider provider = metadataProviderFactory.CreateRuntimeProvider(configuration);
+        
+        //var objects = provider.References.ListObjects("");
+        var objects = provider.References.GetPrimaryKeys();
+
+        System.Collections.IEnumerator enumerator = objects.GetEnumerator();
+
+        while (enumerator.MoveNext())
+        {
+            str referenceName = enumerator.Current;
+
+            //Microsoft.Dynamics.AX.Metadata.MetaModel.AxReference reference = MXTMetadata.Provider::GetReference(referenceName);
+            Microsoft.Dynamics.AX.Metadata.MetaModel.AxReference reference =  provider.References.Read(referenceName);
+
+            if (reference)
+            {
+                try
+                {
+                    Assembly assembly = Assembly::Load(reference.AssemblyDisplayName);
+
+                    MXTInitializeAssemblyCache::AddAssemblyToCache(assembly, reference.AssemblyDisplayName);
+                }
+                catch
+                {
+                    error(strFmt("Assembly %1 cannot be added to the cache.", reference.AssemblyDisplayName));
+                }
+            }
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>AddAssemblyToCache</Name>
+				<Source><![CDATA[
+    private static void AddAssemblyToCache(Assembly _assembly, str _displayName)
+    {
+        MXTXppMetadataAssemblyCache cache;
+        System.Type[]               types = _assembly.GetTypes();
+
+        for (int i = 0; i < types.Length; i++)
+        {
+            System.Type type = types.GetValue(i);
+
+            if (type
+                && type.Namespace 
+                && type.IsPublic
+                && !strStartsWith(type.Name, "$") 
+                && !strStartsWith(type.Name, "<"))
+            {
+                cache.clear();
+
+                cache.AssemblyDisplayName = _displayName;
+                cache.AssemblyNamespace   = type.Namespace;
+                cache.TypeName            = type.Name;
+
+                cache.insert();
+            }
+        }
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>
