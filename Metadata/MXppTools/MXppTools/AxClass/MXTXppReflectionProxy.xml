@@ -8,6 +8,8 @@ using CArray = Microsoft.Dynamics.Ax.Xpp.Array;
 
 public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.Proxy.IXppReflectionProxy
 {
+    private const str TYPE_VOID = 'System.Void';
+
 }
 ]]></Declaration>
 		<Methods>
@@ -111,6 +113,11 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 				<Source><![CDATA[
     public System.Object CreateInstance(System.String _namespace, System.String _className, System.Object[] parameters)
     {
+        if (_namespace)
+        {
+            return System.Activator::CreateInstance(this.getClassType(_namespace, _className), parameters);
+        }
+
         return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeNewObjCall(this.getClassType(_namespace, _className), parameters);
     }
 
@@ -334,11 +341,51 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 			<Method>
 				<Name>GetMethodSyntax</Name>
 				<Source><![CDATA[
-    public System.String GetMethodSyntax(System.String _typeName, System.String _methodName)
+    public System.String GetMethodSyntax(System.String _typeName, System.String _methodName, System.String _namespace)
     {
-        SysDictMethod dictMethod = this.getDictMethod(_typeName, _methodName);
+        if (!_namespace)
+        {
+            SysDictMethod dictMethod = this.getDictMethod(_typeName, _methodName);
 
-        return dictMethod ? dictMethod.metadataSyntax() : '';
+            return dictMethod ? dictMethod.metadataSyntax() : '';
+        }
+        else
+        {
+            System.Type type = MXTXppReflectionProxy::GetAssemblyType(_namespace, _typeName);
+            System.Reflection.MethodInfo methodInfo = Core.ReflectionHelper::GetMethod(type, _methodName);
+
+            str ret = "";
+
+            ret += methodInfo.ReturnType.FullName == TYPE_VOID ? 
+                'void' : 
+                strFmt("%1.%2", methodInfo.ReturnType.Namespace, methodInfo.ReturnType.Name);
+
+            ret += ' ';
+
+            ret += methodInfo.Name;
+            ret +='(';
+
+            System.Reflection.ParameterInfo[] parameters = methodInfo.GetParameters();
+            System.Collections.IEnumerator enumerator = parameters.GetEnumerator();
+            int nParm = 0;
+
+            while (enumerator.MoveNext())
+            {
+                nParm ++;
+
+                System.Reflection.ParameterInfo parameter = enumerator.Current;
+
+                ret += parameter.IsOptional ? '[' : '';
+                ret += parameter.IsOut ? 'out' : '';
+                ret += strFmt("%1.%2", parameter.ParameterType.Namespace, parameter.ParameterType.Name) + ' ';
+                ret += parameter.Name;
+                ret += parameter.IsOptional ? ']' : '';
+                ret += nParm < parameters.Length ? ', ' : '';
+            }
+
+            ret += ')';
+            return ret;
+        }
     }
 
 ]]></Source>

@@ -1783,14 +1783,21 @@ namespace XppInterpreter.Parser
                 end >= _stopAtColumn)
             {
                 System.Type callerType = null;
+                string nameSpace = "";
 
                 if (caller != null)
                 {
                     callerType = _typeInferer.InferType(caller, isStatic, _parseContext);
+
+                    if (caller is Variable v)
+                    {
+                        nameSpace = v.Namespace;
+                    }
                 }
 
                 throw new MetadataInterruption(TokenMetadataProviderHelper.GetMetadataForMethodParameters(callerType, 
                     methodName, 
+                    nameSpace,
                     isIntrinsic, 
                     isStatic, 
                     isConstructor, 
@@ -1817,9 +1824,15 @@ namespace XppInterpreter.Parser
                 {
                     var methodName = (token as Word).Lexeme;
                     System.Type callerType = null;
+                    string nameSpace = "";
 
                     if (caller != null)
                     {
+                        if (caller is Variable variable)
+                        {
+                            nameSpace = variable.Namespace;
+                        }
+
                         callerType = _typeInferer.InferType(caller, type == TokenMetadataType.StaticMethod, _parseContext);
 
                         if (callerType is null) throw new MetadataInterruption(null);
@@ -1828,6 +1841,7 @@ namespace XppInterpreter.Parser
                     throw new MetadataInterruption(TokenMetadataProviderHelper.GetMethodMetadata(
                         callerType, 
                         methodName,
+                        nameSpace,
                         type == TokenMetadataType.IntrinsicMethod,
                         type == TokenMetadataType.StaticMethod,
                         type == TokenMetadataType.Constructor,

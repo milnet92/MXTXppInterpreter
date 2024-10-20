@@ -11,17 +11,19 @@ namespace XppInterpreter.Parser.Metadata.Providers
     {
         public string MethodName { get; }
         public ParseContext ParseContext { get; }
+        public string Namespace { get; }
         public Type CallerType { get; }
         public bool IsStatic { get; }
         public bool IsConstructor { get; }
 
-        public MethodMetadataProvider(string methodName, ParseContext context, bool isStatic, bool isConstructor, Type callerType = null)
+        public MethodMetadataProvider(string methodName, string nameSpace, ParseContext context, bool isStatic, bool isConstructor, Type callerType = null)
         {
             MethodName = methodName;
             ParseContext = context;
             CallerType = callerType;
             IsStatic = isStatic;
             IsConstructor = isConstructor;
+            Namespace = nameSpace;
         }
 
         public TokenMetadata GetTokenMetadata(XppProxy proxy)
@@ -66,7 +68,7 @@ namespace XppInterpreter.Parser.Metadata.Providers
             string methodName = IsConstructor ? "new" : MethodName;
             string className = IsConstructor ? MethodName : CallerType?.Name ?? "";
 
-            var methodSyntax = proxy.Reflection.GetMethodSyntax(className, methodName);
+            var methodSyntax = proxy.Reflection.GetMethodSyntax(className, methodName, Namespace);
 
             return new MethodTokenMetadata(methodName, className, methodSyntax, IsStatic);
         }
