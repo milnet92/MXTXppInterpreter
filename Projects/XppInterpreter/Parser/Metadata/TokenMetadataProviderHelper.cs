@@ -24,6 +24,7 @@ namespace XppInterpreter.Parser.Metadata
         public static TokenMetadata GetMethodMetadata(
             Type callerType,
             string methodName,
+            string nameSpace,
             bool isIntrinsic,
             bool isStatic,
             bool isConstructor,
@@ -38,7 +39,7 @@ namespace XppInterpreter.Parser.Metadata
             }
             else
             {
-                provider = new MethodMetadataProvider(methodName, context, isStatic, isConstructor, callerType);
+                provider = new MethodMetadataProvider(methodName,nameSpace, context, isStatic, isConstructor, callerType);
             }
 
             return provider.GetTokenMetadata(proxy);
@@ -47,6 +48,7 @@ namespace XppInterpreter.Parser.Metadata
         public static TokenMetadata GetMetadataForMethodParameters(
             Type callerType, 
             string methodName,
+            string nameSpace,
             bool isIntrinsic,
             bool isStatic,
             bool isConstructor,
@@ -59,7 +61,7 @@ namespace XppInterpreter.Parser.Metadata
                 return new IntrinsicMethodTokenMetadata(GenerateIntrinsicSignatureHtml(methodName, proxy, parameterPosition));
             }
 
-            string syntax = new Providers.MethodMetadataProvider(methodName, context, isStatic, isConstructor, callerType)
+            string syntax = new Providers.MethodMetadataProvider(methodName, nameSpace, context, isStatic, isConstructor, callerType)
                 .GetTokenMetadata(proxy)
                 .GetDisplayHtml();
 
