@@ -1795,6 +1795,11 @@ namespace XppInterpreter.Parser
                     }
                 }
 
+                if (callerType != null && _proxy.Reflection.GetTypeFromNamespace(callerType.Namespace, callerType.Name) != null)
+                {
+                    nameSpace = callerType.Namespace;
+                }
+
                 throw new MetadataInterruption(TokenMetadataProviderHelper.GetMetadataForMethodParameters(callerType, 
                     methodName, 
                     nameSpace,
@@ -1836,6 +1841,11 @@ namespace XppInterpreter.Parser
                         callerType = _typeInferer.InferType(caller, type == TokenMetadataType.StaticMethod, _parseContext);
 
                         if (callerType is null) throw new MetadataInterruption(null);
+                    }
+
+                    if (callerType != null && _proxy.Reflection.GetTypeFromNamespace(callerType.Namespace, callerType.Name) != null)
+                    {
+                        nameSpace = callerType.Namespace;
                     }
 
                     throw new MetadataInterruption(TokenMetadataProviderHelper.GetMethodMetadata(

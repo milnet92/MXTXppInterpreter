@@ -39,7 +39,7 @@ namespace XppInterpreter.Parser.Metadata
             }
             else
             {
-                provider = new MethodMetadataProvider(methodName,nameSpace, context, isStatic, isConstructor, callerType);
+                provider = new MethodMetadataProvider(methodName, nameSpace, context, isStatic, isConstructor, callerType);
             }
 
             return provider.GetTokenMetadata(proxy);
