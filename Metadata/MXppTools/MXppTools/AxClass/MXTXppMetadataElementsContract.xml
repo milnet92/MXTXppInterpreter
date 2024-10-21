@@ -6,7 +6,7 @@
 [DataContract]
 public final class MXTXppMetadataElementsContract
 {
-    List classes, tables, edts, enums, globalFunctions;
+    List classes, tables, edts, enums, globalFunctions, namespaces;
 
 }
 ]]></Declaration>
@@ -73,6 +73,20 @@ public final class MXTXppMetadataElementsContract
         globalFunctions = _globalFunctions;
 
         return globalFunctions;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmNamespaces</Name>
+				<Source><![CDATA[
+    [DataMember("Namespaces"),
+     AifCollectionType("_namespaces", Types::String)]
+    public List parmNamespaces(List _namespaces = namespaces)
+    {
+        namespaces = _namespaces;
+
+        return namespaces;
     }
 
 ]]></Source>

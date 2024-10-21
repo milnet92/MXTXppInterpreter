@@ -66,6 +66,7 @@ TSql=T-Sql
 VariableInspectorName=Name
 VariableInspectorType=Type
 VariableInspectorValue=Value
+ViewMetadataAssemblyCache=View metadata assembly cache
 Xpp=X++
 XppCodeInterpreter=X++ Code Interpreter Editor
 XppCodeRunner=X++ Code Runner

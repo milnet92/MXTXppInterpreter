@@ -11,7 +11,8 @@
         Tables: [],
         Edts: [],
         Enums: [],
-        GlobalFunctions: []
+        GlobalFunctions: [],
+        Namespaces: []
     }
 
     const knownTypes = ["var", "anytype", "date", "int", "int64", "date", "utcdatetime", "timeofday", "boolean", "container", "guid"];
@@ -339,6 +340,7 @@
                     ...listObjects.Enums,
                     ...listObjects.Edts,
                     ...listObjects.GlobalFunctions,
+                    ...listObjects.Namespaces,
                     ...intrinsicCompleterList,
                     ...keywordsCompleterList])
 
@@ -464,6 +466,7 @@
                 Enums: ret.Enums.map(function (e) { return { value: e, name: e, type: 'Enum' } }),
                 Edts: ret.Edts.map(function (e) { return { value: e, name: e, type: 'Edt' } }),
                 GlobalFunctions: ret.GlobalFunctions.map(function (e) { return { value: e, name: e, type: 'GlobalFunction' } }),
+                Namespaces: ret.Namespaces.map(function (e) { return { value: e, name: e, type: 'Namespace' } })
             };
 
             console.log("MXT:", "Finished receiving elements metadata.");

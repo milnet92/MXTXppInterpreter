@@ -119,6 +119,14 @@ public class MXTXppMetadataAssemblyCache extends common
 			<ExtendedDataType>SysReferenceName</ExtendedDataType>
 			<IgnoreEDTRelation>Yes</IgnoreEDTRelation>
 		</AxTableField>
+		<AxTableField xmlns=""
+			i:type="AxTableFieldString">
+			<Name>RootNamespace</Name>
+			<AllowEdit>No</AllowEdit>
+			<AllowEditOnCreate>No</AllowEditOnCreate>
+			<ExtendedDataType>MXTAssemblyNamespace</ExtendedDataType>
+			<IgnoreEDTRelation>Yes</IgnoreEDTRelation>
+		</AxTableField>
 	</Fields>
 	<FullTextIndexes />
 	<Indexes>

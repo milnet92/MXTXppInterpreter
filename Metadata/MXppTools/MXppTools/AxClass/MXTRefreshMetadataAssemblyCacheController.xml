@@ -17,7 +17,8 @@ internal final class MXTRefreshMetadataAssemblyCacheController extends SysOperat
         
         controller  = new MXTRefreshMetadataAssemblyCacheController(
         classStr(MXTRefreshMetadataAssemblyCache),
-        methodStr(MXTRefreshMetadataAssemblyCache, run));
+        methodStr(MXTRefreshMetadataAssemblyCache, run),
+        SysOperationExecutionMode::ScheduledBatch);
         
 
         return controller;
@@ -32,6 +33,8 @@ internal final class MXTRefreshMetadataAssemblyCacheController extends SysOperat
     {
         MXTRefreshMetadataAssemblyCacheController   controller  = MXTRefreshMetadataAssemblyCacheController::construct();
         MXTRefreshMetadataAssemblyCacheContract contract = controller.getDataContractObject() as MXTRefreshMetadataAssemblyCacheContract;
+
+        controller.parmLoadFromSysLastValue(false);
 
         if (_args.dataset() == tableNum(MXTXppMetadataAssemblyCache))
         {

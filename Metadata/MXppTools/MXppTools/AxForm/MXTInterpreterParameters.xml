@@ -318,6 +318,14 @@ public class MXTInterpreterParameters extends FormRun
 								<Controls>
 									<AxFormControl xmlns=""
 										i:type="AxFormMenuFunctionButtonControl">
+										<Name>MXTMetadataAssemblyCacheView</Name>
+										<Type>MenuFunctionButton</Type>
+										<FormControlExtension
+											i:nil="true" />
+										<MenuItemName>MXTMetadataAssemblyCacheView</MenuItemName>
+									</AxFormControl>
+									<AxFormControl xmlns=""
+										i:type="AxFormMenuFunctionButtonControl">
 										<Name>MXTRefreshMetadataAssemblyCache</Name>
 										<Type>MenuFunctionButton</Type>
 										<FormControlExtension
