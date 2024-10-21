@@ -107,6 +107,14 @@ internal final class MXTRefreshMetadataAssemblyCache
                 cache.AssemblyNamespace   = type.Namespace;
                 cache.TypeName            = type.Name;
 
+                if (type.Namespace)
+                {
+                    str ns = type.Namespace;
+                    var idx = strFind(ns, ".", 1, strLen(ns));
+
+                    cache.RootNamespace = idx ? subStr(ns, 1, idx - 1) : ns;
+                }
+
                 cache.insert();
             }
         }

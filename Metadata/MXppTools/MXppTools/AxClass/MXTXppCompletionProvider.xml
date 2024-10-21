@@ -8,7 +8,7 @@ using Reflection = System.Reflection;
 
 public final class MXTXppCompletionProvider implements ICompletionProvider
 {
-    private static List classNames, tableNames, edtNames, enumNames, globalFunctions;
+    public static List classNames, tableNames, edtNames, enumNames, globalFunctions;
 
 }
 ]]></Declaration>
@@ -444,6 +444,31 @@ public final class MXTXppCompletionProvider implements ICompletionProvider
         MXTXppCompletionProvider::fillClassMethodList(globalFunctions, classStr(MXTXppPredefinedFunctions), true, false);
         
         return globalFunctions;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getNamespaces</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Gets the list of root namespaces. This functions does not uses
+    /// cache as namespaces can be modified
+    /// </summary>
+    /// <returns>List of root namespaces</returns>
+    public static List getNamespaces()
+    {
+        List namespaces = new List(Types::String);
+
+        MXTXppMetadataAssemblyCache cache;
+
+        while select RootNamespace from cache
+        group by cache.RootNamespace
+        {
+            namespaces.addEnd(cache.RootNamespace);
+        }
+
+        return namespaces;
     }
 
 ]]></Source>

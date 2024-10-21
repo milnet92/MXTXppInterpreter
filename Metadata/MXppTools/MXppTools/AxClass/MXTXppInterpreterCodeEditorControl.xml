@@ -358,6 +358,7 @@ public class MXTXppInterpreterCodeEditorControl extends FormTemplateControl
         ret.parmEnums(MXTXppCompletionProvider::getEnumNames());
         ret.parmEdts(MXTXppCompletionProvider::getEDTNames());
         ret.parmGlobalFunctions(MXTXppCompletionProvider::getGlobalFunctions());
+        ret.parmNamespaces(MXTXppCompletionProvider::getNamespaces());
 
         return ret;
     }
