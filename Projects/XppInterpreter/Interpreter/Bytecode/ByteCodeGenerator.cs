@@ -528,7 +528,7 @@ namespace XppInterpreter.Interpreter.Bytecode
             {
                 Variable caller = functionCall.Caller as Variable;
                 string callerName = ((Word)caller.Token).Lexeme;
-                Emit(new StaticFunctionCall(functionCall.Name, nArgs, allocate, callerName, caller.Namespace));
+                Emit(new StaticFunctionCall(functionCall.Name, nArgs, allocate, caller.Namespace, callerName));
             }
             else
             {
