@@ -90,5 +90,46 @@ namespace XppInterpreter.Core
             TypeInfo typeInfo = type as TypeInfo;
             return typeInfo != null && typeInfo.ImplementedInterfaces.Contains(interfaceType);
         }
+
+        public static MethodInfo FindMethodCore(Type type, string methodName, object[] parameters, bool isStatic)
+        {
+            MethodInfo method = null;
+            if (type is null) return null;
+
+            BindingFlags bindingAttr = BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.InvokeMethod | (isStatic ? BindingFlags.Static : BindingFlags.Instance);
+            var methods = type.GetMethods(bindingAttr).Where(m => m.Name.ToLowerInvariant() == methodName.ToLowerInvariant());
+
+            foreach (var m in methods) 
+            {
+                var parametersInfo = m.GetParameters();
+                if (parametersInfo.Length != parameters.Length) continue;
+
+                bool found = true;
+                for (int i = 0; i < parameters.Length; i++)
+                {
+                    if (parameters[i] == null)
+                    {
+                        if (parametersInfo[i].ParameterType.IsValueType)
+                        {
+                            found = false;
+                            break;
+                        }
+                    }
+                    else if (!parametersInfo[i].ParameterType.IsAssignableFrom(parameters[i].GetType()))
+                    {
+                        found = false;
+                        break;
+                    }
+                }
+
+                if (found)
+                {
+                    method = m;
+                    break;
+                }
+            }
+
+            return method;
+        }
     }
 }

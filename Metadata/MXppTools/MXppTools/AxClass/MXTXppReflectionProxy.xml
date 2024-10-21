@@ -91,9 +91,25 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 			<Method>
 				<Name>CallInstanceFunction</Name>
 				<Source><![CDATA[
-    public System.Object CallInstanceFunction(System.Object _instance, System.String _functionName, System.Object[] _parameters)
+    public System.Object CallInstanceFunction(System.Object _instance, System.String _methodName, System.Object[] _parameters)
     {
-        return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeInstanceCall(_instance, _functionName, _parameters);
+        System.Object obj = _instance as Microsoft.Dynamics.Ax.Xpp.XppObjectBase;
+
+        if (obj || this.IsCommon(_instance))
+        {
+            return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeInstanceCall(_instance, _methodName, _parameters);
+        }
+        else
+        {
+            System.Reflection.MethodInfo methodInfo = XppInterpreter.Core.ReflectionHelper::FindMethodCore(_instance.GetType(), _methodName, _parameters, false);
+
+            if (methodInfo)
+            {
+                return methodInfo.Invoke(_instance, _parameters);
+            }
+            
+            throw new System.Exception(strFmt("Method '%1' was not found in type '%1'", _methodName, _instance.GetType().Name));
+        }
     }
 
 ]]></Source>
@@ -261,7 +277,7 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
             return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeStaticCall(MXTXppTypes::GlobalType, invariantMethodName, _parameters);
         }
 
-        throw new System.Exception(strFmt("Function '%1' was not found.", _methodName));
+        throw new System.Exception(strFmt("Method '%1' was not found.", _methodName));
     }
 
 ]]></Source>

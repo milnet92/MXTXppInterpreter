@@ -79,6 +79,10 @@ namespace XppInterpreter.Core
                                 {
                                     value = Enum.ToObject(declarationType, varValue);
                                 }
+                                else if (declarationType.IsInstanceOfType(varValue))
+                                {
+                                    value = varValue;
+                                }
                                 else
                                 {
                                     value = castingProxy.Cast(varValue, declarationType);
