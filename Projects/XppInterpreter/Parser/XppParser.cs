@@ -284,12 +284,19 @@ namespace XppInterpreter.Parser
             IScanResult result = tokens.Length > 0 ? MatchMultiple(tokens) : MatchAnyWord();
             string ns = string.Empty;
 
+            int initialLine = result.Line;
+            int initialPosition = result.Start;
+
             string name = ((Word)result.Token).Lexeme;
 
             if (currentToken.TokenType == TType.Dot && _proxy.Reflection.IsAssemblyNamespace(name, true))
             {
                 ns = ParseNamespace(name, out result);
             }
+
+            // Overwrite the result with the initial coordinates
+            result.Start = initialPosition;
+            result.Line = initialLine;
 
             return new ParsedTypeDefinition(result, ns);
         }
