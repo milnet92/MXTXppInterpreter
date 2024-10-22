@@ -1063,6 +1063,12 @@ namespace XppInterpreter.Parser
         private Token SkipNamespace()
         {
             Token token = currentToken;
+
+            if (currentToken.TokenType == TType.Void)
+            {
+                return AdvancePeek().Token;
+            }
+
             while (currentToken.TokenType == TType.Id)
             {
                 token = AdvancePeek().Token;
