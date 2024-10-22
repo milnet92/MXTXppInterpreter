@@ -228,13 +228,13 @@ namespace XppInterpreter.Parser.Metadata
 
                     if (declaration != null)
                     {
-                        if (declaration.Type.TokenType == TType.Var)
+                        if (declaration.Type.TypeResult.Token.TokenType == TType.Var)
                         {
                             if (declaration.Initialization is null) return null;
                             return InferType(declaration.Initialization, false, _context);
                         }
 
-                        return declaration.ClrType != null ? declaration.ClrType : GetTypeFromWord((Word)declaration.Type);
+                        return declaration.ClrType != null ? declaration.ClrType : InferType(declaration.Type);
 
                     }
                 }
@@ -255,7 +255,7 @@ namespace XppInterpreter.Parser.Metadata
 
             if (declarationReference != null)
             {
-                return _proxy.Casting.GetSystemTypeFromTypeName(declarationReference.ReturnType.Lexeme);
+                return InferType(declarationReference.Type);
             }
 
             return null;
@@ -263,12 +263,12 @@ namespace XppInterpreter.Parser.Metadata
 
         public System.Type VisitIs(Is @is)
         {
-            return _proxy.Casting.GetSystemTypeFromTypeName(@is.TypeName);
+            return InferType(@is.Type);
         }
 
         public System.Type VisitAs(As @as)
         {
-            return _proxy.Casting.GetSystemTypeFromTypeName(@as.TypeName);
+            return InferType(@as.Type);
         }
     }
 }

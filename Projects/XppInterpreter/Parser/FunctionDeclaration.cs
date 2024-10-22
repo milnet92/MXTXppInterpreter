@@ -7,12 +7,12 @@ namespace XppInterpreter.Parser
 {
     public class FunctionDeclaration : Statement, ITypedObject
     {
-        public Token Type { get; }
+        public ParsedTypeDefinition Type { get; }
         public string Name { get; }
         public List<FunctionDeclarationParameter> Parameters { get; }
         public Block Block { get; }
 
-        public FunctionDeclaration(string name, Token returnType, List<FunctionDeclarationParameter> parameters, Block block, SourceCodeBinding sourceCodeBinding) : base(sourceCodeBinding, null)
+        public FunctionDeclaration(string name, ParsedTypeDefinition returnType, List<FunctionDeclarationParameter> parameters, Block block, SourceCodeBinding sourceCodeBinding) : base(sourceCodeBinding, null)
         {
             Type = returnType;
             Name = name;

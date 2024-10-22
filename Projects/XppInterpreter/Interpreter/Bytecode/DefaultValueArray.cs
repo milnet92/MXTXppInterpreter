@@ -5,7 +5,7 @@
         public override string OperationCode => $"PUSH_DEFAULT_A";
         public bool FixedSize { get; }
 
-        public DefaultValueArray(string typeName, bool fixedSize) : base(typeName)
+        public DefaultValueArray(string typeName, string @namespace, bool fixedSize) : base(typeName, @namespace)
         {
             FixedSize = fixedSize;
         }
@@ -17,11 +17,11 @@
             if (FixedSize)
             {
                 int size = (int)context.Stack.Pop();
-                defaultValue = context.Proxy.Casting.CreateFixedArray(TypeName, size);
+                defaultValue = context.Proxy.Casting.CreateFixedArray(TypeName, Namespace, size);
             }
             else
             {
-                defaultValue = context.Proxy.Casting.CreateDynamicArray(TypeName);
+                defaultValue = context.Proxy.Casting.CreateDynamicArray(TypeName, Namespace);
             }
 
             context.Stack.Push(defaultValue);

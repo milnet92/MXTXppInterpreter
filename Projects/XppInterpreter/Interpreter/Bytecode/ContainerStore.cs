@@ -11,7 +11,7 @@ namespace XppInterpreter.Interpreter.Bytecode
         public int ContainerIndex { get; }
         public bool Last { get; }
 
-        public ContainerStore(string name, int containerIndex, bool last, bool fromStack, bool top, bool isArray, string typeName, Type clrType) : base(name, fromStack, top, isArray, typeName, clrType)
+        public ContainerStore(string name, int containerIndex, bool last, bool fromStack, bool top, bool isArray) : base(name, fromStack, top, isArray, null, null, null)
         {
             ContainerIndex = containerIndex;
             Last = last;

@@ -12,13 +12,13 @@ namespace XppInterpreter.Parser
     public class As : Expression
     {
         public Expression Expression { get; }
-        public string TypeName { get; }
+        public ParsedTypeDefinition Type{ get; }
 
-        public As(Expression expression, string typeName, SourceCodeBinding sourceCodeBinding)
+        public As(Expression expression, ParsedTypeDefinition type, SourceCodeBinding sourceCodeBinding)
             : base(Word.As, sourceCodeBinding)
         {
             Expression = expression;
-            TypeName = typeName;
+            Type = type;
         }
 
         public override void Accept(IAstVisitor interpreter)
