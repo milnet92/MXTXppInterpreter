@@ -10,12 +10,12 @@ namespace XppInterpreter.Parser
     public class ParseContextScopeVariable : ITypedObject
     {
         public string Name { get; }
-        public Token Type { get; }
+        public ParsedTypeDefinition Type { get; }
         public Expression Initialization { get; }
         public bool IsArray { get; }
         public System.Type ClrType { get; }
 
-        public ParseContextScopeVariable(string varName, Word type, System.Type clrType, bool isArray, Expression initialization = null)
+        public ParseContextScopeVariable(string varName, ParsedTypeDefinition type, System.Type clrType, bool isArray, Expression initialization = null)
         {
             Name = varName;
             Type = type;

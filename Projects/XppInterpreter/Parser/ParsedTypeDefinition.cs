@@ -7,25 +7,31 @@ using XppInterpreter.Lexer;
 
 namespace XppInterpreter.Parser
 {
-    internal class ParsedTypeDefinition
+    public class ParsedTypeDefinition
     {
         public IScanResult TypeResult { get; }
         public string Namespace { get; }
+        public string TypeName { get; }
         public bool IsExternalType => !string.IsNullOrEmpty(Namespace);
         public ParsedTypeDefinition(IScanResult typeResult, string @namespace)
         {
             TypeResult = typeResult;
+            TypeName = ((Word)TypeResult.Token).Lexeme;
+            Namespace = @namespace;
+        }
+
+        public ParsedTypeDefinition(string typeName, string @namespace)
+        {
+            TypeName = typeName;
             Namespace = @namespace;
         }
 
         public override string ToString()
         {
-            string typeName = ((Word)TypeResult.Token).Lexeme;
-
             if (!string.IsNullOrEmpty(Namespace))
-                return $"{Namespace}.{typeName}";
+                return $"{Namespace}.{TypeName}";
 
-            return $"{typeName}";
+            return $"{TypeName}";
         }
     }
 }

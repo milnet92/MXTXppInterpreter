@@ -220,7 +220,7 @@ namespace XppInterpreter.Interpreter.Bytecode
                 access.Index.Accept(this);
             }
 
-            Emit(new Store(assignment.Assignee.Name, fromCaller, false, isArray, null, null));
+            Emit(new Store(assignment.Assignee.Name, fromCaller, false, isArray, null, null, null));
         }
 
         public void VisitContainerAssignment(ContainerAssignment containerAssignment)
@@ -247,7 +247,7 @@ namespace XppInterpreter.Interpreter.Bytecode
                     access.Index.Accept(this);
                 }
 
-                Emit(new ContainerStore(assignee.Name, containerIndex, containerIndex == maxIndex, fromCaller, false, isArray, null, null));
+                Emit(new ContainerStore(assignee.Name, containerIndex, containerIndex == maxIndex, fromCaller, false, isArray));
 
                 containerIndex++;
             }
@@ -618,14 +618,24 @@ namespace XppInterpreter.Interpreter.Bytecode
                 else if (variableDeclarations is VariableArrayDeclaration arrayDeclaration)
                 {
                     arrayDeclaration.Size?.Accept(this);
-                    Emit(new DefaultValueArray(variableDeclarations.DeclarationType.Lexeme, arrayDeclaration.Size != null));
+                    Emit(new DefaultValueArray(
+                        variableDeclarations.DeclarationType.TypeName, 
+                        variableDeclarations.DeclarationType.Namespace,
+                        arrayDeclaration.Size != null));
                 }
                 else
                 {
-                    Emit(new DefaultValue(variableDeclarations.DeclarationType.Lexeme));
+                    Emit(new DefaultValue(variableDeclarations.DeclarationType.TypeName, variableDeclarations.DeclarationType.Namespace));
                 }
 
-                Emit(new Store(declaration.Key.Lexeme, false, true, false, variableDeclarations.DeclarationType.Lexeme, variableDeclarations.DeclarationClrType));
+                Emit(new Store(
+                    declaration.Key.Lexeme, 
+                    false, 
+                    true, 
+                    false, 
+                    variableDeclarations.DeclarationType.TypeName,
+                    variableDeclarations.DeclarationType.Namespace,
+                    variableDeclarations.DeclarationClrType));
             }
         }
 
@@ -754,13 +764,13 @@ namespace XppInterpreter.Interpreter.Bytecode
         public void VisitIs(Parser.Is @is)
         {
             @is.Expression.Accept(this);
-            Emit(new Is(@is.TypeName));
+            Emit(new Is(@is.Type.TypeName, @is.Type.Namespace));
         }
 
         public void VisitAs(Parser.As @as)
         {
             @as.Expression.Accept(this);
-            Emit(new As(@as.TypeName));
+            Emit(new As(@as.Type.TypeName, @as.Type.Namespace));
         }
 
         public void VisitTry(Try @try)

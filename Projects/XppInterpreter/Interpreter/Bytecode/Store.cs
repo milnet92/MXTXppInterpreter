@@ -23,15 +23,17 @@ namespace XppInterpreter.Interpreter.Bytecode
         public bool FromStack { get; }
         public bool IsArray { get; }
         public string TypeName { get; }
+        public string Namespace { get; }
         public Type ClrType { get; }
 
-        public Store(string name, bool fromStack, bool top, bool isArray, string typeName, Type clrType)
+        public Store(string name, bool fromStack, bool top, bool isArray, string typeName, string @namespace, Type clrType)
         {
             Name = name;
             Top = top;
             FromStack = fromStack;
             IsArray = isArray;
             TypeName = typeName;
+            Namespace = @namespace;
             ClrType = clrType;
         }
 
@@ -77,7 +79,7 @@ namespace XppInterpreter.Interpreter.Bytecode
                     {
                         if (value is null && context.Proxy.Reflection.IsCommonType(ClrType))
                         {
-                            var defaultValue = context.Proxy.Casting.GetDefaultValueForType(TypeName);
+                            var defaultValue = context.Proxy.Casting.GetDefaultValueForType(TypeName, Namespace);
                             context.ScopeHandler.CurrentScope.SetVar(Name, defaultValue, context.Proxy.Casting, Top, ClrType);
                         }
                         else

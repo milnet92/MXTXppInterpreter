@@ -7,11 +7,11 @@ namespace XppInterpreter.Parser
 {
     public class FunctionDeclarationParameter
     {
-        public Word DeclarationType { get; }
+        public ParsedTypeDefinition DeclarationType { get; }
         public System.Type DeclarationClrType { get; }
         public string Name { get; }
 
-        public FunctionDeclarationParameter(Word declarationType, System.Type clrType, string name, SourceCodeBinding sourceCodeBinding)
+        public FunctionDeclarationParameter(ParsedTypeDefinition declarationType, System.Type clrType, string name, SourceCodeBinding sourceCodeBinding)
         {
             DeclarationType = declarationType;
             Name = name;

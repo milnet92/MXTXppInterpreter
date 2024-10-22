@@ -797,14 +797,14 @@ namespace XppInterpreter.Parser
             {
                 declarationType = _proxy.Casting.GetArrayType(declarationType);
 
-                ret = new VariableArrayDeclaration(typeWord, declarationType, arrayIdentifier, arraySize, SourceCodeBinding(typeResult, lastScanResult));
+                ret = new VariableArrayDeclaration(typeDef, declarationType, arrayIdentifier, arraySize, SourceCodeBinding(typeResult, lastScanResult));
 
                 _parseContext.CurrentScope.VariableDeclarations.Add(
-                    new ParseContextScopeVariable(arrayIdentifier.Lexeme, typeWord, declarationType, true, null));
+                    new ParseContextScopeVariable(arrayIdentifier.Lexeme, typeDef, declarationType, true, null));
             }
             else
             {
-                ret = new VariableDeclarations(typeWord, declarationType, declarations, SourceCodeBinding(typeResult, lastScanResult));
+                ret = new VariableDeclarations(typeDef, declarationType, declarations, SourceCodeBinding(typeResult, lastScanResult));
 
                 foreach (var identifier in ret.Identifiers)
                 {
@@ -1206,7 +1206,7 @@ namespace XppInterpreter.Parser
             Match(TType.LeftParenthesis);
 
             _parseContext.FunctionDeclarationStack.New();
-            _parseContext.CurrentScope.FunctionReferences.Add(new FunctionDeclarationReference((funcNameToken).Lexeme, type));
+            _parseContext.CurrentScope.FunctionReferences.Add(new FunctionDeclarationReference((funcNameToken).Lexeme, typeDef));
             _parseContext.CurrentScope.Begin();
 
             var parameters = new List<FunctionDeclarationParameter>();
@@ -1228,7 +1228,7 @@ namespace XppInterpreter.Parser
 
             var ret = new FunctionDeclaration(
                 ((Word)funcNameToken).Lexeme,
-                start.Token,
+                typeDef,
                 parameters,
                 block,
                 SourceCodeBinding(start, lastScanResult));
@@ -1266,9 +1266,9 @@ namespace XppInterpreter.Parser
             Word id = Match(TType.Id).Token as Word;
 
             _parseContext.CurrentScope.VariableDeclarations.Add(
-                new ParseContextScopeVariable(id.Lexeme, type, inferedType, false));
+                new ParseContextScopeVariable(id.Lexeme, typeDef, inferedType, false));
 
-            return new FunctionDeclarationParameter(type, inferedType, id.Lexeme, SourceCodeBinding(typeResult, lastScanResult));
+            return new FunctionDeclarationParameter(typeDef, inferedType, id.Lexeme, SourceCodeBinding(typeResult, lastScanResult));
         }
 
         internal ChangeCompany ChangeCompany()
@@ -1394,9 +1394,8 @@ namespace XppInterpreter.Parser
             if (currentToken.TokenType == TType.As)
             {
                 Match(TType.As);
-                var identifier = Match(TType.Id);
-
-                expr = new As(expr, (identifier.Token as Word).Lexeme, SourceCodeBinding(expr.SourceCodeBinding, identifier));
+                var typeDef = TypeDefinition(TType.Id);
+                expr = new As(expr, typeDef, SourceCodeBinding(expr.SourceCodeBinding, typeDef.TypeResult));
             }
 
             return expr;
@@ -1508,12 +1507,12 @@ namespace XppInterpreter.Parser
 
                 if (lastScanResult.Token.TokenType == TType.Is)
                 {
-                    var identifier = Match(TType.Id).Token;
-                    string typeName = (identifier as Word).Lexeme;
+                    var typeDef = TypeDefinition(TType.Id);
+
                     expr = new Is(
-                        expr, 
-                        typeName,
-                        SourceCodeBinding(start, lastScanResult));
+                        expr,
+                        typeDef,
+                        SourceCodeBinding(start, typeDef.TypeResult));
                 }
                 else
                 { 
