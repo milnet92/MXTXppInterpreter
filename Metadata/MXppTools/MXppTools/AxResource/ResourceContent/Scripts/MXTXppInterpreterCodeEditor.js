@@ -121,18 +121,22 @@
 
         for (let row = fromLine; row <= toLine; row++) {
             var accLength = 0;
-            var lineElement = editor.renderer.$textLayer.$lines.get(row).element;
+            var rendererIdx = editor.renderer.$textLayer.$lines.cells.findIndex(function (cell) { return cell.row == row; });
 
-            for (let i = 0; i < lineElement.childNodes.length; i++) {
-                var span = lineElement.childNodes[i];
-                var spanLength = span.textContent.length;
+            if (rendererIdx != -1) {
+                var lineElement = editor.renderer.$textLayer.$lines.get(rendererIdx).element;
 
-                if (typeof span.classList !== "undefined" && (allRange.insideStart(row, accLength) || allRange.insideEnd(row, accLength))) {
-                    span.classList.add(clazz);
-                    span.classList.remove("ace_class"); // Remove ace_class as is set as !important
+                for (let i = 0; i < lineElement.childNodes.length; i++) {
+                    var span = lineElement.childNodes[i];
+                    var spanLength = span.textContent.length;
+
+                    if (typeof span.classList !== "undefined" && (allRange.insideStart(row, accLength) || allRange.insideEnd(row, accLength))) {
+                        span.classList.add(clazz);
+                        span.classList.remove("ace_class"); // Remove ace_class as is set as !important
+                    }
+
+                    accLength += spanLength;
                 }
-
-                accLength += spanLength;
             }
         }
     }
