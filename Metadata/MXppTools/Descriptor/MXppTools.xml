@@ -14,6 +14,7 @@
 	<ModuleReferences xmlns:d2p1="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
 		<d2p1:string>ApplicationFoundation</d2p1:string>
 		<d2p1:string>ApplicationPlatform</d2p1:string>
+		<d2p1:string>AppTroubleshooting</d2p1:string>
 		<d2p1:string>Directory</d2p1:string>
 	</ModuleReferences>
 	<Name>MXppTools</Name>
@@ -21,6 +22,6 @@
 	<SolutionId>00000000-0000-0000-0000-000000000000</SolutionId>
 	<VersionBuild>0</VersionBuild>
 	<VersionMajor>1</VersionMajor>
-	<VersionMinor>1</VersionMinor>
+	<VersionMinor>2</VersionMinor>
 	<VersionRevision>0</VersionRevision>
 </AxModelInfo>

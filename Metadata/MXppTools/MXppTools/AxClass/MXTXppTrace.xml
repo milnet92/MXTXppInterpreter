@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppTrace</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+public final class MXTXppTrace
+{
+    public Map sqlStatements = new Map(Types::Integer, Types::String);
+    public Map sqlStatementsWithParameters = new Map(Types::Integer, Types::String);
+    public Map sqlStatementsMetadata = new Map(Types::Integer, Types::Container);
+
+    public utcdatetime createdDateTime;
+    public str etlFileName;
+    public str traceName;
+
+    public MXTSourceCode sourceCode;
+    public RecId scriptId;
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>newTrace</Name>
+				<Source><![CDATA[
+    public static MXTXppTrace newTrace(
+        str _traceName,
+        Map _sqlStatements, 
+        Map _sqlStatementsWithParameters,
+        Map _sqlStatementsMetadata,
+        utcdatetime _createdDateTime,
+        str _etlFileName)
+    {
+        MXTXppTrace trace = new MXTXppTrace();
+
+        trace.traceName = _traceName;
+        trace.sqlStatements = _sqlStatements;
+        trace.sqlStatementsWithParameters = _sqlStatementsWithParameters;
+        trace.sqlStatementsMetadata = _sqlStatementsMetadata;
+        trace.createdDateTime = _createdDateTime;
+        trace.etlFileName = _etlFileName;
+
+        return trace;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getSourceCode</Name>
+				<Source><![CDATA[
+    public MXTSourceCode getSourceCode()
+    {
+        if (scriptId)
+        {
+            return MXTXppInterpreterScript::find(scriptId).SourceCode;
+        }
+
+        return sourceCode;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>
