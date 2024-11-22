@@ -87,15 +87,27 @@ namespace XppInterpreter.Parser
                     Match(TType.Comma);
                 }
 
-                var tableResult = Match(TType.Id);
-                var tableNameVar = (Word)tableResult.Token;
-                HandleMetadataInterruption(tableResult.Line, tableResult.Start, tableResult.End, tableResult.Token, Metadata.TokenMetadataType.Variable);
-                Match(TType.Dot);
-                HandleAutocompletion(new Variable(tableNameVar, null, false, null));
+                var identifierResult = Match(TType.Id);
+                var identifierName = (Word)identifierResult.Token;
 
-                var fieldNameVar = (Word)Match(TType.Id).Token;
+                HandleMetadataInterruption(identifierResult.Line, identifierResult.Start, identifierResult.End, identifierResult.Token, Metadata.TokenMetadataType.Variable);
+                Word tableNameVar = null;
+                Word fieldNameVar = null;
 
-                ret.Add(new Field(tableNameVar.Lexeme, fieldNameVar.Lexeme));
+                if (currentToken.TokenType == TType.Dot)
+                {
+                    tableNameVar = identifierName;
+
+                    Match(TType.Dot);
+                    HandleAutocompletion(new Variable(tableNameVar, null, false, null));
+                    fieldNameVar = (Word)Match(TType.Id).Token;
+                }
+                else
+                {
+                    fieldNameVar = identifierName;
+                }
+
+                ret.Add(new Field(tableNameVar?.Lexeme, fieldNameVar?.Lexeme));
 
             } while (currentToken.TokenType == TType.Comma);
 
@@ -115,13 +127,25 @@ namespace XppInterpreter.Parser
                 {
                     Match(TType.Comma);
                 }
-                var tableResult = Match(TType.Id);
-                var tableNameVar = (Word)tableResult.Token;
-                HandleMetadataInterruption(tableResult.Line, tableResult.Start, tableResult.End, tableResult.Token, Metadata.TokenMetadataType.Variable);
-                Match(TType.Dot);
-                HandleAutocompletion(new Variable(tableNameVar, null, false, null));
+                var identifierResult = Match(TType.Id);
+                var identifierName = (Word)identifierResult.Token;
 
-                var fieldNameVar = (Word)Match(TType.Id).Token;
+                HandleMetadataInterruption(identifierResult.Line, identifierResult.Start, identifierResult.End, identifierResult.Token, Metadata.TokenMetadataType.Variable);
+                Word tableNameVar = null;
+                Word fieldNameVar = null;
+
+                if (currentToken.TokenType == TType.Dot)
+                {
+                    tableNameVar = identifierName;
+
+                    Match(TType.Dot);
+                    HandleAutocompletion(new Variable(identifierName, null, false, null));
+                    fieldNameVar = (Word)Match(TType.Id).Token;
+                }
+                else
+                {
+                    fieldNameVar = identifierName;
+                }
 
                 OrderByType orderByType = OrderByType.Unespecified;
 
@@ -136,7 +160,7 @@ namespace XppInterpreter.Parser
                     orderByType = OrderByType.Descending;
                 }
 
-                ret.Add(new OrderByField(tableNameVar.Lexeme, fieldNameVar.Lexeme, orderByType));
+                ret.Add(new OrderByField(tableNameVar?.Lexeme, fieldNameVar?.Lexeme, orderByType));
 
             } while (currentToken.TokenType == TType.Comma);
 

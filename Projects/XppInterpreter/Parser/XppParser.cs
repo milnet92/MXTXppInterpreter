@@ -1668,7 +1668,7 @@ namespace XppInterpreter.Parser
             }
             else
             {
-                HandleParseError(string.Format(MessageProvider.ExceptionTokenWasNotExpected, ttype));
+                HandleParseError(string.Format(MessageProvider.ExceptionTokenWasNotExpected, currentToken.TokenType));
             }
 
             // Move function sets the last scan results
