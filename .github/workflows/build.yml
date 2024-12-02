@@ -121,11 +121,14 @@ jobs:
           settingsJson: ${{ env.Settings }}
           secretsJson: ${{ env.RepoSecrets }}
       
+      - name: Unzip package
+        run: Expand-Archive -Path ${{ env.ARTIFACTS_PATH }}/*.zip -Destination ${{ env.ARTIFACTS_PATH }}/${{ env.PACKAGE_NAME }}
+      
       - name: Publish artifacts  
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PACKAGE_NAME }}
-          path: ${{ env.ARTIFACTS_PATH }}/*.zip
+          path: ${{ env.ARTIFACTS_PATH }}/${{ env.PACKAGE_NAME }}
 
       - name: Add logs to job summary
         run: |
