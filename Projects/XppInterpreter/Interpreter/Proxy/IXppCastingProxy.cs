@@ -6,6 +6,7 @@ namespace XppInterpreter.Interpreter.Proxy
     {
         bool ToBoolean(object value);
         object GetDefaultValueForType(string typeName);
+        object GetDefaultValueForSystemType(Type type);
         object CreateDynamicArray(string typeName);
         object CreateFixedArray(string typeName, int size);
         object GetArrayIndexValue(object array, int index);

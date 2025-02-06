@@ -361,6 +361,27 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 ]]></Source>
 			</Method>
 			<Method>
+				<Name>GetDefaultValueForSystemType</Name>
+				<Source><![CDATA[
+    public System.Object GetDefaultValueForSystemType(System.Type _type)
+    {
+        switch (_type)
+        {
+            case MXTXppTypes::BooleanType: return this.GetDefaultValueForType(MXTXppTypes::BooleanTypeStr);
+            case MXTXppTypes::DateType: return this.GetDefaultValueForType(MXTXppTypes::DateTypeStr);
+            case MXTXppTypes::DateTimeType: return this.GetDefaultValueForType(MXTXppTypes::DateTimeTypeStr);
+            case MXTXppTypes::StringType: return this.GetDefaultValueForType(MXTXppTypes::StringTypeStr);
+            case MXTXppTypes::Int32Type: return this.GetDefaultValueForType(MXTXppTypes::Int32TypeStr);
+            case MXTXppTypes::Int64Type: return this.GetDefaultValueForType(MXTXppTypes::Int64TypeStr);
+            case MXTXppTypes::GuidType: return this.GetDefaultValueForType(MXTXppTypes::GuidTypeStr);
+            case MXTXppTypes::DecimalType: return this.GetDefaultValueForType(MXTXppTypes::RealTypeStr);
+            default: return this.GetDefaultValueForType(_type.Name);
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>GetDefaultValueForType</Name>
 				<Source><![CDATA[
     /// <summary>
