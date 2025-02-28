@@ -13,6 +13,7 @@ using XppInterpreter;
 /// </summary>
 internal final class MXTXppQueryExpressionGenerator
 {
+    private RuntimeContext context;
     private Set tablesInQuery;
     private XppInterpreter.Interpreter.Query.QueryGenerationHelper generationHelper;
 
@@ -29,6 +30,7 @@ internal final class MXTXppQueryExpressionGenerator
     /// <param name = "_tablesInQuery">Tables in query</param>
     void new(RuntimeContext _context, Set _tablesInQuery)
     {
+        context = _context;
         tablesInQuery = _tablesInQuery;
         generationHelper = new XppInterpreter.Interpreter.Query.QueryGenerationHelper(_context);
     }
@@ -100,7 +102,50 @@ internal final class MXTXppQueryExpressionGenerator
 				<Source><![CDATA[
     private SysDaQueryExpression visitUnaryOperation(Parser.UnaryOperation _unaryOperation)
     {
-        throw new System.NotImplementedException("Unary expressions for query statements are not implemented.");
+        SysDaQueryExpression left, right;
+
+        if (_unaryOperation.Expression is Parser.Variable)
+        {
+            Parser.Variable variable = _unaryOperation.Expression as Parser.Variable;
+
+            if (this.isVariableTable(variable))
+            {
+                Common common = generationHelper.ComputeVariable(variable.Caller);
+                Lexer.Word word = variable.Token;
+
+                left = new SysDaFieldExpression(common, word.Lexeme);
+                right = new SysDaValueExpression(generationHelper.GetDefaultValueForType(_unaryOperation.Expression.ReturnType));
+            }
+            else 
+            {
+                System.Object falseValue = generationHelper.GetDefaultValueForType(_unaryOperation.Expression.ReturnType);
+                left = new SysDaValueExpression(true);
+                
+                if (variable is Parser.FunctionCall)
+                {
+                    System.Object value = generationHelper.ComputeFunctionCall(variable);
+                    right = new SysDaValueExpression(falseValue == value);
+                }
+                else
+                {
+                    System.Object value = generationHelper.ComputeVariable(variable);
+                    right = new SysDaValueExpression(falseValue == value);
+                }
+            }
+        }
+        else if (_unaryOperation.Expression is Parser.Constant)
+        {
+            System.Boolean boolValue = context.Proxy.Casting.ToBoolean(generationHelper.ComputeConstant(_unaryOperation.Expression));
+            left = new SysDaValueExpression(true);
+
+            right = new SysDaValueExpression(!boolValue);
+        }
+        else
+        {
+            throw new System.Exception("Invalid unary expression.");
+        }
+
+        return new SysDaEqualsExpression(left, right);
     }
 
 ]]></Source>

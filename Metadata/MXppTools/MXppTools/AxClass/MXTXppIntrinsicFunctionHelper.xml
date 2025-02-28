@@ -189,6 +189,26 @@ internal final class MXTXppIntrinsicFunctionHelper
 ]]></Source>
 			</Method>
 			<Method>
+				<Name>validateAttributeName</Name>
+				<Source><![CDATA[
+    public static void validateAttributeName(str _attributeName)
+    {
+        if (className2Id(_attributeName) == 0)
+        {
+            MXTXppIntrinsicFunctionHelper::throwArgumentException(_attributeName, 'attribute');
+        }
+
+        DictClass dictClass = SysDictClass::newName(_attributeName);
+
+        if (dictClass.extend() != classNum(SysAttribute))
+        {
+            MXTXppIntrinsicFunctionHelper::throwArgumentException(_attributeName, 'attribute');
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>validateConfigurationKeyName</Name>
 				<Source><![CDATA[
     public static void validateConfigurationKeyName(str _configurationKeyName)

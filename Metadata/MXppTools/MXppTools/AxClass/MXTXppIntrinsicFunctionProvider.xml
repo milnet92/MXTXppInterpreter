@@ -282,6 +282,18 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 ]]></Source>
 			</Method>
 			<Method>
+				<Name>attributeStr</Name>
+				<Source><![CDATA[
+    public str attributeStr(System.String attribute)
+    {
+        MXTXppIntrinsicFunctionHelper::validateAttributeName(attribute);
+
+        return attribute;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>dutyStr</Name>
 				<Source><![CDATA[
     public str dutyStr(System.String securityDuty)

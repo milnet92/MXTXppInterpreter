@@ -1,4 +1,5 @@
-﻿using XppInterpreter.Interpreter.Bytecode;
+﻿using System;
+using XppInterpreter.Interpreter.Bytecode;
 
 namespace XppInterpreter.Interpreter.Query
 {
@@ -16,6 +17,11 @@ namespace XppInterpreter.Interpreter.Query
             interpreter.Interpret(byteCode, _context, false);
 
             return _context.Stack.Pop();
+        }
+
+        public object GetDefaultValueForType(Type type)
+        {
+            return _context.Proxy.Casting.GetDefaultValueForSystemType(type);
         }
 
         public object ComputeVariable(Parser.Variable variable)
