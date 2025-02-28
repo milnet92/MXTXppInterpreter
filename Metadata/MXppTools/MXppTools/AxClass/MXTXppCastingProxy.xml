@@ -522,6 +522,16 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 				<Source><![CDATA[
     public System.Object Cast(System.Object _value, System.Type _toType)
     {
+        if (_value != null)
+        {
+            System.Type fromType = _value.GetType();
+
+            if (fromType == _toType || _toType.IsAssignableFrom(fromType) || fromType.IsAssignableFrom(_toType))
+            {
+                return _value;
+            }
+        }
+
         boolean isCommonType = _toType == MXTXppTypes::CommonType || _toType.IsSubclassOf(MXTXppTypes::CommonType);
         
         if (this.isEnumType(_toType))
