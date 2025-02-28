@@ -107,6 +107,7 @@ var intrinsicFunctions = [
     "dimensionHierarchyLevelStr",
     "dimensionHierarchyStr",
     "dimensionReferenceStr",
+    "attributeStr",
     "dutyStr",
     "enumCnt",
     "enumLiteralStr",

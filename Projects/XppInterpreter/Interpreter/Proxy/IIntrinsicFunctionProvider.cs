@@ -29,6 +29,7 @@
         string dimensionHierarchyLevelStr(string dimensionHierarchyLevel);
         string dimensionHierarchyStr(string dimensionHierarchy);
         string dimensionReferenceStr(string dimensionReference);
+        string attributeStr(string attribute);
         string dutyStr(string securityDuty);
         int enumCnt(string enumType);
         string enumLiteralStr(string enumName, string literal);
