@@ -258,18 +258,29 @@ public class MXTScriptEditor extends FormRun
     /// </summary>
     public void init()
     {
-        var callerTableId = this.args().dataset();
+        URLUtility  urlUtility  = new URLUtility();
+        str         scriptId    = urlUtility.getQueryParamValue(identifierStr(ScriptId));
 
-        switch (callerTableId)
+        if (scriptId)
         {
-            case tableNum(MXTXppInterpreterScript):
-                callerScript = this.args().record();
-                break;
+            callerScript = MXTXppInterpreterScript::find(str2Int64(scriptId)); // So scripts could be called from url like example D356FO_URL/&mi=MXTScriptEditor&ScriptId=5637162576
+        }
 
-            case tableNum(MXTXppInterpreterReferences):
-                MXTXppInterpreterScriptDependency dependency = this.args().record();
-                callerScript = MXTXppInterpreterScript::find(dependency.ReferenceScriptId);
-                break;
+        if (!callerScript)
+        {
+            var callerTableId = this.args().dataset();
+
+            switch (callerTableId)
+            {
+                case tableNum(MXTXppInterpreterScript):
+                    callerScript = this.args().record();
+                    break;
+
+                case tableNum(MXTXppInterpreterReferences):
+                    MXTXppInterpreterScriptDependency dependency = this.args().record();
+                    callerScript = MXTXppInterpreterScript::find(dependency.ReferenceScriptId);
+                    break;
+            }
         }
 
         super();
