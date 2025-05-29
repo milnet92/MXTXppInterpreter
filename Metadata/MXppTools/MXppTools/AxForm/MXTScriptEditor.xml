@@ -271,6 +271,13 @@ public class MXTScriptEditor extends FormRun
                 callerScript = MXTXppInterpreterScript::find(dependency.ReferenceScriptId);
                 break;
         }
+        if (!callerScript) // If form is called directly from url, check if ScriptId is provided
+        {
+            URLUtility  urlUtility  = new URLUtility();
+            str         scriptId    = urlUtility.getQueryParamValue(identifierStr(ScriptId));
+
+            callerScript = MXTXppInterpreterScript::find(str2Int64(scriptId));
+        }					
 
         super();
     }
