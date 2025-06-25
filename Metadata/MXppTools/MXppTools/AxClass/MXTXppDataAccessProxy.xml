@@ -68,6 +68,23 @@ internal final class MXTXppDataAccessProxy implements XppInterpreter.Interpreter
 ]]></Source>
 			</Method>
 			<Method>
+				<Name>CreateUncheckedHandler</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Creates an instance of a unchecked as a IDisposable instance
+    /// </summary>
+    /// <param name = "uncheckValue">Uncheck flag(s)</param>
+    /// <param name = "className">Class name</param>
+    /// <param name = "methodName">Method name</param>
+    /// <returns></returns>
+    public System.IDisposable CreateUncheckedHandler(System.Int32 uncheckValue, System.String className, System.String methodName)
+    {
+        return Microsoft.Dynamics.Ax.Xpp.PredefinedFunctions::Unchecked(uncheckValue, className, methodName);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>Next</Name>
 				<Source><![CDATA[
     /// <summary>

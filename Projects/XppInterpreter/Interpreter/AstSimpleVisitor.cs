@@ -87,6 +87,12 @@ namespace XppInterpreter.Interpreter
             changeCompany.Block.Accept(this);
         }
 
+        public virtual void VisitUnchecked(Unchecked @unchecked)
+        {
+            @unchecked.Expression.Accept(this);
+            @unchecked.Block.Accept(this);
+        }
+
         public virtual void VisitConstant(Constant constant)
         {
         }

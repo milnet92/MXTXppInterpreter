@@ -10,7 +10,7 @@ namespace XppInterpreter.Interpreter.Bytecode
         {
             string company = (string)context.Stack.Pop();
             IDisposable changeCompanyHandler = context.Proxy.Data.CreateChangeCompanyHandler(company);
-            context.ChangeCompanyHandlers.Push(changeCompanyHandler);
+            context.Disposables.Push(changeCompanyHandler);
         }
     }
 }

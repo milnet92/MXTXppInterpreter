@@ -18,6 +18,7 @@ namespace XppInterpreter.Interpreter
         void VisitSelect(Select select);
         void VisitNext(Next next);
         void VisitWhileSelect(WhileSelect whileSelect);
+        void VisitUnchecked(Unchecked @unchecked);
         void VisitChangeCompany(ChangeCompany changeCompany);
         void VisitTtsCommit(TtsCommit ttsCommit);
         void VisitContainerAssignment(ContainerAssignment containerAssignment);

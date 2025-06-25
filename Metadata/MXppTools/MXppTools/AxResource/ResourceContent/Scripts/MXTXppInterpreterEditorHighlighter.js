@@ -61,6 +61,7 @@ var keywords = [
     "reverse",
     "validtimestate",
     "changecompany",
+    "unchecked",
     "crosscompany",
     "generateonly",
     "index",
