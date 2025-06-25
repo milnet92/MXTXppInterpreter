@@ -146,12 +146,20 @@ namespace XppInterpreter.Interpreter.Bytecode
             this.RecalculateLoopControlOffsets(selectScope.Instructions.First());
         }
 
+        public void VisitUnchecked(Parser.Unchecked @unchecked)
+        {
+            @unchecked.Expression.Accept(this);
+            Emit(new Unchecked());
+            @unchecked.Block.Accept(this);
+            Emit(new DisposeHandle());
+        }
+
         public void VisitChangeCompany(Parser.ChangeCompany changeCompany)
         {
             changeCompany.Expression.Accept(this);
             Emit(new ChangeCompany());
             changeCompany.Block.Accept(this);
-            Emit(new ChangeCompanyDispose());
+            Emit(new DisposeHandle());
         }
 
         public void VisitContainerInitialisation(ContainerInitialisation containerInitialisation)

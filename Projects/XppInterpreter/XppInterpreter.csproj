@@ -74,7 +74,7 @@
     <Compile Include="Interpreter\Bytecode\Dispose.cs" />
     <Compile Include="Interpreter\Bytecode\ExceptionCatchReference.cs" />
     <Compile Include="Interpreter\Bytecode\ChangeCompany.cs" />
-    <Compile Include="Interpreter\Bytecode\ChangeCompanyDispose.cs" />
+    <Compile Include="Interpreter\Bytecode\DisposeHandle.cs" />
     <Compile Include="Interpreter\Bytecode\Container.cs" />
     <Compile Include="Interpreter\Bytecode\Debug.cs" />
     <Compile Include="Interpreter\Bytecode\DefaultValue.cs" />
@@ -115,6 +115,7 @@
     <Compile Include="Interpreter\Bytecode\TtsBegin.cs" />
     <Compile Include="Interpreter\Bytecode\TtsCommit.cs" />
     <Compile Include="Interpreter\Bytecode\Negation.cs" />
+    <Compile Include="Interpreter\Bytecode\Unchecked.cs" />
     <Compile Include="Interpreter\Bytecode\UpdateQuery.cs" />
     <Compile Include="Interpreter\Bytecode\VariableLoad.cs" />
     <Compile Include="Interpreter\Debug\AST2SourceCodeBindableCollection.cs" />
@@ -213,6 +214,7 @@
     <Compile Include="Parser\Switch.cs" />
     <Compile Include="Parser\Try.cs" />
     <Compile Include="Parser\Retry.cs" />
+    <Compile Include="Parser\Unchecked.cs" />
     <Compile Include="Parser\UpdateRecordset.cs" />
     <Compile Include="Parser\Data\Join.cs" />
     <Compile Include="Parser\Data\OrderByField.cs" />

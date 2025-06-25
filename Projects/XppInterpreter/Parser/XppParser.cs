@@ -1057,6 +1057,7 @@ namespace XppInterpreter.Parser
                     return LoopControl();
                 case TType.Switch: return Switch();
                 case TType.ChangeCompany: return ChangeCompany();
+                case TType.Unchecked: return Unchecked();
                 case TType.Var:
                 case TType.TypeStr:
                 case TType.TypeDate:
@@ -1182,6 +1183,22 @@ namespace XppInterpreter.Parser
                 new ParseContextScopeVariable(id.Lexeme, type, inferedType, false));
 
             return new FunctionDeclarationParameter(type, inferedType, id.Lexeme, SourceCodeBinding(typeResult, lastScanResult));
+        }
+
+        internal Unchecked Unchecked()
+        {
+            var start = currentScanResult;
+
+            Match(TType.Unchecked);
+            Match(TType.LeftParenthesis);
+
+            Expression expression = Expression();
+
+            var end = Match(TType.RightParenthesis);
+
+            Block block = Block();
+
+            return new Unchecked(expression, block, SourceCodeBinding(start, lastScanResult), SourceCodeBinding(start, end));
         }
 
         internal ChangeCompany ChangeCompany()
