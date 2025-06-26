@@ -99,6 +99,20 @@ internal final class MXTXppDataAccessProxy implements XppInterpreter.Interpreter
 
 ]]></Source>
 			</Method>
+			<Method>
+				<Name>Flush</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Executes the flush statement for the specified table name.
+    /// </summary>
+    /// <param name = "_tableName"></param>
+    public void Flush(System.String _tableName)
+    {
+        Microsoft.Dynamics.Ax.Xpp.PredefinedFunctions::Flush(tableName2Id(_tableName));
+    }
+
+]]></Source>
+			</Method>
 		</Methods>
 	</SourceCode>
 </AxClass>

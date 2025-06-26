@@ -17,6 +17,7 @@ namespace XppInterpreter.Interpreter
         void VisitThrow(Throw @throw);
         void VisitSelect(Select select);
         void VisitNext(Next next);
+        void VisitFlush(Flush flush);
         void VisitWhileSelect(WhileSelect whileSelect);
         void VisitUnchecked(Unchecked @unchecked);
         void VisitChangeCompany(ChangeCompany changeCompany);

@@ -10,5 +10,6 @@ namespace XppInterpreter.Interpreter.Proxy
         IDisposable CreateChangeCompanyHandler(string datAreaId);
         IDisposable CreateUncheckedHandler(int uncheckedValue, string className, string methodName);
         void Next(object common);
+        void Flush(string tableName);
     }
 }

@@ -25,6 +25,7 @@ var keywords = [
     "select",
     "from",
     "next",
+    "flush",
     "where",
     "exists",
     "notexists",

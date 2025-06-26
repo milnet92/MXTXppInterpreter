@@ -659,6 +659,7 @@ namespace XppInterpreter.Lexer
             Reserve(Word.TtsBegin);
             Reserve(Word.ChangeCompany);
             Reserve(Word.Unchecked);
+            Reserve(Word.Flush);
             Reserve(Word.Select);
             Reserve(Word.From);
             Reserve(Word.Where);

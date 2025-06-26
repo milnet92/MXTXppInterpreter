@@ -172,6 +172,10 @@ namespace XppInterpreter.Interpreter
         {
         }
 
+        public virtual void VisitFlush(Flush flush)
+        {
+        }
+
         public virtual void VisitNoReturnFunctionCall(NoReturnFunctionCall noReturnFunctionCall)
         {
             noReturnFunctionCall.FunctionCall?.Accept(this);

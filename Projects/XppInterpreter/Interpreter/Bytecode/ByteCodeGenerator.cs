@@ -122,6 +122,12 @@ namespace XppInterpreter.Interpreter.Bytecode
             Emit(new Next());
         }
 
+        public void VisitFlush(Parser.Flush flush)
+        {
+            EmitDebugSymbol(flush);
+            Emit(new Flush(flush.TableName));
+        }
+
         public void VisitWhileSelect(WhileSelect whileSelect)
         {
             _generationContext.AddWhileSelect(whileSelect.Select);

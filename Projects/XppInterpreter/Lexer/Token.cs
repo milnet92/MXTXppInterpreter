@@ -148,6 +148,7 @@ namespace XppInterpreter.Lexer
         Is,
         As,
         Unchecked,
+        Flush,
 
         #region Type identification
         TypeAnytype,

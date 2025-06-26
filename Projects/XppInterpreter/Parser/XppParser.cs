@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using XppInterpreter.Core;
 using XppInterpreter.Lexer;
 using XppInterpreter.Parser.Metadata;
@@ -795,6 +796,36 @@ namespace XppInterpreter.Parser
             return new Next(id.Lexeme, SourceCodeBinding(start, lastScanResult));
         }
 
+        internal Flush Flush()
+        {
+            var start = currentScanResult;
+            Match(TType.Flush);
+            var id = (Word)Match(TType.Id).Token;
+
+            if (!_forAutoCompletion && !_forMetadata)
+            {
+                try
+                {
+                    _ = _proxy.Intrinsic.tableNum(id.Lexeme);
+                }
+                catch (Exception ex)
+                {
+                    string message = ex.Message;
+                    if (ex.InnerException != null)
+                    {
+                        message = ex.InnerException.Message;
+                    }
+
+                    HandleParseError(message, false, stop: false);
+                }
+            }
+
+            Match(TType.Semicolon);
+
+            return new Flush(id.Lexeme, SourceCodeBinding(start, lastScanResult));
+        }
+
+
         internal Throw Throw()
         {
             var start = currentScanResult;
@@ -1034,6 +1065,7 @@ namespace XppInterpreter.Parser
                 case TType.TtsCommit: return TtsCommit();
                 case TType.If: return If();
                 case TType.Next: return Next();
+                case TType.Flush: return Flush();
                 case TType.InsertRecordset: return InsertRecordset();
                 case TType.UpdateRecordset: return UpdateRecordset();
                 case TType.DeleteFrom: return DeleteFrom();

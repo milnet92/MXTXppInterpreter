@@ -100,6 +100,7 @@
     <Compile Include="Interpreter\Bytecode\LoopControl.cs" />
     <Compile Include="Interpreter\Bytecode\NewObject.cs" />
     <Compile Include="Interpreter\Bytecode\BeginScope.cs" />
+    <Compile Include="Interpreter\Bytecode\Flush.cs" />
     <Compile Include="Interpreter\Bytecode\Next.cs" />
     <Compile Include="Interpreter\Bytecode\Push.cs" />
     <Compile Include="Interpreter\Bytecode\RefFunction.cs" />
@@ -162,6 +163,7 @@
     <Compile Include="Parser\ArrayAccess.cs" />
     <Compile Include="Parser\CatchContext.cs" />
     <Compile Include="Parser\ContainerAssignment.cs" />
+    <Compile Include="Parser\Flush.cs" />
     <Compile Include="Parser\FunctionDeclarationReference.cs" />
     <Compile Include="Parser\Is.cs" />
     <Compile Include="Parser\As.cs" />
