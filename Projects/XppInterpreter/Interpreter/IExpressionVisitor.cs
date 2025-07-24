@@ -18,5 +18,7 @@ namespace XppInterpreter.Interpreter
         void VisitVariable(Variable variable);
         void VisitIs(Is @is);
         void VisitAs(As @as);
+        void VisitSelectExpression(SelectExpression selectExpression);
+        void VisitTableField(TableField tableField);
     }
 }

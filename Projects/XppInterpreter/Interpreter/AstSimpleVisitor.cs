@@ -1,4 +1,5 @@
 ﻿using XppInterpreter.Parser;
+using XppInterpreter.Parser.Data;
 
 namespace XppInterpreter.Interpreter
 {
@@ -256,6 +257,14 @@ namespace XppInterpreter.Interpreter
         public virtual void VisitVariable(Variable variable)
         {
             variable.Caller?.Accept(this);
+        }
+
+        public virtual void VisitSelectExpression(SelectExpression selectExpression)
+        {
+        }
+
+        public virtual void VisitTableField(TableField tableField)
+        {
         }
 
         public virtual void VisitVariableDeclarations(VariableDeclarations variableDeclaration)

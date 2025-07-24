@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.ServiceModel.Security;
 using System.Text;
 using System.Threading.Tasks;
 using XppInterpreter.Interpreter;
@@ -24,6 +25,11 @@ namespace XppInterpreter.Parser.Metadata
             _globalType = _proxy.Casting.GetSystemTypeFromTypeName("Global");
             _predefinedType = _proxy.Casting.GetSystemTypeFromTypeName("PredefinedFunctions");
             _customPredefinedType = _proxy.Intrinsic.GetCustomPredefinedFunctionProvider();
+        }
+
+        public System.Type InferType(string typeName)
+        {
+            return _proxy.Casting.GetSystemTypeFromTypeName(typeName);
         }
 
         public System.Type InferType(Expression expression, ParseContext context)
@@ -242,6 +248,31 @@ namespace XppInterpreter.Parser.Metadata
         public System.Type VisitAs(As @as)
         {
             return _proxy.Casting.GetSystemTypeFromTypeName(@as.TypeName);
+        }
+
+        public System.Type VisitSelectExpression(SelectExpression selectExpression)
+        {
+            var bufferType = _proxy.Casting.GetSystemTypeFromTypeName(selectExpression.Query.TableVariableName);
+
+            if (bufferType != null)
+            {
+                return _proxy.Reflection.GetFieldReturnType(bufferType, selectExpression.ReturnField);
+            }
+
+            return null;
+        }
+
+        public System.Type VisitTableField(TableField tableField)
+        {
+
+            var bufferType = _proxy.Casting.GetSystemTypeFromTypeName(tableField.TableName);
+
+            if (bufferType != null)
+            {
+                return _proxy.Reflection.GetFieldReturnType(bufferType, tableField.FieldName);
+            }
+
+            return null;
         }
     }
 }

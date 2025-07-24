@@ -4,6 +4,7 @@ using System.Text;
 using XppInterpreter.Interpreter.Debug;
 using XppInterpreter.Lexer;
 using XppInterpreter.Parser;
+using XppInterpreter.Parser.Data;
 
 namespace XppInterpreter.Interpreter.Bytecode
 {
@@ -16,12 +17,18 @@ namespace XppInterpreter.Interpreter.Bytecode
         private bool _generateDebugInfo;
 
         public XppInterpreterOptions Options { get; }
-        public ByteCodeGenerator(XppInterpreterOptions options = null)
+
+        public ByteCodeGenerator(XppInterpreterOptions options = null, List<RefFunction> declaredFunctions = null)
         {
             _ss.Push(new ByteCodeGenerationScope());
 
             Options = options;
             _hasMaxIterations = Options != null && Options.MaxLoopIterations > 0;
+
+            if (declaredFunctions != null)
+            {
+                _declaredFunctions.AddRange(declaredFunctions);
+            }
         }
 
         public ByteCode Generate(Program program, bool generateDebugInfo, List<RefFunction> dependencyFunctions = null)
@@ -113,6 +120,12 @@ namespace XppInterpreter.Interpreter.Bytecode
         {
             EmitDebugSymbol(select);
             Emit(new Select(select.Query, _generationContext.IsWhileSelectBeingGenerated(select)));
+        }
+
+        public void VisitSelectExpression(Parser.SelectExpression selectExpression)
+        {
+            EmitDebugSymbol(selectExpression);
+            Emit(new Select(selectExpression.Query, returnField: selectExpression.ReturnField));
         }
 
         public void VisitNext(Parser.Next next)
@@ -864,6 +877,11 @@ namespace XppInterpreter.Interpreter.Bytecode
         {
             EmitDebugSymbol(retry);
             Emit(new Retry());
+        }
+
+        public void VisitTableField(TableField tableField)
+        {
+
         }
     }
 }

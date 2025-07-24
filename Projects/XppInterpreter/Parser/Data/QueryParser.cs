@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Net.Http.Headers;
+using System.Threading;
 using XppInterpreter.Lexer;
 using XppInterpreter.Parser.Data;
 
@@ -7,6 +9,8 @@ namespace XppInterpreter.Parser
     public partial class XppParser
     {
         bool isParsingWhereStatement;
+        bool isParsingQueryExpression;
+        string currentQueryExpressionTableName;
 
         bool IsJoinType(Token token)
         {
@@ -98,8 +102,22 @@ namespace XppInterpreter.Parser
                 {
                     tableNameVar = identifierName;
 
+                    if (isParsingQueryExpression && tableNameVar.Lexeme !=  currentQueryExpressionTableName)
+                    {
+                        HandleParseError("Invalid table.");
+                    }
+
                     Match(TType.Dot);
-                    HandleAutocompletion(new Variable(tableNameVar, null, false, null));
+
+                    if (isParsingQueryExpression)
+                    {
+                        HandleAutocompletionForType(currentQueryExpressionTableName);
+                    }
+                    else
+                    {
+                        HandleAutocompletion(new Variable(tableNameVar, null, false, null));
+                    }
+
                     fieldNameVar = (Word)Match(TType.Id).Token;
                 }
                 else
@@ -138,8 +156,22 @@ namespace XppInterpreter.Parser
                 {
                     tableNameVar = identifierName;
 
+                    if (isParsingQueryExpression && tableNameVar.Lexeme != currentQueryExpressionTableName)
+                    {
+                        HandleParseError("Invalid table.");
+                    }
+
                     Match(TType.Dot);
-                    HandleAutocompletion(new Variable(identifierName, null, false, null));
+
+                    if (isParsingQueryExpression)
+                    {
+                        HandleAutocompletionForType(currentQueryExpressionTableName);
+                    }
+                    else
+                    { 
+                        HandleAutocompletion(new Variable(identifierName, null, false, null));
+                    }
+
                     fieldNameVar = (Word)Match(TType.Id).Token;
                 }
                 else
@@ -258,6 +290,30 @@ namespace XppInterpreter.Parser
             Query query = Query();
 
             return new Select(query, SourceCodeBinding(start, lastScanResult));
+        }
+
+        internal SelectExpression SelectExpression()
+        {
+            var start = currentScanResult;
+
+            isParsingQueryExpression = true;
+
+            Match(TType.LeftParenthesis);
+            var selectResult = Match(TType.Select);
+
+            Query query = Query();
+
+            isParsingQueryExpression = false;
+
+            Match(TType.RightParenthesis);
+            Match(TType.Dot);
+
+            HandleAutocompletionForType(query.TableVariableName);
+
+            var identifierResult = Match(TType.Id);
+            var identifierName = (Word)identifierResult.Token;
+
+            return new SelectExpression(selectResult.Token, query, identifierName.Lexeme, SourceCodeBinding(start, lastScanResult));
         }
 
         internal Join OuterJoin()
@@ -468,7 +524,16 @@ namespace XppInterpreter.Parser
 
             var tableResult = Match(TType.Id);
             var tableVarName = (Word)tableResult.Token;
-            HandleMetadataInterruption(tableResult.Line, tableResult.Start, tableResult.End, tableResult.Token, Metadata.TokenMetadataType.Variable);
+
+            if (!isParsingQueryExpression)
+            { 
+                HandleMetadataInterruption(tableResult.Line, tableResult.Start, tableResult.End, tableResult.Token, Metadata.TokenMetadataType.Variable);
+            }
+            else
+            {
+                currentQueryExpressionTableName = tableVarName.Lexeme;
+            }
+
             string index = null;
 
             if (currentToken.TokenType == TType.Index)
@@ -515,6 +580,11 @@ namespace XppInterpreter.Parser
             Join join = null;
             if (IsJoinType(currentToken))
             {
+                if (isParsingQueryExpression)
+                {
+                    HandleParseError("Data lookup statements cannot contain joins");
+                }
+
                 switch (currentToken.TokenType)
                 {
                     case TType.Join: join = Join(JoinType.Regular); break;
@@ -551,6 +621,27 @@ namespace XppInterpreter.Parser
                 Where = where,
                 Join = join
             };
+        }
+
+        public TableField TableField()
+        {
+            var start = Match(TType.Id);
+
+            Match(TType.Dot);
+
+            string tableName = (start.Token as Word).Lexeme;
+
+            HandleAutocompletionForType(tableName);
+
+            var end = Match(TType.Id).Token as Word;
+
+            return new TableField(start.Token, tableName, end.Lexeme, SourceCodeBinding(start, lastScanResult));
+        }
+
+        public bool IsIdentifierMatchQueryExpressionTable(string identifier)
+        {
+            return isParsingQueryExpression && isParsingWhereStatement &&
+                identifier.Equals(currentQueryExpressionTableName, System.StringComparison.InvariantCultureIgnoreCase);
         }
     }
 }
