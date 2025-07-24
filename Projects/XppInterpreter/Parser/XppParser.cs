@@ -373,9 +373,9 @@ namespace XppInterpreter.Parser
 
                 if (declaredVariable is null)
                 {
-                    HandleParseError(string.Format(MessageProvider.ExceptionVariableNotDeclared, variableName), stop: false);
+                        HandleParseError(string.Format(MessageProvider.ExceptionVariableNotDeclared, variableName), stop: false);
+                    }
                 }
-            }
 
             System.Type returnType = _typeInferer.InferType(ret, currentToken.TokenType == TType.StaticDoubleDot, _parseContext);
 
@@ -814,10 +814,10 @@ namespace XppInterpreter.Parser
                     if (ex.InnerException != null)
                     {
                         message = ex.InnerException.Message;
-                    }
+                }
 
                     HandleParseError(message, false, stop: false);
-                }
+            }
             }
 
             Match(TType.Semicolon);
@@ -1292,10 +1292,17 @@ namespace XppInterpreter.Parser
                     return ContainerInitialisation();
 
                 case TType.LeftParenthesis:
-                    Match(TType.LeftParenthesis);
-                    Expression node = Expression();
-                    Match(TType.RightParenthesis);
-                    return node;
+                    if (AdvancePeek(true).Token.TokenType == TType.Select)
+                    {
+                        return SelectExpression();
+                    }
+                    else
+                    {
+                        Match(TType.LeftParenthesis);
+                        Expression node = Expression();
+                        Match(TType.RightParenthesis);
+                        return node;
+                    }
 
                 case TType.Plus:
                 case TType.Minus:
@@ -1338,6 +1345,11 @@ namespace XppInterpreter.Parser
                     return new Constant(Word.Null, SourceCodeBinding(nullScan));
 
                 case TType.Id:
+                    if (currentToken is Word w && this.IsIdentifierMatchQueryExpressionTable(w.Lexeme))
+                    {
+                        return TableField();
+                    }
+
                     return Variable();
 
                 case TType.New:
@@ -1662,6 +1674,18 @@ namespace XppInterpreter.Parser
             return ret;
         }
 
+        void HandleParseError(Exception exception, bool showLine = false, bool stop = true)
+        {
+            string message = exception.Message;
+
+            if (exception.InnerException != null)
+            {
+                message = exception.InnerException.Message;
+            }
+
+            HandleParseError(message, showLine, stop);
+        }
+
         void HandleParseError(string s, bool showLine = false, bool stop = true)
         {
             if (stop)
@@ -1815,6 +1839,14 @@ namespace XppInterpreter.Parser
                 }
             }
         }
+
+        internal void HandleAutocompletionForType(string typeName)
+        {
+            if (!_forAutoCompletion) return;
+
+            throw new AutoCompletionTypeInterruption(_typeInferer.InferType(typeName));
+        }
+
         internal void HandleAutocompletion(Expression expression)
         {
             if (!_forAutoCompletion) return;
