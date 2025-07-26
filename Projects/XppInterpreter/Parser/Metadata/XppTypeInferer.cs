@@ -10,7 +10,7 @@ using XppInterpreter.Lexer;
 
 namespace XppInterpreter.Parser.Metadata
 {
-    class XppTypeInferer : ITypeInferExpressionVisitor
+    internal class XppTypeInferer : ITypeInferExpressionVisitor
     {
         private System.Type _globalType, _predefinedType, _customPredefinedType;
         private readonly XppProxy _proxy;

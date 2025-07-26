@@ -883,5 +883,13 @@ namespace XppInterpreter.Interpreter.Bytecode
         {
 
         }
+
+        public void VisitEventHandlerSubscription(EventHandlerSubscription subscription)
+        {
+            EmitDebugSymbol(subscription);
+            subscription.Delegate.Accept(this);
+            RefFunction refFunction = _declaredFunctions.First(f => f.Declaration.Name.ToLowerInvariant() == subscription.EventHandler.FunctionName.ToLowerInvariant());
+            Emit(new EventHandlerSubscriptionHandle(refFunction));
+        }
     }
 }

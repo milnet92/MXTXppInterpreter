@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using XppInterpreter.Core;
 using XppInterpreter.Lexer;
@@ -1585,6 +1586,30 @@ namespace XppInterpreter.Parser
             return new ContainerAssignment(assignees, expr, SourceCodeBinding(start, lastScanResult));
         }
 
+        internal EventHandler EventHandler()
+        {
+            var start = Match(TType.EventHandler);
+
+            Match(TType.LeftParenthesis);
+
+            var method = Match(TType.Id).Token as Word;
+
+            var functionDeclaration = _parseContext.CurrentScope.FindFunctionDeclarationReference(method.Lexeme);
+            
+            if (functionDeclaration is null)
+            {
+                HandleParseError($"Function {method.Lexeme} does not exist in the current context.", stop: false);
+            }
+            else if (functionDeclaration.ReturnType != Word.Void)
+            {
+                HandleParseError($"Function {method.Lexeme} can only return void.", stop: false);
+            }
+
+            var end = Match(TType.RightParenthesis);
+
+            return new EventHandler(method.Lexeme);
+        }
+
         internal Statement Assignment(bool matchSemicolon = true)
         {
             var start = currentScanResult;
@@ -1618,11 +1643,20 @@ namespace XppInterpreter.Parser
                     {
                         Match(currentToken.TokenType);
                         var binding = SourceCodeBinding(start, currentScanResult);
-                        assignedExpression = new BinaryOperation(assignee, Expression(), operand, SourceCodeBinding(start, currentScanResult));
-                        ret = new Assignment(
-                            (Variable)assignee,
-                            assignedExpression,
-                            binding);;
+
+                        if (operand.TokenType == TType.PlusAssignment &&
+                            EventHandlerHelper.IsEventHandler(assignee, _parseContext, _typeInferer))
+                        {
+                            ret = new EventHandlerSubscription(assignee as Variable, EventHandler(), SourceCodeBinding(start, lastScanResult));
+                        }
+                        else
+                        { 
+                            assignedExpression = new BinaryOperation(assignee, Expression(), operand, SourceCodeBinding(start, currentScanResult));
+                            ret = new Assignment(
+                                (Variable)assignee,
+                                assignedExpression,
+                                binding);
+                        }
                     }
                     break;
 
@@ -1645,7 +1679,7 @@ namespace XppInterpreter.Parser
                 var assigneeType = _typeInferer.InferType(assignee, false, _parseContext);
 
                 if (assigneeType != null)
-                { 
+                {
                     var assignedType = _typeInferer.InferType(assignedExpression, false, _parseContext);
 
                     if (assignedType != null && !_proxy.Casting.ImplicitConversionExists(assignedType, assigneeType))
@@ -1653,6 +1687,12 @@ namespace XppInterpreter.Parser
                         HandleParseError(string.Format(MessageProvider.ExceptionImplicitConversion, assignedType.Name, assigneeVar.ReturnType.Name), stop: false);
                     }
                 }
+            }
+            else if (ret is EventHandlerSubscription subscription)
+            {
+                var assigneeType = _typeInferer.InferType(assignee, false, _parseContext);
+
+                EventHandlerHelper.ValidateEventHandler(this, _parseContext, assigneeType, subscription.EventHandler);
             }
 
             if (matchSemicolon)
@@ -1674,7 +1714,7 @@ namespace XppInterpreter.Parser
             return ret;
         }
 
-        void HandleParseError(Exception exception, bool showLine = false, bool stop = true)
+        internal void HandleParseError(Exception exception, bool showLine = false, bool stop = true)
         {
             string message = exception.Message;
 
@@ -1686,7 +1726,7 @@ namespace XppInterpreter.Parser
             HandleParseError(message, showLine, stop);
         }
 
-        void HandleParseError(string s, bool showLine = false, bool stop = true)
+        internal void HandleParseError(string s, bool showLine = false, bool stop = true)
         {
             if (stop)
             {

@@ -222,6 +222,7 @@ namespace XppInterpreter.Lexer
         #region Functions
         Void,
         Return,
+        EventHandler,
         #endregion
 
         EOF

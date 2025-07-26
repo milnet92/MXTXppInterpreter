@@ -72,6 +72,10 @@
     <Compile Include="Interpreter\Bytecode\ContainerStore.cs" />
     <Compile Include="Interpreter\Bytecode\DeclaredFunctionCall.cs" />
     <Compile Include="Interpreter\Bytecode\Dispose.cs" />
+    <Compile Include="Interpreter\Bytecode\EventHandlerSubscriptionHandle.cs" />
+    <Compile Include="Interpreter\Bytecode\EventSubscriptionHandle.cs" />
+    <Compile Include="Interpreter\Bytecode\Events\DelegateEventExecutor.cs" />
+    <Compile Include="Interpreter\Bytecode\Events\DelegateHelper.cs" />
     <Compile Include="Interpreter\Bytecode\ExceptionCatchReference.cs" />
     <Compile Include="Interpreter\Bytecode\ChangeCompany.cs" />
     <Compile Include="Interpreter\Bytecode\DisposeHandle.cs" />
@@ -163,6 +167,9 @@
     <Compile Include="Parser\ArrayAccess.cs" />
     <Compile Include="Parser\CatchContext.cs" />
     <Compile Include="Parser\ContainerAssignment.cs" />
+    <Compile Include="Parser\EventHandler.cs" />
+    <Compile Include="Parser\EventHandlerHelper.cs" />
+    <Compile Include="Parser\EventHandlerSubscription.cs" />
     <Compile Include="Parser\TableField.cs" />
     <Compile Include="Parser\Flush.cs" />
     <Compile Include="Parser\FunctionDeclarationReference.cs" />

@@ -1,5 +1,4 @@
 ﻿using XppInterpreter.Parser;
-using XppInterpreter.Parser.Data;
 
 namespace XppInterpreter.Interpreter
 {
@@ -287,10 +286,14 @@ namespace XppInterpreter.Interpreter
             whileSelect.Block.Accept(this);
         }
 
-        public void VisitUsing(Using @using)
+        public virtual void VisitUsing(Using @using)
         {
             @using.VariableDeclaration.Accept(this);
             @using.Block.Accept(this);
+        }
+
+        public virtual void VisitEventHandlerSubscription(EventHandlerSubscription subscription)
+        {
         }
     }
 }
