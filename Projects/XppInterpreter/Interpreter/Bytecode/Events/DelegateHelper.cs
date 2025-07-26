@@ -1,16 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Net.NetworkInformation;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text;
-namespace ConsoleApp2
+
+namespace XppInterpreter.Interpreter.Bytecode.Events
 {
     public static class DelegateHelper
     {
-
         public static MethodInfo GetMethodToExecute(object instance, params Type[] types)
         {
             if (types.Length == 0)

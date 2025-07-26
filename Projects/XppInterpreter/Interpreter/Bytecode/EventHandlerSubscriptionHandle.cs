@@ -1,5 +1,4 @@
-﻿using ConsoleApp2;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -19,7 +18,6 @@ namespace XppInterpreter.Interpreter.Bytecode
         {
             FunctionReference = refFunction;
         }
-
 
         public void Execute(RuntimeContext context)
         {

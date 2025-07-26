@@ -1,14 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.Remoting.Contexts;
-using System.Security.Cryptography;
-using System.ServiceModel.Security;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace XppInterpreter.Interpreter.Bytecode.Events
+﻿namespace XppInterpreter.Interpreter.Bytecode.Events
 {
     internal class DelegateEventExecutor
     {
@@ -108,7 +98,6 @@ namespace XppInterpreter.Interpreter.Bytecode.Events
 
         private void ExecuteFunction(params object[] arguments)
         {
-            // Create new runtime context for the function call
             ByteCode newByteCode = new ByteCode(_ref.Instructions)
             {
                 DeclaredFunctions = _context.ByteCode.DeclaredFunctions
@@ -116,7 +105,6 @@ namespace XppInterpreter.Interpreter.Bytecode.Events
 
             RuntimeContext newContext = new RuntimeContext(_context.Proxy, newByteCode);
 
-            // Map pamaters
             for (int numParam = 0; numParam < arguments.Length; numParam++)
             {
                 var funcParameter = _ref.Declaration.Parameters[numParam];
