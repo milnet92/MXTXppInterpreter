@@ -110,6 +110,7 @@ namespace XppInterpreter.Lexer
         #region Function tokens
         public static readonly Word Void = new Word("void", TType.Void);
         public static readonly Word Return = new Word("return", TType.Return);
+        public static readonly Word EventHandler = new Word("eventhandler", TType.EventHandler);
         #endregion
 
         public Word(string lexeme, TType tokenType) : base(tokenType)

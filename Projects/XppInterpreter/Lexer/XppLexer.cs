@@ -718,6 +718,7 @@ namespace XppInterpreter.Lexer
 
             Reserve(Word.Void);
             Reserve(Word.Return);
+            Reserve(Word.EventHandler);
         }
     }
 }

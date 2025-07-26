@@ -90,5 +90,12 @@ namespace XppInterpreter.Core
             TypeInfo typeInfo = type as TypeInfo;
             return typeInfo != null && typeInfo.ImplementedInterfaces.Contains(interfaceType);
         }
+
+        public static bool IsDelegateType(Type type)
+        {
+            if (type is null || type.BaseType is null) return false;
+
+            return typeof(MulticastDelegate).IsAssignableFrom(type.BaseType);
+        }
     }
 }

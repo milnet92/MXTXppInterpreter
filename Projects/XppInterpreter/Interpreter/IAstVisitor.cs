@@ -37,6 +37,7 @@ namespace XppInterpreter.Interpreter
         void VisitIf(If @if);
         void VisitWhile(While @while);
         void VisitFunctionCall(FunctionCall functionCall);
+        void VisitEventHandlerSubscription(EventHandlerSubscription subscription);
         void VisitVariableDeclarations(VariableDeclarations variableDeclaration);
         void VisitTry(Try @try);
         void VisitRetry(Retry retry);

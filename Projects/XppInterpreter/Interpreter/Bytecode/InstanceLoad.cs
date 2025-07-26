@@ -1,4 +1,6 @@
-﻿namespace XppInterpreter.Interpreter.Bytecode
+﻿using XppInterpreter.Core;
+
+namespace XppInterpreter.Interpreter.Bytecode
 {
     class InstanceLoad : Load
     {
@@ -7,6 +9,15 @@
         public override object MakeLoad(RuntimeContext context)
         {
             object caller = context.Stack.Pop();
+
+            // Check if it's a delegate
+            var field = ReflectionHelper.GetField(caller.GetType(), Name);
+
+            if (field != null && ReflectionHelper.IsDelegateType(field.FieldType))
+            {
+                return new EventSubscriptionHandle(caller, Name);
+            }
+
             return context.Proxy.Reflection.GetInstanceProperty(caller, Name);
         }
 

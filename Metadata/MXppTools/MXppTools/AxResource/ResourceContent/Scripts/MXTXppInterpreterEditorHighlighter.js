@@ -80,6 +80,7 @@ var keywords = [
     "like",
     "void",
     "return",
+    "eventhandler",
     "is",
     "as"
 ];
