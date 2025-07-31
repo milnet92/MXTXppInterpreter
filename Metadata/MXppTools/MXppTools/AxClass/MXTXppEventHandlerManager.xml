@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppEventHandlerManager</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+using XppInterpreter.Interpreter.Proxy;
+
+public class MXTXppEventHandlerManager
+{
+    public readonly MXTXppEventHandlerTable handlerTable;
+    private boolean isValid;
+    private XppInterpreter.Core.Events.EventHandler handler;
+
+    private XppProxy proxy = new XppProxy(
+            new MXTXppIntrinsicFunctionProvider(),
+            new MXTXppBinaryOperationProxy(),
+            new MXTXppCastingProxy(),
+            new MXTXppUnaryOperationProxy(),
+            new MXTXppDataAccessProxy(),
+            new MXTXppReflectionProxy(),
+            new MXTXppExceptionsProxy(),
+            new MXTXppQueryGenerationProxy());
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>new</Name>
+				<Source><![CDATA[
+	void new(MXTXppEventHandlerTable _table)
+    {
+        this.handlerTable = _table;
+
+        if (!_table)
+        {
+            throw error(error::missingParameter(this));
+        }
+
+        handler = new XppInterpreter.Core.Events.EventHandler(
+            _table.getElementType(),
+            _table.getDelegateType(),
+            _table.MethodName, 
+            _table.HandlerSourceCode, 
+            proxy);
+	}
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validate</Name>
+				<Source><![CDATA[
+    public void validate(boolean _createdDelegate)
+    {
+        handler.Compile(_createdDelegate);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>activate</Name>
+				<Source><![CDATA[
+    public void activate()
+    {
+        System.Exception ex;
+
+        try
+        {
+            XppInterpreter.Core.Events.EventHandlerSubscriptionHelper::Subscribe(handler);
+        }
+        catch (ex)
+        {
+            error("An error occured while activating the handler.");
+            throw ex;
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>deactivate</Name>
+				<Source><![CDATA[
+    public void deactivate()
+    {
+        System.Exception ex;
+
+        try
+        {
+            XppInterpreter.Core.Events.EventHandlerSubscriptionHelper::Unsubscribe(handler);
+        }
+        catch (ex)
+        {
+            error("An error occured while deactivating the handler.");
+            throw ex;
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>confirm</Name>
+				<Source><![CDATA[
+    private static boolean confirm(MXTXppEventHandlerTable _handler, boolean _isActivation)
+    {
+        str msg = strFmt("You are about to %1 the event handler for %2 %3 %4. Do you want to continue?",
+            _isActivation ? "activate" : "deactivate",
+            _handler.ElementType,
+            _handler.ElementName,
+            _handler.DisplayMethodName);
+
+        str title = strFmt("%1 event handler", _isActivation ? "Activate" : "Deactivate");
+
+        return Box::yesNo(msg, DialogButton::No, title) == DialogButton::Yes;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>main</Name>
+				<Source><![CDATA[
+    public static void main(Args _args)
+    {
+        if (_args.dataset() != tableNum(MXTXppEventHandlerTable))
+        {
+            throw error(error::missingRecord(tableStr(MXTXppEventHandlerTable)));
+        }
+
+        if (_args.parmEnumType() != enumNum(NoYes))
+        {
+            throw error(error::missingParameter(_args));
+        }
+
+        MXTXppEventHandlerTable record = _args.record();
+        record.reread();
+        
+        record.selectForUpdate(true);
+
+        MXTXppEventHandlerManager handler = new MXTXppEventHandlerManager(record);
+        
+        if (_args.parmEnum() == NoYes::No)
+        {
+            if (record.Active && MXTXppEventHandlerManager::confirm(record, false))
+            {
+                handler.deactivate();
+
+                ttsbegin;
+                record.setInactive();
+                record.update();
+                ttscommit;
+            }
+        }
+        else if (!record.Active)
+        {
+            handler.validate(true);
+
+            if (MXTXppEventHandlerManager::confirm(record, true))
+            {
+                handler.activate();
+                
+                ttsbegin;
+                record.setActive();
+                record.update();
+                ttscommit;
+            }
+        }
+
+        FormRun formRun = _args.caller();
+
+        if (formRun)
+        {
+            FormDataSource dataSource = formRun.dataSource(tableStr(MXTXppEventHandlerTable));
+            if (dataSource)
+            {
+                dataSource.refresh();
+                dataSource.research(true);
+            }
+        }
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

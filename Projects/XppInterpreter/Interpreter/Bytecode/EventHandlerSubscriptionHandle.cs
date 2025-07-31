@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using XppInterpreter.Core;
+using XppInterpreter.Core.Events;
 using XppInterpreter.Interpreter.Bytecode.Events;
 
 namespace XppInterpreter.Interpreter.Bytecode

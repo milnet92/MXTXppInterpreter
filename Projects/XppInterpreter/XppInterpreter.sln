@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35527.113
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XppInterpreter", "XppInterpreter.csproj", "{45DF663A-BC15-4EFF-BC61-2CCEEC66CFD7}"
+EndProject
+Project("{FC65038C-1B2F-41E1-A629-BED71D161FFF}") = "FOProject (USR) [MXppTools]", "..\FOProject\FOProject.rnrproj", "{719A1E56-E7B9-4AB1-90DD-C2619B0B35D0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{45DF663A-BC15-4EFF-BC61-2CCEEC66CFD7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45DF663A-BC15-4EFF-BC61-2CCEEC66CFD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45DF663A-BC15-4EFF-BC61-2CCEEC66CFD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45DF663A-BC15-4EFF-BC61-2CCEEC66CFD7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{719A1E56-E7B9-4AB1-90DD-C2619B0B35D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{719A1E56-E7B9-4AB1-90DD-C2619B0B35D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{719A1E56-E7B9-4AB1-90DD-C2619B0B35D0}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{719A1E56-E7B9-4AB1-90DD-C2619B0B35D0}.Release|Any CPU.Build.0 = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

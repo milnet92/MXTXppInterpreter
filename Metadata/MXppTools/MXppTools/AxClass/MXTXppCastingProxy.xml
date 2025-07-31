@@ -109,6 +109,16 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 ]]></Source>
 			</Method>
 			<Method>
+				<Name>getFormType</Name>
+				<Source><![CDATA[
+    public static System.Type getFormType(str _formName)
+    {
+        return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::GetFormType(_formName);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>getClrTypeFromTypeName</Name>
 				<Source><![CDATA[
     public static System.Type getClrTypeFromTypeName(str _typeName)

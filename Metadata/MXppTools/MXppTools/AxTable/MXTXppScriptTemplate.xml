@@ -73,6 +73,56 @@ public class MXTXppScriptTemplate extends common
 
 ]]></Source>
 			</Method>
+			<Method>
+				<Name>generateTemplateFromEventHandler</Name>
+				<Source><![CDATA[
+    /// <summary>
+    ///
+    /// </summary>
+    public static MXTSourceCode generateTemplateFromEventHandler(MXTXppEventHandlerTable _eventHandler)
+    {
+        MXTSourceCode code = @"void %1(%2)
+{
+
+}
+";
+
+        System.Type elementType = _eventHandler.getElementType();
+        if (elementType == null)
+        {
+            throw error(strFmt("Invalid element name %1", _eventHandler.ElementName));
+        }
+
+        System.Type delegateType = _eventHandler.getDelegateType();
+        if (delegateType == null)
+        {
+            throw error(strFmt("Invalid method name %1", _eventHandler.MethodName));
+        }
+
+        System.Type[] types = XppInterpreter.Interpreter.Bytecode.Events.DelegateHelper::GetDelegateParameterTypes(delegateType);
+
+        str parameterCode = "";
+        for (int i = 0; i < types.Length; i++)
+        {
+            System.Type parameterType = types.Get(i);
+
+            if (i != 0)
+            {
+                parameterCode += ", ";
+            }
+
+            parameterCode += parameterType.Name;
+            parameterCode += ' ';
+            parameterCode += strFmt("_parm%1", i + 1);
+        }
+
+        code = strFmt(code, _eventHandler.DisplayMethodName, parameterCode);
+
+        return code;
+    }
+
+]]></Source>
+			</Method>
 		</Methods>
 	</SourceCode>
 	<SubscriberAccessLevel>
