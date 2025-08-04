@@ -7,7 +7,22 @@ public class MXTXppEventHandlerMethodTmp extends common
 {
 }
 ]]></Declaration>
-		<Methods />
+		<Methods>
+			<Method>
+				<Name>isPrePost</Name>
+				<Source><![CDATA[
+    /// <summary>
+    ///
+    /// </summary>
+    public boolean isPrePost()
+    {
+        return this.EventHandlerType == MXTXppEventHandlerType::Pre ||
+               this.EventHandlerType == MXTXppEventHandlerType::Post;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
 	</SourceCode>
 	<SubscriberAccessLevel>
 		<Read>Allow</Read>
@@ -46,6 +61,11 @@ public class MXTXppEventHandlerMethodTmp extends common
 			<ExtendedDataType>SysMethodName</ExtendedDataType>
 			<IgnoreEDTRelation>Yes</IgnoreEDTRelation>
 			<Label>@MXT:EventName</Label>
+		</AxTableField>
+		<AxTableField xmlns=""
+			i:type="AxTableFieldEnum">
+			<Name>EventHandlerType</Name>
+			<EnumType>MXTXppEventHandlerType</EnumType>
 		</AxTableField>
 	</Fields>
 	<FullTextIndexes />

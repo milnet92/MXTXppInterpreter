@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppSubscriptions</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+internal final class MXTXppSubscriptions
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>ApplicationStartupEventManager_onInteractiveSessionCreated</Name>
+				<Source><![CDATA[
+    [SubscribesTo(classStr(ApplicationStartupEventManager), staticDelegateStr(ApplicationStartupEventManager, onInteractiveSessionCreated))]
+    public static void ApplicationStartupEventManager_onInteractiveSessionCreated()
+    {
+        MXTXppEventHandlerTable handlerTable;
+        
+        while select pessimisticlock handlerTable
+            where handlerTable.Active
+        {
+            try
+            {
+                MXTXppEventHandlerManager manager = new MXTXppEventHandlerManager(handlerTable);
+                manager.activate();
+            }
+            catch
+            {
+                ttsbegin;
+                handlerTable.selectForUpdate(true);
+                handlerTable.setInactive();
+                handlerTable.doUpdate();
+                ttscommit;
+            }
+        }
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

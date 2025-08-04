@@ -1,8 +1,9 @@
-﻿using Microsoft.SqlServer.Server;
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.SymbolStore;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.Remoting.Contexts;
+using System.Text;
+using System.Threading.Tasks;
 using XppInterpreter.Interpreter;
 using XppInterpreter.Interpreter.Bytecode;
 using XppInterpreter.Interpreter.Bytecode.Events;
@@ -14,31 +15,48 @@ namespace XppInterpreter.Core.Events
 {
     public class EventHandler
     {
-        private RefFunction _function;
-        XppProxy _proxy;
+        public string Key => $"{DelegateType.Name}_{ClassType.Name}_{EventHandlerName}";
 
         public string SourceCode { get; }
-        public string FieldName { get; }
+        public string EventHandlerName { get; }
+        public System.Type ClassType{ get; }
         public System.Type DelegateType { get; }
-        public System.Type ClassType { get; }
-        public Delegate Delegate { get; private set; }
-        public string Key => $"{ClassType.Namespace}_{ClassType.Name}_{FieldName}";
+        public Delegate Delegate { get; private set;}
 
-        public EventHandler(System.Type classType, System.Type delegateType, string fieldName, string code, XppProxy proxy)
+        private bool _isCompiled;
+        private XppProxy _proxy;
+        private RefFunction _compiledFunction;
+        public EventHandler(System.Type delegateType, System.Type classType, string eventHandlerName, string sourceCode, XppProxy proxy)
         {
-            SourceCode = code;
-            DelegateType = delegateType;
-            FieldName = fieldName;
-            ClassType = classType;
-            _proxy = proxy;
+            ClassType = classType ?? throw new ArgumentNullException(nameof(classType));
+            EventHandlerName = eventHandlerName ?? throw new ArgumentNullException(nameof(eventHandlerName));
+            DelegateType = delegateType ?? throw new ArgumentNullException(nameof(delegateType));
+            SourceCode = sourceCode ?? throw new ArgumentNullException(nameof(sourceCode));
+            _proxy = proxy ?? throw new ArgumentNullException(nameof(proxy));
         }
 
-        public FieldInfo GetField()
+        public bool IsEvent()
         {
-            return ClassType.GetField(FieldName);
+            return DelegateHelper.HasEvent(DelegateType, EventHandlerName);
         }
 
-        public void Compile(bool createDelegate)
+        public System.Type[] GetParameters()
+        {
+            return DelegateType.GetMethod("Invoke").GetParameters().Select(o => o.ParameterType).ToArray();
+        }
+
+        public Delegate InitializeDelegate()
+        {
+            if (!_isCompiled)
+                Compile();
+
+            var parameterTypes = GetParameters();
+            var methodToExecute = DelegateHelper.GetMethodToExecute(this, parameterTypes);
+            Delegate = Delegate.CreateDelegate(DelegateType, this, methodToExecute);
+            return Delegate;
+        }
+
+        public void Compile()
         {
             var lexer = new XppLexer(SourceCode);
             var parser = new XppParser(lexer, _proxy);
@@ -55,24 +73,23 @@ namespace XppInterpreter.Core.Events
             if (compiled.DeclaredFunctions.Count != 1)
                 throw new Exception("Only one function is allowed to be present in event handler code");
 
-            _function = compiled.DeclaredFunctions[0];
+            _compiledFunction = compiled.DeclaredFunctions[0];
 
-            if (_function.Declaration.Type.TokenType != TType.Void)
+            if (_compiledFunction.Declaration.Type.TokenType != TType.Void)
                 throw new Exception("Event handler return type must be 'void'");
 
             EnsureDelegateParameters();
 
-            if (createDelegate)
-                CreateDelegate();
+            _isCompiled = true;
         }
 
         private void EnsureDelegateParameters()
         {
-            if (_function is null) return;
+            if (_compiledFunction is null) return;
 
-            var parameterTypes = GetParameterTypes();
+            var parameterTypes = GetParameters();
 
-            if (parameterTypes.Length != _function.Declaration.Parameters.Count)
+            if (parameterTypes.Length != _compiledFunction.Declaration.Parameters.Count)
             {
                 throw new Exception("Parameter count missmatch between handler and delegate.");
             }
@@ -80,25 +97,13 @@ namespace XppInterpreter.Core.Events
             for (int i = 0; i < parameterTypes.Length; i++)
             {
                 var parameter = parameterTypes[i];
-                var functionParameter = _function.Declaration.Parameters[i];
+                var functionParameter = _compiledFunction.Declaration.Parameters[i];
 
                 if (parameter != functionParameter.DeclarationClrType)
                 {
                     throw new Exception($"Parameter {functionParameter.Name} type is incorrect. Expected {parameter.Name} but got {functionParameter.DeclarationClrType.Name}");
                 }
             }
-        }
-
-        private void CreateDelegate()
-        {
-            var parameterTypes = GetParameterTypes();
-            var methodToExecute = DelegateHelper.GetMethodToExecute(this, parameterTypes);
-            Delegate = Delegate.CreateDelegate(DelegateType, this, methodToExecute);
-        }
-
-        private System.Type[] GetParameterTypes()
-        {
-            return DelegateType.GetMethod("Invoke").GetParameters().Select(o => o.ParameterType).ToArray();
         }
 
         public void Execute()
@@ -188,14 +193,14 @@ namespace XppInterpreter.Core.Events
 
         public void ExecuteFunction(params object[] arguments)
         {
-            ByteCode newByteCode = new ByteCode(_function.Instructions);
+            ByteCode newByteCode = new ByteCode(_compiledFunction.Instructions);
 
             RuntimeContext runtimeContext = new RuntimeContext(_proxy, newByteCode);
 
             for (int numParam = 0; numParam < arguments.Length; numParam++)
             {
-                var funcParameter = _function.Declaration.Parameters[numParam];
-                System.Type declarationType = _function.Declaration.Parameters[numParam].DeclarationClrType;
+                var funcParameter = _compiledFunction.Declaration.Parameters[numParam];
+                System.Type declarationType = _compiledFunction.Declaration.Parameters[numParam].DeclarationClrType;
 
                 runtimeContext.ScopeHandler.CurrentScope.SetVar(funcParameter.Name, arguments[numParam], runtimeContext.Proxy.Casting, true, declarationType);
             }
@@ -204,5 +209,6 @@ namespace XppInterpreter.Core.Events
 
             interpreter.Interpret(runtimeContext.ByteCode, runtimeContext, nextAction: Interpreter.Debug.DebugAction.None);
         }
+
     }
 }

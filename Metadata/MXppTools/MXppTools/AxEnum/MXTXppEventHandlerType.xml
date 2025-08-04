@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxEnum xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppEventHandlerType</Name>
+	<Label>@MXT:EventHandlerType</Label>
+	<UseEnumValue>No</UseEnumValue>
+	<EnumValues>
+		<AxEnumValue>
+			<Name>DataEvent</Name>
+			<Label>@MXT:EventHandlerTypeDataEvent</Label>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Pre</Name>
+			<Label>@MXT:EventHandlerTypePre</Label>
+			<Value>1</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Post</Name>
+			<Label>@MXT:EventHandlerTypePost</Label>
+			<Value>2</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Static</Name>
+			<Label>@MXT:EventHandlerTypeStatic</Label>
+			<Value>3</Value>
+		</AxEnumValue>
+	</EnumValues>
+	<IsExtensible>true</IsExtensible>
+</AxEnum>

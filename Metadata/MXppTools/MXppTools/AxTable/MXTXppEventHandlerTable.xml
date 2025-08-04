@@ -72,9 +72,53 @@ public class MXTXppEventHandlerTable extends common
 			<Method>
 				<Name>displayNameToInternalEvent</Name>
 				<Source><![CDATA[
-    public static MethodName displayNameToInternalEvent(MethodName _methodName)
+    public MethodName displayNameToInternalEvent()
     {
-        return '$' + _methodName;
+        System.Type type = this.getElementType();
+
+        if (strContains(this.DisplayMethodName, "_PreDelegate") || strContains(this.DisplayMethodName, "_PostDelegate"))
+            return '$' + this.DisplayMethodName;
+
+        return this.DisplayMethodName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getEventHandlerType</Name>
+				<Source><![CDATA[
+    public static MXTXppEventHandlerType getEventHandlerType(MXTXppEventElementType _elementType, SysElementName _elementName, SysMethodName _methodName)
+    {
+        if (strStartsWith(_methodName, "$") && strContains(_methodName, "_PreDelegate"))
+            return MXTXppEventHandlerType::Pre;
+        else if (strStartsWith(_methodName, "$") && strContains(_methodName, "_PostDelegate"))
+            return MXTXppEventHandlerType::Post;
+
+        System.Type type = MXTXppEventHandlerTable::getTypeFromElement(_elementType, _elementName);
+        
+        if (_elementType == MXTXppEventElementType::Table && XppInterpreter.Core.ReflectionHelper::GetEvent(type, _methodName) != null)
+            return MXTXppEventHandlerType::DataEvent;
+        else 
+            return MXTXppEventHandlerType::Static;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getTypeFromElement</Name>
+				<Source><![CDATA[
+    public static System.Type getTypeFromElement(MXTXppEventElementType _elementType, SysElementName _elementName)
+    {
+        if (_elementType == MXTXppEventElementType::Form)
+        {
+            return MXTXppCastingProxy::getFormType(_elementName);
+        }
+        else
+        {
+            return MXTXppCastingProxy::getClrTypeFromTypeName(_elementName);
+        }
+
+        return null;
     }
 
 ]]></Source>
@@ -84,28 +128,34 @@ public class MXTXppEventHandlerTable extends common
 				<Source><![CDATA[
     public static void performMethodNameLookup(MXTXppEventElementType _elementType, SysElementName _elementName, FormControl _control)
     {
-        System.Type type;
-
-        if (_elementType == MXTXppEventElementType::Form)
-        {
-            type = MXTXppCastingProxy::getFormType(_elementName);
-        }
-        else
-        {
-            type = MXTXppCastingProxy::getClrTypeFromTypeName(_elementName);
-        }
-
+        System.Type type = MXTXppEventHandlerTable::getTypeFromElement(_elementType, _elementName);
         MXTXppEventHandlerMethodTmp tmp;
 
         if (type != null)
         {
-            System.String[] methods = XppInterpreter.Interpreter.Bytecode.Events.DelegateHelper::GetDelegateFields(type);
+            // Static field delegates (methods)
+            System.String[] fields = XppInterpreter.Interpreter.Bytecode.Events.DelegateHelper::GetDelegateFields(type);
 
-            for (int i = 0; i < methods.Length; i++)
+            for (int i = 0; i < fields.Length; i++)
             {
-                str name = methods.Get(i);
-                tmp.MethodName = MXTXppEventHandlerTable::internalEventToDisplayName(name);
+                str name = fields.Get(i);
+                tmp.EventHandlerType = MXTXppEventHandlerTable::getEventHandlerType(_elementType, _elementName, name);
+                tmp.MethodName = tmp.isPrePost() ? MXTXppEventHandlerTable::internalEventToDisplayName(name) : name;
                 tmp.insert();
+            }
+
+            // Events
+            if (_elementType == MXTXppEventElementType::Table)
+            {
+                System.String[] events = XppInterpreter.Interpreter.Bytecode.Events.DelegateHelper::GetEventNames(type);
+                
+                for (int i = 0; i < events.Length; i++)
+                {
+                    str name = events.Get(i);
+                    tmp.MethodName = name;
+                    tmp.EventHandlerType = MXTXppEventHandlerType::DataEvent;
+                    tmp.insert();
+                }
             }
         }
 
@@ -115,7 +165,8 @@ public class MXTXppEventHandlerTable extends common
 
         qbds = query.addDataSource(tablenum(MXTXppEventHandlerMethodTmp));
         tableLookup.addLookupfield(fieldnum(MXTXppEventHandlerMethodTmp, MethodName), true);
- 
+        tableLookup.addLookupfield(fieldNum(MXTXppEventHandlerMethodTmp,EventHandlerType));
+
         tableLookup.parmQuery(query);
         tableLookup.parmTmpBuffer(tmp);
         tableLookup.performFormLookup();
@@ -198,6 +249,11 @@ public class MXTXppEventHandlerTable extends common
 				<Source><![CDATA[
     public System.Type getDelegateType()
     {
+        if (this.HandlerType == MXTXppEventHandlerType::DataEvent)
+        {
+            return XppInterpreter.Core.ReflectionHelper::GetEvent(this.getElementType(), this.MethodName).EventHandlerType;
+        }
+
         return XppInterpreter.Core.ReflectionHelper::GetField(this.getElementType(), this.MethodName).FieldType;
     }
 
@@ -212,7 +268,22 @@ public class MXTXppEventHandlerTable extends common
     public void validate()
     {
         MXTXppEventHandlerManager manager = new MXTXppEventHandlerManager(this);
-        manager.validate(false);
+        manager.validate();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>activeExists</Name>
+				<Source><![CDATA[
+    public static boolean activeExists(MXTXppEventHandlerTable _eventHandler)
+    {
+        return (select firstonly RecId from MXTXppEventHandlerTable
+            where MXTXppEventHandlerTable.ElementType == _eventHandler.ElementType &&
+                  MXTXppEventHandlerTable.ElementName == _eventHandler.ElementName &&
+                  MXTXppEventHandlerTable.MethodName  == _eventHandler.MethodName &&
+                  MXTXppEventHandlerTable.RecId       != _eventHandler.RecId &&
+                  MXTXppEventHandlerTable.Active      == NoYes::Yes).RecId != 0;
     }
 
 ]]></Source>
@@ -350,6 +421,13 @@ public class MXTXppEventHandlerTable extends common
 			<ExtendedDataType>ModifiedBy</ExtendedDataType>
 			<IgnoreEDTRelation>Yes</IgnoreEDTRelation>
 			<Label>@MXT:ActivatedBy</Label>
+		</AxTableField>
+		<AxTableField xmlns=""
+			i:type="AxTableFieldEnum">
+			<Name>HandlerType</Name>
+			<AllowEdit>No</AllowEdit>
+			<AllowEditOnCreate>No</AllowEditOnCreate>
+			<EnumType>MXTXppEventHandlerType</EnumType>
 		</AxTableField>
 	</Fields>
 	<FullTextIndexes />

@@ -68,7 +68,16 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 				<Source><![CDATA[
     public System.Object CreateInstance(System.String _className, System.Object[] parameters)
     {
-        return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeNewObjCall(this.getClassType(_className), parameters);
+        System.Type type = this.getClassType(_className);
+
+        if (className2Id(_className))
+        {
+            return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeNewObjCall(type, parameters);
+        }
+        else
+        {
+            return System.Activator::CreateInstance(type, parameters);
+        }
     }
 
 ]]></Source>
@@ -273,11 +282,43 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 			<Method>
 				<Name>GetMethodSyntax</Name>
 				<Source><![CDATA[
-    public System.String GetMethodSyntax(System.String _typeName, System.String _methodName)
+    public System.String GetMethodSyntax(System.String _typeName, System.String _methodName, System.Boolean _isStatic)
     {
         SysDictMethod dictMethod = this.getDictMethod(_typeName, _methodName);
 
-        return dictMethod ? dictMethod.metadataSyntax() : '';
+        if (dictMethod)
+        {
+            return dictMethod.metadataSyntax();
+        }
+        else if (MXTXppCastingProxy::isClass(_typeName))
+        {
+            System.Type type = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::GetTypeFromClassName(_typeName);
+
+            // Constructor syntax
+            if (_methodName == "new")
+            {
+                System.Reflection.ConstructorInfo[] constructors = type.GetConstructors();
+
+                if (constructors.Length > 0)
+                {
+                    return XppInterpreter.Parser.Metadata.TokenMetadataProviderHelper::GetConstructorSyntax(constructors.Get(0));
+                }
+            }
+            // Method syntax
+            else
+            {
+                System.Reflection.BindingFlags flags;
+                flags = _isStatic ? System.Reflection.BindingFlags::Static : System.Reflection.BindingFlags::Instance;
+                System.Reflection.MethodInfo[] methods = type.GetMethods(flags);
+
+                if (methods.Length > 0)
+                {
+                    return XppInterpreter.Parser.Metadata.TokenMetadataProviderHelper::GetMethodSyntax(methods.Get(0));
+                }
+            }
+        }
+
+        return '';
     }
 
 ]]></Source>

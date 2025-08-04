@@ -61,7 +61,7 @@ public class MXTEventHandlerEdit extends FormRun
 
         if (callerEventHandler.Active)
         {
-            warning("Event handler is Active. Changes can only be made to Inactive event handlers.");
+            warning("@MXT:EventHandlerChanges");
         }
 
     }
@@ -91,6 +91,27 @@ public class MXTEventHandlerEdit extends FormRun
         MXTDeactivateEventHandler.enabled(isActive);
 
         MXTXppInterpreterCodeEditorControl.enabled(!isActive);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>close</Name>
+				<Source><![CDATA[
+    /// <summary>
+    ///
+    /// </summary>
+    public void close()
+    {
+        super();
+
+        // Update caller
+        FormDataSource ds = FormDataUtil::getFormDataSource(this.args().record());
+
+        if (ds)
+        {
+            ds.research(true);
+        }
     }
 
 ]]></Source>

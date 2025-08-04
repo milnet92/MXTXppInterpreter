@@ -26,6 +26,14 @@ public class MXTEventHandlerCreate extends FormRun
             MXTXppEventHandlerTable.HandlerSourceCode = MXTXppScriptTemplate::generateTemplateFromEventHandler(MXTXppEventHandlerTable);
             MXTXppEventHandlerTable.write();
 
+            // Update caller
+            FormDataSource ds = FormDataUtil::getFormDataSource(this.args().record());
+
+            if (ds)
+            {
+                ds.research(true);
+            }
+
             MenuFunction menuFunc = new MenuFunction(menuItemDisplayStr(MXTEventHandlerEdit), MenuItemType::Display);
             Args args = new Args();
             args.record(MXTXppEventHandlerTable);
@@ -109,7 +117,14 @@ public class MXTEventHandlerCreate extends FormRun
 
                 if (MXTXppEventHandlerTable.DisplayMethodName)
                 {
-                    MXTXppEventHandlerTable.MethodName = MXTXppEventHandlerTable::displayNameToInternalEvent(MXTXppEventHandlerTable.DisplayMethodName);
+                    System.Type type = MXTXppEventHandlerTable.getElementType();
+
+                    MXTXppEventHandlerTable.MethodName = MXTXppEventHandlerTable.displayNameToInternalEvent();
+                    MXTXppEventHandlerTable.HandlerType = MXTXppEventHandlerTable::getEventHandlerType(
+                        MXTXppEventHandlerTable.ElementType,
+                        MXTXppEventHandlerTable.ElementName,
+                        MXTXppEventHandlerTable.MethodName
+                        );
                 }
             }
 

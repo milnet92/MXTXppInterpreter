@@ -81,7 +81,8 @@ public class MXTXppScriptTemplate extends common
     /// </summary>
     public static MXTSourceCode generateTemplateFromEventHandler(MXTXppEventHandlerTable _eventHandler)
     {
-        MXTSourceCode code = @"void %1(%2)
+        MXTSourceCode code = @"%1
+void %2_%3(%4)
 {
 
 }
@@ -99,12 +100,13 @@ public class MXTXppScriptTemplate extends common
             throw error(strFmt("Invalid method name %1", _eventHandler.MethodName));
         }
 
-        System.Type[] types = XppInterpreter.Interpreter.Bytecode.Events.DelegateHelper::GetDelegateParameterTypes(delegateType);
-
+        System.Reflection.ParameterInfo[] parameters = delegateType.GetMethod("Invoke").GetParameters();
+        
         str parameterCode = "";
-        for (int i = 0; i < types.Length; i++)
+        for (int i = 0; i < parameters.Length; i++)
         {
-            System.Type parameterType = types.Get(i);
+            System.Reflection.ParameterInfo parameter = parameters.Get(i);
+            System.Type parameterType = parameter.ParameterType;
 
             if (i != 0)
             {
@@ -113,12 +115,117 @@ public class MXTXppScriptTemplate extends common
 
             parameterCode += parameterType.Name;
             parameterCode += ' ';
-            parameterCode += strFmt("_parm%1", i + 1);
+            parameterCode += parameter.Name == null ? strFmt("_parm%1", i) : strFmt("_%1", parameter.Name);
         }
 
-        code = strFmt(code, _eventHandler.DisplayMethodName, parameterCode);
+        str methodName = _eventHandler.DisplayMethodName;
+        
+        if (_eventHandler.HandlerType == MXTXppEventHandlerType::DataEvent && strStartsWith(methodName, "On"))
+        {
+            methodName = "o" + subStr(methodName, 2, strLen(methodName) - 1);
+        }
+
+        code = strFmt(code, 
+            MXTXppScriptTemplate::generateEventHandlerDecoration(_eventHandler),
+            _eventHandler.ElementName, 
+            methodName, 
+            parameterCode);
 
         return code;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>generateEventHandlerDecoration</Name>
+				<Source><![CDATA[
+    public static str generateEventHandlerDecoration(MXTXppEventHandlerTable _eventHandler)
+    {
+        str getMethodFormatted(MXTXppEventHandlerTable _table)
+        {
+            str methodName = _table.DisplayMethodName;
+
+            methodName = strReplace(methodName, "_PreDelegate", "");
+            methodName = strReplace(methodName, "_PostDelegate", "");
+            methodName = strReplace(methodName, "$", "");
+
+            if (_table.HandlerType == MXTXppEventHandlerType::DataEvent && strStartsWith(methodName, "On"))
+                methodName = "o" + subStr(methodName, 2, strLen(methodName) - 1);
+
+            return methodName;
+        }
+
+        str getMethodElementIdentifier(MXTXppEventHandlerTable _table)
+        {
+            switch (_table.ElementType)
+            {
+                case MXTXppEventElementType::Class: return "classStr";
+                case MXTXppEventElementType::Table: return "tableStr";
+                case MXTXppEventElementType::Form: return "formStr";
+                default: return "";
+            }
+        }
+
+        str getMethodEventIdentifier(MXTXppEventHandlerTable _table)
+        {
+            str methodName = getMethodFormatted(_table);
+
+            if (_table.HandlerType == MXTXppEventHandlerType::Static)
+                return strFmt("staticDelegateStr(%1, %2)", _table.ElementName, methodName);
+            
+            switch (_table.ElementType)
+            {
+                case MXTXppEventElementType::Class: 
+                    return strFmt("methodStr(%1, %2", _table.ElementName, methodName);
+                case MXTXppEventElementType::Table:
+                    return strFmt("tableMethodStr(%1, %2", _table.ElementName, methodName);
+                case MXTXppEventElementType::Form:
+                    return strFmt("formMethod(%1, %2", _table.ElementName, methodName);
+                default: return "";
+            }
+        }
+
+
+        str decoration = @"/// <summary>
+/// Event handler for %1.%2
+/// Native X++ Attribute: %3
+/// </summary>";
+
+        str elementMethod;
+        str elementIdentifier;
+        str eventIdentifier;
+
+        switch (_eventHandler.HandlerType)
+        {
+            case MXTXppEventHandlerType::DataEvent: 
+                elementMethod = "DataEventHandler";
+                elementIdentifier = strFmt("tableStr(%1)", _eventHandler.ElementName);
+                eventIdentifier = strFmt("DataEventType::%1",MXTXppEventHandlerManager::getDataEventTypeFromName(_eventHandler.MethodName));
+                break;
+            case MXTXppEventHandlerType::Pre:
+                elementMethod = "PreHandlerFor";
+                elementIdentifier = strFmt("%1(%2)", getMethodElementIdentifier(_eventHandler), _eventHandler.ElementName);
+                eventIdentifier = getMethodEventIdentifier(_eventHandler);
+                break;
+            case MXTXppEventHandlerType::Post: 
+                elementMethod = "PostHandlerFor";
+                elementIdentifier = strFmt("%1(%2)", getMethodElementIdentifier(_eventHandler), _eventHandler.ElementName);
+                eventIdentifier = getMethodEventIdentifier(_eventHandler);
+                break;
+            case MXTXppEventHandlerType::Static: 
+                elementMethod = "SubscribesTo";
+                elementIdentifier = strFmt("%1(%2)", getMethodElementIdentifier(_eventHandler), _eventHandler.ElementName);
+                eventIdentifier = getMethodEventIdentifier(_eventHandler);
+                break;
+        }
+
+        decoration = strFmt(
+            decoration, 
+            _eventHandler.ElementName,
+            getMethodFormatted(_eventHandler),
+            strFmt("[%1(%2, %3)]", elementMethod, elementIdentifier, eventIdentifier));
+
+        return decoration;
     }
 
 ]]></Source>

@@ -34,6 +34,20 @@ namespace XppInterpreter.Core
             return Activator.CreateInstance(makeType, arg1, arg2);
         }
 
+        public static bool TypeHasStaticMethod(Type type, string methodName)
+        {
+            if (type is null) return false;;
+
+            return type.GetMethods(BindingFlags.Static).Any(m => m.Name?.ToLower() == methodName.ToLower());
+        }
+
+        public static bool TypeHasInstanceMethod(Type type, string methodName)
+        {
+            if (type is null) return false;
+
+            return type.GetMethods(BindingFlags.Instance).Any(m => m.Name?.ToLower() == methodName.ToLower());
+        }
+
         public static bool TypeHasMethod(Type type, string methodName)
         {
             if (type is null) return false;
@@ -72,6 +86,11 @@ namespace XppInterpreter.Core
             return TypeHasField(type, fieldName)
                 ? type.GetFields().FirstOrDefault(f => f.Name.ToLowerInvariant() == fieldName.ToLowerInvariant())
                 : null;
+        }
+
+        public static EventInfo GetEvent(Type type, string eventName)
+        {
+            return type.GetEvent(eventName, BindingFlags.Public | BindingFlags.Instance);
         }
 
         public static MethodInfo GetMethod(Type type, string methodName)

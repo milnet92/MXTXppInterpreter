@@ -66,7 +66,7 @@ namespace XppInterpreter.Parser.Metadata.Providers
             string methodName = IsConstructor ? "new" : MethodName;
             string className = IsConstructor ? MethodName : CallerType?.Name ?? "";
 
-            var methodSyntax = proxy.Reflection.GetMethodSyntax(className, methodName);
+            var methodSyntax = proxy.Reflection.GetMethodSyntax(className, methodName, IsStatic);
 
             return new MethodTokenMetadata(methodName, className, methodSyntax, IsStatic);
         }

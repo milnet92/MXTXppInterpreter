@@ -9,13 +9,18 @@ using XppInterpreter.Parser;
 
 namespace XppInterpreter.Core.Events
 {
-    public static class EventHandlerSubscriptionHelper
+    public static class MethodEventHandlerHelper
     {
+        public static FieldInfo GetField(EventHandler handler)
+        {
+            return handler.ClassType.GetField(handler.EventHandlerName, BindingFlags.Static | BindingFlags.Public);
+        }
+
         public static bool IsSubscribed(EventHandler handler)
         {
             if (handler.Delegate == null) return false;
 
-            MulticastDelegate multicastDelegate = (MulticastDelegate)handler.GetField().GetValue(null);
+            MulticastDelegate multicastDelegate = (MulticastDelegate)GetField(handler).GetValue(null);
 
             if (multicastDelegate is null) return false;
 
@@ -24,9 +29,12 @@ namespace XppInterpreter.Core.Events
 
         public static void Subscribe(EventHandler handler)
         {
+            // Ensure the delegate is created
+            handler.InitializeDelegate();
+
             Unsubscribe(handler);
 
-            FieldInfo field = handler.GetField();
+            FieldInfo field = GetField(handler);
             MulticastDelegate multicastDelegate = (MulticastDelegate)field.GetValue(null);
             Delegate combined = Delegate.Combine(multicastDelegate, handler.Delegate);
             
@@ -41,7 +49,7 @@ namespace XppInterpreter.Core.Events
 
             if (handler != null && IsSubscribed(handler))
             {
-                FieldInfo field = eventHandler.GetField();
+                FieldInfo field = GetField(handler);
                 MulticastDelegate multicastDelegate = (MulticastDelegate)field.GetValue(null);
 
                 if (multicastDelegate is null) return;

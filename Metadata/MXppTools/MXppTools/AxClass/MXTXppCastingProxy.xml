@@ -44,12 +44,6 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
             return Types::Record;
         }
 
-        // Classes
-        if (SysDictClass::newName(_name) != null)
-        {
-            return Types::Class;
-        }
-
         switch(_name)
         {
             case MXtXppTypes::RealTypeStr: return Types::Real;
@@ -61,6 +55,12 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
             case MXtXppTypes::StringTypeStr: return Types::String;
             case MXtXppTypes::DateTypeStr : return Types::Date;
             case MXtXppTypes::AnyTypeTypeStr: return Types::AnyType;
+        }
+
+        // Classes
+        if (SysDictClass::newName(_name) != null || Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType(_name) != null)
+        {
+            return Types::Class;
         }
 
         return Types::void;
@@ -289,6 +289,16 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 ]]></Source>
 			</Method>
 			<Method>
+				<Name>isClass</Name>
+				<Source><![CDATA[
+    public static boolean isClass(str _name)
+    {
+        return MXTXppCastingProxy::getXppTypeByTypeName(_name) == Types::Class;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>Is</Name>
 				<Source><![CDATA[
     /// <summary>
@@ -299,28 +309,37 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
     /// <returns></returns>
     public System.Boolean Is(System.Object _value, System.String _typeName)
     {
-        if (className2Id(_typeName))
+        if (MXTXppCastingProxy::isClass(_typeName))
         {
-            ClassId         classId,
+            if (_value == null) return false;
+
+
+            ClassId         classId = classIdGet(_value),
                             newClassId = className2Id(_typeName);
-            SysDictClass    sysDictClass;
             boolean         ret;
+
+            if (classId && newClassId)
+            {
+                SysDictClass sysDictClass = new SysDictClass(classId);
+
+                ret = sysDictClass.isImplementing(newClassId);
+
+                if (!ret)
+                {
+                    ret = SysDictClass::isEqualOrSuperclass(classId, newClassId);
+                }
+            }
+            else
+            {
+                System.Type valueType = _value.GetType();
+                System.Type type = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::GetTypeFromClassName(_typeName);
+
+                if (type != null)
+                {
+                    ret = valueType.IsAssignableFrom(type);
+                }
+            }
             
-            classId = classIdGet(_value);
-            if (classId == 0)
-            {
-                return false;
-            }
-
-            sysDictClass = new SysDictClass(classId);
-
-            ret = sysDictClass.isImplementing(newClassId);
-
-            if (!ret)
-            {
-                ret = SysDictClass::isEqualOrSuperclass(classId, newClassId);
-            }
-
             return ret;
         }
         else if (tableName2Id(_typeName))
@@ -544,6 +563,11 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 
         boolean isCommonType = _toType == MXTXppTypes::CommonType || _toType.IsSubclassOf(MXTXppTypes::CommonType);
         
+        if (isCommonType)
+        {
+            return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToCommon(_value);
+        }
+
         if (this.isEnumType(_toType))
         {
             return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToInt(_value);

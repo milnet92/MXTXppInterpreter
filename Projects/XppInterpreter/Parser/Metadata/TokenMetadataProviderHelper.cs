@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using XppInterpreter.Interpreter;
@@ -88,6 +89,49 @@ namespace XppInterpreter.Parser.Metadata
             }
 
             return new IntrinsicMethodTokenMetadata(builder.ToString());
+        }
+
+        public static string GetConstructorSyntax(ConstructorInfo constructorInfo)
+        {
+            return "new" + "(" + GetMethodBaseParameterSytnax(constructorInfo) + ")";
+        }
+
+        public static string GetMethodSyntax(MethodInfo methodInfo)
+        {
+            return methodInfo.Name + "(" + GetMethodBaseParameterSytnax(methodInfo) + ")";
+        }
+
+        private static string GetMethodBaseParameterSytnax(MethodBase methodBase)
+        {
+            StringBuilder builder = new StringBuilder();
+
+            if (methodBase is MethodInfo info)
+                builder.Append(info.ReturnType?.ToString() ?? string.Empty);
+
+            int parameterNum = 0;
+            foreach (var parameter in methodBase.GetParameters())
+            {
+                if (parameterNum > 0)
+                    builder.Append(", ");
+
+                if (parameter.HasDefaultValue)
+                    builder.Append("[");
+
+                builder.Append(parameter.ParameterType.Name);
+                builder.Append(" ");
+                builder.Append(parameter.Name);
+
+                if (parameter.HasDefaultValue)
+                {
+                    builder.Append(" = ");
+                    builder.Append(parameter.DefaultValue?.ToString() ?? "null");
+                    builder.Append("]");
+                }
+
+                parameterNum ++;
+            }
+
+            return builder.ToString();
         }
 
         private static string GenerateIntrinsicSignatureHtml(string methodName, XppProxy proxy, int parameterPosition)

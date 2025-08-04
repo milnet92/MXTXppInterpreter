@@ -37,8 +37,8 @@ public class MXTXppEventHandlerManager
         }
 
         handler = new XppInterpreter.Core.Events.EventHandler(
-            _table.getElementType(),
             _table.getDelegateType(),
+            _table.getElementType(),
             _table.MethodName, 
             _table.HandlerSourceCode, 
             proxy);
@@ -49,9 +49,96 @@ public class MXTXppEventHandlerManager
 			<Method>
 				<Name>validate</Name>
 				<Source><![CDATA[
-    public void validate(boolean _createdDelegate)
+    public void validate()
     {
-        handler.Compile(_createdDelegate);
+        handler.Compile();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getDataEventTypeFromName</Name>
+				<Source><![CDATA[
+    public static Dynamics.AX.Application.DataEventType getDataEventTypeFromName(str _name)
+    {
+        if (strStartsWith(_name, "On"))
+        {
+            _name = strReplace(_name, "On", "");
+        }
+
+        MXTXppReflectionProxy pr = new MXTXppReflectionProxy();
+        return pr.GetEnumValue("DataEventType", _name);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>subscribeToDataEvent</Name>
+				<Source><![CDATA[
+    private void subscribeToDataEvent()
+    {
+        handler.InitializeDelegate();
+
+        this.unsubscribeToDataEvent();
+
+        XppInterpreter.Core.Events.EventHandlerStore::Set(handler.Key, handler);
+
+        Microsoft.Dynamics.Ax.Xpp.DataEventManager::Subscribe(
+            handlerTable.ElementName, 
+            MXTXppEventHandlerManager::getDataEventTypeFromName(handlerTable.MethodName),
+            handler.Delegate);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>unsubscribeToDataEvent</Name>
+				<Source><![CDATA[
+    private void unsubscribeToDataEvent()
+    {
+        XppInterpreter.Core.Events.EventHandler subscribedHandler = XppInterpreter.Core.Events.EventHandlerStore::Remove(handler.Key);
+        
+        if (subscribedHandler != null && subscribedHandler.Delegate != null)
+        {
+            Microsoft.Dynamics.Ax.Xpp.DataEventManager::Unsubscribe(
+                handlerTable.ElementName,
+                MXTXppEventHandlerManager::getDataEventTypeFromName(handlerTable.MethodName),
+                subscribedHandler.Delegate);
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>subscribeToEvent</Name>
+				<Source><![CDATA[
+    private void subscribeToEvent()
+    {
+        if (handlerTable.HandlerType == MXTXppEventHandlerType::DataEvent)
+        {
+            this.subscribeToDataEvent();
+        }
+        else
+        {
+            XppInterpreter.Core.Events.MethodEventHandlerHelper::Subscribe(handler);
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>unsubscribeToEvent</Name>
+				<Source><![CDATA[
+    private void unsubscribeToEvent()
+    {
+        if (handlerTable.HandlerType == MXTXppEventHandlerType::DataEvent)
+        {
+            this.unsubscribeToDataEvent();
+        }
+        else
+        {
+            XppInterpreter.Core.Events.MethodEventHandlerHelper::Unsubscribe(handler);
+        }
     }
 
 ]]></Source>
@@ -65,7 +152,7 @@ public class MXTXppEventHandlerManager
 
         try
         {
-            XppInterpreter.Core.Events.EventHandlerSubscriptionHelper::Subscribe(handler);
+            this.subscribeToEvent();
         }
         catch (ex)
         {
@@ -85,7 +172,7 @@ public class MXTXppEventHandlerManager
 
         try
         {
-            XppInterpreter.Core.Events.EventHandlerSubscriptionHelper::Unsubscribe(handler);
+            this.unsubscribeToEvent();
         }
         catch (ex)
         {
@@ -130,9 +217,16 @@ public class MXTXppEventHandlerManager
         }
 
         MXTXppEventHandlerTable record = _args.record();
+
         record.reread();
-        
         record.selectForUpdate(true);
+
+        if (_args.parmEnum() == NoYes::Yes &&
+            MXTXppEventHandlerTable::activeExists(record))
+        {
+            warning("Another Active event handler for the same event exist. Only one event handler can be active for the same Event");
+            return;
+        }
 
         MXTXppEventHandlerManager handler = new MXTXppEventHandlerManager(record);
         
@@ -150,7 +244,7 @@ public class MXTXppEventHandlerManager
         }
         else if (!record.Active)
         {
-            handler.validate(true);
+            handler.validate();
 
             if (MXTXppEventHandlerManager::confirm(record, true))
             {

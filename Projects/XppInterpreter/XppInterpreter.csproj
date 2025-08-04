@@ -52,7 +52,7 @@
   <ItemGroup>
     <Compile Include="Core\Events\EventHandler.cs" />
     <Compile Include="Core\Events\EventHandlerStore.cs" />
-    <Compile Include="Core\Events\EventHandlerSubscriptionHelper.cs" />
+    <Compile Include="Core\Events\MethodEventHandlerHelper.cs" />
     <Compile Include="Core\ExceptionHandler.cs" />
     <Compile Include="Core\ParseException.cs" />
     <Compile Include="Core\ReflectionHelper.cs" />

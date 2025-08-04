@@ -206,6 +206,11 @@
       <Name>MXTXppMetadataElementsContract</Name>
       <Link>Classes\MXTXppMetadataElementsContract</Link>
     </Content>
+    <Content Include="AxClass\MXTXppMethodEventHandler">
+      <SubType>Content</SubType>
+      <Name>MXTXppMethodEventHandler</Name>
+      <Link>Classes\MXTXppMethodEventHandler</Link>
+    </Content>
     <Content Include="AxClass\MXTXppOpenGithub">
       <SubType>Content</SubType>
       <Name>MXTXppOpenGithub</Name>
@@ -255,6 +260,16 @@
       <SubType>Content</SubType>
       <Name>MXTXppSearchInstance</Name>
       <Link>Classes\MXTXppSearchInstance</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppSubscriptions">
+      <SubType>Content</SubType>
+      <Name>MXTXppSubscriptions</Name>
+      <Link>Classes\MXTXppSubscriptions</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppTestExtensions">
+      <SubType>Content</SubType>
+      <Name>MXTXppTestExtensions</Name>
+      <Link>Classes\MXTXppTestExtensions</Link>
     </Content>
     <Content Include="AxClass\MXTXppTokenMetadata">
       <SubType>Content</SubType>
@@ -310,6 +325,11 @@
       <SubType>Content</SubType>
       <Name>MXTXppEventElementType</Name>
       <Link>Base Enums\MXTXppEventElementType</Link>
+    </Content>
+    <Content Include="AxEnum\MXTXppEventHandlerType">
+      <SubType>Content</SubType>
+      <Name>MXTXppEventHandlerType</Name>
+      <Link>Base Enums\MXTXppEventHandlerType</Link>
     </Content>
     <Content Include="AxEnum\MXTXppInterpreterEditorLanguage">
       <SubType>Content</SubType>

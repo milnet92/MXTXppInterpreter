@@ -118,9 +118,19 @@ public final class MXTXppCompletionProvider implements ICompletionProvider
 
         SysDictClass dictClass = SysDictClass::newName(_className);
 
-        if (!dictClass) return completions;
+        if (dictClass)
+        {
+            this.fillMethodCompletions(dictClass.methods(!_isStatic, _isStatic, true), false, completions);
+        }
+        else
+        {
+            System.Type type = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::GetTypeFromClassName(_className);
 
-        this.fillMethodCompletions(dictClass.methods(!_isStatic, _isStatic, true), false, completions);
+            if (type)
+            {
+                this.fillNetMethodCompletions(type, _isStatic, completions);
+            }
+        }
 
         return completions;
     }
@@ -413,6 +423,29 @@ public final class MXTXppCompletionProvider implements ICompletionProvider
 
             _completions.Add(completion);
         }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>fillNetMethodCompletions</Name>
+				<Source><![CDATA[
+    private void fillNetMethodCompletions(System.Type _type, boolean _isStatic, CompletionCollection _completions)
+    {
+        Reflection.BindingFlags flags = Reflection.BindingFlags::Public;
+
+        flags = flags | (_isStatic ? Reflection.BindingFlags::Static : Reflection.BindingFlags::Instance);
+
+        Reflection.MethodInfo[] methods = _type.GetMethods(flags);
+
+        for (int i = 0; i < methods.Length; i++)
+        {
+            Reflection.MethodInfo methodInfo = methods.Get(i);
+            
+            Completion completion = new Completion(methodInfo.Name, methodInfo.Name, methodInfo.IsStatic ? CompletionEntryType::StaticMethod : CompletionEntryType::Method);
+            _completions.Add(completion);
+        }
+
     }
 
 ]]></Source>

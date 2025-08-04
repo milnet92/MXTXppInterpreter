@@ -18,7 +18,7 @@ namespace XppInterpreter.Interpreter.Proxy
         void ClearCommon(object common);
         object GetEnumValue(string enumType, string enumValue);
         string[] GetAllEnumValues(string enumType);
-        string GetMethodSyntax(string typeName, string methodName);
+        string GetMethodSyntax(string typeName, string methodName, bool isStatic);
         string LabelIdToValue(string labelId, string languageId);
         Type GetMethodReturnType(Type typeName, string methodName);
         Type GetFieldReturnType(Type caller, string fieldName);

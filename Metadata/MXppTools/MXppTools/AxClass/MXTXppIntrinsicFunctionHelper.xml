@@ -26,7 +26,7 @@ internal final class MXTXppIntrinsicFunctionHelper
 				<Source><![CDATA[
 	public static void validateClassName(str _className)
     {
-        if (className2Id(_className) == 0)
+        if (!MXTXppCastingProxy::isClass(_className))
         {
             MXTXppIntrinsicFunctionHelper::throwArgumentException(_className, 'class');
         }
@@ -127,9 +127,26 @@ internal final class MXTXppIntrinsicFunctionHelper
     {
         MXTXppIntrinsicFunctionHelper::validateClassName(_className);
         
-        SysDictClass dictClass = new SysDictClass(className2Id(_className));
+        int classId = className2Id(_className);
+        boolean valid = true;
 
-        if (!dictClass.hasObjectMethod(_methodName))
+        if (classId)
+        {
+            SysDictClass dictClass = new SysDictClass(className2Id(_className));
+
+            if (!dictClass.hasObjectMethod(_methodName))
+            {
+                valid = false;
+            }
+        }
+        else
+        {
+            System.Type type = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::GetTypeFromClassName(_className);
+
+            valid = XppInterpreter.Core.ReflectionHelper::TypeHasInstanceMethod(type, _methodName);
+        }
+
+        if (!valid)
         {
             throw new System.Exception(strFmt("The instance method designated by argument '%1' dos not exist.", _methodName));
         }
@@ -142,11 +159,29 @@ internal final class MXTXppIntrinsicFunctionHelper
 				<Source><![CDATA[
     public static void validateStaticMethod(str _className, str _methodName)
     {
+
         MXTXppIntrinsicFunctionHelper::validateClassName(_className);
         
-        SysDictClass dictClass = new SysDictClass(className2Id(_className));
+        int classId = className2Id(_className);
+        boolean valid = true;
 
-        if (!dictClass.hasStaticMethod(_methodName))
+        if (classId)
+        {
+            SysDictClass dictClass = new SysDictClass(className2Id(_className));
+
+            if (!dictClass.hasStaticMethod(_methodName))
+            {
+                valid = false;
+            }
+        }
+        else
+        {
+            System.Type type = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::GetTypeFromClassName(_className);
+
+            valid = XppInterpreter.Core.ReflectionHelper::TypeHasStaticMethod(type, _methodName);
+        }
+
+        if (!valid)
         {
             throw new System.Exception(strFmt("The static method designated by argument '%1' dos not exist.", _methodName));
         }

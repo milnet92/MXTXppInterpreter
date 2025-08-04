@@ -13,7 +13,18 @@ namespace XppInterpreter.Interpreter.Bytecode.Events
         public static string[] GetDelegateFields(Type type)
         {
             return type.GetFields(BindingFlags.Static | BindingFlags.Public)
-            .Where(f => ReflectionHelper.IsDelegateType(f.FieldType)).Select(d => d.Name).ToArray();
+                .Where(f => ReflectionHelper.IsDelegateType(f.FieldType)).Select(d => d.Name).ToArray();
+        }
+
+        public static string[] GetEventNames(Type type)
+        {
+            return type.GetEvents(BindingFlags.Instance | BindingFlags.Public)
+                .Select(d => d.Name).ToArray();
+        }
+
+        public static bool HasEvent(Type type, string eventName)
+        {
+            return type.GetEvent(eventName, BindingFlags.Instance | BindingFlags.Public) != null;
         }
 
         public static Type[] GetDelegateParameterTypes(Type delegateType)
