@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppInterpreterServiceRequestDeserializer</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+using Parser = XppInterpreter.Parser;
+using Newtonsoft.Json;
+
+internal final class MXTXppInterpreterServiceRequestDeserializer
+{
+    private MXTXppInterpreterServiceRequest request;
+    private MXTXppInterpreterService        service;
+    private MXTXppInterpreterScript         script;
+    
+    private Parser.FunctionDeclaration      entryPoint;
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>new</Name>
+				<Source><![CDATA[
+    public void new (MXTXppInterpreterServiceRequest _request)
+    {
+        request = _request;
+
+        service = MXTXppInterpreterService::find(request.parmServiceId());
+
+        if (!service)
+        {
+            throw error(strFmt("Service with id %1 not found", request.parmServiceId()));
+        }
+
+        script  = service.findScript();
+
+        if (!script)
+        {
+            throw error(strFmt("No script found for service with id %1", request.parmServiceId()));
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>initializeInterpreter</Name>
+				<Source><![CDATA[
+    public void initializeInterpreter()
+    {
+        entryPoint = MXTXppInterpreterServiceRequestDeserializer::getEntryPointFromSourceCode(script.SourceCode);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getEntryPointFromSourceCode</Name>
+				<Source><![CDATA[
+    public static Parser.FunctionDeclaration getEntryPointFromSourceCode(MXTSourceCode _sourceCode)
+    {
+        Parser.ParseResult result = MXTXppInterpreterExecutor::parse(_sourceCode);
+        if (result.HasErrors)
+        {
+            throw error("Internal error.");
+        }
+        Parser.Program program = result.AST;
+        
+        System.Collections.IEnumerable statements = program.Statements;
+        System.Collections.IEnumerator enumerator = statements.GetEnumerator();
+        
+        Parser.FunctionDeclaration entryPoint;
+        while (enumerator.MoveNext())
+        {
+            entryPoint = enumerator.Current;
+        }
+        if (!entryPoint)
+        {
+            throw error("No entry point found in script.");
+        }
+
+        return entryPoint;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateParameters</Name>
+				<Source><![CDATA[
+    public List validateParameters()
+    {
+        List requestParameters = new List(Types::Class);
+
+        this.initializeInterpreter();
+        
+        // Parse payload
+        anytype payload = XppInterpreter.Core.ReflectionHelper::JsonToDictionary(request.parmPayload());
+        
+        System.Collections.IEnumerable plEnumerable = payload;
+        System.Collections.IEnumerator plEnumerator = plEnumerable.GetEnumerator();
+
+        Map controlParameters = new Map(Types::String, Types::AnyType);
+        while (plEnumerator.MoveNext())
+        {
+            System.Collections.Generic.KeyValuePair<System.String, System.Object> pair = plEnumerator.Current;
+            
+            MXTXppInterpreterServiceRequestParameter requestParameter = new MXTXppInterpreterServiceRequestParameter(pair.Key, pair.Value);
+            requestParameters.addEnd(requestParameter);
+            controlParameters.add(pair.Key, pair.Value);
+        }
+
+        System.Collections.IEnumerable parameters = entryPoint.Parameters;
+        System.Collections.IEnumerator enumerator = parameters.GetEnumerator();
+
+        while (enumerator.MoveNext())
+        {
+            Parser.FunctionDeclarationParameter parameter = enumerator.Current;
+
+            if (controlParameters.exists(parameter.Name))
+            {
+                // Validate type
+                System.Type declarationType = parameter.DeclarationClrType;
+                System.Object payloadParameterType = controlParameters.lookup(parameter.Name);
+
+                if (declarationType != payloadParameterType.GetType())
+                {
+                    throw error(strFmt("Parameter %1 has invalid type. Expected %2 but got %3", parameter.Name, declarationType.Name, payloadParameterType.GetType().Name));
+                }
+            }
+            else
+            {
+                throw error(strFmt("Missing required parameter %1", parameter.Name));
+            }
+        }
+
+        return requestParameters;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getFunction</Name>
+				<Source><![CDATA[
+    public Parser.FunctionDeclaration getFunction()
+    {
+        return entryPoint;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

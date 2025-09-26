@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTServiceRecordResponse</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+internal final class MXTServiceRecordResponse extends MXTServiceResponseBase
+{
+    private Common record;
+    private container selectionFields = conNull();
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>new</Name>
+				<Source><![CDATA[
+    public void new(Common _record = null)
+    {
+        record = _record;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmRecord</Name>
+				<Source><![CDATA[
+    public Common parmRecord(Common _record = record)
+    {
+        return record;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmSelectionFields</Name>
+				<Source><![CDATA[
+    public container parmSelectionFields(container _selectionFields = selectionFields)
+    {
+        selectionFields = _selectionFields;
+        return selectionFields;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>addSelectionField</Name>
+				<Source><![CDATA[
+    public container addSelectionField(FieldId _fieldId)
+    {
+        if (!conFind(selectionFields, _fieldId))
+        {
+            selectionFields += [_fieldId];
+        }
+
+        return selectionFields;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>build</Name>
+				<Source><![CDATA[
+    anytype build()
+    {
+        container fieldsToInclude = selectionFields;
+
+        if (selectionFields == conNull())
+        {
+            SysDictTable dictTable = SysDictTable::newTableId(record.TableId);
+            FieldId      fieldId;
+            for (int i = 1; i <= dictTable.fieldCnt(); i++)
+            {
+                fieldId = dictTable.fieldCnt2Id(i);
+                fieldsToInclude += [fieldId];
+            }
+        }
+
+        MXTServiceResponse response = new MXTServiceResponse();
+
+        for (int i = 1; i <= conLen(fieldsToInclude); i++)
+        {
+            FieldId fieldId = conPeek(fieldsToInclude, i);
+            response.setProperty(fieldId2Name(record.TableId, fieldId), record.(fieldId));
+        }
+
+        return response;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

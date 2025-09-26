@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxForm xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns="Microsoft.Dynamics.AX.Metadata.V6">
+	<Name>MXTServiceEditDetails</Name>
+	<SourceCode>
+		<Methods xmlns="">
+			<Method>
+				<Name>classDeclaration</Name>
+				<Source><![CDATA[
+[Form]
+public class MXTServiceEditDetails extends FormRun
+{
+    private boolean fromEditor;
+    private str callerSourceCode;
+    private MXTXppInterpreterScript currentScript;
+
+}
+]]></Source>
+			</Method>
+			<Method>
+				<Name>run</Name>
+				<Source><![CDATA[
+    /// <summary>
+    ///
+    /// </summary>
+    public void run()
+    {
+        MXTXppInterpreterService_ds.create();
+
+        super();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>init</Name>
+				<Source><![CDATA[
+    /// <summary>
+    ///
+    /// </summary>
+    public void init()
+    {
+        fromEditor = this.args().callerName() == formStr(MXTScriptEditor);
+
+        this.args().record(null);
+
+        super();
+
+        if (fromEditor)
+        {
+            this.design().dialogSize(DialogSize::Small);
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>close</Name>
+				<Source><![CDATA[
+    /// <summary>
+    ///
+    /// </summary>
+    public void close()
+    {
+        if (fromEditor)
+        {
+            element.args().record(MXTXppInterpreterService);
+        }
+        else if (MXTXppInterpreterService)
+        {
+            MenuFunction menuFunc = new MenuFunction(menuItemDisplayStr(MXTScriptEditor), MenuItemType::Display);
+            Args args = new Args();
+            args.record(MXTXppInterpreterService);
+            args.openMode(OpenMode::Edit);
+
+            menuFunc.run(args);
+        }
+
+        super();
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+		<DataSources xmlns="">
+			<DataSource>
+				<Name>MXTXppInterpreterService</Name>
+				<Methods>
+					<Method>
+						<Name>write</Name>
+						<Source><![CDATA[
+        /// <summary>
+        ///
+        /// </summary>
+        public void write()
+        {
+            if (!element.closedOk())
+            {
+                return;
+            }
+
+            ttsbegin;
+
+            if (!currentScript)
+            {
+                currentScript = MXTXppInterpreterScript::createService(MXTXppInterpreterService.ServiceId, ScriptDescription.text());
+            }
+
+            MXTXppInterpreterService.Script = currentScript.RecId;
+            MXTXppInterpreterService.insert();
+
+            ttscommit;
+        }
+
+]]></Source>
+					</Method>
+					<Method>
+						<Name>research</Name>
+						<Source><![CDATA[
+        public void research(boolean _retainPosition = false)
+        {
+            //Disable the refresh feature in this form. Do not invoke "super(_retainPosition);".
+        }
+
+]]></Source>
+					</Method>
+					<Method>
+						<Name>reread</Name>
+						<Source><![CDATA[
+        public void reread()
+        {
+            if (MXTXppInterpreterService.RecId)
+            {
+                super();
+
+                currentScript = MXTXppInterpreterScript::find(MXTXppInterpreterService.Script);
+            }
+        }
+
+]]></Source>
+					</Method>
+					<Method>
+						<Name>validateWrite</Name>
+						<Source><![CDATA[
+        boolean validateWrite()
+        {
+            boolean ret;
+
+            if (!element.closedOk())
+            {
+                return true;
+            }
+
+            return super();
+        }
+
+]]></Source>
+					</Method>
+				</Methods>
+				<Fields />
+			</DataSource>
+		</DataSources>
+		<DataControls xmlns="" />
+		<Members xmlns="" />
+	</SourceCode>
+	<DataSources>
+		<AxFormDataSource xmlns="">
+			<Name>MXTXppInterpreterService</Name>
+			<Table>MXTXppInterpreterService</Table>
+			<Fields>
+				<AxFormDataSourceField>
+					<DataField>Partition</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>RecId</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>Script</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>ServiceId</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
+					<DataField>TableId</DataField>
+				</AxFormDataSourceField>
+			</Fields>
+			<ReferencedDataSources />
+			<DataSourceLinks />
+			<DerivedDataSources />
+		</AxFormDataSource>
+	</DataSources>
+	<Design>
+		<Caption xmlns="">@MXT:NewScript</Caption>
+		<DefaultAction xmlns="">OkButton</DefaultAction>
+		<DialogSize xmlns="">Medium</DialogSize>
+		<Pattern xmlns="">Dialog</Pattern>
+		<PatternVersion xmlns="">1.2</PatternVersion>
+		<Style xmlns="">Dialog</Style>
+		<Controls xmlns="">
+			<AxFormControl xmlns=""
+				i:type="AxFormGroupControl">
+				<Name>Content</Name>
+				<HeightMode>SizeToAvailable</HeightMode>
+				<Pattern>Custom</Pattern>
+				<Type>Group</Type>
+				<WidthMode>SizeToAvailable</WidthMode>
+				<FormControlExtension
+					i:nil="true" />
+				<Controls>
+					<AxFormControl xmlns=""
+						i:type="AxFormStringControl">
+						<Name>MXTXppInterpreterService_ServiceId</Name>
+						<Type>String</Type>
+						<FormControlExtension
+							i:nil="true" />
+						<DataField>ServiceId</DataField>
+						<DataSource>MXTXppInterpreterService</DataSource>
+					</AxFormControl>
+					<AxFormControl xmlns=""
+						i:type="AxFormStringControl">
+						<Name>ScriptDescription</Name>
+						<AutoDeclaration>Yes</AutoDeclaration>
+						<Type>String</Type>
+						<FormControlExtension
+							i:nil="true" />
+						<ExtendedDataType>Description</ExtendedDataType>
+						<Mandatory>Yes</Mandatory>
+					</AxFormControl>
+				</Controls>
+				<Style>DialogContent</Style>
+			</AxFormControl>
+			<AxFormControl xmlns=""
+				i:type="AxFormButtonGroupControl">
+				<Name>CommitButtonGroup</Name>
+				<Type>ButtonGroup</Type>
+				<WidthMode>SizeToAvailable</WidthMode>
+				<FormControlExtension
+					i:nil="true" />
+				<Controls>
+					<AxFormControl xmlns=""
+						i:type="AxFormCommandButtonControl">
+						<Name>OK</Name>
+						<ElementPosition>1073741822</ElementPosition>
+						<FilterExpression>%1</FilterExpression>
+						<HeightMode>Auto</HeightMode>
+						<Type>CommandButton</Type>
+						<VerticalSpacing>-1</VerticalSpacing>
+						<WidthMode>Auto</WidthMode>
+						<FormControlExtension
+							i:nil="true" />
+						<ButtonDisplay>TextOnly</ButtonDisplay>
+						<Command>OK</Command>
+						<DefaultButton>Yes</DefaultButton>
+					</AxFormControl>
+					<AxFormControl xmlns=""
+						i:type="AxFormCommandButtonControl">
+						<Name>Cancel</Name>
+						<ElementPosition>1610612733</ElementPosition>
+						<FilterExpression>%1</FilterExpression>
+						<HeightMode>Auto</HeightMode>
+						<Type>CommandButton</Type>
+						<VerticalSpacing>-1</VerticalSpacing>
+						<WidthMode>Auto</WidthMode>
+						<FormControlExtension
+							i:nil="true" />
+						<ButtonDisplay>TextOnly</ButtonDisplay>
+						<Command>Cancel</Command>
+					</AxFormControl>
+				</Controls>
+				<ArrangeMethod>HorizontalRight</ArrangeMethod>
+				<Style>DialogCommitContainer</Style>
+			</AxFormControl>
+		</Controls>
+	</Design>
+	<Parts />
+</AxForm>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTServiceResponseBase</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+abstract class MXTServiceResponseBase
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>build</Name>
+				<Source><![CDATA[
+    abstract anytype build() { }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>map2res</Name>
+				<Source><![CDATA[
+    public static MXTServiceResponseBase map2res(Map _map)
+    {
+        MXTServiceResponse response = new MXTServiceResponse();
+        MapEnumerator me = _map.getEnumerator();
+        while (me.moveNext())
+        {
+            response.setProperty(me.currentKey(), me.currentValue());
+        }
+        return response;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>toValue</Name>
+				<Source><![CDATA[
+    public static anytype toValue(anytype value)
+    {
+        anytype val;
+
+        if (value is MXTServiceResponseBase)
+        {
+            val = (value as MXTServiceResponseBase).build();
+        }
+        else if (value is Map)
+        {
+            val = MXTServiceResponseBase::map2res(value as Map).build();
+        }
+        else if (value is Set)
+        {
+            Set s = value as Set;
+            System.Object[] arr = new System.Object[s.elements()]();
+            SetEnumerator se = s.getEnumerator();
+            int i = 0;
+            while (se.moveNext())
+            {
+                arr.Set(i, MXTServiceResponseBase::toValue(se.current()));
+                i++;
+            }
+            val = arr;
+        }
+        else if (value is List)
+        {
+            List l = value as List;
+            System.Object[] arr = new System.Object[l.elements()]();
+            ListEnumerator le = l.getEnumerator();
+            int i = 0;
+            while (le.moveNext())
+            {
+                arr.Set(i, MXTServiceResponseBase::toValue(le.current()));
+                i++;
+            }
+            val = arr;
+        }
+        else
+        {
+            val = value;
+        }
+        return val;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

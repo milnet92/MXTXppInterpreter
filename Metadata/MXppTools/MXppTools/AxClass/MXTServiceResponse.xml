@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTServiceResponse</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+internal final class MXTServiceResponse extends MXTServiceResponseBase
+{
+    private System.Collections.Generic.Dictionary<System.String, System.Object> properties = new System.Collections.Generic.Dictionary<System.String, System.Object>();
+    
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>new</Name>
+				<Source><![CDATA[
+    public void new()
+    {
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>setProperty</Name>
+				<Source><![CDATA[
+    public void setProperty(str name, anytype value)
+    {
+        anytype val = MXTServiceResponseBase::toValue(value);
+
+        if (properties.ContainsKey(name))
+        {
+            properties.Remove(name);
+        }
+        
+        properties.Add(name, val);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>build</Name>
+				<Source><![CDATA[
+    anytype build()
+    {
+        return properties;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

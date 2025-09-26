@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppInterpreterServiceRequest</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+[DataContract]
+public final class MXTXppInterpreterServiceRequest
+{
+    private str payload;
+    private MXTServiceId serviceId;
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>parmServiceId</Name>
+				<Source><![CDATA[
+    [DataMember('serviceId')]
+    public MXTServiceId parmServiceId(MXTServiceId _serviceId = serviceId)
+    {
+        serviceId = _serviceId;
+        return serviceId;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmPayload</Name>
+				<Source><![CDATA[
+    [DataMember('payload')]
+    public str parmPayload(str _payload = payload)
+    {
+        payload = _payload;
+        return payload;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>
