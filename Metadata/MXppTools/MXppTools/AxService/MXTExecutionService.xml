@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxService xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTExecutionService</Name>
+	<Class>MXTXppInterpreterServiceRouter</Class>
+	<ExternalName>ExecutionService</ExternalName>
+	<ServiceOperations>
+		<AxServiceOperation>
+			<Name>executeScript</Name>
+			<Method>executeScript</Method>
+			<SubscriberAccessLevel>
+				<Read>Allow</Read>
+			</SubscriberAccessLevel>
+		</AxServiceOperation>
+		<AxServiceOperation>
+			<Name>metadata</Name>
+			<Method>getMetadata</Method>
+			<SubscriberAccessLevel>
+				<Read>Allow</Read>
+			</SubscriberAccessLevel>
+		</AxServiceOperation>
+	</ServiceOperations>
+</AxService>

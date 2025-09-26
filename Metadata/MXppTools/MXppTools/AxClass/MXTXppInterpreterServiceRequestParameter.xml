@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppInterpreterServiceRequestParameter</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+internal final class MXTXppInterpreterServiceRequestParameter
+{
+    private str name;
+    System.Object value;
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>new</Name>
+				<Source><![CDATA[
+    public void new(str _name, System.Object _value)
+    {
+        name  = _name;
+        value = _value;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmName</Name>
+				<Source><![CDATA[
+    public str parmName(str _name = name)
+    {
+        name = _name;
+        return name;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmValue</Name>
+				<Source><![CDATA[
+    public anytype parmValue(anytype _value = value)
+    {
+        value = _value;
+        return value;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppInterpreterServiceRouter</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+public final class MXTXppInterpreterServiceRouter
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>executeScript</Name>
+				<Source><![CDATA[
+    public System.Object executeScript(MXTXppInterpreterServiceRequest request)
+    {
+        var deserializer = new MXTXppInterpreterServiceRequestDeserializer(request);
+
+        List parameters = deserializer.validateParameters();
+
+        // Convert parameters list to System.Object[]
+        System.Object[] sysParams = new System.Object[parameters.elements()]();
+        ListEnumerator paramEnum = parameters.getEnumerator();
+        int i = 0;
+        while (paramEnum.moveNext())
+        {
+            MXTXppInterpreterServiceRequestParameter param = paramEnum.current();
+            sysParams.Set(i, param.parmValue());
+            i++;
+        }
+
+        // Call the service method
+        System.Object result = MXTXppInterpreterExecutor::invokeFunction(deserializer.getFunction(), sysParams);
+
+        return MXTServiceResponseBase::toValue(result);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getMetadata</Name>
+				<Source><![CDATA[
+    public System.Object getMetadata()
+    {
+        MXTXppInterpreterScript script;
+        MXTXppInterpreterService service;
+
+        List result = new List(Types::Class);
+
+        while select service
+        join script
+            where script.RecId == service.Script
+        {
+            try
+            {
+                MXTServiceResponse serviceEntry = new MXTServiceResponse();
+
+                serviceEntry.setProperty("serviceId", service.ServiceId);
+                serviceEntry.setProperty("description", script.Description);
+
+                // Construct parameters
+                XppInterpreter.Parser.FunctionDeclaration entryPoint = MXTXppInterpreterServiceRequestDeserializer::getEntryPointFromSourceCode(script.SourceCode);
+            
+                anytype parmDictionary = XppInterpreter.Interpreter.XppInterpeterUtil::GetFunctionParameters(entryPoint);
+                System.Collections.IEnumerator parmEnumerator = parmDictionary.GetEnumerator();
+                
+                List parametersList = new List(Types::Class);
+
+                while (parmEnumerator.MoveNext())
+                {
+                    System.Collections.Generic.KeyValuePair<System.String, System.String> pair = parmEnumerator.Current;
+                    MXTServiceResponse paramEntry = new MXTServiceResponse();
+                    paramEntry.setProperty("name", pair.Key);
+                    paramEntry.setProperty("type", pair.Value);
+
+                    parametersList.addEnd(paramEntry);
+                }
+
+                serviceEntry.setProperty("parameters", parametersList);
+
+                result.addEnd(serviceEntry);
+            }
+            catch
+            {
+                // Skip this service due to error
+            }
+        }
+
+        return MXTServiceResponseBase::toValue(result);
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

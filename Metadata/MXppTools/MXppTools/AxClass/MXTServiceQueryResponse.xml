@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTServiceQueryResponse</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+internal final class MXTServiceQueryResponse extends MXTServiceResponseBase
+{
+    private Query query;
+    private Map   selectionFields  = new Map(Types::String, Types::Container);
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>new</Name>
+				<Source><![CDATA[
+    public void new(Query _query = null)
+    {
+        query = _query;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>addSelectionField</Name>
+				<Source><![CDATA[
+    public void addSelectionField(QueryBuildDataSource _dataSource, FieldId _fieldId, str _alias = '')
+    {
+        container fields;
+        if (selectionFields.exists(_dataSource.name()))
+        {
+            fields = selectionFields.lookup(_dataSource.name());
+        }
+        else
+        {
+            fields = conNull();
+        }
+        
+        fields += [_fieldId, _alias];
+
+        selectionFields.insert(_dataSource.name(), fields);
+
+        _dataSource.addSelectionField(_fieldId);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmQuery</Name>
+				<Source><![CDATA[
+    public Query parmQuery(Query _query = query)
+    {
+        query = _query;
+        return query;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getResponseFromDataSource</Name>
+				<Source><![CDATA[
+    private MXTServiceResponseBase getResponseFromDataSource(QueryRun _qr, QueryBuildDataSource _dataSource, Map _occurrenceMap = null)
+    {
+        int occurrences = 1;
+        
+        if (!_occurrenceMap)
+        {
+            _occurrenceMap = new Map(Types::String, Types::Integer);
+        }
+
+        if (_occurrenceMap.exists(_dataSource.name()))
+        {
+            occurrences = _occurrenceMap.lookup(_dataSource.name()) + 1;
+            _occurrenceMap.remove(_dataSource.name());
+        }
+
+        _occurrenceMap.insert(_dataSource.name(), occurrences);
+
+
+        Common common = _qr.get(_dataSource.table(), occurrences);
+        MXTServiceRecordResponse recordResponse = new MXTServiceRecordResponse(common);
+        recordResponse.parmSelectionFields(this.getSelectionFieldsFromDataSource(_dataSource));
+
+        MXTServiceResponse recordBuilt = recordResponse.build(false);
+
+        // Process child datasources
+        int childDataSourceCount = _dataSource.childDataSourceCount();
+
+        for (int i = 1; i <= childDataSourceCount; i++)
+        {
+            QueryBuildDataSource childDs = _dataSource.childDataSourceNo(i);
+
+            recordBuilt.setProperty(childDS.name(), this.getResponseFromDataSource(_qr, childDs, _occurrenceMap));
+        }
+
+        return recordBuilt;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getSelectionFieldsFromDataSource</Name>
+				<Source><![CDATA[
+    private container getSelectionFieldsFromDataSource(QueryBuildDataSource _dataSource)
+    {
+        container fields;
+        if (selectionFields.exists(_dataSource.name()))
+        {
+            fields = selectionFields.lookup(_dataSource.name());
+        }
+        else
+        {
+            fields = conNull();
+        }
+        return fields;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>build</Name>
+				<Source><![CDATA[
+    anytype build()
+    {
+        List     recordList = new List(Types::Class);
+        QueryRun queryRun = new QueryRun(query);
+
+        // Get first datasource
+        QueryBuildDataSource root = query.dataSourceNo(1);
+
+        while (queryRun.next())
+        {
+            recordList.addEnd(this.getResponseFromDataSource(queryRun, root));
+        }
+
+        return MXTServiceResponseBase::toValue(recordList);
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>
