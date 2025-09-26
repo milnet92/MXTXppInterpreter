@@ -97,5 +97,11 @@ namespace XppInterpreter.Core
 
             return typeof(MulticastDelegate).IsAssignableFrom(type.BaseType);
         }
+
+        public static Dictionary<string, object> JsonToDictionary(string json)
+        {
+            JavaScriptSerializer serializer = new JavaScriptSerializer();
+            return serializer.Deserialize<Dictionary<string, object>>(json);
+        }
     }
 }

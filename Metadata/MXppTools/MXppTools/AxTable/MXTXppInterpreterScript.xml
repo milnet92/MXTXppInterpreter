@@ -77,6 +77,53 @@ public class MXTXppInterpreterScript extends common
 
 ]]></Source>
 			</Method>
+			<Method>
+				<Name>createService</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Creates a new service script
+    /// </summary>
+    public static MXTXppInterpreterScript createService(MXTServiceId _serviceId, Description _description)
+    {
+        MXTXppInterpreterScript serviceScript;
+
+        serviceScript.Type = MXTXppInterpreterScriptType::Service;
+        serviceScript.Description = _description;
+        serviceScript.SourceCode = strFmt(@'/// <summary>
+/// Service entry point.
+/// Request parameters are mapped to method parameters,
+/// and the return value is sent back to the caller.
+/// </summary>
+str %1(str _parm1, int _parm2)
+{
+    // TODO: Implement logic
+    return "";
+}', _serviceId);
+
+        serviceScript.insert();
+
+        return serviceScript;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateWrite</Name>
+				<Source><![CDATA[
+    public boolean validateWrite()
+    {
+        boolean ret = super();;
+    
+        if (this.Type == MXTXppInterpreterScriptType::Service)
+        {
+            ret = ret && MXTXppInterpreterService::validateServiceCode(this.SourceCode);
+        }
+
+        return ret;
+    }
+
+]]></Source>
+			</Method>
 		</Methods>
 	</SourceCode>
 	<SubscriberAccessLevel>
@@ -134,6 +181,11 @@ public class MXTXppInterpreterScript extends common
 			<ExtendedDataType>Description</ExtendedDataType>
 			<IgnoreEDTRelation>Yes</IgnoreEDTRelation>
 			<Mandatory>Yes</Mandatory>
+		</AxTableField>
+		<AxTableField xmlns=""
+			i:type="AxTableFieldEnum">
+			<Name>Type</Name>
+			<EnumType>MXTXppInterpreterScriptType</EnumType>
 		</AxTableField>
 	</Fields>
 	<FullTextIndexes />

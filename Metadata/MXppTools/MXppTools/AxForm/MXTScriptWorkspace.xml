@@ -16,7 +16,25 @@ public class MXTScriptWorkspace extends FormRun
 		<DataSources xmlns="" />
 		<DataControls xmlns="">
 			<Control>
-				<Name>AllScripts</Name>
+				<Name>Scripts</Name>
+				<Type>TabPage</Type>
+				<Methods>
+					<Method>
+						<Name>pageActivated</Name>
+						<Source><![CDATA[
+        public void pageActivated()
+        {
+            super();
+
+            AllScriptsFormPart.refresh();
+        }
+
+]]></Source>
+					</Method>
+				</Methods>
+			</Control>
+			<Control>
+				<Name>Services</Name>
 				<Type>TabPage</Type>
 				<Methods>
 					<Method>
@@ -91,6 +109,31 @@ public class MXTScriptWorkspace extends FormRun
 								<NormalImage>New</NormalImage>
 								<OpenMode>New</OpenMode>
 								<Text>@MXT:NewScript</Text>
+							</AxFormControl>
+							<AxFormControl xmlns=""
+								i:type="AxFormMenuFunctionButtonControl">
+								<Name>NewService</Name>
+								<Type>MenuFunctionButton</Type>
+								<FormControlExtension>
+									<Name>TileButtonControl</Name>
+									<ExtensionComponents />
+									<ExtensionProperties>
+										<AxFormControlExtensionProperty>
+											<Name>tile</Name>
+											<Type>String</Type>
+											<Value>MXTNewServiceTile</Value>
+										</AxFormControlExtensionProperty>
+										<AxFormControlExtensionProperty>
+											<Name>tileDisplay</Name>
+											<Type>Enum</Type>
+											<TypeName>TileDisplay</TypeName>
+											<Value>TextAndImage</Value>
+										</AxFormControlExtensionProperty>
+									</ExtensionProperties>
+								</FormControlExtension>
+								<NormalImage>Send</NormalImage>
+								<OpenMode>New</OpenMode>
+								<Text>@MXT:NewService</Text>
 							</AxFormControl>
 							<AxFormControl xmlns=""
 								i:type="AxFormMenuFunctionButtonControl">
@@ -217,7 +260,7 @@ public class MXTScriptWorkspace extends FormRun
 								<Controls>
 									<AxFormControl xmlns=""
 										i:type="AxFormTabPageControl">
-										<Name>AllScripts</Name>
+										<Name>Scripts</Name>
 										<Type>TabPage</Type>
 										<FormControlExtension
 											i:nil="true" />
@@ -260,7 +303,54 @@ public class MXTScriptWorkspace extends FormRun
 												<Controls />
 											</AxFormControl>
 										</Controls>
-										<Caption>@MXT:AllScripts</Caption>
+										<Caption>@MXT:Scripts</Caption>
+									</AxFormControl>
+									<AxFormControl xmlns=""
+										i:type="AxFormTabPageControl">
+										<Name>Services</Name>
+										<Type>TabPage</Type>
+										<FormControlExtension
+											i:nil="true" />
+										<Controls>
+											<AxFormControl xmlns=""
+												i:type="AxFormContainerControl">
+												<Name>ServicesFormPart</Name>
+												<AutoDeclaration>Yes</AutoDeclaration>
+												<HeightMode>SizeToAvailable</HeightMode>
+												<Type>Container</Type>
+												<WidthMode>SizeToAvailable</WidthMode>
+												<FormControlExtension>
+													<Name>FormPartControl</Name>
+													<ExtensionComponents>
+														<AxFormControlExtensionComponent xmlns=""
+															i:type="AxFormControlExtensionComponentComposite">
+															<Name>dataLinks</Name>
+															<ExtensionComponents />
+														</AxFormControlExtensionComponent>
+													</ExtensionComponents>
+													<ExtensionProperties>
+														<AxFormControlExtensionProperty>
+															<Name>targetName</Name>
+															<Type>String</Type>
+															<Value>MXTServicesFormPart</Value>
+														</AxFormControlExtensionProperty>
+														<AxFormControlExtensionProperty>
+															<Name>autoRefreshInterval</Name>
+															<Type>Int32</Type>
+															<Value>0</Value>
+														</AxFormControlExtensionProperty>
+														<AxFormControlExtensionProperty>
+															<Name>parmRunMode</Name>
+															<Type>Enum</Type>
+															<TypeName>FormPartControlRunMode</TypeName>
+															<Value>Local</Value>
+														</AxFormControlExtensionProperty>
+													</ExtensionProperties>
+												</FormControlExtension>
+												<Controls />
+											</AxFormControl>
+										</Controls>
+										<Caption>@MXT:Services</Caption>
 									</AxFormControl>
 								</Controls>
 								<ArrangeMethod>Vertical</ArrangeMethod>

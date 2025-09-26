@@ -17,12 +17,12 @@ public class MXTScriptEditor extends FormRun
     private int pausedFGColor = WinAPI::RGB2int(202, 222, 73);
     private FromTime startTime;
     private MXTXppTrace lastTrace;
+    private boolean allowCodeExecution = true;
 
     MXTXppInterpreterDebugSession currentSession;
 
     MXTXppInterpreterScript callerScript;
     str sourceCode;
-
 }
 ]]></Source>
 			</Method>
@@ -195,6 +195,11 @@ public class MXTScriptEditor extends FormRun
     /// </summary>
     public void execute()
     {
+        if (!allowCodeExecution)
+        {
+            return;
+        }
+
         if (currentSession.isExecuting())
         {
             warning("@MXT:ExecutionCompleteWait");
@@ -266,6 +271,12 @@ public class MXTScriptEditor extends FormRun
                 callerScript = this.args().record();
                 break;
 
+            case tableNum(MXTXppInterpreterService):
+                MXTXppInterpreterService service = this.args().record();
+                callerScript = MXTXppInterpreterScript::find(service.Script);
+                allowCodeExecution = false;
+                break;
+
             case tableNum(MXTXppInterpreterReferences):
                 MXTXppInterpreterScriptDependency dependency = this.args().record();
                 callerScript = MXTXppInterpreterScript::find(dependency.ReferenceScriptId);
@@ -329,6 +340,12 @@ public class MXTScriptEditor extends FormRun
 
         MXTXppInterpreterCodeEditorControl.theme(editorParameters.Theme);
         MXTXppInterpreterCodeEditorControl.fontSize(editorParameters.FontSize);
+
+        if (!allowCodeExecution)
+        {
+            ExecuteButton.visible(false);
+            SqlTraces.visible(false);
+        }
     }
 
 ]]></Source>
@@ -410,6 +427,8 @@ public class MXTScriptEditor extends FormRun
 
             if (callerScript)
             {
+                MXTXppInterpreterScript.SourceCode = MXTXppInterpreterCodeEditorControl.sourceCode();
+
                 return super();
             }
 
@@ -825,6 +844,7 @@ public class MXTScriptEditor extends FormRun
 					<AxFormControl xmlns=""
 						i:type="AxFormActionPaneTabControl">
 						<Name>SqlTraces</Name>
+						<AutoDeclaration>Yes</AutoDeclaration>
 						<Type>ActionPaneTab</Type>
 						<FormControlExtension
 							i:nil="true" />

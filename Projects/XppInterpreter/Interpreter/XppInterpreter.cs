@@ -1,4 +1,5 @@
-﻿using XppInterpreter.Core;
+﻿using System.Collections.Generic;
+using XppInterpreter.Core;
 using XppInterpreter.Interpreter.Bytecode;
 using XppInterpreter.Interpreter.Debug;
 using XppInterpreter.Interpreter.Proxy;
@@ -216,8 +217,13 @@ namespace XppInterpreter.Interpreter
 
             ByteCode compiledProgram = new ByteCodeGenerator(Options).Generate(program, IsDebuggerAttached(), fullByteCode.DeclaredFunctions);
 
-            fullByteCode.DeclaredFunctions.AddRange(compiledProgram.DeclaredFunctions);
+            // We don't add declared functions as the bytecode generation
+            // for the full program already include the ref functions
             fullByteCode.Instructions.AddRange(compiledProgram.Instructions);
+
+            // Add the functions that were declared in the program but not in the dependencies
+            List<RefFunction> refFunctions = compiledProgram.DeclaredFunctions.FindAll(f => !fullByteCode.DeclaredFunctions.Exists(ff => ff.Declaration.Name == f.Declaration.Name));
+            fullByteCode.DeclaredFunctions.AddRange(refFunctions);
 
 #if DEBUG
             foreach (var instruction in fullByteCode.Instructions)

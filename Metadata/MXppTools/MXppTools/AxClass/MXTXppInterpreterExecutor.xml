@@ -159,6 +159,19 @@ internal final class MXTXppInterpreterExecutor
 ]]></Source>
 			</Method>
 			<Method>
+				<Name>invokeFunction</Name>
+				<Source><![CDATA[
+    public static System.Object invokeFunction(XppInterpreter.Parser.FunctionDeclaration _functionDeclaration, System.Object[] _args)
+    {
+        return XppInterpreter.Interpreter.XppInterpeterUtil::CallFunction(
+                _functionDeclaration,
+                _args,
+                MXTXppInterpreterExecutor::proxy);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>executeScriptInBatch</Name>
 				<Source><![CDATA[
     /// <summary>

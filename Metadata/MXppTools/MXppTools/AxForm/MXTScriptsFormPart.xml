@@ -10,11 +10,34 @@
 public class MXTScriptsFormPart extends FormRun
 {
 }
-
 ]]></Source>
 			</Method>
 		</Methods>
-		<DataSources xmlns="" />
+		<DataSources xmlns="">
+			<DataSource>
+				<Name>MXTXppInterpreterScript</Name>
+				<Methods>
+					<Method>
+						<Name>init</Name>
+						<Source><![CDATA[
+        /// <summary>
+        ///
+        /// </summary>
+        public void init()
+        {
+            super();
+
+            this.query().dataSourceTable(tableNum(MXTXppInterpreterScript))
+                .addRange(fieldNum(MXTXppInterpreterScript, Type))
+                .value(SysQuery::value(MXTXppInterpreterScriptType::Script));
+        }
+
+]]></Source>
+					</Method>
+				</Methods>
+				<Fields />
+			</DataSource>
+		</DataSources>
 		<DataControls xmlns="">
 			<Control>
 				<Name>DownloadAsXml</Name>
