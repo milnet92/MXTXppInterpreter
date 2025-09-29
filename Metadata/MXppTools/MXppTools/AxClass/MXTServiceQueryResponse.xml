@@ -6,7 +6,7 @@
 internal final class MXTServiceQueryResponse extends MXTServiceResponseBase
 {
     private Query query;
-    private Map   selectionFields  = new Map(Types::String, Types::Container);
+    private Map   dsSelectionCache = new Map(Types::String, Types::Container);
 
 }
 ]]></Declaration>
@@ -22,34 +22,13 @@ internal final class MXTServiceQueryResponse extends MXTServiceResponseBase
 ]]></Source>
 			</Method>
 			<Method>
-				<Name>addSelectionField</Name>
-				<Source><![CDATA[
-    public void addSelectionField(QueryBuildDataSource _dataSource, FieldId _fieldId, str _alias = '')
-    {
-        container fields;
-        if (selectionFields.exists(_dataSource.name()))
-        {
-            fields = selectionFields.lookup(_dataSource.name());
-        }
-        else
-        {
-            fields = conNull();
-        }
-        
-        fields += [_fieldId, _alias];
-
-        selectionFields.insert(_dataSource.name(), fields);
-
-        _dataSource.addSelectionField(_fieldId);
-    }
-
-]]></Source>
-			</Method>
-			<Method>
 				<Name>parmQuery</Name>
 				<Source><![CDATA[
     public Query parmQuery(Query _query = query)
     {
+        // Clear cache
+        dsSelectionCache = new Map(Types::String, Types::Container);
+
         query = _query;
         return query;
     }
@@ -61,6 +40,8 @@ internal final class MXTServiceQueryResponse extends MXTServiceResponseBase
 				<Source><![CDATA[
     private MXTServiceResponseBase getResponseFromDataSource(QueryRun _qr, QueryBuildDataSource _dataSource, Map _occurrenceMap = null)
     {
+        MXTServiceQueryResponse response = new MXTServiceQueryResponse();
+        
         int occurrences = 1;
         
         if (!_occurrenceMap)
@@ -81,7 +62,7 @@ internal final class MXTServiceQueryResponse extends MXTServiceResponseBase
         MXTServiceRecordResponse recordResponse = new MXTServiceRecordResponse(common);
         recordResponse.parmSelectionFields(this.getSelectionFieldsFromDataSource(_dataSource));
 
-        MXTServiceResponse recordBuilt = recordResponse.build(false);
+        MXTServiceResponse recordBuilt = recordResponse.build();
 
         // Process child datasources
         int childDataSourceCount = _dataSource.childDataSourceCount();
@@ -93,7 +74,7 @@ internal final class MXTServiceQueryResponse extends MXTServiceResponseBase
             recordBuilt.setProperty(childDS.name(), this.getResponseFromDataSource(_qr, childDs, _occurrenceMap));
         }
 
-        return recordBuilt;
+        return response;
     }
 
 ]]></Source>
@@ -103,16 +84,25 @@ internal final class MXTServiceQueryResponse extends MXTServiceResponseBase
 				<Source><![CDATA[
     private container getSelectionFieldsFromDataSource(QueryBuildDataSource _dataSource)
     {
-        container fields;
-        if (selectionFields.exists(_dataSource.name()))
+        if (dsSelectionCache.exists(_dataSource.name()))
         {
-            fields = selectionFields.lookup(_dataSource.name());
+            return dsSelectionCache.lookup(_dataSource.name());
         }
-        else
+
+        container selectionFields = conNull();
+        QueryBuildFieldList fieldList = _dataSource.fields();
+
+        if (fieldList)
         {
-            fields = conNull();
+            for (int i = 1; i <= fieldList.fieldCount(); i++)
+            {
+                selectionFields += [fieldList.field(i)];
+            }
         }
-        return fields;
+
+        dsSelectionCache.add(_dataSource.name(), selectionFields);
+
+        return selectionFields;
     }
 
 ]]></Source>
@@ -128,12 +118,7 @@ internal final class MXTServiceQueryResponse extends MXTServiceResponseBase
         // Get first datasource
         QueryBuildDataSource root = query.dataSourceNo(1);
 
-        while (queryRun.next())
-        {
-            recordList.addEnd(this.getResponseFromDataSource(queryRun, root));
-        }
-
-        return MXTServiceResponseBase::toValue(recordList);
+        return this.getResponseFromDataSource(queryRun, root);
     }
 
 ]]></Source>

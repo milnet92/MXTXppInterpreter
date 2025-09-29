@@ -7,7 +7,7 @@ internal final class MXTServiceRecordResponse extends MXTServiceResponseBase
 {
     private Common record;
     private container selectionFields = conNull();
-    private boolean selectAll = true;
+
 }
 ]]></Declaration>
 		<Methods>
@@ -26,7 +26,6 @@ internal final class MXTServiceRecordResponse extends MXTServiceResponseBase
 				<Source><![CDATA[
     public Common parmRecord(Common _record = record)
     {
-        record = _record;
         return record;
     }
 
@@ -46,11 +45,11 @@ internal final class MXTServiceRecordResponse extends MXTServiceResponseBase
 			<Method>
 				<Name>addSelectionField</Name>
 				<Source><![CDATA[
-    public container addSelectionField(FieldId _fieldId, str _alias = '')
+    public container addSelectionField(FieldId _fieldId)
     {
         if (!conFind(selectionFields, _fieldId))
         {
-            selectionFields += [_fieldId, _alias];
+            selectionFields += [_fieldId];
         }
 
         return selectionFields;
@@ -61,28 +60,27 @@ internal final class MXTServiceRecordResponse extends MXTServiceResponseBase
 			<Method>
 				<Name>build</Name>
 				<Source><![CDATA[
-    anytype build(boolean _selectAll = true)
+    anytype build()
     {
         container fieldsToInclude = selectionFields;
 
-        if (selectionFields == conNull() && _selectAll)
+        if (selectionFields == conNull())
         {
             SysDictTable dictTable = SysDictTable::newTableId(record.TableId);
             FieldId      fieldId;
             for (int i = 1; i <= dictTable.fieldCnt(); i++)
             {
                 fieldId = dictTable.fieldCnt2Id(i);
-                fieldsToInclude += [fieldId, ''];
+                fieldsToInclude += [fieldId];
             }
         }
 
         MXTServiceResponse response = new MXTServiceResponse();
 
-        for (int i = 1; i <= conLen(fieldsToInclude); i+=2)
+        for (int i = 1; i <= conLen(fieldsToInclude); i++)
         {
             FieldId fieldId = conPeek(fieldsToInclude, i);
-            str alias   = conPeek(fieldsToInclude, i + 1);
-            response.setProperty(alias ? alias : fieldId2Name(record.TableId, fieldId), record.(fieldId));
+            response.setProperty(fieldId2Name(record.TableId, fieldId), record.(fieldId));
         }
 
         return response;
