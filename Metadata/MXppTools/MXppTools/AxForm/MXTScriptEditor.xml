@@ -18,6 +18,7 @@ public class MXTScriptEditor extends FormRun
     private FromTime startTime;
     private MXTXppTrace lastTrace;
     private boolean allowCodeExecution = true;
+    private MXTServiceId serviceId;
 
     MXTXppInterpreterDebugSession currentSession;
 
@@ -97,8 +98,17 @@ public class MXTScriptEditor extends FormRun
     {
         if (callerScript)
         {
-            this.design().caption(callerScript.Description);
-            StaticTextTitle.text(callerScript.Description);
+            if (serviceId)
+                            {
+                this.design().caption(strFmt("%1 service - %2", serviceId, callerScript.Description));
+                StaticTextTitle.text(strFmt("%1 service - %2", serviceId, callerScript.Description));
+            }
+            else
+            {
+                this.design().caption(callerScript.Description);
+                StaticTextTitle.text(callerScript.Description);
+            }
+
             StaticTextTitle.visible(true);
         }
         else
@@ -274,6 +284,7 @@ public class MXTScriptEditor extends FormRun
             case tableNum(MXTXppInterpreterService):
                 MXTXppInterpreterService service = this.args().record();
                 callerScript = MXTXppInterpreterScript::find(service.Script);
+                serviceId = service.ServiceId;
                 allowCodeExecution = false;
                 break;
 
@@ -341,6 +352,8 @@ public class MXTScriptEditor extends FormRun
         MXTXppInterpreterCodeEditorControl.theme(editorParameters.Theme);
         MXTXppInterpreterCodeEditorControl.fontSize(editorParameters.FontSize);
 
+        MXTServiceParameters.visible(serviceId != "");
+
         if (!allowCodeExecution)
         {
             ExecuteButton.visible(false);
@@ -406,6 +419,17 @@ public class MXTScriptEditor extends FormRun
                 MXTXppInterpreterScript.SourceCode = MXTXppInterpreterCodeEditorControl.sourceCode();
 
                 super();
+
+                // Update paraemters if It's a service
+                if (MXTXppInterpreterScript && MXTXppInterpreterScript.Type == MXTXppInterpreterScriptType::Service)
+                {
+                    MXTXppInterpreterService service = MXTXppInterpreterService::findByScript(MXTXppInterpreterScript.RecId);
+                    
+                    if (service)
+                    {
+                        MXTXppInterpreterServiceParameters::updateServiceParameters(service);
+                    }
+                }
             }
         }
 
@@ -838,6 +862,17 @@ public class MXTScriptEditor extends FormRun
 								<MenuItemName>MXTScriptDependencies</MenuItemName>
 								<NeedsRecord>Yes</NeedsRecord>
 								<NormalImage>Organization</NormalImage>
+							</AxFormControl>
+							<AxFormControl xmlns=""
+								i:type="AxFormMenuFunctionButtonControl">
+								<Name>MXTServiceParameters</Name>
+								<AutoDeclaration>Yes</AutoDeclaration>
+								<Type>MenuFunctionButton</Type>
+								<FormControlExtension
+									i:nil="true" />
+								<DataSource>MXTXppInterpreterScript</DataSource>
+								<MenuItemName>MXTServiceParameters</MenuItemName>
+								<NeedsRecord>Yes</NeedsRecord>
 							</AxFormControl>
 						</Controls>
 					</AxFormControl>

@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AxMenuItemDisplay xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns="Microsoft.Dynamics.AX.Metadata.V1">
-	<Name>MXTInterpreterParameters</Name>
-	<Label>@MXT:XppInterpreterParametersSimple</Label>
-	<Object>MXTXppInterpreterServiceParameters</Object>
+	<Name>MXTServiceParameters</Name>
+	<Label>@MXT:ConfigureServiceParameters</Label>
+	<NeedsRecord>Yes</NeedsRecord>
+	<Object>MXTServiceParameters</Object>
+	<OpenMode>Edit</OpenMode>
 	<SubscriberAccessLevel>
 		<Read xmlns="">Allow</Read>
 	</SubscriberAccessLevel>

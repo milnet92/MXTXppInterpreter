@@ -45,11 +45,11 @@ internal final class MXTServiceRecordResponse extends MXTServiceResponseBase
 			<Method>
 				<Name>addSelectionField</Name>
 				<Source><![CDATA[
-    public container addSelectionField(FieldId _fieldId)
+    public container addSelectionField(FieldId _fieldId, str _alias = '')
     {
         if (!conFind(selectionFields, _fieldId))
         {
-            selectionFields += [_fieldId];
+            selectionFields += [_fieldId, _alias];
         }
 
         return selectionFields;
@@ -60,27 +60,29 @@ internal final class MXTServiceRecordResponse extends MXTServiceResponseBase
 			<Method>
 				<Name>build</Name>
 				<Source><![CDATA[
-    anytype build()
+    anytype build(boolean _allFields = true)
     {
         container fieldsToInclude = selectionFields;
 
-        if (selectionFields == conNull())
+        if (_allFields)
         {
             SysDictTable dictTable = SysDictTable::newTableId(record.TableId);
             FieldId      fieldId;
             for (int i = 1; i <= dictTable.fieldCnt(); i++)
             {
                 fieldId = dictTable.fieldCnt2Id(i);
-                fieldsToInclude += [fieldId];
+                fieldsToInclude += [fieldId, ''];
             }
         }
 
         MXTServiceResponse response = new MXTServiceResponse();
 
-        for (int i = 1; i <= conLen(fieldsToInclude); i++)
+        for (int i = 1; i <= conLen(fieldsToInclude); i+=2)
         {
             FieldId fieldId = conPeek(fieldsToInclude, i);
-            response.setProperty(fieldId2Name(record.TableId, fieldId), record.(fieldId));
+            str     alias   = conPeek(fieldsToInclude, i + 1);
+
+            response.setProperty(alias ? alias : fieldId2Name(record.TableId, fieldId), record.(fieldId));
         }
 
         return response;

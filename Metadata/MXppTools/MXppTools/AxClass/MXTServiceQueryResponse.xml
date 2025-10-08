@@ -6,8 +6,7 @@
 internal final class MXTServiceQueryResponse extends MXTServiceResponseBase
 {
     private Query query;
-    private Map   dsSelectionCache = new Map(Types::String, Types::Container);
-
+    private Map   selectionFields = new Map(Types::String, Types::Container);
 }
 ]]></Declaration>
 		<Methods>
@@ -26,11 +25,26 @@ internal final class MXTServiceQueryResponse extends MXTServiceResponseBase
 				<Source><![CDATA[
     public Query parmQuery(Query _query = query)
     {
-        // Clear cache
-        dsSelectionCache = new Map(Types::String, Types::Container);
-
         query = _query;
         return query;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>addSelectionField</Name>
+				<Source><![CDATA[
+    public void addSelectionField(QueryBuildDataSource _dataSource, FieldId _fieldId, str _alias = '')
+    {
+        if (!selectionFields.exists(_dataSource.name()))
+        {
+            selectionFields.insert(_dataSource.name(), conNull());
+        }
+
+        container fields = selectionFields.lookup(_dataSource.name());
+        fields += [_fieldId, _alias];
+        selectionFields.insert(_dataSource.name(), fields);
+        _dataSource.addSelectionField(_fieldId);
     }
 
 ]]></Source>
@@ -57,12 +71,10 @@ internal final class MXTServiceQueryResponse extends MXTServiceResponseBase
 
         _occurrenceMap.insert(_dataSource.name(), occurrences);
 
-
-        Common common = _qr.get(_dataSource.table(), occurrences);
-        MXTServiceRecordResponse recordResponse = new MXTServiceRecordResponse(common);
+        MXTServiceRecordResponse recordResponse = new MXTServiceRecordResponse(_qr.get(_dataSource.table(), occurrences));
         recordResponse.parmSelectionFields(this.getSelectionFieldsFromDataSource(_dataSource));
 
-        MXTServiceResponse recordBuilt = recordResponse.build();
+        MXTServiceResponse recordBuilt = recordResponse.build(false);
 
         // Process child datasources
         int childDataSourceCount = _dataSource.childDataSourceCount();
@@ -84,25 +96,12 @@ internal final class MXTServiceQueryResponse extends MXTServiceResponseBase
 				<Source><![CDATA[
     private container getSelectionFieldsFromDataSource(QueryBuildDataSource _dataSource)
     {
-        if (dsSelectionCache.exists(_dataSource.name()))
+        if (selectionFields.exists(_dataSource.name()))
         {
-            return dsSelectionCache.lookup(_dataSource.name());
+            return selectionFields.lookup(_dataSource.name());
         }
 
-        container selectionFields = conNull();
-        QueryBuildFieldList fieldList = _dataSource.fields();
-
-        if (fieldList)
-        {
-            for (int i = 1; i <= fieldList.fieldCount(); i++)
-            {
-                selectionFields += [fieldList.field(i)];
-            }
-        }
-
-        dsSelectionCache.add(_dataSource.name(), selectionFields);
-
-        return selectionFields;
+        return conNull();
     }
 
 ]]></Source>

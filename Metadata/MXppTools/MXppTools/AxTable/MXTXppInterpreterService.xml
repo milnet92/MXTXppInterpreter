@@ -36,11 +36,30 @@ public class MXTXppInterpreterService extends common
 ]]></Source>
 			</Method>
 			<Method>
+				<Name>findByScript</Name>
+				<Source><![CDATA[
+    public static MXTXppInterpreterService findByScript(RefRecId _scriptRecId, boolean _forUpdate = false)
+    {
+        MXTXppInterpreterService service;
+
+        if (_scriptRecId)
+        {
+            select firstonly service
+                where service.Script == _scriptRecId;
+
+            if (_forUpdate)
+            {
+                service.selectForUpdate(true);
+            }
+        }
+        return service;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>findScript</Name>
 				<Source><![CDATA[
-    /// <summary>
-    ///
-    /// </summary>
     public MXTXppInterpreterScript findScript()
     {
         return MXTXppInterpreterScript::find(this.Script);
@@ -142,6 +161,14 @@ public class MXTXppInterpreterService extends common
 			<AllowEdit>No</AllowEdit>
 			<ExtendedDataType>MXTServiceId</ExtendedDataType>
 			<IgnoreEDTRelation>Yes</IgnoreEDTRelation>
+		</AxTableField>
+		<AxTableField xmlns=""
+			i:type="AxTableFieldEnum">
+			<Name>Discoverable</Name>
+			<ExtendedDataType>NoYesId</ExtendedDataType>
+			<IgnoreEDTRelation>Yes</IgnoreEDTRelation>
+			<Label>@MXT:Discoverable</Label>
+			<EnumType>NoYes</EnumType>
 		</AxTableField>
 	</Fields>
 	<FullTextIndexes />

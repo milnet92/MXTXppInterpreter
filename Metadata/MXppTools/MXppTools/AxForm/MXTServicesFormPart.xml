@@ -24,6 +24,9 @@ public class MXTServicesFormPart extends FormRun
 			<Table>MXTXppInterpreterService</Table>
 			<Fields>
 				<AxFormDataSourceField>
+					<DataField>Discoverable</DataField>
+				</AxFormDataSourceField>
+				<AxFormDataSourceField>
 					<DataField>Partition</DataField>
 				</AxFormDataSourceField>
 				<AxFormDataSourceField>
@@ -142,6 +145,17 @@ public class MXTServicesFormPart extends FormRun
 										<NeedsRecord>Yes</NeedsRecord>
 										<NormalImage>Delete</NormalImage>
 										<Text>@SYS21354</Text>
+									</AxFormControl>
+									<AxFormControl xmlns=""
+										i:type="AxFormMenuFunctionButtonControl">
+										<Name>MXTServiceParameters</Name>
+										<Type>MenuFunctionButton</Type>
+										<FormControlExtension
+											i:nil="true" />
+										<DataSource>MXTXppInterpreterService</DataSource>
+										<MenuItemName>MXTServiceParameters</MenuItemName>
+										<MultiSelect>No</MultiSelect>
+										<NeedsRecord>Yes</NeedsRecord>
 									</AxFormControl>
 								</Controls>
 								<DataSource>MXTXppInterpreterService</DataSource>

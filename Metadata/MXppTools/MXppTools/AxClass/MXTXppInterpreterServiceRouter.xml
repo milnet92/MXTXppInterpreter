@@ -53,10 +53,27 @@ public final class MXTXppInterpreterServiceRouter
             try
             {
                 MXTServiceResponse serviceEntry = new MXTServiceResponse();
-
                 serviceEntry.setProperty("serviceId", service.ServiceId);
                 serviceEntry.setProperty("description", script.Description);
 
+                MXTXppInterpreterServiceParameters parameter;
+                List parametersList = new List(Types::Class);
+
+                while select parameter
+                    where parameter.ServiceId == service.ServiceId
+                {
+                    MXTServiceResponse paramEntry = new MXTServiceResponse();
+                    paramEntry.setProperty("name", parameter.ParameterName);
+                    paramEntry.setProperty("type", enum2Str(parameter.Type));
+                    paramEntry.setProperty("description", parameter.Description);
+                    paramEntry.setProperty("optional", parameter.Optional ? true : false);
+                    
+                    parametersList.addEnd(paramEntry);
+                }
+
+                serviceEntry.setProperty("parameters", parametersList);
+
+                /*
                 // Construct parameters
                 XppInterpreter.Parser.FunctionDeclaration entryPoint = MXTXppInterpreterServiceRequestDeserializer::getEntryPointFromSourceCode(script.SourceCode);
             
@@ -70,12 +87,13 @@ public final class MXTXppInterpreterServiceRouter
                     System.Collections.Generic.KeyValuePair<System.String, System.String> pair = parmEnumerator.Current;
                     MXTServiceResponse paramEntry = new MXTServiceResponse();
                     paramEntry.setProperty("name", pair.Key);
-                    paramEntry.setProperty("type", pair.Value);
-
+                    paramEntry.setProperty("type", enum2Str(MXTXppCastingProxy::getXppTypeByTypeName(pair.Value)));
+                    
                     parametersList.addEnd(paramEntry);
                 }
 
                 serviceEntry.setProperty("parameters", parametersList);
+                */
 
                 result.addEnd(serviceEntry);
             }

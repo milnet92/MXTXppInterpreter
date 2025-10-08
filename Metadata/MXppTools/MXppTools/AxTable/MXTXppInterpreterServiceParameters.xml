@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxTable xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppInterpreterServiceParameters</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+public class MXTXppInterpreterServiceParameters extends common
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>updateServiceParameters</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Updates the service parameters based on the current script source code.
+    /// </summary>
+    public static void updateServiceParameters(MXTXppInterpreterService _service)
+    {
+        MXTXppInterpreterScript script = _service.findScript();
+
+        XppInterpreter.Parser.FunctionDeclaration entryPoint = MXTXppInterpreterServiceRequestDeserializer::getEntryPointFromSourceCode(script.SourceCode);
+
+        anytype parmDictionary = XppInterpreter.Interpreter.XppInterpeterUtil::GetFunctionParameters(entryPoint);
+        System.Collections.IEnumerator parmEnumerator = parmDictionary.GetEnumerator();
+                
+        Set foundParams = new Set(Types::String);
+
+        while (parmEnumerator.MoveNext())
+        {
+            System.Collections.Generic.KeyValuePair<System.String, System.String> pair = parmEnumerator.Current;
+            
+            str parameterName = pair.Key;
+            str parameterTypeStr = pair.Value;
+
+            Types parameterType = MXTXppCastingProxy::getXppTypeByTypeName(parameterTypeStr);
+
+            MXTXppInterpreterServiceParameters parameter = MXTXppInterpreterServiceParameters::find(_service.ServiceId, parameterName, true);
+
+            ttsbegin;
+
+            if (parameter)
+            {
+                // Update existing parameter
+                parameter.Type = parameterType;
+                parameter.update();
+            }
+            else
+            {
+                // Create new parameter
+                parameter.ServiceId = _service.ServiceId;
+                parameter.ParameterName = parameterName;
+                parameter.Type = parameterType;
+                parameter.insert();
+            }
+
+            ttscommit;
+
+            foundParams.add(parameterName);
+        }
+
+        // Delete parameters that are no longer present
+        MXTXppInterpreterServiceParameters parameterToDelete;
+        while select forupdate parameterToDelete
+            where parameterToDelete.ServiceId == _service.ServiceId
+        {
+            if (!foundParams.in(parameterToDelete.ParameterName))
+            {
+                ttsbegin;
+                parameterToDelete.delete();
+                ttscommit;
+            }
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>find</Name>
+				<Source><![CDATA[
+    public static MXTXppInterpreterServiceParameters find(MXTServiceId _serviceId, Name _parameterName, boolean _forUpdate = false)
+    {
+        MXTXppInterpreterServiceParameters parameter;
+
+        if (_serviceId && _parameterName)
+        {
+
+            select parameter
+                where parameter.ServiceId      == _serviceId
+                   && parameter.ParameterName  == _parameterName;
+
+            if (_forUpdate)
+            {
+                parameter.selectForUpdate(true);
+            }
+        }
+
+        return parameter;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+	<SubscriberAccessLevel>
+		<Read>Allow</Read>
+	</SubscriberAccessLevel>
+	<AllowRowVersionChangeTracking>Yes</AllowRowVersionChangeTracking>
+	<SaveDataPerCompany>No</SaveDataPerCompany>
+	<DeleteActions />
+	<FieldGroups>
+		<AxTableFieldGroup>
+			<Name>AutoReport</Name>
+			<Fields />
+		</AxTableFieldGroup>
+		<AxTableFieldGroup>
+			<Name>AutoLookup</Name>
+			<Fields />
+		</AxTableFieldGroup>
+		<AxTableFieldGroup>
+			<Name>AutoIdentification</Name>
+			<AutoPopulate>Yes</AutoPopulate>
+			<Fields />
+		</AxTableFieldGroup>
+		<AxTableFieldGroup>
+			<Name>AutoSummary</Name>
+			<Fields />
+		</AxTableFieldGroup>
+		<AxTableFieldGroup>
+			<Name>AutoBrowse</Name>
+			<Fields />
+		</AxTableFieldGroup>
+	</FieldGroups>
+	<Fields>
+		<AxTableField xmlns=""
+			i:type="AxTableFieldString">
+			<Name>ParameterName</Name>
+			<AllowEdit>No</AllowEdit>
+			<AllowEditOnCreate>No</AllowEditOnCreate>
+			<ExtendedDataType>Name</ExtendedDataType>
+			<IgnoreEDTRelation>Yes</IgnoreEDTRelation>
+			<Mandatory>Yes</Mandatory>
+		</AxTableField>
+		<AxTableField xmlns=""
+			i:type="AxTableFieldString">
+			<Name>Description</Name>
+			<ExtendedDataType>Description</ExtendedDataType>
+			<IgnoreEDTRelation>Yes</IgnoreEDTRelation>
+		</AxTableField>
+		<AxTableField xmlns=""
+			i:type="AxTableFieldEnum">
+			<Name>Type</Name>
+			<AllowEdit>No</AllowEdit>
+			<AllowEditOnCreate>No</AllowEditOnCreate>
+			<EnumType>Types</EnumType>
+		</AxTableField>
+		<AxTableField xmlns=""
+			i:type="AxTableFieldEnum">
+			<Name>Optional</Name>
+			<ExtendedDataType>NoYesId</ExtendedDataType>
+			<IgnoreEDTRelation>Yes</IgnoreEDTRelation>
+			<EnumType>NoYes</EnumType>
+		</AxTableField>
+		<AxTableField xmlns=""
+			i:type="AxTableFieldString">
+			<Name>ServiceId</Name>
+			<AllowEdit>No</AllowEdit>
+			<AllowEditOnCreate>No</AllowEditOnCreate>
+			<ExtendedDataType>MXTServiceId</ExtendedDataType>
+			<IgnoreEDTRelation>Yes</IgnoreEDTRelation>
+			<Mandatory>Yes</Mandatory>
+		</AxTableField>
+	</Fields>
+	<FullTextIndexes />
+	<Indexes>
+		<AxTableIndex>
+			<Name>NameIdx</Name>
+			<Fields>
+				<AxTableIndexField>
+					<DataField>ServiceId</DataField>
+				</AxTableIndexField>
+				<AxTableIndexField>
+					<DataField>ParameterName</DataField>
+				</AxTableIndexField>
+			</Fields>
+		</AxTableIndex>
+	</Indexes>
+	<Mappings />
+	<Relations />
+	<StateMachines />
+</AxTable>
