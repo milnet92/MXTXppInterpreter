@@ -2,7 +2,7 @@
 {
     class InstanceFunctionCall : Call
     {
-        public InstanceFunctionCall(string funcName, int nArgs, bool alloc) : base(funcName, nArgs, alloc, false) { }
+        public InstanceFunctionCall(string funcName, int nArgs, bool alloc) : base(funcName, nArgs, alloc, "", false) { }
 
         public override object MakeCall(RuntimeContext context, object[] arguments)
         {

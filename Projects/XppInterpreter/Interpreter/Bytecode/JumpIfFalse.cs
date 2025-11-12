@@ -3,12 +3,8 @@
     class JumpIfFalse : Jump
     {
         public override string OperationCode => $"JUMP_IF_FALSE {Offset}";
-        public bool ReturnToStack { get; set; }
 
-        public JumpIfFalse(int offset, bool returnToStack = true) : base(offset)
-        {
-            ReturnToStack = returnToStack;
-        }
+        public JumpIfFalse(int offset) : base(offset) { }
 
         public override void Execute(RuntimeContext context)
         {
@@ -16,11 +12,10 @@
 
             if (!context.Proxy.Casting.ToBoolean(value))
             {
-                if (ReturnToStack)
-                    context.Stack.Push(false);
-
                 base.Execute(context);
             }
+
+            //context.Stack.Push(value);
         }
     }
 }

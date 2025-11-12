@@ -9,10 +9,10 @@ namespace XppInterpreter.Parser
     public class VariableDeclarations : Statement
     {
         public System.Type DeclarationClrType { get; }
-        public Word DeclarationType { get; }
+        public ParsedTypeDefinition DeclarationType { get; }
         public Dictionary<Word, Expression> Identifiers { get; }
 
-        public VariableDeclarations(Word declarationType, System.Type declarationClrType, Dictionary<Word, Expression> identifiers, SourceCodeBinding sourceCodeBinding) : base(sourceCodeBinding, sourceCodeBinding)
+        public VariableDeclarations(ParsedTypeDefinition declarationType, System.Type declarationClrType, Dictionary<Word, Expression> identifiers, SourceCodeBinding sourceCodeBinding) : base(sourceCodeBinding, sourceCodeBinding)
         {
             DeclarationType = declarationType;
             Identifiers = identifiers;

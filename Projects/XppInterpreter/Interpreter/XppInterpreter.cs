@@ -216,7 +216,8 @@ namespace XppInterpreter.Interpreter
 
             ByteCode compiledProgram = new ByteCodeGenerator(Options).Generate(program, IsDebuggerAttached(), fullByteCode.DeclaredFunctions);
 
-            fullByteCode.DeclaredFunctions.AddRange(compiledProgram.DeclaredFunctions);
+            // We don't add declared functions as the bytecode generation
+            // for the full program already include the ref functions
             fullByteCode.Instructions.AddRange(compiledProgram.Instructions);
 
 #if DEBUG

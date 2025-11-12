@@ -184,9 +184,19 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
     /// </summary>
     /// <param name = "typeName">Array type</param>
     /// <returns>Dynamics array as an object</returns>
-    public System.Object CreateDynamicArray(System.String typeName)
+    public System.Object CreateDynamicArray(System.String _typeName, System.String _namespace)
     {
-        System.Type type = this.GetSystemTypeFromTypeName(typeName);
+        System.Type type = null;
+
+        if (_namespace)
+        {
+            type = MXTXppReflectionProxy::GetAssemblyType(_namespace, _typeName);
+
+        }
+        else
+        {
+            type = this.GetSystemTypeFromTypeName(_typeName);
+        }
 
         return XppInterpreter.Core.ReflectionHelper::MakeGenericInstance(MXTXppTypes::ArrayType, type);
     }
@@ -202,11 +212,21 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
     /// <param name = "typeName">Array type</param>
     /// <param name = "size">Array size</param>
     /// <returns>Fixed size array as an object</returns>
-    public System.Object CreateFixedArray(System.String typeName, System.Int32 size)
+    public System.Object CreateFixedArray(System.String _typeName, System.String _namespace, System.Int32 _size)
     {
-        System.Type type = this.GetSystemTypeFromTypeName(typeName);
+        System.Type type = null;
 
-        return XppInterpreter.Core.ReflectionHelper::MakeGenericInstance(MXTXppTypes::ArrayType, type, size);
+        if (_namespace)
+        {
+            type = MXTXppReflectionProxy::GetAssemblyType(_namespace, _typeName);
+
+        }
+        else
+        {
+            type = this.GetSystemTypeFromTypeName(_typeName);
+        }
+
+        return XppInterpreter.Core.ReflectionHelper::MakeGenericInstance(MXTXppTypes::ArrayType, type, _size);
     }
 
 ]]></Source>
@@ -266,9 +286,9 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
     /// <param name = "_value">Value to cast</param>
     /// <param name = "_typeName">Type cast</param>
     /// <returns></returns>
-    public System.Object As(System.Object _value, System.String _typeName)
+    public System.Object As(System.Object _value, System.String _typeName, System.String _namespace)
     {
-        if (this.Is(_value, _typeName))
+        if (this.Is(_value, _typeName, _namespace))
         {
             return _value;
         }
@@ -287,9 +307,20 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
     /// <param name = "_value">Value to check</param>
     /// <param name = "_typeName">Type name to check</param>
     /// <returns></returns>
-    public System.Boolean Is(System.Object _value, System.String _typeName)
+    public System.Boolean Is(System.Object _value, System.String _typeName, System.String _namespace)
     {
-        if (className2Id(_typeName))
+        if (_namespace)
+        {
+            System.Type type = MXTXppReflectionProxy::GetAssemblyType(_namespace, _typeName);
+
+            if (_value == null)
+            {
+                return !type.IsValueType;
+            }
+
+            return type.IsAssignableFrom(_value.GetType());
+        }
+        else if (className2Id(_typeName))
         {
             ClassId         classId,
                             newClassId = className2Id(_typeName);
@@ -389,8 +420,9 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
     /// </summary>
     /// <param name = "_name">Type name</param>
     /// <returns></returns>
-	public System.Object GetDefaultValueForType(System.String _name)
+	public System.Object GetDefaultValueForType(System.String _name, System.String _namespace)
     {
+        if (_namespace) return null;
         if (_name == MXTXppTypes::BooleanTypeStr) return false;
 
         Types types = MXTXppCastingProxy::getXppTypeByTypeName(_name);

@@ -272,11 +272,5 @@ namespace XppInterpreter.Interpreter.Debug
             AddToCollection(retry);
             base.VisitRetry(retry);
         }
-
-        public override void VisitEventHandlerSubscription(EventHandlerSubscription subscription)
-        {
-            AddToCollection(subscription);
-            base.VisitEventHandlerSubscription(subscription);
-        }
     }
 }

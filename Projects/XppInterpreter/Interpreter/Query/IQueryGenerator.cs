@@ -11,6 +11,6 @@ namespace XppInterpreter.Interpreter.Query
         void ExecuteInsertRecordset(Parser.InsertRecordset insertRecordset, RuntimeContext runtimeContext);
         void ExecuteDeleteFrom(Parser.DeleteFrom deleteFrom, RuntimeContext runtimeContext);
         void ExecuteUpdateRecordset(Parser.UpdateRecordset updateRecordset, RuntimeContext runtimeContext);
-        ISearchInstance NewSearchInstance(Parser.Data.Query query, RuntimeContext runtimeContext, bool isFromExpression, object _buffer);
+        ISearchInstance NewSearchInstance(Parser.Data.Query query, RuntimeContext runtimeContext);
     }
 }

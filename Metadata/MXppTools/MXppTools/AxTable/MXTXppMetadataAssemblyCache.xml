@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxTable xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppMetadataAssemblyCache</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+public class MXTXppMetadataAssemblyCache extends common
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>namespaceExists</Name>
+				<Source><![CDATA[
+    public static boolean namespaceExists(MXTAssemblyNamespace _namespace, boolean _partialSearch)
+    {
+        boolean ret = (select firstonly RecId from MXTXppMetadataAssemblyCache
+                    index NamespaceIdx
+                    where MXTXppMetadataAssemblyCache.AssemblyNamespace == _namespace).RecId != 0;
+
+        if (!ret && _partialSearch)
+        {
+            str searchNamespace = _namespace + '.*';
+
+            return (select firstonly RecId from MXTXppMetadataAssemblyCache
+                index NamespaceIdx
+                where MXTXppMetadataAssemblyCache.AssemblyNamespace like searchNamespace).RecId != 0;
+        }
+
+        return ret;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>typeExists</Name>
+				<Source><![CDATA[
+    public static boolean typeExists(MXTAssemblyNamespace _namespace, MXTAssemblyTypeName _typeName)
+    {
+        return (select firstonly RecId from MXTXppMetadataAssemblyCache
+                index TypeIdx
+                where MXTXppMetadataAssemblyCache.AssemblyNamespace == _namespace &&
+                      MXTXppMetadataAssemblyCache.TypeName          == _typeName).RecId != 0;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getAssemblyName</Name>
+				<Source><![CDATA[
+    public static MXTAssemblyDisplayName getAssemblyName(MXTAssemblyNamespace _namespace, MXTAssemblyTypeName _typeName)
+    {
+        return (select firstonly AssemblyDisplayName from MXTXppMetadataAssemblyCache
+                index TypeIdx
+                where MXTXppMetadataAssemblyCache.AssemblyNamespace == _namespace &&
+                      MXTXppMetadataAssemblyCache.TypeName          == _typeName).AssemblyDisplayName;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+	<SubscriberAccessLevel>
+		<Read>Allow</Read>
+	</SubscriberAccessLevel>
+	<AllowRowVersionChangeTracking>Yes</AllowRowVersionChangeTracking>
+	<SaveDataPerCompany>No</SaveDataPerCompany>
+	<DeleteActions />
+	<FieldGroups>
+		<AxTableFieldGroup>
+			<Name>AutoReport</Name>
+			<Fields />
+		</AxTableFieldGroup>
+		<AxTableFieldGroup>
+			<Name>AutoLookup</Name>
+			<Fields />
+		</AxTableFieldGroup>
+		<AxTableFieldGroup>
+			<Name>AutoIdentification</Name>
+			<AutoPopulate>Yes</AutoPopulate>
+			<Fields />
+		</AxTableFieldGroup>
+		<AxTableFieldGroup>
+			<Name>AutoSummary</Name>
+			<Fields />
+		</AxTableFieldGroup>
+		<AxTableFieldGroup>
+			<Name>AutoBrowse</Name>
+			<Fields />
+		</AxTableFieldGroup>
+	</FieldGroups>
+	<Fields>
+		<AxTableField xmlns=""
+			i:type="AxTableFieldString">
+			<Name>AssemblyNamespace</Name>
+			<AllowEdit>No</AllowEdit>
+			<AllowEditOnCreate>No</AllowEditOnCreate>
+			<ExtendedDataType>MXTAssemblyNamespace</ExtendedDataType>
+			<IgnoreEDTRelation>Yes</IgnoreEDTRelation>
+		</AxTableField>
+		<AxTableField xmlns=""
+			i:type="AxTableFieldString">
+			<Name>TypeName</Name>
+			<AllowEdit>No</AllowEdit>
+			<AllowEditOnCreate>No</AllowEditOnCreate>
+			<ExtendedDataType>MXTAssemblyTypeName</ExtendedDataType>
+			<IgnoreEDTRelation>Yes</IgnoreEDTRelation>
+		</AxTableField>
+		<AxTableField xmlns=""
+			i:type="AxTableFieldString">
+			<Name>AssemblyDisplayName</Name>
+			<AllowEdit>No</AllowEdit>
+			<AllowEditOnCreate>No</AllowEditOnCreate>
+			<ExtendedDataType>MXTAssemblyDisplayName</ExtendedDataType>
+			<IgnoreEDTRelation>Yes</IgnoreEDTRelation>
+		</AxTableField>
+		<AxTableField xmlns=""
+			i:type="AxTableFieldString">
+			<Name>ReferenceName</Name>
+			<ExtendedDataType>SysReferenceName</ExtendedDataType>
+			<IgnoreEDTRelation>Yes</IgnoreEDTRelation>
+		</AxTableField>
+		<AxTableField xmlns=""
+			i:type="AxTableFieldString">
+			<Name>RootNamespace</Name>
+			<AllowEdit>No</AllowEdit>
+			<AllowEditOnCreate>No</AllowEditOnCreate>
+			<ExtendedDataType>MXTAssemblyNamespace</ExtendedDataType>
+			<IgnoreEDTRelation>Yes</IgnoreEDTRelation>
+		</AxTableField>
+	</Fields>
+	<FullTextIndexes />
+	<Indexes>
+		<AxTableIndex>
+			<Name>NamespaceIdx</Name>
+			<AllowDuplicates>Yes</AllowDuplicates>
+			<Fields>
+				<AxTableIndexField>
+					<DataField>AssemblyNamespace</DataField>
+				</AxTableIndexField>
+			</Fields>
+		</AxTableIndex>
+		<AxTableIndex>
+			<Name>ReferenceIdx</Name>
+			<AllowDuplicates>Yes</AllowDuplicates>
+			<Fields>
+				<AxTableIndexField>
+					<DataField>ReferenceName</DataField>
+				</AxTableIndexField>
+			</Fields>
+		</AxTableIndex>
+		<AxTableIndex>
+			<Name>TypeIdx</Name>
+			<AllowDuplicates>Yes</AllowDuplicates>
+			<Fields>
+				<AxTableIndexField>
+					<DataField>AssemblyNamespace</DataField>
+				</AxTableIndexField>
+				<AxTableIndexField>
+					<DataField>TypeName</DataField>
+				</AxTableIndexField>
+			</Fields>
+		</AxTableIndex>
+	</Indexes>
+	<Mappings />
+	<Relations />
+	<StateMachines />
+</AxTable>

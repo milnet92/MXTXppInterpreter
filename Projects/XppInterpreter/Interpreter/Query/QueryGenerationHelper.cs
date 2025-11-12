@@ -37,7 +37,7 @@ namespace XppInterpreter.Interpreter.Query
         public object ComputeFunctionCall(Parser.FunctionCall functionCall)
         {
             // Compile
-            var generator = new Bytecode.ByteCodeGenerator(declaredFunctions: _context.ByteCode.DeclaredFunctions);
+            var generator = new Bytecode.ByteCodeGenerator();
             generator.VisitFunctionCall(functionCall);
             ByteCode bytecode = generator.GetProgram();
 

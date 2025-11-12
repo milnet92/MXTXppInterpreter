@@ -9,7 +9,7 @@ namespace XppInterpreter.Interpreter.Bytecode
         public string OperationCode => "CALL";
         public string Name => _ref.Declaration.Name;
         public int NArgs { get; set; }
-        public bool Alloc => _ref.Declaration.Type.TokenType != TType.Void;
+        public bool Alloc => _ref.Declaration.Type.TypeResult.Token.TokenType != TType.Void;
         public bool ProcessParameters => true;
         public InterpreterResult LastResult { get; private set; }
 
@@ -64,7 +64,7 @@ namespace XppInterpreter.Interpreter.Bytecode
 
                     if (arguments[numParam] is null && context.Proxy.Reflection.IsCommonType(declarationType))
                     {
-                        object defaultValue = context.Proxy.Casting.GetDefaultValueForType(funcParameter.DeclarationType.Lexeme);
+                        object defaultValue = context.Proxy.Casting.GetDefaultValueForType(funcParameter.DeclarationType.TypeName, funcParameter.DeclarationType.Namespace);
                         newContext.ScopeHandler.CurrentScope.SetVar(funcParameter.Name, defaultValue, context.Proxy.Casting, true, declarationType);
                     }
                     else

@@ -28,6 +28,20 @@ The variable inspector will allow you to take a look to the variables that are c
 You can save X++ scripts into the built-in repository to later execute them.
 ![repo](Assets/script_repo.png)
 
+### .NET library references
+The interpreter supports referencing and using .NET libraries that are available in Finance & Operations. You can use .NET types, create instances, call methods, and access properties directly in your X++ scripts.
+
+To use .NET types:
+1. Use the full namespace.type form (e.g., `System.Collections.Generic.List`)
+2. Create instances using `new` keyword
+3. Call methods and access properties as usual
+
+Example:
+```xpp
+System.Collections.Generic.List list = new System.Collections.Generic.List();
+list.Add("item1");
+```
+
 # Use cases
 * Execute, modify and save X++ scripts
 * Experiment with unknown or new functionality
@@ -40,7 +54,10 @@ For development environments no additional security is needed, but if you run th
 ## Limitations
 * **Macros** usage and declarations are not supported
 * **Class declarations** are not supported
-* **.NET namespaces** cannot be referenced
+* **.NET library references** are supported with the following limitations:
+  * Generic types cannot be used in declarations
+  * *using* keyword is not supported so types from .NET references must be used with full type name (i.e. **namespace.type** form)
+  * Methods with multiple declarations can be used, but the editor will show always the first declaration
 
 # Build Action
 The GitHub build action is based on [FSC-PS for GitHub](https://github.com/fscpscollaborative/fscps).

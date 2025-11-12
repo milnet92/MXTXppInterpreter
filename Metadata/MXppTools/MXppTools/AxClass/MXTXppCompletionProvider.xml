@@ -8,7 +8,7 @@ using Reflection = System.Reflection;
 
 public final class MXTXppCompletionProvider implements ICompletionProvider
 {
-    private static List classNames, tableNames, edtNames, enumNames, globalFunctions;
+    public static List classNames, tableNames, edtNames, enumNames, globalFunctions;
 
 }
 ]]></Declaration>
@@ -68,6 +68,57 @@ public final class MXTXppCompletionProvider implements ICompletionProvider
 ]]></Source>
 			</Method>
 			<Method>
+				<Name>GetNamespaceCompletions</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Gets the namespaces and types from the given namespace
+    /// </summary>
+    /// <param name = "_namespace">Namespace</param>
+    /// <returns></returns>
+    CompletionCollection GetNamespaceCompletions(str _namespace)
+    {
+        MXTXppMetadataAssemblyCache cache;
+        CompletionCollection        completions = new CompletionCollection();
+
+        // Obtain all types form the current namespace
+        while select TypeName from cache
+            where cache.AssemblyNamespace == _namespace
+        {
+            completions.Add(new Completion(cache.TypeName, cache.TypeName, CompletionEntryType::Class));
+        }
+
+        
+        // Obtain all namespaces
+        str searchNamespace = _namespace + '.*';
+        Set namespaces = new Set(Types::String);
+
+        while select AssemblyNamespace from cache
+            group by AssemblyNamespace
+            where cache.AssemblyNamespace like searchNamespace
+        {
+            str s = strReplace(cache.AssemblyNamespace, _namespace + '.', '');
+            int dot = strFind(s, '.', 0, strLen(s));
+            str part = s;
+
+            if (dot)
+            {
+                part = subStr(s, 0, dot - 1);
+            }
+
+            if (!namespaces.in(part))
+            {
+                namespaces.add(part);
+                
+                completions.Add(new Completion(part, part, CompletionEntryType::Namespace));
+            }
+        }
+
+        return completions;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>GetTableFieldsCompletions</Name>
 				<Source><![CDATA[
     /// <summary>
@@ -112,9 +163,33 @@ public final class MXTXppCompletionProvider implements ICompletionProvider
     /// <param name = "_className">Class name</param>
     /// <param name = "_isStatic">If the methods are static</param>
     /// <returns>Collection of class methods</returns>
-    CompletionCollection GetClassMethodCompletions(str _className, boolean _isStatic)
+    CompletionCollection GetClassMethodCompletions(str _namespace, str _className, boolean _isStatic)
     {
         CompletionCollection completions = new CompletionCollection();
+
+        if (_namespace)
+        {
+            System.Type type = MXTXppReflectionProxy::GetAssemblyType(_namespace, _className);
+
+            if (type)
+            {
+                System.Reflection.BindingFlags flags = System.Reflection.BindingFlags::Public;
+                flags = flags | (_isStatic ? Reflection.BindingFlags::Static : Reflection.BindingFlags::Instance);
+                
+                var methods = type.GetMethods(flags);
+                for (int i = 0; i < methods.Length; i++)
+                {
+                    Reflection.MethodInfo methodInfo = methods.Get(i);
+
+                    Completion completion = new Completion(methodInfo.Name, methodInfo.Name, _isStatic ? CompletionEntryType::StaticMethod : CompletionEntryType::Method);
+                    completion.DocHtml = '<span>' + methodInfo.ReturnType.ToString() + " " + methodInfo.Name + '</span>';
+
+                    completions.Add(completion);
+                }
+
+                return completions;
+            }
+        }
 
         SysDictClass dictClass = SysDictClass::newName(_className);
 
@@ -136,11 +211,21 @@ public final class MXTXppCompletionProvider implements ICompletionProvider
     /// <param name = "_className">Class name</param>
     /// <param name = "_isStatic">If the methods are static</param>
     /// <returns>Collection of fields / properties</returns>
-    CompletionCollection GetClassFieldCompletions(str _className, boolean _isStatic)
+    CompletionCollection GetClassFieldCompletions(str _namespace, str _className, boolean _isStatic)
     {
         CompletionCollection completions = new CompletionCollection();
 
-        System.Type type =  Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::GetTypeFromClassName(_className);
+        System.Type type = null;
+
+        if (_namespace)
+        {
+            type = MXTXppReflectionProxy::GetAssemblyType(_namespace, _className);
+        }
+        
+        if (type == null) 
+        {
+            type =  Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::GetTypeFromClassName(_className);
+        }
 
         if (type == null) return completions;
 
@@ -149,9 +234,6 @@ public final class MXTXppCompletionProvider implements ICompletionProvider
 
         flags = flags | (_isStatic ? Reflection.BindingFlags::Static : Reflection.BindingFlags::Instance);
         
-        var tmpFields = type.GetFields();
-        var tmpProps = type.GetProperties();
-
         var fields = type.GetFields(flags);
         for (int i = 0; i < fields.Length; i++)
         {
@@ -362,6 +444,31 @@ public final class MXTXppCompletionProvider implements ICompletionProvider
         MXTXppCompletionProvider::fillClassMethodList(globalFunctions, classStr(MXTXppPredefinedFunctions), true, false);
         
         return globalFunctions;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getNamespaces</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Gets the list of root namespaces. This functions does not uses
+    /// cache as namespaces can be modified
+    /// </summary>
+    /// <returns>List of root namespaces</returns>
+    public static List getNamespaces()
+    {
+        List namespaces = new List(Types::String);
+
+        MXTXppMetadataAssemblyCache cache;
+
+        while select RootNamespace from cache
+        group by cache.RootNamespace
+        {
+            namespaces.addEnd(cache.RootNamespace);
+        }
+
+        return namespaces;
     }
 
 ]]></Source>

@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using XppInterpreter.Parser;
 
 namespace XppInterpreter.Interpreter
@@ -14,7 +18,5 @@ namespace XppInterpreter.Interpreter
         void VisitVariable(Variable variable);
         void VisitIs(Is @is);
         void VisitAs(As @as);
-        void VisitSelectExpression(SelectExpression selectExpression);
-        void VisitTableField(TableField tableField);
     }
 }

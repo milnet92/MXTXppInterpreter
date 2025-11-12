@@ -8,9 +8,54 @@ using CArray = Microsoft.Dynamics.Ax.Xpp.Array;
 
 public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.Proxy.IXppReflectionProxy
 {
+    private const str TYPE_VOID = 'System.Void';
+
 }
 ]]></Declaration>
 		<Methods>
+			<Method>
+				<Name>GetAssemblyType</Name>
+				<Source><![CDATA[
+    public static System.Type GetAssemblyType(System.String _namespace, System.String _typeName)
+    {
+        str assemblyName = MXTXppMetadataAssemblyCache::getAssemblyName(_namespace, _typeName);
+        str typeName = strFmt("%1.%2, %3", _namespace, _typeName, assemblyName);
+
+        return System.Type::GetType(strFmt(typeName));
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetTypeFromNamespace</Name>
+				<Source><![CDATA[
+    public System.Type GetTypeFromNamespace(System.String _namespace, System.String _typeName)
+    {
+        return MXTXppReflectionProxy::GetAssemblyType(_namespace, _typeName);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>IsAssemblyNamespace</Name>
+				<Source><![CDATA[
+    public System.Boolean IsAssemblyNamespace(System.String _namespace, System.Boolean _partialSearch)
+    {
+        return MXTXppMetadataAssemblyCache::namespaceExists(_namespace, _partialSearch);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>AssemblyHasType</Name>
+				<Source><![CDATA[
+    public System.Boolean AssemblyHasType(System.String _namespace, System.String _typeName)
+    {
+        return MXTXppMetadataAssemblyCache::typeExists(_namespace, _typeName);
+    }
+
+]]></Source>
+			</Method>
 			<Method>
 				<Name>IsEnum</Name>
 				<Source><![CDATA[
@@ -46,9 +91,25 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 			<Method>
 				<Name>CallInstanceFunction</Name>
 				<Source><![CDATA[
-    public System.Object CallInstanceFunction(System.Object _instance, System.String _functionName, System.Object[] _parameters)
+    public System.Object CallInstanceFunction(System.Object _instance, System.String _methodName, System.Object[] _parameters)
     {
-        return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeInstanceCall(_instance, _functionName, _parameters);
+        System.Object obj = _instance as Microsoft.Dynamics.Ax.Xpp.XppObjectBase;
+
+        if (obj || this.IsCommon(_instance))
+        {
+            return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeInstanceCall(_instance, _methodName, _parameters);
+        }
+        else
+        {
+            System.Reflection.MethodInfo methodInfo = XppInterpreter.Core.ReflectionHelper::FindMethodCore(_instance.GetType(), _methodName, _parameters, false);
+
+            if (methodInfo)
+            {
+                return methodInfo.Invoke(_instance, _parameters);
+            }
+            
+            throw new System.Exception(strFmt("Method '%1' was not found in type '%1'", _methodName, _instance.GetType().Name));
+        }
     }
 
 ]]></Source>
@@ -56,9 +117,9 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 			<Method>
 				<Name>CallStaticFunction</Name>
 				<Source><![CDATA[
-    public System.Object CallStaticFunction(System.String _className, System.String _methodName, System.Object[] _parameters)
+    public System.Object CallStaticFunction(System.String _namespace, System.String _className, System.String _methodName, System.Object[] _parameters)
     {
-        return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeStaticCall(this.getClassType(_className), _methodName, _parameters);
+        return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeStaticCall(this.getClassType(_namespace, _className), _methodName, _parameters);
     }
 
 ]]></Source>
@@ -66,9 +127,14 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 			<Method>
 				<Name>CreateInstance</Name>
 				<Source><![CDATA[
-    public System.Object CreateInstance(System.String _className, System.Object[] parameters)
+    public System.Object CreateInstance(System.String _namespace, System.String _className, System.Object[] parameters)
     {
-        return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeNewObjCall(this.getClassType(_className), parameters);
+        if (_namespace)
+        {
+            return System.Activator::CreateInstance(this.getClassType(_namespace, _className), parameters);
+        }
+
+        return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeNewObjCall(this.getClassType(_namespace, _className), parameters);
     }
 
 ]]></Source>
@@ -111,13 +177,23 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 			<Method>
 				<Name>GetStaticProperty</Name>
 				<Source><![CDATA[
-    public System.Object GetStaticProperty(System.String _className, System.String _propertyName)
+    public System.Object GetStaticProperty(System.String _namespace, System.String _className, System.String _propertyName)
     {
-        System.Reflection.PropertyInfo propertyInfo = this.getClassType(_className).GetProperty(_propertyName);
+        System.Type type = this.getClassType(_namespace, _className);
+        System.Reflection.PropertyInfo propertyInfo = type.GetProperty(_propertyName);
         
         if (propertyInfo)
         {
             return propertyInfo.GetValue(null);
+        }
+        else
+        {
+            System.Reflection.FieldInfo fieldInfo = type.GetField(_propertyName);
+
+            if (fieldInfo)
+            {
+                return fieldInfo.GetValue(null);
+            }
         }
 
         throw error(strFmt("@MXT:InvalidPropertyError", _propertyName));
@@ -201,7 +277,7 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
             return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeStaticCall(MXTXppTypes::GlobalType, invariantMethodName, _parameters);
         }
 
-        throw new System.Exception(strFmt("Function '%1' was not found.", _methodName));
+        throw new System.Exception(strFmt("Method '%1' was not found.", _methodName));
     }
 
 ]]></Source>
@@ -219,8 +295,16 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 			<Method>
 				<Name>getClassType</Name>
 				<Source><![CDATA[
-    private System.Type getClassType(str _className)
+    private System.Type getClassType(str _namespace, str _className)
     {
+        if (_namespace)
+        {
+            // Get assembly name
+            MXTAssemblyDisplayName assemblyName = MXTXppMetadataAssemblyCache::getAssemblyName(_namespace, _className);
+
+            return System.Type::GetType(strFmt("%1.%2, %3", _namespace, _className, assemblyName));
+        }
+
         return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::GetTypeFromClassName(_className);
     }
 
@@ -273,11 +357,51 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 			<Method>
 				<Name>GetMethodSyntax</Name>
 				<Source><![CDATA[
-    public System.String GetMethodSyntax(System.String _typeName, System.String _methodName)
+    public System.String GetMethodSyntax(System.String _typeName, System.String _methodName, System.String _namespace)
     {
-        SysDictMethod dictMethod = this.getDictMethod(_typeName, _methodName);
+        if (!_namespace)
+        {
+            SysDictMethod dictMethod = this.getDictMethod(_typeName, _methodName);
 
-        return dictMethod ? dictMethod.metadataSyntax() : '';
+            return dictMethod ? dictMethod.metadataSyntax() : '';
+        }
+        else
+        {
+            System.Type type = MXTXppReflectionProxy::GetAssemblyType(_namespace, _typeName);
+            System.Reflection.MethodInfo methodInfo = Core.ReflectionHelper::GetMethod(type, _methodName);
+
+            str ret = "";
+
+            ret += methodInfo.ReturnType.FullName == TYPE_VOID ? 
+                'void' : 
+                strFmt("%1.%2", methodInfo.ReturnType.Namespace, methodInfo.ReturnType.Name);
+
+            ret += ' ';
+
+            ret += methodInfo.Name;
+            ret +='(';
+
+            System.Reflection.ParameterInfo[] parameters = methodInfo.GetParameters();
+            System.Collections.IEnumerator enumerator = parameters.GetEnumerator();
+            int nParm = 0;
+
+            while (enumerator.MoveNext())
+            {
+                nParm ++;
+
+                System.Reflection.ParameterInfo parameter = enumerator.Current;
+
+                ret += parameter.IsOptional ? '[' : '';
+                ret += parameter.IsOut ? 'out' : '';
+                ret += strFmt("%1.%2", parameter.ParameterType.Namespace, parameter.ParameterType.Name) + ' ';
+                ret += parameter.Name;
+                ret += parameter.IsOptional ? ']' : '';
+                ret += nParm < parameters.Length ? ', ' : '';
+            }
+
+            ret += ')';
+            return ret;
+        }
     }
 
 ]]></Source>

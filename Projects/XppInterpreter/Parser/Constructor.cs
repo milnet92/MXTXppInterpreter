@@ -10,9 +10,10 @@ namespace XppInterpreter.Parser
     {
         public string ClassName => (Token as Word).Lexeme;
 
-        public Constructor(Word identifier, List<Expression> parameters, Expression caller, bool staticCall, SourceCodeBinding sourceCodeBinding, SourceCodeBinding debuggeableBinding) :
+        public Constructor(Word identifier, string nameSpace, List<Expression> parameters, Expression caller, bool staticCall, SourceCodeBinding sourceCodeBinding, SourceCodeBinding debuggeableBinding) :
             base(identifier, parameters, caller, staticCall, false, sourceCodeBinding, debuggeableBinding)
         {
+            Namespace = nameSpace;
         }
 
         [DebuggerHidden]

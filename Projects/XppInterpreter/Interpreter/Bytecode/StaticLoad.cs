@@ -3,10 +3,11 @@
     class StaticLoad : Load
     {
         public string CallerName { get; }
-
-        public StaticLoad(string name, string callerName, bool isArray) : base(name, isArray)
+        public string Namespace { get; }
+        public StaticLoad(string name, string callerName, string nameSpace, bool isArray) : base(name, isArray)
         {
             CallerName = callerName;
+            Namespace = nameSpace;
         }
 
         public override object MakeLoad(RuntimeContext context)
@@ -17,7 +18,7 @@
             }
             else
             {
-                return context.Proxy.Reflection.GetStaticProperty(CallerName, Name);
+                return context.Proxy.Reflection.GetStaticProperty(Namespace, CallerName, Name);
             }
         }
 

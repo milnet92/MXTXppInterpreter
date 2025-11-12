@@ -10,9 +10,10 @@ namespace XppInterpreter.Parser.Metadata
     {
         CompletionCollection GetTableMethodCompletions(string tableName, bool isStatic);
         CompletionCollection GetTableFieldsCompletions(string tableName);
-        CompletionCollection GetClassMethodCompletions(string className, bool isStatic);
-        CompletionCollection GetClassFieldCompletions(string className, bool isStatic);
+        CompletionCollection GetClassMethodCompletions(string nameSpace, string className, bool isStatic);
+        CompletionCollection GetClassFieldCompletions(string nameSpace, string className, bool isStatic);
         CompletionCollection GetEnumCompletions(string enumName);
         CompletionCollection GetIndexCompletions(string tableName);
+        CompletionCollection GetNamespaceCompletions(string nameSpace);
     }
 }

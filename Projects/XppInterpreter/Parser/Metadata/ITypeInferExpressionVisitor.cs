@@ -14,7 +14,5 @@ namespace XppInterpreter.Parser.Metadata
         Type VisitFunctionCall(FunctionCall functionCall);
         Type VisitIs(Is @is);
         Type VisitAs(As @as);
-        Type VisitSelectExpression(SelectExpression selectExpression);
-        Type VisitTableField(TableField tableField);
     }
 }

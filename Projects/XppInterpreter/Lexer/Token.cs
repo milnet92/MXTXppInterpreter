@@ -147,8 +147,7 @@ namespace XppInterpreter.Lexer
         Print,
         Is,
         As,
-        Unchecked,
-        Flush,
+        Namespace,
 
         #region Type identification
         TypeAnytype,
@@ -222,7 +221,6 @@ namespace XppInterpreter.Lexer
         #region Functions
         Void,
         Return,
-        EventHandler,
         #endregion
 
         EOF

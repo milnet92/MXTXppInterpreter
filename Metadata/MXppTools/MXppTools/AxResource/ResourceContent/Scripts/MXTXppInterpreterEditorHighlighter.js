@@ -25,7 +25,6 @@ var keywords = [
     "select",
     "from",
     "next",
-    "flush",
     "where",
     "exists",
     "notexists",
@@ -62,7 +61,6 @@ var keywords = [
     "reverse",
     "validtimestate",
     "changecompany",
-    "unchecked",
     "crosscompany",
     "generateonly",
     "index",
@@ -80,7 +78,6 @@ var keywords = [
     "like",
     "void",
     "return",
-    "eventhandler",
     "is",
     "as"
 ];

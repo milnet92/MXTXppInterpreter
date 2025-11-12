@@ -3,7 +3,7 @@
     class StaticFunctionCall : Call
     {
         public string ClassName { get; }
-        public StaticFunctionCall(string name, int nArgs, bool alloc, string className = null) : base(name, nArgs, alloc)
+        public StaticFunctionCall(string name, int nArgs, bool alloc, string nameSpace, string className = null) : base(name, nArgs, alloc, nameSpace)
         {
             ClassName = className;
         }
@@ -16,7 +16,7 @@
             }
             else
             {
-                return context.Proxy.Reflection.CallStaticFunction(ClassName, Name, arguments);
+                return context.Proxy.Reflection.CallStaticFunction(Namespace, ClassName, Name, arguments);
             }
         }
     }

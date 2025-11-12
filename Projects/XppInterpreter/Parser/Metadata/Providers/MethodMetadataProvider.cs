@@ -11,17 +11,19 @@ namespace XppInterpreter.Parser.Metadata.Providers
     {
         public string MethodName { get; }
         public ParseContext ParseContext { get; }
+        public string Namespace { get; }
         public Type CallerType { get; }
         public bool IsStatic { get; }
         public bool IsConstructor { get; }
 
-        public MethodMetadataProvider(string methodName, ParseContext context, bool isStatic, bool isConstructor, Type callerType = null)
+        public MethodMetadataProvider(string methodName, string nameSpace, ParseContext context, bool isStatic, bool isConstructor, Type callerType = null)
         {
             MethodName = methodName;
             ParseContext = context;
             CallerType = callerType;
             IsStatic = isStatic;
             IsConstructor = isConstructor;
+            Namespace = nameSpace;
         }
 
         public TokenMetadata GetTokenMetadata(XppProxy proxy)
@@ -41,7 +43,7 @@ namespace XppInterpreter.Parser.Metadata.Providers
             FunctionDeclaration declaration = ParseContext.CurrentScope.FunctionDeclarations.FirstOrDefault(f => string.Equals(f.Name, MethodName, StringComparison.InvariantCultureIgnoreCase));
             StringBuilder stringBuilder = new StringBuilder();
 
-            stringBuilder.Append(((Lexer.Word)declaration.Type).Lexeme);
+            stringBuilder.Append(declaration.Type.ToString());
             stringBuilder.Append(' ');
             stringBuilder.Append(declaration.Name);
             stringBuilder.Append('(');
@@ -66,7 +68,7 @@ namespace XppInterpreter.Parser.Metadata.Providers
             string methodName = IsConstructor ? "new" : MethodName;
             string className = IsConstructor ? MethodName : CallerType?.Name ?? "";
 
-            var methodSyntax = proxy.Reflection.GetMethodSyntax(className, methodName);
+            var methodSyntax = proxy.Reflection.GetMethodSyntax(className, methodName, Namespace);
 
             return new MethodTokenMetadata(methodName, className, methodSyntax, IsStatic);
         }

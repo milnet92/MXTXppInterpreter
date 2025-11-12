@@ -72,13 +72,9 @@
     <Compile Include="Interpreter\Bytecode\ContainerStore.cs" />
     <Compile Include="Interpreter\Bytecode\DeclaredFunctionCall.cs" />
     <Compile Include="Interpreter\Bytecode\Dispose.cs" />
-    <Compile Include="Interpreter\Bytecode\EventHandlerSubscriptionHandle.cs" />
-    <Compile Include="Interpreter\Bytecode\EventSubscriptionHandle.cs" />
-    <Compile Include="Interpreter\Bytecode\Events\DelegateEventExecutor.cs" />
-    <Compile Include="Interpreter\Bytecode\Events\DelegateHelper.cs" />
     <Compile Include="Interpreter\Bytecode\ExceptionCatchReference.cs" />
     <Compile Include="Interpreter\Bytecode\ChangeCompany.cs" />
-    <Compile Include="Interpreter\Bytecode\DisposeHandle.cs" />
+    <Compile Include="Interpreter\Bytecode\ChangeCompanyDispose.cs" />
     <Compile Include="Interpreter\Bytecode\Container.cs" />
     <Compile Include="Interpreter\Bytecode\Debug.cs" />
     <Compile Include="Interpreter\Bytecode\DefaultValue.cs" />
@@ -104,7 +100,6 @@
     <Compile Include="Interpreter\Bytecode\LoopControl.cs" />
     <Compile Include="Interpreter\Bytecode\NewObject.cs" />
     <Compile Include="Interpreter\Bytecode\BeginScope.cs" />
-    <Compile Include="Interpreter\Bytecode\Flush.cs" />
     <Compile Include="Interpreter\Bytecode\Next.cs" />
     <Compile Include="Interpreter\Bytecode\Push.cs" />
     <Compile Include="Interpreter\Bytecode\RefFunction.cs" />
@@ -120,7 +115,6 @@
     <Compile Include="Interpreter\Bytecode\TtsBegin.cs" />
     <Compile Include="Interpreter\Bytecode\TtsCommit.cs" />
     <Compile Include="Interpreter\Bytecode\Negation.cs" />
-    <Compile Include="Interpreter\Bytecode\Unchecked.cs" />
     <Compile Include="Interpreter\Bytecode\UpdateQuery.cs" />
     <Compile Include="Interpreter\Bytecode\VariableLoad.cs" />
     <Compile Include="Interpreter\Debug\AST2SourceCodeBindableCollection.cs" />
@@ -167,11 +161,6 @@
     <Compile Include="Parser\ArrayAccess.cs" />
     <Compile Include="Parser\CatchContext.cs" />
     <Compile Include="Parser\ContainerAssignment.cs" />
-    <Compile Include="Parser\EventHandler.cs" />
-    <Compile Include="Parser\EventHandlerHelper.cs" />
-    <Compile Include="Parser\EventHandlerSubscription.cs" />
-    <Compile Include="Parser\TableField.cs" />
-    <Compile Include="Parser\Flush.cs" />
     <Compile Include="Parser\FunctionDeclarationReference.cs" />
     <Compile Include="Parser\Is.cs" />
     <Compile Include="Parser\As.cs" />
@@ -217,15 +206,14 @@
     <Compile Include="Parser\ParseContextScope.cs" />
     <Compile Include="Parser\ParseContextScopeVariable.cs" />
     <Compile Include="Parser\ParseContextStack.cs" />
+    <Compile Include="Parser\ParsedTypeDefinition.cs" />
     <Compile Include="Parser\ParseError.cs" />
     <Compile Include="Parser\ParseErrorCollection.cs" />
     <Compile Include="Parser\Print.cs" />
     <Compile Include="Parser\Return.cs" />
-    <Compile Include="Parser\SelectExpression.cs" />
     <Compile Include="Parser\Switch.cs" />
     <Compile Include="Parser\Try.cs" />
     <Compile Include="Parser\Retry.cs" />
-    <Compile Include="Parser\Unchecked.cs" />
     <Compile Include="Parser\UpdateRecordset.cs" />
     <Compile Include="Parser\Data\Join.cs" />
     <Compile Include="Parser\Data\OrderByField.cs" />
@@ -284,7 +272,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>copy /Y $(TargetDir)\$(TargetName).pdb C:\D365UnifiedExperienceEnvironments\AEA-UE-01\LocalPackageDirectory\MXppTools\bin\$(TargetName).pdb</PostBuildEvent>
   </PropertyGroup>
 </Project>

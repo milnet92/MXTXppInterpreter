@@ -16,8 +16,6 @@ internal final class MXTXppQueryExpressionGenerator
     private RuntimeContext context;
     private Set tablesInQuery;
     private XppInterpreter.Interpreter.Query.QueryGenerationHelper generationHelper;
-    private Common buffer;
-    private boolean isExpression;
 
 }
 ]]></Declaration>
@@ -30,13 +28,11 @@ internal final class MXTXppQueryExpressionGenerator
     /// </summary>
     /// <param name = "_context">Runtime context</param>
     /// <param name = "_tablesInQuery">Tables in query</param>
-    void new(RuntimeContext _context, Set _tablesInQuery, boolean _isExpression = false, Common _buffer = null)
+    void new(RuntimeContext _context, Set _tablesInQuery)
     {
         context = _context;
         tablesInQuery = _tablesInQuery;
         generationHelper = new XppInterpreter.Interpreter.Query.QueryGenerationHelper(_context);
-        isExpression = _isExpression;
-        buffer = _buffer;
     }
 
 ]]></Source>
@@ -62,22 +58,8 @@ internal final class MXTXppQueryExpressionGenerator
         {
             return this.visitVariable(_expression);
         }
-        else if (_expression is Parser.TableField)
-        {
-            return this.visitTableField(_expression);
-        }
 
         throw new System.NotImplementedException();
-    }
-
-]]></Source>
-			</Method>
-			<Method>
-				<Name>visitTableField</Name>
-				<Source><![CDATA[
-    private SysDaQueryExpression visitTableField(Parser.TableField _tableField)
-    {
-        return new SysDaFieldExpression(buffer, _tableField.FieldName);
     }
 
 ]]></Source>

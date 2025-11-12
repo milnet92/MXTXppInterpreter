@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.ServiceModel.Security;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using XppInterpreter.Interpreter;
@@ -10,7 +10,7 @@ using XppInterpreter.Lexer;
 
 namespace XppInterpreter.Parser.Metadata
 {
-    internal class XppTypeInferer : ITypeInferExpressionVisitor
+    class XppTypeInferer : ITypeInferExpressionVisitor
     {
         private System.Type _globalType, _predefinedType, _customPredefinedType;
         private readonly XppProxy _proxy;
@@ -27,11 +27,19 @@ namespace XppInterpreter.Parser.Metadata
             _customPredefinedType = _proxy.Intrinsic.GetCustomPredefinedFunctionProvider();
         }
 
-        public System.Type InferType(string typeName)
+        public System.Type InferType(ParsedTypeDefinition typeDefinition)
         {
-            return _proxy.Casting.GetSystemTypeFromTypeName(typeName);
-        }
+            string typeName = ((Word)typeDefinition.TypeResult.Token).Lexeme;
 
+            if (string.IsNullOrEmpty(typeDefinition.Namespace))
+            {
+                return _proxy.Casting.GetSystemTypeFromTypeName(typeName);
+            }
+            else
+            {
+                return _proxy.Reflection.GetTypeFromNamespace(typeDefinition.Namespace, typeName);
+            }
+        }
         public System.Type InferType(Expression expression, ParseContext context)
         {
             bool calledStatic = false;
@@ -102,7 +110,14 @@ namespace XppInterpreter.Parser.Metadata
 
         public System.Type VisitConstructor(Constructor constructor)
         {
-            return _proxy.Casting.GetSystemTypeFromTypeName(constructor.ClassName);
+            if (!string.IsNullOrEmpty(constructor.Namespace))
+            {
+                return _proxy.Reflection.GetTypeFromNamespace(constructor.Namespace, constructor.ClassName);
+            }
+            else
+            {
+                return _proxy.Casting.GetSystemTypeFromTypeName(constructor.ClassName);
+            }
         }
 
         public System.Type VisitContainerInitialisation(ContainerInitialisation containerInitialisation)
@@ -167,14 +182,19 @@ namespace XppInterpreter.Parser.Metadata
             }
         }
 
-        public bool IsKnownType(string typeName)
+        public bool IsKnownType(ParsedTypeDefinition typeDefinition)
         {
-            return _proxy.Casting.GetSystemTypeFromTypeName(typeName) != null;
+            return InferType(typeDefinition) != null;
         }
 
         public System.Type VisitVariable(Variable variable)
         {
-            if (variable.Caller != null)
+            if (!string.IsNullOrEmpty(variable.Namespace))
+            {
+                return _proxy.Reflection.GetTypeFromNamespace(variable.Namespace, variable.Name);
+            }
+
+            else if (variable.Caller != null)
             {
                 bool staticSave = _calledStatically;
                 _calledStatically = variable.StaticCall;
@@ -200,6 +220,7 @@ namespace XppInterpreter.Parser.Metadata
                 {
                     return GetTypeFromWord(variable.Token as Word);
                 }
+
                 // Infer from variables
                 else
                 {
@@ -207,13 +228,13 @@ namespace XppInterpreter.Parser.Metadata
 
                     if (declaration != null)
                     {
-                        if (declaration.Type.TokenType == TType.Var)
+                        if (declaration.Type.TypeResult.Token.TokenType == TType.Var)
                         {
                             if (declaration.Initialization is null) return null;
                             return InferType(declaration.Initialization, false, _context);
                         }
 
-                        return GetTypeFromWord((Word)declaration.Type);
+                        return declaration.ClrType != null ? declaration.ClrType : InferType(declaration.Type);
 
                     }
                 }
@@ -234,7 +255,7 @@ namespace XppInterpreter.Parser.Metadata
 
             if (declarationReference != null)
             {
-                return _proxy.Casting.GetSystemTypeFromTypeName(declarationReference.ReturnType.Lexeme);
+                return InferType(declarationReference.Type);
             }
 
             return null;
@@ -242,37 +263,12 @@ namespace XppInterpreter.Parser.Metadata
 
         public System.Type VisitIs(Is @is)
         {
-            return _proxy.Casting.GetSystemTypeFromTypeName(@is.TypeName);
+            return InferType(@is.Type);
         }
 
         public System.Type VisitAs(As @as)
         {
-            return _proxy.Casting.GetSystemTypeFromTypeName(@as.TypeName);
-        }
-
-        public System.Type VisitSelectExpression(SelectExpression selectExpression)
-        {
-            var bufferType = _proxy.Casting.GetSystemTypeFromTypeName(selectExpression.Query.TableVariableName);
-
-            if (bufferType != null)
-            {
-                return _proxy.Reflection.GetFieldReturnType(bufferType, selectExpression.ReturnField);
-            }
-
-            return null;
-        }
-
-        public System.Type VisitTableField(TableField tableField)
-        {
-
-            var bufferType = _proxy.Casting.GetSystemTypeFromTypeName(tableField.TableName);
-
-            if (bufferType != null)
-            {
-                return _proxy.Reflection.GetFieldReturnType(bufferType, tableField.FieldName);
-            }
-
-            return null;
+            return InferType(@as.Type);
         }
     }
 }

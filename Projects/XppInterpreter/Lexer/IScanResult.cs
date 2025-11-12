@@ -6,8 +6,8 @@
     public interface IScanResult
     {
         Token Token { get; }
-        int Start { get; }
-        int End { get; }
-        int Line { get; }
+        int Start { get; set; }
+        int End { get; set; }
+        int Line { get; set; }
     }
 }

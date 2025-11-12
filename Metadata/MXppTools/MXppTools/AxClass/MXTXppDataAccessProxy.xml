@@ -68,23 +68,6 @@ internal final class MXTXppDataAccessProxy implements XppInterpreter.Interpreter
 ]]></Source>
 			</Method>
 			<Method>
-				<Name>CreateUncheckedHandler</Name>
-				<Source><![CDATA[
-    /// <summary>
-    /// Creates an instance of a unchecked as a IDisposable instance
-    /// </summary>
-    /// <param name = "uncheckValue">Uncheck flag(s)</param>
-    /// <param name = "className">Class name</param>
-    /// <param name = "methodName">Method name</param>
-    /// <returns></returns>
-    public System.IDisposable CreateUncheckedHandler(System.Int32 uncheckValue, System.String className, System.String methodName)
-    {
-        return Microsoft.Dynamics.Ax.Xpp.PredefinedFunctions::Unchecked(uncheckValue, className, methodName);
-    }
-
-]]></Source>
-			</Method>
-			<Method>
 				<Name>Next</Name>
 				<Source><![CDATA[
     /// <summary>
@@ -95,20 +78,6 @@ internal final class MXTXppDataAccessProxy implements XppInterpreter.Interpreter
     {
         Common common = _common;
         next common;
-    }
-
-]]></Source>
-			</Method>
-			<Method>
-				<Name>Flush</Name>
-				<Source><![CDATA[
-    /// <summary>
-    /// Executes the flush statement for the specified table name.
-    /// </summary>
-    /// <param name = "_tableName"></param>
-    public void Flush(System.String _tableName)
-    {
-        Microsoft.Dynamics.Ax.Xpp.PredefinedFunctions::Flush(tableName2Id(_tableName));
     }
 
 ]]></Source>

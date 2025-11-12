@@ -28,7 +28,7 @@ namespace XppInterpreter.Parser.Metadata.Providers
             }
             else
             {
-                return new LocalVariableMetadata(((Lexer.Word)declaration.Type).Lexeme, VariableName);
+                return new LocalVariableMetadata(declaration.Type.ToString(), VariableName);
             }
         }
     }

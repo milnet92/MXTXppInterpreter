@@ -52,8 +52,6 @@ namespace XppInterpreter.Lexer
         public static readonly Word Is = new Word("is", TType.Is);
         public static readonly Word As = new Word("as", TType.As);
         public static readonly Word Using = new Word("using", TType.Using);
-        public static readonly Word Unchecked = new Word("unchecked", TType.Unchecked);
-        public static readonly Word Flush = new Word("flush", TType.Flush);
         #endregion
 
         #region Data and query tokens
@@ -110,7 +108,6 @@ namespace XppInterpreter.Lexer
         #region Function tokens
         public static readonly Word Void = new Word("void", TType.Void);
         public static readonly Word Return = new Word("return", TType.Return);
-        public static readonly Word EventHandler = new Word("eventhandler", TType.EventHandler);
         #endregion
 
         public Word(string lexeme, TType tokenType) : base(tokenType)

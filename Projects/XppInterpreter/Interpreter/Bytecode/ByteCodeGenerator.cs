@@ -4,7 +4,6 @@ using System.Text;
 using XppInterpreter.Interpreter.Debug;
 using XppInterpreter.Lexer;
 using XppInterpreter.Parser;
-using XppInterpreter.Parser.Data;
 
 namespace XppInterpreter.Interpreter.Bytecode
 {
@@ -17,18 +16,12 @@ namespace XppInterpreter.Interpreter.Bytecode
         private bool _generateDebugInfo;
 
         public XppInterpreterOptions Options { get; }
-
-        public ByteCodeGenerator(XppInterpreterOptions options = null, List<RefFunction> declaredFunctions = null)
+        public ByteCodeGenerator(XppInterpreterOptions options = null)
         {
             _ss.Push(new ByteCodeGenerationScope());
 
             Options = options;
             _hasMaxIterations = Options != null && Options.MaxLoopIterations > 0;
-
-            if (declaredFunctions != null)
-            {
-                _declaredFunctions.AddRange(declaredFunctions);
-            }
         }
 
         public ByteCode Generate(Program program, bool generateDebugInfo, List<RefFunction> dependencyFunctions = null)
@@ -122,23 +115,11 @@ namespace XppInterpreter.Interpreter.Bytecode
             Emit(new Select(select.Query, _generationContext.IsWhileSelectBeingGenerated(select)));
         }
 
-        public void VisitSelectExpression(Parser.SelectExpression selectExpression)
-        {
-            EmitDebugSymbol(selectExpression);
-            Emit(new Select(selectExpression.Query, returnField: selectExpression.ReturnField));
-        }
-
         public void VisitNext(Parser.Next next)
         {
             EmitDebugSymbol(next);
             Emit(new VariableLoad(next.TableVariableName, false));
             Emit(new Next());
-        }
-
-        public void VisitFlush(Parser.Flush flush)
-        {
-            EmitDebugSymbol(flush);
-            Emit(new Flush(flush.TableName));
         }
 
         public void VisitWhileSelect(WhileSelect whileSelect)
@@ -165,20 +146,12 @@ namespace XppInterpreter.Interpreter.Bytecode
             this.RecalculateLoopControlOffsets(selectScope.Instructions.First());
         }
 
-        public void VisitUnchecked(Parser.Unchecked @unchecked)
-        {
-            @unchecked.Expression.Accept(this);
-            Emit(new Unchecked());
-            @unchecked.Block.Accept(this);
-            Emit(new DisposeHandle());
-        }
-
         public void VisitChangeCompany(Parser.ChangeCompany changeCompany)
         {
             changeCompany.Expression.Accept(this);
             Emit(new ChangeCompany());
             changeCompany.Block.Accept(this);
-            Emit(new DisposeHandle());
+            Emit(new ChangeCompanyDispose());
         }
 
         public void VisitContainerInitialisation(ContainerInitialisation containerInitialisation)
@@ -222,7 +195,7 @@ namespace XppInterpreter.Interpreter.Bytecode
                 constructor.Parameters[narg].Accept(this);
             }
 
-            Emit(new NewObject(constructor.ClassName, constructor.Parameters.Count, true));
+            Emit(new NewObject(constructor.ClassName, constructor.Parameters.Count, constructor.Namespace, true));
         }
 
         public void VisitAssignment(Assignment assignment)
@@ -247,7 +220,7 @@ namespace XppInterpreter.Interpreter.Bytecode
                 access.Index.Accept(this);
             }
 
-            Emit(new Store(assignment.Assignee.Name, fromCaller, false, isArray, null, null));
+            Emit(new Store(assignment.Assignee.Name, fromCaller, false, isArray, null, null, null));
         }
 
         public void VisitContainerAssignment(ContainerAssignment containerAssignment)
@@ -274,7 +247,7 @@ namespace XppInterpreter.Interpreter.Bytecode
                     access.Index.Accept(this);
                 }
 
-                Emit(new ContainerStore(assignee.Name, containerIndex, containerIndex == maxIndex, fromCaller, false, isArray, null, null));
+                Emit(new ContainerStore(assignee.Name, containerIndex, containerIndex == maxIndex, fromCaller, false, isArray));
 
                 containerIndex++;
             }
@@ -549,12 +522,13 @@ namespace XppInterpreter.Interpreter.Bytecode
             }
             else if (functionCall.Caller is null)
             {
-                Emit(new StaticFunctionCall(functionCall.Name, nArgs, allocate));
+                Emit(new StaticFunctionCall(functionCall.Name, nArgs, allocate, ""));
             }
             else if (functionCall.StaticCall)
             {
-                string callerName = ((Word)(functionCall.Caller as Variable).Token).Lexeme;
-                Emit(new StaticFunctionCall(functionCall.Name, nArgs, allocate, callerName));
+                Variable caller = functionCall.Caller as Variable;
+                string callerName = ((Word)caller.Token).Lexeme;
+                Emit(new StaticFunctionCall(functionCall.Name, nArgs, allocate, caller.Namespace, callerName));
             }
             else
             {
@@ -576,7 +550,7 @@ namespace XppInterpreter.Interpreter.Bytecode
             ternary.Right.Accept(this);
             var rightScope = ReleaseScope();
 
-            Emit(new JumpIfFalse(leftScope.Count + 1 + 1 /*Jump instruction */, false));
+            Emit(new JumpIfFalse(leftScope.Count + 1 + 1 /*Jump instruction */));
             EmitScope(leftScope);
             Emit(new Jump(rightScope.Count + 1));
             EmitScope(rightScope);
@@ -621,7 +595,14 @@ namespace XppInterpreter.Interpreter.Bytecode
             else
             {
                 string callerName = (variable.Caller.Token as Word).Lexeme;
-                Emit(new StaticLoad(variable.Name, callerName, isArray));
+                string nameSpace = "";
+
+                if (variable.Caller is Variable caller)
+                {
+                    nameSpace = caller.Namespace;
+                }
+
+                Emit(new StaticLoad(variable.Name, callerName,nameSpace, isArray));
             }
         }
 
@@ -637,14 +618,24 @@ namespace XppInterpreter.Interpreter.Bytecode
                 else if (variableDeclarations is VariableArrayDeclaration arrayDeclaration)
                 {
                     arrayDeclaration.Size?.Accept(this);
-                    Emit(new DefaultValueArray(variableDeclarations.DeclarationType.Lexeme, arrayDeclaration.Size != null));
+                    Emit(new DefaultValueArray(
+                        variableDeclarations.DeclarationType.TypeName, 
+                        variableDeclarations.DeclarationType.Namespace,
+                        arrayDeclaration.Size != null));
                 }
                 else
                 {
-                    Emit(new DefaultValue(variableDeclarations.DeclarationType.Lexeme));
+                    Emit(new DefaultValue(variableDeclarations.DeclarationType.TypeName, variableDeclarations.DeclarationType.Namespace));
                 }
 
-                Emit(new Store(declaration.Key.Lexeme, false, true, false, variableDeclarations.DeclarationType.Lexeme, variableDeclarations.DeclarationClrType));
+                Emit(new Store(
+                    declaration.Key.Lexeme, 
+                    false, 
+                    true, 
+                    false, 
+                    variableDeclarations.DeclarationType.TypeName,
+                    variableDeclarations.DeclarationType.Namespace,
+                    variableDeclarations.DeclarationClrType));
             }
         }
 
@@ -766,20 +757,20 @@ namespace XppInterpreter.Interpreter.Bytecode
             }
 
             Emit(new Push(sb.ToString()));
-            Emit(new StaticFunctionCall("strFmt", print.Parameters.Count + 1, true));
-            Emit(new StaticFunctionCall("info", 1, false));
+            Emit(new StaticFunctionCall("strFmt", print.Parameters.Count + 1, true, ""));
+            Emit(new StaticFunctionCall("info", 1, false, ""));
         }
 
         public void VisitIs(Parser.Is @is)
         {
             @is.Expression.Accept(this);
-            Emit(new Is(@is.TypeName));
+            Emit(new Is(@is.Type.TypeName, @is.Type.Namespace));
         }
 
         public void VisitAs(Parser.As @as)
         {
             @as.Expression.Accept(this);
-            Emit(new As(@as.TypeName));
+            Emit(new As(@as.Type.TypeName, @as.Type.Namespace));
         }
 
         public void VisitTry(Try @try)
@@ -877,19 +868,6 @@ namespace XppInterpreter.Interpreter.Bytecode
         {
             EmitDebugSymbol(retry);
             Emit(new Retry());
-        }
-
-        public void VisitTableField(TableField tableField)
-        {
-
-        }
-
-        public void VisitEventHandlerSubscription(EventHandlerSubscription subscription)
-        {
-            EmitDebugSymbol(subscription);
-            subscription.Delegate.Accept(this);
-            RefFunction refFunction = _declaredFunctions.First(f => f.Declaration.Name.ToLowerInvariant() == subscription.EventHandler.FunctionName.ToLowerInvariant());
-            Emit(new EventHandlerSubscriptionHandle(refFunction));
         }
     }
 }
