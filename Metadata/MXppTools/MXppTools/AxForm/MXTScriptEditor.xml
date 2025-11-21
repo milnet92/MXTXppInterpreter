@@ -16,7 +16,6 @@ public class MXTScriptEditor extends FormRun
     private int errorFGColor = WinAPI::RGB2int(255, 0, 0);
     private int pausedFGColor = WinAPI::RGB2int(202, 222, 73);
     private FromTime startTime;
-    private MXTXppTrace lastTrace;
 
     MXTXppInterpreterDebugSession currentSession;
 
@@ -70,22 +69,6 @@ public class MXTScriptEditor extends FormRun
 
         this.refreshCaption();
         this.refreshButtons();
-    }
-
-]]></Source>
-			</Method>
-			<Method>
-				<Name>cleanUpLastTrace</Name>
-				<Source><![CDATA[
-    internal void cleanUpLastTrace()
-    {
-        if (lastTrace && lastTrace.etlFileName && System.IO.File::Exists(lastTrace.etlFileName))
-        {
-            Microsoft.Dynamics.AX.Services.Tracing.TraceParser.TraceParserOrchestrator orchestrator = MXTXppInterpreterTraceParser::traceParserOrchestrator;
-            orchestrator.Cleanup(lastTrace.traceName);
-        }
-
-        lastTrace = null;
     }
 
 ]]></Source>
@@ -145,15 +128,9 @@ public class MXTScriptEditor extends FormRun
 
         MXTXppInterpreterCodeEditorControl.enabled(true);
         ExecuteButton.enabled(true);
-        CaptureSqlTraces.enabled(true);
         MXTXppInterpreterCodeEditorControl.setFocus();
         
         this.showDebugControls(false);
-
-        lastTrace = currentSession.stopTrace();
-
-        ViewLastTrace.enabled(lastTrace != null);
-        DownloadLastTrace.enabled(lastTrace != null && lastTrace.etlFileName && System.IO.File::Exists(lastTrace.etlFileName));
     }
 
 ]]></Source>
@@ -228,7 +205,6 @@ public class MXTScriptEditor extends FormRun
         }
 
         ExecuteButton.enabled(false);
-        CaptureSqlTraces.enabled(false);
         MXTXppInterpreterCodeEditorControl.enabled(false);
 
         if (currentSession.hasAnyBreakpoint())
@@ -329,26 +305,6 @@ public class MXTScriptEditor extends FormRun
 
         MXTXppInterpreterCodeEditorControl.theme(editorParameters.Theme);
         MXTXppInterpreterCodeEditorControl.fontSize(editorParameters.FontSize);
-    }
-
-]]></Source>
-			</Method>
-			<Method>
-				<Name>closed</Name>
-				<Source><![CDATA[
-    /// <summary>
-    ///
-    /// </summary>
-    /// <returns></returns>
-    public boolean closed()
-    {
-        boolean ret;
-    
-        this.cleanUpLastTrace();
-
-        ret = super();
-    
-        return ret;
     }
 
 ]]></Source>
@@ -458,84 +414,6 @@ public class MXTScriptEditor extends FormRun
             super();
 
             element.refreshButtons();
-        }
-
-]]></Source>
-					</Method>
-				</Methods>
-			</Control>
-			<Control>
-				<Name>CaptureSqlTraces</Name>
-				<Type>Button</Type>
-				<Methods>
-					<Method>
-						<Name>clicked</Name>
-						<Source><![CDATA[
-        /// <summary>
-        ///
-        /// </summary>
-        public void clicked()
-        {
-            super();
-
-            if (CaptureSqlTraces.toggleValue())
-            {
-                Box::infoOnce("@MXT:EnableSqlTraces", "@MXT:EnableSqlTracesWarning", formStr(MXTScriptEditor) + "_trace");
-            }
-
-            CaptureSqlTraces.text(CaptureSqlTraces.toggleValue() ? "@MXT:DisableSqlTraces" : "@MXT:EnableSqlTraces");
-        }
-
-]]></Source>
-					</Method>
-				</Methods>
-			</Control>
-			<Control>
-				<Name>ViewLastTrace</Name>
-				<Type>Button</Type>
-				<Methods>
-					<Method>
-						<Name>clicked</Name>
-						<Source><![CDATA[
-        /// <summary>
-        ///
-        /// </summary>
-        public void clicked()
-        {
-            if (lastTrace)
-            {
-                MenuFunction menuFunction = new MenuFunction(menuItemDisplayStr(MXTXppViewSqlTraces), MenuItemType::Display);
-                Args args = new Args();
-                args.parmObject(lastTrace);
-
-                menuFunction.run(args);
-            }
-        }
-
-]]></Source>
-					</Method>
-				</Methods>
-			</Control>
-			<Control>
-				<Name>DownloadLastTrace</Name>
-				<Type>Button</Type>
-				<Methods>
-					<Method>
-						<Name>clicked</Name>
-						<Source><![CDATA[
-        /// <summary>
-        ///
-        /// </summary>
-        public void clicked()
-        {
-            if (lastTrace && lastTrace.etlFileName && System.IO.File::Exists(lastTrace.etlFileName))
-            {
-                using (System.IO.Stream stream = new System.IO.FileStream(lastTrace.etlFileName, System.IO.FileMode::Open))
-                {
-                    str fileName = System.IO.Path::GetFileName(lastTrace.etlFileName);
-                    File::SendFileToUser(stream, fileName);
-                }
-            }
         }
 
 ]]></Source>
@@ -664,16 +542,7 @@ public class MXTScriptEditor extends FormRun
 
                 try
                 {
-                    // Clear last trace
-                    element.cleanUpLastTrace();
-
-                    str traceName = "";
-                    if (CaptureSqlTraces.toggleValue())
-                    {
-                        traceName = guid2Str(newGuid());
-                    }
-
-                    currentSession.execute(traceName);
+                    currentSession.execute();
                 }
                 catch (Exception::Error)
                 {
@@ -821,55 +690,6 @@ public class MXTScriptEditor extends FormRun
 								<NormalImage>Organization</NormalImage>
 							</AxFormControl>
 						</Controls>
-					</AxFormControl>
-					<AxFormControl xmlns=""
-						i:type="AxFormActionPaneTabControl">
-						<Name>SqlTraces</Name>
-						<Type>ActionPaneTab</Type>
-						<FormControlExtension
-							i:nil="true" />
-						<Controls>
-							<AxFormControl xmlns=""
-								i:type="AxFormButtonGroupControl">
-								<Name>Traces</Name>
-								<Type>ButtonGroup</Type>
-								<FormControlExtension
-									i:nil="true" />
-								<Controls>
-									<AxFormControl xmlns=""
-										i:type="AxFormButtonControl">
-										<Name>CaptureSqlTraces</Name>
-										<AutoDeclaration>Yes</AutoDeclaration>
-										<Type>Button</Type>
-										<FormControlExtension
-											i:nil="true" />
-										<Text>@MXT:EnableSqlTraces</Text>
-										<ToggleButton>Check</ToggleButton>
-									</AxFormControl>
-									<AxFormControl xmlns=""
-										i:type="AxFormButtonControl">
-										<Name>ViewLastTrace</Name>
-										<AutoDeclaration>Yes</AutoDeclaration>
-										<Enabled>No</Enabled>
-										<Type>Button</Type>
-										<FormControlExtension
-											i:nil="true" />
-										<Text>@MXT:ViewSqlTraces</Text>
-									</AxFormControl>
-									<AxFormControl xmlns=""
-										i:type="AxFormButtonControl">
-										<Name>DownloadLastTrace</Name>
-										<AutoDeclaration>Yes</AutoDeclaration>
-										<Enabled>No</Enabled>
-										<Type>Button</Type>
-										<FormControlExtension
-											i:nil="true" />
-										<Text>@MXT:DownloadSqlTraces</Text>
-									</AxFormControl>
-								</Controls>
-							</AxFormControl>
-						</Controls>
-						<Caption>SQL Traces</Caption>
 					</AxFormControl>
 				</Controls>
 				<DataSource>MXTXppInterpreterScript</DataSource>

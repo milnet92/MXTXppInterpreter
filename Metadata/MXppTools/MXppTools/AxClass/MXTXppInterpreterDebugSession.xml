@@ -13,21 +13,18 @@ using System.Linq;
 /// <summary>
 /// Represents a debug / execution session initiated by the editor.
 /// </summary>
-public class MXTXppInterpreterDebugSession implements System.IDisposable
+public class MXTXppInterpreterDebugSession
 {
     XppInterpreter  interpreter;
     Program         program;
     XppDebugger     debugger;
     boolean         executing, stopOnBreakpoint;
     str             sourceCode;
-    str             currentTraceName;
     InterpreterResult currentExecutionResult;
     MXTXppInterpreterCodeEditorParseExceptionCollection lastParseExceptions;
     MXTXppInterpreterCodeEditorControl          editor;
     MXTXppInterpreterVariablesInspectorControl  inspector;
     
-    private MXTXppInterpreterTraceParser        traceParser;
-
     XppInterpreterDependencyCollection          dependencyCollection;
 
     XppInterpreter.Interpreter.Proxy.XppProxy proxy = new XppInterpreter.Interpreter.Proxy.XppProxy(
@@ -137,10 +134,8 @@ public class MXTXppInterpreterDebugSession implements System.IDisposable
     /// <summary>
     /// Executes the program associated with the session
     /// </summary>
-    public void execute(str _traceName = "")
+    public void execute()
     {
-        currentTraceName = _traceName;
-
         editor.executionPhase(MXTXppInterpreterExecutionPhase::Started);
 
         if (inspector)
@@ -159,12 +154,6 @@ public class MXTXppInterpreterDebugSession implements System.IDisposable
         interpreter.Debugger = debugger;
 
         MXTXppInterpreterScriptExecutionLog::startLog(sourceCode, parameters.EmitGlobalTtsAbort);
-
-        if (currentTraceName)
-        {
-            traceParser = MXTXppInterpreterTraceParser::newFromTraceName(currentTraceName);
-            traceParser.startSQLTrace();
-        }
 
         this.executionStarted();
 
@@ -192,40 +181,6 @@ public class MXTXppInterpreterDebugSession implements System.IDisposable
         {
             this.handleExecutionFinished();
         }
-    }
-
-]]></Source>
-			</Method>
-			<Method>
-				<Name>stopTrace</Name>
-				<Source><![CDATA[
-    /// <summary>
-    /// Logs the traces 
-    /// </summary>
-    public MXTXppTrace stopTrace()
-    {
-        MXTXppTrace trace;
-
-        if (currentTraceName && traceParser)
-        {
-            traceParser.stop();
-            traceParser.import();
-
-            trace = MXTXppTrace::newTrace(
-                currentTraceName,
-                traceParser.sqlStatements(),
-                traceParser.sqlStatementsWithParameterValues(),
-                traceParser.sqlStatementsMetadata(),
-                DateTimeUtil::getSystemDateTime(),
-                traceParser.getEtlFileName());
-
-            // Clear resource
-            traceParser.Dispose();
-            traceParser = null;
-            currentTraceName = "";
-        }
-
-        return trace;
     }
 
 ]]></Source>
@@ -655,20 +610,6 @@ public class MXTXppInterpreterDebugSession implements System.IDisposable
         }
 
         return ret;
-    }
-
-]]></Source>
-			</Method>
-			<Method>
-				<Name>Dispose</Name>
-				<Source><![CDATA[
-    public void Dispose()
-    {
-        if (traceParser)
-        {
-            traceParser.Dispose();
-            traceParser = null;
-        }
     }
 
 ]]></Source>
