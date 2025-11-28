@@ -1,0 +1,732 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <BuildTasksDirectory Condition=" '$(BuildTasksDirectory)' == ''">$(MSBuildProgramFiles32)\MSBuild\Microsoft\Dynamics\AX</BuildTasksDirectory>
+    <Model>MXppTools</Model>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <OutputPath>bin</OutputPath>
+    <SchemaVersion>2.0</SchemaVersion>
+    <GenerateCrossReferences>True</GenerateCrossReferences>
+    <RunAppCheckerRules>False</RunAppCheckerRules>
+    <LogAppcheckerDiagsAsErrors>False</LogAppcheckerDiagsAsErrors>
+    <DeployOnline>False</DeployOnline>
+    <ProjectGuid>{581c1f15-2466-4ef8-ba83-43ad043073a9}</ProjectGuid>
+    <Name>MXTFO</Name>
+    <RootNamespace>MXTFO</RootNamespace>
+    <StartupType>Class</StartupType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <Configuration>Debug</Configuration>
+    <DBSyncInBuild>False</DBSyncInBuild>
+    <GenerateFormAdaptors>False</GenerateFormAdaptors>
+    <Company>
+    </Company>
+    <Partition>initial</Partition>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DataEntityExpandParentChildRelations>False</DataEntityExpandParentChildRelations>
+    <DataEntityUseLabelTextAsFieldName>False</DataEntityUseLabelTextAsFieldName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="Action Menu Items\" />
+    <Folder Include="AxReference\" />
+    <Folder Include="Base Enums\" />
+    <Folder Include="Classes\" />
+    <Folder Include="Display Menu Items\" />
+    <Folder Include="Extended Data Types\" />
+    <Folder Include="Forms\" />
+    <Folder Include="Label Files\" />
+    <Folder Include="Menu Extensions\" />
+    <Folder Include="Resources\" />
+    <Folder Include="Security Privileges\" />
+    <Folder Include="Security Roles\" />
+    <Folder Include="Tables\" />
+    <Folder Include="Tiles\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="AxClass\MXTXppBinaryOperationProxy">
+      <SubType>Content</SubType>
+      <Name>MXTXppBinaryOperationProxy</Name>
+      <Link>Classes\MXTXppBinaryOperationProxy</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppCastingProxy">
+      <SubType>Content</SubType>
+      <Name>MXTXppCastingProxy</Name>
+      <Link>Classes\MXTXppCastingProxy</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppCompletionEntryContract">
+      <SubType>Content</SubType>
+      <Name>MXTXppCompletionEntryContract</Name>
+      <Link>Classes\MXTXppCompletionEntryContract</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppCompletionProvider">
+      <SubType>Content</SubType>
+      <Name>MXTXppCompletionProvider</Name>
+      <Link>Classes\MXTXppCompletionProvider</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppCompletionsContract">
+      <SubType>Content</SubType>
+      <Name>MXTXppCompletionsContract</Name>
+      <Link>Classes\MXTXppCompletionsContract</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppDataAccessProxy">
+      <SubType>Content</SubType>
+      <Name>MXTXppDataAccessProxy</Name>
+      <Link>Classes\MXTXppDataAccessProxy</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppExceptionsProxy">
+      <SubType>Content</SubType>
+      <Name>MXTXppExceptionsProxy</Name>
+      <Link>Classes\MXTXppExceptionsProxy</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppExportProcess">
+      <SubType>Content</SubType>
+      <Name>MXTXppExportProcess</Name>
+      <Link>Classes\MXTXppExportProcess</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppExportScriptHelper">
+      <SubType>Content</SubType>
+      <Name>MXTXppExportScriptHelper</Name>
+      <Link>Classes\MXTXppExportScriptHelper</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppImportProcess">
+      <SubType>Content</SubType>
+      <Name>MXTXppImportProcess</Name>
+      <Link>Classes\MXTXppImportProcess</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppInterpreterBatchContract">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterBatchContract</Name>
+      <Link>Classes\MXTXppInterpreterBatchContract</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppInterpreterBatchController">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterBatchController</Name>
+      <Link>Classes\MXTXppInterpreterBatchController</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppInterpreterBatchProcess">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterBatchProcess</Name>
+      <Link>Classes\MXTXppInterpreterBatchProcess</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppInterpreterCodeEditorBreakpointContract">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterCodeEditorBreakpointContract</Name>
+      <Link>Classes\MXTXppInterpreterCodeEditorBreakpointContract</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppInterpreterCodeEditorBreakpointHitContract">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterCodeEditorBreakpointHitContract</Name>
+      <Link>Classes\MXTXppInterpreterCodeEditorBreakpointHitContract</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppInterpreterCodeEditorControl">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterCodeEditorControl</Name>
+      <Link>Classes\MXTXppInterpreterCodeEditorControl</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppInterpreterCodeEditorControlBuild">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterCodeEditorControlBuild</Name>
+      <Link>Classes\MXTXppInterpreterCodeEditorControlBuild</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppInterpreterCodeEditorParseException">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterCodeEditorParseException</Name>
+      <Link>Classes\MXTXppInterpreterCodeEditorParseException</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppInterpreterCodeEditorParseExceptionCollection">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterCodeEditorParseExceptionCollection</Name>
+      <Link>Classes\MXTXppInterpreterCodeEditorParseExceptionCollection</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppInterpreterDebugSession">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterDebugSession</Name>
+      <Link>Classes\MXTXppInterpreterDebugSession</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppInterpreterExecutor">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterExecutor</Name>
+      <Link>Classes\MXTXppInterpreterExecutor</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppInterpreterVariableEditContract">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterVariableEditContract</Name>
+      <Link>Classes\MXTXppInterpreterVariableEditContract</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppInterpreterVariablesInspectorControl">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterVariablesInspectorControl</Name>
+      <Link>Classes\MXTXppInterpreterVariablesInspectorControl</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppInterpreterVariablesInspectorControlBuild">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterVariablesInspectorControlBuild</Name>
+      <Link>Classes\MXTXppInterpreterVariablesInspectorControlBuild</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppInterpreterVariablesInspectorLocalsEntry">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterVariablesInspectorLocalsEntry</Name>
+      <Link>Classes\MXTXppInterpreterVariablesInspectorLocalsEntry</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppIntrinsicFunctionHelper">
+      <SubType>Content</SubType>
+      <Name>MXTXppIntrinsicFunctionHelper</Name>
+      <Link>Classes\MXTXppIntrinsicFunctionHelper</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppIntrinsicFunctionProvider">
+      <SubType>Content</SubType>
+      <Name>MXTXppIntrinsicFunctionProvider</Name>
+      <Link>Classes\MXTXppIntrinsicFunctionProvider</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppMetadataElementsContract">
+      <SubType>Content</SubType>
+      <Name>MXTXppMetadataElementsContract</Name>
+      <Link>Classes\MXTXppMetadataElementsContract</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppOpenGithub">
+      <SubType>Content</SubType>
+      <Name>MXTXppOpenGithub</Name>
+      <Link>Classes\MXTXppOpenGithub</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppPredefinedFunctions">
+      <SubType>Content</SubType>
+      <Name>MXTXppPredefinedFunctions</Name>
+      <Link>Classes\MXTXppPredefinedFunctions</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppQueryExpressionGenerator">
+      <SubType>Content</SubType>
+      <Name>MXTXppQueryExpressionGenerator</Name>
+      <Link>Classes\MXTXppQueryExpressionGenerator</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppQueryGenerationProxy">
+      <SubType>Content</SubType>
+      <Name>MXTXppQueryGenerationProxy</Name>
+      <Link>Classes\MXTXppQueryGenerationProxy</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppQueryGenerator">
+      <SubType>Content</SubType>
+      <Name>MXTXppQueryGenerator</Name>
+      <Link>Classes\MXTXppQueryGenerator</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppReflectionProxy">
+      <SubType>Content</SubType>
+      <Name>MXTXppReflectionProxy</Name>
+      <Link>Classes\MXTXppReflectionProxy</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppScriptCollection">
+      <SubType>Content</SubType>
+      <Name>MXTXppScriptCollection</Name>
+      <Link>Classes\MXTXppScriptCollection</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppScriptDependencyManager">
+      <SubType>Content</SubType>
+      <Name>MXTXppScriptDependencyManager</Name>
+      <Link>Classes\MXTXppScriptDependencyManager</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppScriptEntry">
+      <SubType>Content</SubType>
+      <Name>MXTXppScriptEntry</Name>
+      <Link>Classes\MXTXppScriptEntry</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppSearchInstance">
+      <SubType>Content</SubType>
+      <Name>MXTXppSearchInstance</Name>
+      <Link>Classes\MXTXppSearchInstance</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppTokenMetadata">
+      <SubType>Content</SubType>
+      <Name>MXTXppTokenMetadata</Name>
+      <Link>Classes\MXTXppTokenMetadata</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppTypes">
+      <SubType>Content</SubType>
+      <Name>MXTXppTypes</Name>
+      <Link>Classes\MXTXppTypes</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppUnaryOperationProxy">
+      <SubType>Content</SubType>
+      <Name>MXTXppUnaryOperationProxy</Name>
+      <Link>Classes\MXTXppUnaryOperationProxy</Link>
+    </Content>
+    <Content Include="AxClass\SysDictMethodMXT_Extension">
+      <SubType>Content</SubType>
+      <Name>SysDictMethodMXT_Extension</Name>
+      <Link>Classes\SysDictMethodMXT_Extension</Link>
+    </Content>
+    <Content Include="AxEdt\MXTSourceCode">
+      <SubType>Content</SubType>
+      <Name>MXTSourceCode</Name>
+      <Link>Extended Data Types\MXTSourceCode</Link>
+    </Content>
+    <Content Include="AxEdt\MXTTemplateId">
+      <SubType>Content</SubType>
+      <Name>MXTTemplateId</Name>
+      <Link>Extended Data Types\MXTTemplateId</Link>
+    </Content>
+    <Content Include="AxEdt\MXTTemplatePlaceholder">
+      <SubType>Content</SubType>
+      <Name>MXTTemplatePlaceholder</Name>
+      <Link>Extended Data Types\MXTTemplatePlaceholder</Link>
+    </Content>
+    <Content Include="AxEnum\MXTEditorTheme">
+      <SubType>Content</SubType>
+      <Name>MXTEditorTheme</Name>
+      <Link>Base Enums\MXTEditorTheme</Link>
+    </Content>
+    <Content Include="AxEnum\MXTTemplateMapLookupType">
+      <SubType>Content</SubType>
+      <Name>MXTTemplateMapLookupType</Name>
+      <Link>Base Enums\MXTTemplateMapLookupType</Link>
+    </Content>
+    <Content Include="AxEnum\MXTXppInterpreterEditorLanguage">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterEditorLanguage</Name>
+      <Link>Base Enums\MXTXppInterpreterEditorLanguage</Link>
+    </Content>
+    <Content Include="AxEnum\MXTXppInterpreterExecutionPhase">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterExecutionPhase</Name>
+      <Link>Base Enums\MXTXppInterpreterExecutionPhase</Link>
+    </Content>
+    <Content Include="AxForm\MXTExecuteFormDialog">
+      <SubType>Content</SubType>
+      <Name>MXTExecuteFormDialog</Name>
+      <Link>Forms\MXTExecuteFormDialog</Link>
+    </Content>
+    <Content Include="AxForm\MXTInterpreterParameters">
+      <SubType>Content</SubType>
+      <Name>MXTInterpreterParameters</Name>
+      <Link>Forms\MXTInterpreterParameters</Link>
+    </Content>
+    <Content Include="AxForm\MXTScriptDependencies">
+      <SubType>Content</SubType>
+      <Name>MXTScriptDependencies</Name>
+      <Link>Forms\MXTScriptDependencies</Link>
+    </Content>
+    <Content Include="AxForm\MXTScriptEditDetails">
+      <SubType>Content</SubType>
+      <Name>MXTScriptEditDetails</Name>
+      <Link>Forms\MXTScriptEditDetails</Link>
+    </Content>
+    <Content Include="AxForm\MXTScriptEditor">
+      <SubType>Content</SubType>
+      <Name>MXTScriptEditor</Name>
+      <Link>Forms\MXTScriptEditor</Link>
+    </Content>
+    <Content Include="AxForm\MXTScriptsFormPart">
+      <SubType>Content</SubType>
+      <Name>MXTScriptsFormPart</Name>
+      <Link>Forms\MXTScriptsFormPart</Link>
+    </Content>
+    <Content Include="AxForm\MXTScriptTemplates">
+      <SubType>Content</SubType>
+      <Name>MXTScriptTemplates</Name>
+      <Link>Forms\MXTScriptTemplates</Link>
+    </Content>
+    <Content Include="AxForm\MXTScriptWorkspace">
+      <SubType>Content</SubType>
+      <Name>MXTScriptWorkspace</Name>
+      <Link>Forms\MXTScriptWorkspace</Link>
+    </Content>
+    <Content Include="AxForm\MXTXppInterpreterScriptExecutionLog">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterScriptExecutionLog</Name>
+      <Link>Forms\MXTXppInterpreterScriptExecutionLog</Link>
+    </Content>
+    <Content Include="AxLabelFile\MXT_en-US">
+      <SubType>Content</SubType>
+      <Name>MXT_en-US</Name>
+      <Link>Label Files\MXT_en-US</Link>
+    </Content>
+    <Content Include="AxLabelFile\MXT_es">
+      <SubType>Content</SubType>
+      <Name>MXT_es</Name>
+      <Link>Label Files\MXT_es</Link>
+    </Content>
+    <Content Include="AxMenuExtension\navpanemenu.MXT">
+      <SubType>Content</SubType>
+      <Name>navpanemenu.MXT</Name>
+      <Link>Menu Extensions\navpanemenu.MXT</Link>
+    </Content>
+    <Content Include="AxMenuExtension\SystemAdministration.MXT">
+      <SubType>Content</SubType>
+      <Name>SystemAdministration.MXT</Name>
+      <Link>Menu Extensions\SystemAdministration.MXT</Link>
+    </Content>
+    <Content Include="AxMenuItemAction\MXTImportMXTFile">
+      <SubType>Content</SubType>
+      <Name>MXTImportMXTFile</Name>
+      <Link>Action Menu Items\MXTImportMXTFile</Link>
+    </Content>
+    <Content Include="AxMenuItemDisplay\MXTExecuteFormDialog">
+      <SubType>Content</SubType>
+      <Name>MXTExecuteFormDialog</Name>
+      <Link>Display Menu Items\MXTExecuteFormDialog</Link>
+    </Content>
+    <Content Include="AxMenuItemDisplay\MXTInterpreterParameters">
+      <SubType>Content</SubType>
+      <Name>MXTInterpreterParameters</Name>
+      <Link>Display Menu Items\MXTInterpreterParameters</Link>
+    </Content>
+    <Content Include="AxMenuItemDisplay\MXTOpenGithubRepo">
+      <SubType>Content</SubType>
+      <Name>MXTOpenGithubRepo</Name>
+      <Link>Display Menu Items\MXTOpenGithubRepo</Link>
+    </Content>
+    <Content Include="AxMenuItemDisplay\MXTScriptDependencies">
+      <SubType>Content</SubType>
+      <Name>MXTScriptDependencies</Name>
+      <Link>Display Menu Items\MXTScriptDependencies</Link>
+    </Content>
+    <Content Include="AxMenuItemDisplay\MXTScriptEditDetails">
+      <SubType>Content</SubType>
+      <Name>MXTScriptEditDetails</Name>
+      <Link>Display Menu Items\MXTScriptEditDetails</Link>
+    </Content>
+    <Content Include="AxMenuItemDisplay\MXTScriptEditor">
+      <SubType>Content</SubType>
+      <Name>MXTScriptEditor</Name>
+      <Link>Display Menu Items\MXTScriptEditor</Link>
+    </Content>
+    <Content Include="AxMenuItemDisplay\MXTScriptsFormPart">
+      <SubType>Content</SubType>
+      <Name>MXTScriptsFormPart</Name>
+      <Link>Display Menu Items\MXTScriptsFormPart</Link>
+    </Content>
+    <Content Include="AxMenuItemDisplay\MXTScriptTemplates">
+      <SubType>Content</SubType>
+      <Name>MXTScriptTemplates</Name>
+      <Link>Display Menu Items\MXTScriptTemplates</Link>
+    </Content>
+    <Content Include="AxMenuItemDisplay\MXTScriptWorkspace">
+      <SubType>Content</SubType>
+      <Name>MXTScriptWorkspace</Name>
+      <Link>Display Menu Items\MXTScriptWorkspace</Link>
+    </Content>
+    <Content Include="AxMenuItemDisplay\MXTXppInterpreterScriptExecutionLog">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterScriptExecutionLog</Name>
+      <Link>Display Menu Items\MXTXppInterpreterScriptExecutionLog</Link>
+    </Content>
+    <Content Include="AxResource\MXTAceEditorLangToolsJS">
+      <SubType>Content</SubType>
+      <Name>MXTAceEditorLangToolsJS</Name>
+      <Link>Resources\MXTAceEditorLangToolsJS</Link>
+    </Content>
+    <Content Include="AxResource\MXTDebuggerCancelProcess16x16">
+      <SubType>Content</SubType>
+      <Name>MXTDebuggerCancelProcess16x16</Name>
+      <Link>Resources\MXTDebuggerCancelProcess16x16</Link>
+    </Content>
+    <Content Include="AxResource\MXTDebuggerContinue16x16">
+      <SubType>Content</SubType>
+      <Name>MXTDebuggerContinue16x16</Name>
+      <Link>Resources\MXTDebuggerContinue16x16</Link>
+    </Content>
+    <Content Include="AxResource\MXTDebuggerStepOver16x16">
+      <SubType>Content</SubType>
+      <Name>MXTDebuggerStepOver16x16</Name>
+      <Link>Resources\MXTDebuggerStepOver16x16</Link>
+    </Content>
+    <Content Include="AxResource\MXTDebuggerStopDebugging16x16">
+      <SubType>Content</SubType>
+      <Name>MXTDebuggerStopDebugging16x16</Name>
+      <Link>Resources\MXTDebuggerStopDebugging16x16</Link>
+    </Content>
+    <Content Include="AxResource\MXTSymbolClass">
+      <SubType>Content</SubType>
+      <Name>MXTSymbolClass</Name>
+      <Link>Resources\MXTSymbolClass</Link>
+    </Content>
+    <Content Include="AxResource\MXTSymbolClassField">
+      <SubType>Content</SubType>
+      <Name>MXTSymbolClassField</Name>
+      <Link>Resources\MXTSymbolClassField</Link>
+    </Content>
+    <Content Include="AxResource\MXTSymbolDataField">
+      <SubType>Content</SubType>
+      <Name>MXTSymbolDataField</Name>
+      <Link>Resources\MXTSymbolDataField</Link>
+    </Content>
+    <Content Include="AxResource\MXTSymbolEDT">
+      <SubType>Content</SubType>
+      <Name>MXTSymbolEDT</Name>
+      <Link>Resources\MXTSymbolEDT</Link>
+    </Content>
+    <Content Include="AxResource\MXTSymbolEnum">
+      <SubType>Content</SubType>
+      <Name>MXTSymbolEnum</Name>
+      <Link>Resources\MXTSymbolEnum</Link>
+    </Content>
+    <Content Include="AxResource\MXTSymbolEnumItem">
+      <SubType>Content</SubType>
+      <Name>MXTSymbolEnumItem</Name>
+      <Link>Resources\MXTSymbolEnumItem</Link>
+    </Content>
+    <Content Include="AxResource\MXTSymbolKeyword">
+      <SubType>Content</SubType>
+      <Name>MXTSymbolKeyword</Name>
+      <Link>Resources\MXTSymbolKeyword</Link>
+    </Content>
+    <Content Include="AxResource\MXTSymbolLocalVariable">
+      <SubType>Content</SubType>
+      <Name>MXTSymbolLocalVariable</Name>
+      <Link>Resources\MXTSymbolLocalVariable</Link>
+    </Content>
+    <Content Include="AxResource\MXTSymbolMethod">
+      <SubType>Content</SubType>
+      <Name>MXTSymbolMethod</Name>
+      <Link>Resources\MXTSymbolMethod</Link>
+    </Content>
+    <Content Include="AxResource\MXTSymbolTable">
+      <SubType>Content</SubType>
+      <Name>MXTSymbolTable</Name>
+      <Link>Resources\MXTSymbolTable</Link>
+    </Content>
+    <Content Include="AxResource\MXTSymbolTableIndex">
+      <SubType>Content</SubType>
+      <Name>MXTSymbolTableIndex</Name>
+      <Link>Resources\MXTSymbolTableIndex</Link>
+    </Content>
+    <Content Include="AxResource\MXTXppInterpreterCodeEditorHTML">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterCodeEditorHTML</Name>
+      <Link>Resources\MXTXppInterpreterCodeEditorHTML</Link>
+    </Content>
+    <Content Include="AxResource\MXTXppInterpreterCodeEditorJS">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterCodeEditorJS</Name>
+      <Link>Resources\MXTXppInterpreterCodeEditorJS</Link>
+    </Content>
+    <Content Include="AxResource\MXTXppInterpreterEditorHighlighterJS">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterEditorHighlighterJS</Name>
+      <Link>Resources\MXTXppInterpreterEditorHighlighterJS</Link>
+    </Content>
+    <Content Include="AxResource\MXTXppInterpreterVariablesInspectorHTML">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterVariablesInspectorHTML</Name>
+      <Link>Resources\MXTXppInterpreterVariablesInspectorHTML</Link>
+    </Content>
+    <Content Include="AxResource\MXTXppInterpreterVariablesInspectorJS">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterVariablesInspectorJS</Name>
+      <Link>Resources\MXTXppInterpreterVariablesInspectorJS</Link>
+    </Content>
+    <Content Include="AxSecurityPrivilege\MXTXppInterpreterScriptExecutionLogMaintain">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterScriptExecutionLogMaintain</Name>
+      <Link>Security Privileges\MXTXppInterpreterScriptExecutionLogMaintain</Link>
+    </Content>
+    <Content Include="AxSecurityRole\MXTXppInterpreterRole">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterRole</Name>
+      <Link>Security Roles\MXTXppInterpreterRole</Link>
+    </Content>
+    <Content Include="AxTable\MXTEditorParameters">
+      <SubType>Content</SubType>
+      <Name>MXTEditorParameters</Name>
+      <Link>Tables\MXTEditorParameters</Link>
+    </Content>
+    <Content Include="AxTable\MXTXppInterpreterParameters">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterParameters</Name>
+      <Link>Tables\MXTXppInterpreterParameters</Link>
+    </Content>
+    <Content Include="AxTable\MXTXppInterpreterReferences">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterReferences</Name>
+      <Link>Tables\MXTXppInterpreterReferences</Link>
+    </Content>
+    <Content Include="AxTable\MXTXppInterpreterScript">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterScript</Name>
+      <Link>Tables\MXTXppInterpreterScript</Link>
+    </Content>
+    <Content Include="AxTable\MXTXppInterpreterScriptDependency">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterScriptDependency</Name>
+      <Link>Tables\MXTXppInterpreterScriptDependency</Link>
+    </Content>
+    <Content Include="AxTable\MXTXppInterpreterScriptExecutionLog">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterScriptExecutionLog</Name>
+      <Link>Tables\MXTXppInterpreterScriptExecutionLog</Link>
+    </Content>
+    <Content Include="AxTable\MXTXppScriptTemplate">
+      <SubType>Content</SubType>
+      <Name>MXTXppScriptTemplate</Name>
+      <Link>Tables\MXTXppScriptTemplate</Link>
+    </Content>
+    <Content Include="AxTable\MXTXppScriptTemplateMap">
+      <SubType>Content</SubType>
+      <Name>MXTXppScriptTemplateMap</Name>
+      <Link>Tables\MXTXppScriptTemplateMap</Link>
+    </Content>
+    <Content Include="AxTable\MXTXppTmpScriptTemplateMap">
+      <SubType>Content</SubType>
+      <Name>MXTXppTmpScriptTemplateMap</Name>
+      <Link>Tables\MXTXppTmpScriptTemplateMap</Link>
+    </Content>
+    <Content Include="AxTile\MXTImportMXTFileTile">
+      <SubType>Content</SubType>
+      <Name>MXTImportMXTFileTile</Name>
+      <Link>Tiles\MXTImportMXTFileTile</Link>
+    </Content>
+    <Content Include="AxTile\MXTNewScriptTile">
+      <SubType>Content</SubType>
+      <Name>MXTNewScriptTile</Name>
+      <Link>Tiles\MXTNewScriptTile</Link>
+    </Content>
+    <Content Include="AxTile\MXTScriptEditorTile">
+      <SubType>Content</SubType>
+      <Name>MXTScriptEditorTile</Name>
+      <Link>Tiles\MXTScriptEditorTile</Link>
+    </Content>
+    <Content Include="AxTile\MXTScriptTemplates">
+      <SubType>Content</SubType>
+      <Name>MXTScriptTemplates</Name>
+      <Link>Tiles\MXTScriptTemplates</Link>
+    </Content>
+    <Content Include="AxTile\MXTScriptWorkspaceTile">
+      <SubType>Content</SubType>
+      <Name>MXTScriptWorkspaceTile</Name>
+      <Link>Tiles\MXTScriptWorkspaceTile</Link>
+    </Content>
+    <Content Include="AxTile\MXTXppInterpreterParametersTile">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterParametersTile</Name>
+      <Link>Tiles\MXTXppInterpreterParametersTile</Link>
+    </Content>
+    <Content Include="ClassField_16x.png">
+      <SubType>Content</SubType>
+      <Name>ClassField_16x.png</Name>
+      <DependentUpon>AxResource\MXTSymbolClassField</DependentUpon>
+    </Content>
+    <Content Include="Class_16x.png">
+      <SubType>Content</SubType>
+      <Name>Class_16x.png</Name>
+      <DependentUpon>AxResource\MXTSymbolClass</DependentUpon>
+    </Content>
+    <Content Include="DataField_16x.png">
+      <SubType>Content</SubType>
+      <Name>DataField_16x.png</Name>
+      <DependentUpon>AxResource\MXTSymbolDataField</DependentUpon>
+    </Content>
+    <Content Include="Edt_16x.png">
+      <SubType>Content</SubType>
+      <Name>Edt_16x.png</Name>
+      <DependentUpon>AxResource\MXTSymbolEDT</DependentUpon>
+    </Content>
+    <Content Include="Enumerator_16x.png">
+      <SubType>Content</SubType>
+      <Name>Enumerator_16x.png</Name>
+      <DependentUpon>AxResource\MXTSymbolEnum</DependentUpon>
+    </Content>
+    <Content Include="EnumItem_16x.png">
+      <SubType>Content</SubType>
+      <Name>EnumItem_16x.png</Name>
+      <DependentUpon>AxResource\MXTSymbolEnumItem</DependentUpon>
+    </Content>
+    <Content Include="ext-language_tools.js">
+      <SubType>Content</SubType>
+      <Name>ext-language_tools.js</Name>
+      <DependentUpon>AxResource\MXTAceEditorLangToolsJS</DependentUpon>
+    </Content>
+    <Content Include="Keyword_16x.png">
+      <SubType>Content</SubType>
+      <Name>Keyword_16x.png</Name>
+      <DependentUpon>AxResource\MXTSymbolKeyword</DependentUpon>
+    </Content>
+    <Content Include="LocalVariable_16x.png">
+      <SubType>Content</SubType>
+      <Name>LocalVariable_16x.png</Name>
+      <DependentUpon>AxResource\MXTSymbolLocalVariable</DependentUpon>
+    </Content>
+    <Content Include="Method_16x.png">
+      <SubType>Content</SubType>
+      <Name>Method_16x.png</Name>
+      <DependentUpon>AxResource\MXTSymbolMethod</DependentUpon>
+    </Content>
+    <Content Include="mxt-debug-cancelprocess-16x16.png">
+      <SubType>Content</SubType>
+      <Name>mxt-debug-cancelprocess-16x16.png</Name>
+      <DependentUpon>AxResource\MXTDebuggerCancelProcess16x16</DependentUpon>
+    </Content>
+    <Content Include="mxt-debug-continue-16x16.png">
+      <SubType>Content</SubType>
+      <Name>mxt-debug-continue-16x16.png</Name>
+      <DependentUpon>AxResource\MXTDebuggerContinue16x16</DependentUpon>
+    </Content>
+    <Content Include="mxt-debug-stepover-16x16.png">
+      <SubType>Content</SubType>
+      <Name>mxt-debug-stepover-16x16.png</Name>
+      <DependentUpon>AxResource\MXTDebuggerStepOver16x16</DependentUpon>
+    </Content>
+    <Content Include="mxt-debug-stopdebugging-16x16.png">
+      <SubType>Content</SubType>
+      <Name>mxt-debug-stopdebugging-16x16.png</Name>
+      <DependentUpon>AxResource\MXTDebuggerStopDebugging16x16</DependentUpon>
+    </Content>
+    <Content Include="MXT.en-US.label.txt">
+      <SubType>Content</SubType>
+      <Name>MXT.en-US.label.txt</Name>
+      <DependentUpon>AxLabelFile\MXT_en-US</DependentUpon>
+    </Content>
+    <Content Include="MXT.es.label.txt">
+      <SubType>Content</SubType>
+      <Name>MXT.es.label.txt</Name>
+      <DependentUpon>AxLabelFile\MXT_es</DependentUpon>
+    </Content>
+    <Content Include="MXTXppInterpreterCodeEditor.htm">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterCodeEditor.htm</Name>
+      <DependentUpon>AxResource\MXTXppInterpreterCodeEditorHTML</DependentUpon>
+    </Content>
+    <Content Include="MXTXppInterpreterCodeEditor.js">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterCodeEditor.js</Name>
+      <DependentUpon>AxResource\MXTXppInterpreterCodeEditorJS</DependentUpon>
+    </Content>
+    <Content Include="MXTXppInterpreterEditorHighlighter.js">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterEditorHighlighter.js</Name>
+      <DependentUpon>AxResource\MXTXppInterpreterEditorHighlighterJS</DependentUpon>
+    </Content>
+    <Content Include="MXTXppInterpreterVariablesInspector.htm">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterVariablesInspector.htm</Name>
+      <DependentUpon>AxResource\MXTXppInterpreterVariablesInspectorHTML</DependentUpon>
+    </Content>
+    <Content Include="MXTXppInterpreterVariablesInspector.js">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterVariablesInspector.js</Name>
+      <DependentUpon>AxResource\MXTXppInterpreterVariablesInspectorJS</DependentUpon>
+    </Content>
+    <Content Include="TableIndex_16x.png">
+      <SubType>Content</SubType>
+      <Name>TableIndex_16x.png</Name>
+      <DependentUpon>AxResource\MXTSymbolTableIndex</DependentUpon>
+    </Content>
+    <Content Include="Table_16x.png">
+      <SubType>Content</SubType>
+      <Name>Table_16x.png</Name>
+      <DependentUpon>AxResource\MXTSymbolTable</DependentUpon>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\XppInterpreter\XppInterpreter.csproj">
+      <Name>XppInterpreter</Name>
+      <Project>{45df663a-bc15-4eff-bc61-2cceec66cfd7}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.Common.targets" />
+  <Import Project="$(BuildTasksDirectory)\Microsoft.Dynamics.Framework.Tools.BuildTasks.17.0.targets" />
+</Project>
