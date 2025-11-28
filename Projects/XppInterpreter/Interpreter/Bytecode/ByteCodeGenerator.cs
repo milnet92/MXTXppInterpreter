@@ -576,7 +576,7 @@ namespace XppInterpreter.Interpreter.Bytecode
             ternary.Right.Accept(this);
             var rightScope = ReleaseScope();
 
-            Emit(new JumpIfFalse(leftScope.Count + 1 + 1 /*Jump instruction */));
+            Emit(new JumpIfFalse(leftScope.Count + 1 + 1 /*Jump instruction */, false));
             EmitScope(leftScope);
             Emit(new Jump(rightScope.Count + 1));
             EmitScope(rightScope);
