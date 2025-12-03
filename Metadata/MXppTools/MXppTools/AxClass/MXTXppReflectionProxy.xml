@@ -68,7 +68,12 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 				<Source><![CDATA[
     public System.Object CreateInstance(System.String _className, System.Object[] parameters)
     {
-        return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeNewObjCall(this.getClassType(_className), parameters);
+        return System.Activator::CreateInstance(
+            this.getClassType(_className),
+            System.Reflection.BindingFlags::Public | System.Reflection.BindingFlags::Instance,
+            null,
+            parameters,
+            null);
     }
 
 ]]></Source>
