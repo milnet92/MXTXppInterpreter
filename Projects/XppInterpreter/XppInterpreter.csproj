@@ -58,6 +58,7 @@
     <Compile Include="Core\SourceCodeRange.cs" />
     <Compile Include="Core\MessageProvider.cs" />
     <Compile Include="Core\VariableCollection.cs" />
+    <Compile Include="Core\VariableEntryEditor.cs" />
     <Compile Include="Core\VariableEditValueResponse.cs" />
     <Compile Include="Core\VariableEntry.cs" />
     <Compile Include="Interpreter\AstSimpleVisitor.cs" />
@@ -130,7 +131,6 @@
     <Compile Include="Interpreter\Debug\DebugHelper.cs" />
     <Compile Include="Interpreter\Debug\IDebuggeable.cs" />
     <Compile Include="Interpreter\Debug\NormalizedScopeEntry.cs" />
-    <Compile Include="Interpreter\Debug\NormalizedScopeEntryHash.cs" />
     <Compile Include="Interpreter\Debug\XppDebugger.cs" />
     <Compile Include="Interpreter\Debug\IDebugger.cs" />
     <Compile Include="Interpreter\IAstVisitor.cs" />

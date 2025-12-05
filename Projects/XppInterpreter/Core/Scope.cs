@@ -8,7 +8,6 @@ namespace XppInterpreter.Core
 {
     public class Scope
     {
-        internal readonly NormalizedScopeEntryHash _hash = new NormalizedScopeEntryHash();
         internal readonly VariableCollection VariableCollection = new VariableCollection();
         internal readonly List<object> disposables = new List<object>();
 
@@ -133,12 +132,8 @@ namespace XppInterpreter.Core
                     entry.EnumValues = proxy.Reflection.GetAllEnumValues(entry.TypeName).Cast<string>().ToArray();
                 }
 
-                entry.Changed = _hash.HasChanged(entry.VariableName, entry.Value);
-
                 ret.Add(entry);
             }
-
-            _hash.Update(ret);
 
             return ret.ToArray();
         }

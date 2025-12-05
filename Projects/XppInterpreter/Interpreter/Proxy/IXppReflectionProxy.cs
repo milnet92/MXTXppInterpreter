@@ -9,6 +9,7 @@ namespace XppInterpreter.Interpreter.Proxy
         object CallStaticFunction(string className, string functionName, object[] parameters);
         object GetInstanceProperty(object instance, string propertyName);
         void SetInstanceProperty(object instance, string propertyName, object value);
+        void SetStaticProperty(string className, string propertyName, object value);
         object GetStaticProperty(string className, string functionName);
         bool IsInstantiable(string name);
         object CallGlobalOrPredefinedFunction(RuntimeContext context, string functionName, object[] parameters);
@@ -21,9 +22,9 @@ namespace XppInterpreter.Interpreter.Proxy
         string GetMethodSyntax(string typeName, string methodName);
         string LabelIdToValue(string labelId, string languageId);
         Type GetMethodReturnType(Type typeName, string methodName);
-        Type GetFieldReturnType(Type caller, string fieldName);
+        Type GetFieldReturnType(Type caller, string fieldName, bool includeNonPublic = false);
         bool TypeHasMethod(Type type, string methodName);
-        bool TypeHasProperty(Type type, string propertyName);
+        bool TypeHasProperty(Type type, string propertyName, bool includeNonPublic = false);
         bool EnumHasMember(string enumName, string memberName);
     }
 }

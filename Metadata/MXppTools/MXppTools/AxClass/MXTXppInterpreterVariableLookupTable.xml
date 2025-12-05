@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppInterpreterVariableLookupTable</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+using XppInterpreter.Interpreter.Debug;
+
+public final class MXTXppInterpreterVariableLookupTable
+{
+    Map valueTable = new Map(Types::String, Types::Class);
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>addVariable</Name>
+				<Source><![CDATA[
+    public void addVariable(str _path, anytype _value, str _type, int _entryType)
+    {
+        valueTable.insert(_path, new MXTXppInterpreterVariableLookupValue(_entryType, _type, _value));
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>hasChanged</Name>
+				<Source><![CDATA[
+    public boolean hasChanged(str _path, str _newValueStr)
+    {
+        if (_path && this.exists(_path))
+        {
+            MXTXppInterpreterVariableLookupValue lookupValue = this.getValue(_path);
+            return DebugHelper::GetDebugDisplayValue(lookupValue.parmValue()) != _newValueStr;
+        }
+
+        return false;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>exists</Name>
+				<Source><![CDATA[
+    public boolean exists(str _path)
+    {
+        return valueTable.exists(_path);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getValue</Name>
+				<Source><![CDATA[
+    public MXTXppInterpreterVariableLookupValue getValue(str _path)
+    {
+        return valueTable.lookup(_path);
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

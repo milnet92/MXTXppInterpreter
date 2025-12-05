@@ -20,6 +20,7 @@ internal static final class MXTXppTypes
     public static System.Type AnyTypeType = System.Type::GetType("System.Object");
     public static System.Type CommonType = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType(CommonTypeStr);
     public static System.Type PrefixGuardType = System.Type::GetType("Microsoft.Dynamics.Ax.Xpp.SetPrefixGuard, Microsoft.Dynamics.AX.Xpp.Support");
+    public static System.Type IEnumerable = System.Type::GetType("System.Collections.IEnumerable");
 
     public const str RealTypeStr = "real";
     public const str Int32TypeStr = "int";

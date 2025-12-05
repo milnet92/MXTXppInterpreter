@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -12,11 +13,25 @@ namespace XppInterpreter.Interpreter.Debug
             return $"Size = {array.GetType().GetProperty("Size").GetValue(array)}";
         }
 
+        public static bool IsEnumerable(object instance)
+        {
+            if (instance is null)
+            {
+                return false;
+            }
+
+            return instance is IEnumerable;
+        }
+
         public static string GetDebugDisplayValue(object instance)
         {
             if (instance is null)
             {
                 return "null";
+            }
+            else if (instance is string str)
+            {
+                return $"\"{str}\"";
             }
 
             if (instance.GetType().Name.Contains("EdtArray"))

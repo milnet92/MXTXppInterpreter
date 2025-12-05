@@ -15,6 +15,8 @@ using System.Linq;
 /// </summary>
 public class MXTXppInterpreterDebugSession
 {
+    private const int MAX_VARIABLE_INSPECTOR_NESTED_LEVELS = 3;
+
     XppInterpreter  interpreter;
     Program         program;
     XppDebugger     debugger;
@@ -24,6 +26,7 @@ public class MXTXppInterpreterDebugSession
     MXTXppInterpreterCodeEditorParseExceptionCollection lastParseExceptions;
     MXTXppInterpreterCodeEditorControl          editor;
     MXTXppInterpreterVariablesInspectorControl  inspector;
+    MXTXppInterpreterVariableLookupTable        variableLookupTable;
     
     XppInterpreterDependencyCollection          dependencyCollection;
 
@@ -157,6 +160,8 @@ public class MXTXppInterpreterDebugSession
 
         this.executionStarted();
 
+        variableLookupTable = new MXTXppInterpreterVariableLookupTable();
+
         executing = true;
 
         System.Exception ex;
@@ -222,7 +227,7 @@ public class MXTXppInterpreterDebugSession
 
         List subentries = new List(Types::Class);
         Set variablesInScope = new Set(Types::String);
-
+        
         if (currentExecutionResult != null)
         {
             var currentScope = this.getCurrentScopeHandler(currentExecutionResult.SaveState.Context).CurrentScope;
@@ -240,24 +245,22 @@ public class MXTXppInterpreterDebugSession
                     {
                         var value = scopeEntry.Value;
 
-                        // Create entry
                         MXTXppInterpreterVariablesInspectorLocalsEntry subEntry = new MXTXppInterpreterVariablesInspectorLocalsEntry();
 
+                        // Root path
+                        str path = scopeEntry.VariableName;
+
+                        str displayValue = MXTXppInterpreterVariableInspectorEntryManager::GetDebugDisplayValue(scopeEntry.Value);
+
                         subEntry.parmName(scopeEntry.VariableName);
-                        
-                        str displayValue = DebugHelper::GetDebugDisplayValue(value);
-
-                        if (typeOf(value) == Types::Record && !value)
-                        {
-                            displayValue = 'No data selected';
-                        }
-
                         subEntry.parmValue(displayValue);
                         subEntry.parmType(scopeEntry.TypeName);
                         subEntry.parmEditable(scopeEntry.Editable);
-                        subEntry.parmChanged(scopeEntry.Changed);
+                        subEntry.parmExpandable(MXTXppInterpreterVariableInspectorEntryManager::IsExpandableType(subEntry.parmType(), scopeEntry.Value));
+                        subEntry.parmPath(path);
+                        subEntry.parmChanged(variableLookupTable.hasChanged(path, displayValue));
 
-                        //TODO: subEntry.parmEnumValues(scopeEntry.EnumValues);
+                        variableLookupTable.addVariable(path, value, scopeEntry.TypeName, 0);
 
                         subentries.addEnd(subEntry);
 
@@ -277,6 +280,38 @@ public class MXTXppInterpreterDebugSession
 ]]></Source>
 			</Method>
 			<Method>
+				<Name>requestExpandVariable</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Expands a variable by it's path
+    /// </summary>
+    /// <param name = "_path">Variable path</param>
+    /// <returns>Expanded variable entry</returns>
+    public MXTXppInterpreterVariablesInspectorLocalsEntry requestExpandVariable(str _path)
+    {
+        MXTXppInterpreterVariableInspectorEntryManager  manager = new MXTXppInterpreterVariableInspectorEntryManager(variableLookupTable);
+        MXTXppInterpreterVariableLookupValue            lookupValue = variableLookupTable.getValue(_path);
+        MXTXppInterpreterVariablesInspectorLocalsEntry  rootEntry = new MXTXppInterpreterVariablesInspectorLocalsEntry();
+        
+        rootEntry.parmName('ROOT');
+        rootEntry.parmPath(_path);
+
+        str typeName = lookupValue.parmType();
+
+        if (typeName == "")
+        {
+            return rootEntry;
+        }
+
+        rootEntry.parmType(typeName);
+        manager.addSubentries(rootEntry, lookupValue.parmValue());
+
+        return rootEntry;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>handleExecutionFinished</Name>
 				<Source><![CDATA[
     /// <summary>
@@ -284,6 +319,7 @@ public class MXTXppInterpreterDebugSession
     /// </summary>
     private void handleExecutionFinished()
     {
+        variableLookupTable = null;
         currentExecutionResult = null;
         executing = false;
 
@@ -523,16 +559,17 @@ public class MXTXppInterpreterDebugSession
     /// <param name = "_varName">Variable name</param>
     /// <param name = "_newValue">New value for the variable as a string</param>
     /// <returns>An instance of <c>MXTXppInterpreterVariableEditContract</c></returns>
-    public MXTXppInterpreterVariableEditContract tryUpdateVariableValue(str _varName, str _newValue)
+    public MXTXppInterpreterVariableEditContract tryUpdateVariableValue(str _path, str _newValue)
     {
         if (!stopOnBreakpoint) return null;
 
-        VariableEditValueResponse response = this.getCurrentScopeHandler(currentExecutionResult.SaveState.Context).TrySetVariableValueFromString(_varName, _newValue);
+        VariableEditValueResponse response = this.getCurrentScopeHandler(currentExecutionResult.SaveState.Context).TrySetVariableValueFromString(_path, _newValue, variableLookupTable.getValue(_path).parmType());
 
         MXTXppInterpreterVariableEditContract ret = new MXTXppInterpreterVariableEditContract();
 
         ret.parmValue(response.Value);
         ret.parmError(response.Error);
+        ret.parmTypeName(response.TypeName);
 
         return ret;
     }

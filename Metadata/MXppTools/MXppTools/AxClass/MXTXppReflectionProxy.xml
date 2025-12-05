@@ -64,15 +64,45 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 ]]></Source>
 			</Method>
 			<Method>
+				<Name>SetStaticProperty</Name>
+				<Source><![CDATA[
+    public void SetStaticProperty(System.String _className, System.String _propertyName, System.Object _value)
+    {
+        System.Type classType = this.getClassType(_className);
+
+        // Check if it's actually a property
+        System.Reflection.PropertyInfo propertyInfo = classType.GetProperty(_propertyName);
+        if (propertyInfo)
+        {
+            propertyInfo.SetValue(null, _value);
+        }
+        else
+        {
+            // Check if it's a field
+            System.Reflection.FieldInfo fieldInfo = classType.GetField(_propertyName);
+            if (fieldInfo)
+            {
+                fieldInfo.SetValue(null, _value);
+            }
+            else
+            {
+                throw error(strFmt("@MXT:InvalidPropertyError", _propertyName));
+            }
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>CreateInstance</Name>
 				<Source><![CDATA[
     public System.Object CreateInstance(System.String _className, System.Object[] parameters)
     {
         return System.Activator::CreateInstance(
             this.getClassType(_className),
-            System.Reflection.BindingFlags::Public | System.Reflection.BindingFlags::Instance,
-            null,
-            parameters,
+            System.Reflection.BindingFlags::Public | System.Reflection.BindingFlags::Instance, 
+            null, 
+            parameters, 
             null);
     }
 
@@ -167,8 +197,12 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
         }
         else
         {
+            System.Reflection.BindingFlags bindingFlags = 
+                System.Reflection.BindingFlags::Public | System.Reflection.BindingFlags::NonPublic | 
+                System.Reflection.BindingFlags::Instance;
+
             // Check if it's actually a property
-            System.Reflection.PropertyInfo propertyInfo = _instance.GetType().GetProperty(_propertyName);
+            System.Reflection.PropertyInfo propertyInfo = _instance.GetType().GetProperty(_propertyName, bindingFlags);
             if (propertyInfo)
             {
                 propertyInfo.SetValue(_instance, _value);
@@ -176,7 +210,7 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
             else
             {
                 // Check if it's a field
-                System.Reflection.FieldInfo fieldInfo = _instance.GetType().GetField(_propertyName);
+                System.Reflection.FieldInfo fieldInfo = _instance.GetType().GetField(_propertyName, bindingFlags);
                 if (fieldInfo)
                 {
                     fieldInfo.SetValue(_instance, _value);
@@ -368,7 +402,7 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 			<Method>
 				<Name>TypeHasProperty</Name>
 				<Source><![CDATA[
-    public boolean TypeHasProperty(System.Type _caller, System.String _propertyName)
+    public boolean TypeHasProperty(System.Type _caller, System.String _propertyName, System.Boolean _includeNonPublic)
     {
         if (this.IsCommonType(_caller))
         {
@@ -376,8 +410,8 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
         }
         else if (_caller)
         {
-            return XppInterpreter.Core.ReflectionHelper::TypeHasField(_caller, _propertyName) ||
-                   XppInterpreter.Core.ReflectionHelper::TypeHasProperty(_caller, _propertyName);
+            return XppInterpreter.Core.ReflectionHelper::TypeHasField(_caller, _propertyName, _includeNonPublic) ||
+                   XppInterpreter.Core.ReflectionHelper::TypeHasProperty(_caller, _propertyName, _includeNonPublic);
         }
 
         return false;
@@ -439,7 +473,7 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 			<Method>
 				<Name>GetFieldReturnType</Name>
 				<Source><![CDATA[
-    public System.Type GetFieldReturnType(System.Type _caller, System.String _fieldName)
+    public System.Type GetFieldReturnType(System.Type _caller, System.String _fieldName, System.Boolean _includeNonPublic = false)
     {
         if (!_caller) return null;
 
@@ -458,13 +492,13 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
                 return MXTXppCastingProxy::getSystemTypeFromTypes(dictField.type());
             }
         }
-        else if (XppInterpreter.Core.ReflectionHelper::TypeHasField(_caller, _fieldName))
+        else if (XppInterpreter.Core.ReflectionHelper::TypeHasField(_caller, _fieldName, _includeNonPublic))
         {
-            return XppInterpreter.Core.ReflectionHelper::GetField(_caller, _fieldName).FieldType;
+            return XppInterpreter.Core.ReflectionHelper::GetField(_caller, _fieldName, _includeNonPublic).FieldType;
         }
-        else if (XppInterpreter.Core.ReflectionHelper::TypeHasProperty(_caller, _fieldName))
+        else if (XppInterpreter.Core.ReflectionHelper::TypeHasProperty(_caller, _fieldName, _includeNonPublic))
         {
-            return XppInterpreter.Core.ReflectionHelper::GetProperty(_caller, _fieldName).PropertyType;
+            return XppInterpreter.Core.ReflectionHelper::GetProperty(_caller, _fieldName, _includeNonPublic).PropertyType;
         }
 
         return null;

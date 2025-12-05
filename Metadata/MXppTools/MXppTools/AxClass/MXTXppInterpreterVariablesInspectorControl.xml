@@ -77,9 +77,20 @@ public class MXTXppInterpreterVariablesInspectorControl extends FormTemplateCont
 				<Name>tryUpdateVariableValue</Name>
 				<Source><![CDATA[
     [FormCommand("TryUpdateVariableValue", true)]
-    public MXTXppInterpreterVariableEditContract tryUpdateVariableValue(str _variableName, str _value)
+    public MXTXppInterpreterVariableEditContract tryUpdateVariableValue(str _path, str _value)
     {
-        return debugSession.tryUpdateVariableValue(_variableName, _value);
+        return debugSession.tryUpdateVariableValue(_path, _value);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>requestExpandVariable</Name>
+				<Source><![CDATA[
+    [FormCommand("RequestExpandVariable", true)]
+    public MXTXppInterpreterVariablesInspectorLocalsEntry requestExpandVariable(str _path)
+    {
+        return debugSession.requestExpandVariable(_path);
     }
 
 ]]></Source>

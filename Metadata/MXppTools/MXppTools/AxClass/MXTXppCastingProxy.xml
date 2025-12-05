@@ -23,7 +23,7 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
     /// </summary>
     /// <param name = "_name">Type name</param>
     /// <returns>Types type</returns>
-    private static Types getXppTypeByTypeName(str _name)
+    public static Types getXppTypeByTypeName(str _name)
     {
         // Base Enums
         if (SysDictEnum::newName(_name) != null)
@@ -88,6 +88,7 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
                 return MXTXppTypes::DecimalType;
 
             case Types::String:
+            case Types::VarString:
                 return MXTXppTypes::StringType;
 
             case Types::UtcDateTime:

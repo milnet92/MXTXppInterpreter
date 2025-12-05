@@ -9,7 +9,10 @@ public final class MXTXppInterpreterVariablesInspectorLocalsEntry
     str name;
     str type;
     str value;
+    str path;
     boolean editable;
+    boolean expandable;
+    int entryType;
     List subEntries;
     System.String[] enumValues;
     boolean changed;
@@ -99,6 +102,42 @@ public final class MXTXppInterpreterVariablesInspectorLocalsEntry
     {
         subEntries = _subEntries;
         return subEntries;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmExpandable</Name>
+				<Source><![CDATA[
+    [DataMember("Expandable")]
+    public boolean parmExpandable(boolean _expandable = expandable)
+    {
+        expandable = _expandable;
+        return expandable;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmPath</Name>
+				<Source><![CDATA[
+    [DataMember("Path")]
+    public str parmPath(str _path = path)
+    {
+        path = _path;
+        return path;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmEntryType</Name>
+				<Source><![CDATA[
+    [DataMember("EntryType")]
+    public int parmEntryType(int _entryType = entryType)
+    {
+        entryType = _entryType;
+        return entryType;
     }
 
 ]]></Source>

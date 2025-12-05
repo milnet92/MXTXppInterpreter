@@ -2,45 +2,159 @@
 
 <style>
     #inspector {
-        font-family: Arial, Helvetica, sans-serif;
         border-collapse: collapse;
         width: 100%;
-        height: 100%;
-        margin-right: 30px;
+        height: auto;
+        font-size: 12px;
+        line-height: 1.0;
+        table-layout: fixed;
     }
 
     #inspector td, #inspector th {
-        border: 1px solid #ddd;
-        padding: 2px;
+        border: 1px solid #e0e0e0;
+        padding: 3px 3px;
+        vertical-align: middle;
+        height: auto;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
-    #inspector tr:nth-child(even) {
-        background-color: #f2f2f2;
+    #inspector tbody tr:nth-child(even) {
+        background-color: #fafafa;
     }
 
-    #inspector tr:hover {
-        background-color: #ddd;
+    #inspector tbody tr:hover {
+        background-color: #e8f4fd;
+        transition: background-color 0.15s ease;
     }
 
     #inspector th {
-        padding-top: 5px;
-        padding-bottom: 5px;
+        padding: 10px;
         text-align: left;
-        background-color: #808080;
+        background: linear-gradient(180deg, #6c757d 0%, #5a6268 100%);
         color: white;
+        font-weight: 600;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    #inspector .expand-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 16px;
+        font-size: 10px;
+        color: #0078d4;
+        transition: transform 0.2s ease;
+    }
+
+    #inspector .expand-icon:hover {
+        color: #106ebe;
+        transform: scale(1.2);
+    }
+
+    #inspector td:first-child {
+        font-weight: 500;
+        color: #2c3e50;
+        width: 40%;
+    }
+
+    #inspector td:nth-child(2) {
+        color: #333;
+        width: 40%;
+    }
+
+    #inspector td:nth-child(3) {
+        width: 20%;
+    }
+
+    #inspector td div[contenteditable] {
+        padding: 2px 4px;
+        border-radius: 3px;
+        outline: none;
+        transition: background-color 0.2s ease;
+    }
+
+    #inspector td div[contenteditable]:hover {
+        background-color: #fff3cd;
+        cursor: text;
+    }
+
+    #inspector td div[contenteditable]:focus {
+        background-color: #ffffff;
+        box-shadow: 0 0 0 2px #0078d4;
+    }
+
+    .inline-error {
+        color: #ffffff;
+        background-color: #d32f2f;
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 3px;
+        display: block;
+        margin-bottom: 2px;
+        font-weight: 500;
+    }
+
+    #MXTXppInterpreterVariablesInspector {
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        background-color: white;
+        padding: 4px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #inspector-wrapper {
+        max-height: 210px;
+        overflow-y: auto;
+        overflow-x: auto;
+    }
+
+    #inspector-search {
+        margin-bottom: 8px;
+        padding: 6px 10px;
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        font-size: 12px;
+    }
+
+    #inspector-search:focus {
+        outline: none;
+        border-color: #0078d4;
+        box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.2);
+    }
+
+    .search-highlight {
+        background-color: #ffeb3b;
+        font-weight: bold;
     }
 </style>
-
 <div id="MXTXppInterpreterVariablesInspector"
-     style="background-color: white; padding: 4px 4px 4px 4px"
      data-dyn-bind="
         visible: $data.Visible,
         sizing: $dyn.layout.sizing($data)">
-    <table id="inspector" data-dyn-bind="visible: $data.Visible">
-        <tr>
-            <th data-dyn-bind="text: $dyn.label('Name')"></th>
-            <th data-dyn-bind="text: $dyn.label('Value')"></th>
-            <th data-dyn-bind="text: $dyn.label('Type')"></th>
-        </tr>
-    </table>
-</div>
+    <input type="text" id="inspector-search" placeholder="Search variables..." />
+    <div id="inspector-wrapper">
+        <table id="inspector" data-dyn-bind="visible: $data.Visible">
+            <thead>
+                <tr>
+                    <th data-dyn-bind="text: $dyn.label('Name')"></th>
+                    <th data-dyn-bind="text: $dyn.label('Value')"></th>
+                    <th data-dyn-bind="text: $dyn.label('Type')"></th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>  

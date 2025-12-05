@@ -23,8 +23,6 @@ namespace XppInterpreter.Interpreter.Debug
         public string VariableName { get; set; }
         public object Value { get; set; }
         public string[] EnumValues { get; set; }
-        public bool IsExpandable { get; set; }
-        public bool Changed { get; set; }
 
         /// <summary>
         /// If the entry can be edited by the client

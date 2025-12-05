@@ -1,0 +1,466 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppInterpreterVariableInspectorEntryManager</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+using XppInterpreter.Interpreter.Debug;
+
+internal final class MXTXppInterpreterVariableInspectorEntryManager
+{
+    private MXTXppInterpreterVariableLookupTable variableLookupTable;
+
+    private const int TYPE_LOCALVAR = 0;
+    private const int TYPE_STATICMEMBER = 1;
+    private const int TYPE_MEMBER = 2;
+    private const int TYPE_TABLEFIELD = 3;
+    private const int TYPE_INDEXER = 4;
+    private const int TYPE_METADATA = 10;
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>isExpandableType</Name>
+				<Source><![CDATA[
+    internal static boolean isExpandableType(str _type, anytype _value)
+    {
+        switch (_type)
+        {
+            case MXTXppTypes::BooleanType.ToString():
+            case MXTXppTypes::GuidType.ToString():
+            case MXTXppTypes::DecimalType.ToString():
+            case MXTXppTypes::DateType.ToString():
+            case MXTXppTypes::Int32Type.ToString():
+            case MXTXppTypes::Int64Type.ToString():
+            case MXTXppTypes::StringType.ToString():
+                return false;
+
+            case "System.Object[]":
+            //case "Microsoft.Dynamics.Ax.Xpp.List":
+                return true;
+
+            default:
+
+                if (_value != null)
+                {
+                    System.Type t = _value.GetType();
+
+                    if (t.FullName == "System.String" || t.IsPrimitive)
+                    {
+                        return false;
+                    }
+                    else if (DebugHelper::IsEnumerable(_value))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return MXTXppCastingProxy::getXppTypeByTypeName(t.Name) != Types::Enum;
+                    }
+                }
+                else if (_value is Common)
+                {
+                    return true;
+                }
+
+            return false;
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>isEditableType</Name>
+				<Source><![CDATA[
+    internal static boolean isEditableType(str _type)
+    {
+        switch (_type)
+        {
+            case "System.Boolean":
+            case "System.Decimal":
+            case "System.Int32":
+            case "System.Int64":
+            case "System.String":
+                return true;
+            default:
+                return false;
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getDebugDisplayValue</Name>
+				<Source><![CDATA[
+    internal static str getDebugDisplayValue(System.Object _value)
+    {
+        str displayValue = DebugHelper::GetDebugDisplayValue(_value);
+
+        if (typeOf(_value) == Types::Record && !_value)
+        {
+            displayValue = 'No data selected';
+        }
+
+        return displayValue;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>new</Name>
+				<Source><![CDATA[
+    internal void new(MXTXppInterpreterVariableLookupTable _variableLookupTable)
+    {
+        this.variableLookupTable = _variableLookupTable;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>createEntry</Name>
+				<Source><![CDATA[
+    internal MXTXppInterpreterVariablesInspectorLocalsEntry createEntry(str _name, anytype _value, str _type, int _entryType, str _parentPath = "", boolean _forceExpandable = false, boolean _disableEdition = false)
+    {
+        MXTXppInterpreterVariablesInspectorLocalsEntry entry = new MXTXppInterpreterVariablesInspectorLocalsEntry();
+        
+        entry.parmName(_name);
+        entry.parmValue(_entryType == TYPE_METADATA ? "" : MXTXppInterpreterVariableInspectorEntryManager::GetDebugDisplayValue(_value));
+        entry.parmType(_type);
+        entry.parmPath(strLen(_parentPath) > 0 ? strFmt("%1.%2", _parentPath, _name) : _name);
+        entry.parmExpandable(_forceExpandable ? true : MXTXppInterpreterVariableInspectorEntryManager::IsExpandableType(_type, _value));
+        entry.parmEditable(_disableEdition ? false : MXTXppInterpreterVariableInspectorEntryManager::IsEditableType(_type));
+        entry.parmChanged(variableLookupTable.hasChanged(entry.parmPath(), entry.parmValue()));
+        entry.parmEntryType(_entryType);
+
+        variableLookupTable.addVariable(entry.parmPath(), _value, _type, _entryType);
+
+        return entry;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>addSubentries</Name>
+				<Source><![CDATA[
+    internal void addSubentries(MXTXppInterpreterVariablesInspectorLocalsEntry _entry, anytype _value)
+    {
+        Types xppType = Types::void;
+        str   typeName = _entry.parmType();
+        System.Type t = _value != null ? _value.GetType() : null;
+
+        if (typeName == "System.Object[]")
+        {
+            xppType = Types::Container;
+        }
+        else if (_value != null && DebugHelper::IsEnumerable(_value))
+        {
+            this.buildEnumerable(_entry, _value);
+            return;
+        }
+        else
+        {
+            if (_value != null)
+            {
+                t = _value.GetType();
+                typeName = t.Name;
+            }
+            else
+            {
+                var enumerator = strSplit(_entry.parmType(), '.').getEnumerator();
+                while (enumerator.moveNext())
+                {
+                    typeName = enumerator.current();
+                }
+
+            }
+
+            xppType = MXTXppCastingProxy::getXppTypeByTypeName(typeName);
+        }
+
+        // Handle record type before null check as records with no RecId evaluates to true
+        if (xppType == Types::Record)
+        {
+            this.buildRecord(_entry, _value);
+        }
+
+        if (_value == null)
+        {
+            return;
+        }
+        else if (xppType == Types::Container)
+        {
+            this.buildContainer(_entry, _value);
+        }
+        else if (_value && t && MXTXppInterpreterVariableInspectorEntryManager::isExpandableType(t.Name, _value))
+        {
+            this.buildClass(_entry, _value);
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>buildRecord</Name>
+				<Source><![CDATA[
+    private void buildRecord(MXTXppInterpreterVariablesInspectorLocalsEntry _entry, anytype _value)
+    {
+        List    subEntries = new List(Types::Class);
+        List    baseSubEntries = new List(Types::Class);
+        List    allSubEntries = new List(Types::Class);
+
+        Common  record = _value as Common;
+        SysDictTable dictTable = new SysDictTable(record.TableId);
+        SysDictField dictField;
+        MXTXppInterpreterVariablesInspectorLocalsEntry baseFieldsEntry = this.createEntry("Base Fields", "", "", TYPE_MEMBER, _entry.parmPath(), true);
+        for (int i = 1; i <= dictTable.fieldCnt(TableScope::IncludeBaseTables); i++)
+        {
+            dictField = new SysDictField(dictTable.id(), dictTable.fieldCnt2Id(i));
+                
+            System.Type fieldType = dictField.typeName() ? 
+                MXTXppCastingProxy::getClrTypeFromTypeName(dictField.typeName()) :
+                MXTXppCastingProxy::getSystemTypeFromTypes(dictField.type());
+
+            var newEntry = this.createEntry(
+                dictField.name(),
+                record.(dictField.id()),
+                fieldType.FullName,
+                TYPE_TABLEFIELD,
+                dictField.isSystem() ? baseFieldsEntry.parmPath() : _entry.parmPath());
+
+            if (dictField.isSystem())
+                baseSubEntries.addEnd(newEntry);
+            else
+                subEntries.addEnd(newEntry);
+        }
+
+        baseFieldsEntry.parmSubentries(baseSubEntries);
+        subEntries.addStart(baseFieldsEntry);
+
+        _entry.parmSubentries(subEntries);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>buildEnumerable</Name>
+				<Source><![CDATA[
+    private void buildEnumerable(MXTXppInterpreterVariablesInspectorLocalsEntry _entry, anytype _value)
+    {
+        if (_value == null) return;
+
+        System.Type valueType = _value.GetType();
+        if (valueType.IsArray)
+        {
+            this.buildContainer(_entry, _value);
+        }
+        else
+        {
+            System.Collections.IEnumerator enumerator = _value.GetEnumerator();
+            int i = 1;
+            List subEntries = new List(Types::Class);
+
+            while (enumerator.MoveNext())
+            {
+                anytype value = enumerator.Current;
+                
+                str typeName = "";
+                if (value != null)
+                {
+                    System.Type itemType = value.GetType();
+                    typeName = itemType.FullName;
+                }
+
+                subEntries.addEnd(
+                    this.createEntry(strFmt("[%1]", i),
+                        value,
+                        typeName,
+                        TYPE_INDEXER,
+                        _entry.parmPath(),
+                        false,
+                    true));
+
+                i++;    
+            }
+
+            _entry.parmSubentries(subEntries);
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>buildClass</Name>
+				<Source><![CDATA[
+    private void buildClass(MXTXppInterpreterVariablesInspectorLocalsEntry _entry, anytype _value)
+    {
+        if (_value == null) return;
+        
+        List        subEntries = new List(Types::Class);
+        System.Type type = _value.GetType();
+
+        // Static members
+        MXTXppInterpreterVariablesInspectorLocalsEntry staticMembersEntry = this.createEntry("Static Members", "", "", TYPE_STATICMEMBER, _entry.parmPath(), false);
+
+        this.buildClassFields(
+            staticMembersEntry,
+            type,
+            _value,
+            System.Reflection.BindingFlags::Public | System.Reflection.BindingFlags::Public | System.Reflection.BindingFlags::Static,
+            TYPE_STATICMEMBER);
+
+        staticMembersEntry.parmExpandable(true);
+
+        // Public members
+        this.buildClassFields(
+            _entry,
+            type,
+            _value,
+            System.Reflection.BindingFlags::Public | System.Reflection.BindingFlags::Instance,
+            TYPE_MEMBER);
+
+        // Private members
+        MXTXppInterpreterVariablesInspectorLocalsEntry privateMembersEntry = this.createEntry("Private Members", "", "", TYPE_METADATA, _entry.parmPath());
+        this.buildClassFields(
+            privateMembersEntry,
+            type,
+            _value,
+            System.Reflection.BindingFlags::NonPublic | System.Reflection.BindingFlags::Instance,
+            TYPE_MEMBER);
+        privateMembersEntry.parmExpandable(true);
+
+        boolean merge = false;
+        if (staticMembersEntry.parmSubentries().elements() > 0)
+        {
+            subEntries.addEnd(staticMembersEntry);
+            merge = true;
+        }
+
+        if (privateMembersEntry.parmSubentries().elements() > 0)
+        {
+            subEntries.addEnd(privateMembersEntry);
+            merge = true;
+        }
+
+        if (merge)
+            _entry.parmSubentries(List::merge(subEntries, _entry.parmSubentries()));
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>buildClassFields</Name>
+				<Source><![CDATA[
+    private void buildClassFields(MXTXppInterpreterVariablesInspectorLocalsEntry _entry, System.Type _type, anytype _value, System.Reflection.BindingFlags _bindingFlags, int _entryType)
+    {
+        List        subEntries = new List(Types::Class);
+        System.Type type = _value.GetType();
+        System.Reflection.FieldInfo[] fields = _type.GetFields(_bindingFlags);
+        
+        for (int i = 0; i < fields.Length; i++)
+        {
+            System.Reflection.FieldInfo field = fields.GetValue(i);
+
+            if (this.ignoreMember(field.Name))
+            {
+                continue;
+            }
+
+            subEntries.addEnd(this.createEntry(
+                field.Name,
+                field.GetValue(_value),
+                field.FieldType.FullName,
+                _entryType,
+                _entry.parmPath(),
+                false));
+        }
+
+        _entry.parmSubentries(subEntries);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>buildContainer</Name>
+				<Source><![CDATA[
+    private void buildContainer(MXTXppInterpreterVariablesInspectorLocalsEntry _entry, anytype _value)
+    {
+        List subEntries = new List(Types::Class);
+                
+        container cnt = _value;
+
+        for (int i = 1; i <= conLen(_value); i++)
+        {
+            anytype value = conPeek(_value, i);
+            
+            str typeName = "";
+            if (value != null)
+            {
+                System.Type valueType = value.GetType();
+                typeName = valueType.FullName;
+            }
+
+            subEntries.addEnd(
+                this.createEntry(strFmt("[%1]", i),
+                value,
+                typeName,
+                TYPE_INDEXER,
+                _entry.parmPath()));
+        }
+
+        _entry.parmSubentries(subEntries);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>buildList</Name>
+				<Source><![CDATA[
+    private void buildList(MXTXppInterpreterVariablesInspectorLocalsEntry _entry, anytype _value)
+    {
+        if (_value == null) return;
+
+        List            list = _value as List;
+        List            subEntries = new List(Types::Class);
+        ListEnumerator  listEnum = list.getEnumerator();
+
+        int i = 1;
+
+        while (listEnum.moveNext())
+        {
+            anytype value = listEnum.current();
+            
+            str typeName = "";
+            if (value != null)
+            {
+                System.Type valueType = value.GetType();
+                typeName = valueType.FullName;
+            }
+
+            subEntries.addEnd(
+                this.createEntry(strFmt("[%1]", i), 
+                value, 
+                typeName,
+                TYPE_INDEXER,
+                _entry.parmPath()));
+
+            i++;
+        }
+
+        _entry.parmSubentries(subEntries);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>ignoreMember</Name>
+				<Source><![CDATA[
+    private boolean ignoreMember(str _name)
+    {
+        return strStartsWith(_name, "$");
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

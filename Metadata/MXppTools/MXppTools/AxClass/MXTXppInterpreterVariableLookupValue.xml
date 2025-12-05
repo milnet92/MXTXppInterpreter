@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppInterpreterVariableLookupValue</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+public final class MXTXppInterpreterVariableLookupValue
+{
+    public int entryType;
+    public str type;
+    public anytype value;
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>new</Name>
+				<Source><![CDATA[
+    void new(int _entryType, str _type, anytype _value)
+    {
+        this.entryType = _entryType;
+        this.type = _type;
+        this.value = _value;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmEntryType</Name>
+				<Source><![CDATA[
+    public int parmEntryType(int _entryType = entryType)
+    {
+        entryType = _entryType;
+        return entryType;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmType</Name>
+				<Source><![CDATA[
+    public str parmType(str _type = type)
+    {
+        type = _type;
+        return type;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmValue</Name>
+				<Source><![CDATA[
+    public anytype parmValue(anytype _value = value)
+    {
+        value = _value;
+        return value;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

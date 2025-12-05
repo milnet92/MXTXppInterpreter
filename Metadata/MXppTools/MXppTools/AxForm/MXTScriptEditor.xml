@@ -158,7 +158,6 @@ public class MXTScriptEditor extends FormRun
         StopDebuggingButton.visible(_visible);
         CancelProcessButton.visible(_visible);
 
-        VariableInspectorGroup.visible(_visible);
         MXTXppInterpreterVariablesInspectorControl.visible(_visible);
     }
 
@@ -836,34 +835,21 @@ public class MXTScriptEditor extends FormRun
 							</ExtensionProperties>
 						</FormControlExtension>
 					</AxFormControl>
-					<AxFormControl xmlns=""
-						i:type="AxFormGroupControl">
-						<Name>VariableInspectorGroup</Name>
+					<AxFormControl>
+						<Name>MXTXppInterpreterVariablesInspectorControl</Name>
 						<AutoDeclaration>Yes</AutoDeclaration>
-						<Type>Group</Type>
-						<FormControlExtension
-							i:nil="true" />
-						<Controls>
-							<AxFormControl>
-								<Name>MXTXppInterpreterVariablesInspectorControl</Name>
-								<AutoDeclaration>Yes</AutoDeclaration>
-								<Height>440</Height>
-								<HeightMode>SizeToAvailable</HeightMode>
-								<Visible>No</Visible>
-								<Width>450</Width>
-								<WidthMode>Manual</WidthMode>
-								<FormControlExtension>
-									<Name>MXTXppInterpreterVariablesInspectorControl</Name>
-									<ExtensionComponents />
-									<ExtensionProperties />
-								</FormControlExtension>
-							</AxFormControl>
-						</Controls>
-						<Caption>Variable inspector</Caption>
-						<Style>SidePanel</Style>
+						<Height>250</Height>
+						<HeightMode>Manual</HeightMode>
+						<Visible>No</Visible>
+						<Width>450</Width>
+						<WidthMode>SizeToAvailable</WidthMode>
+						<FormControlExtension>
+							<Name>MXTXppInterpreterVariablesInspectorControl</Name>
+							<ExtensionComponents />
+							<ExtensionProperties />
+						</FormControlExtension>
 					</AxFormControl>
 				</Controls>
-				<Columns>2</Columns>
 			</AxFormControl>
 			<AxFormControl xmlns=""
 				i:type="AxFormGroupControl">
