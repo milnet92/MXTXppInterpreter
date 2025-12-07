@@ -21,7 +21,7 @@ The editor will highlight the reserved words and will indicate you which stateme
 Some keyboard shortcuts are implemented to easily execute, insert a breakpoint, step over and continue debugging. These can be found as standard shortcuts by Right click > View shortcuts on the editor.
 ![example](Assets/code_example.png)
 
-The variable inspector will allow you to take a look to the variables that are currently on scope and will let you modify the values for primitive types.
+The variable inspector will allow you to take a look to the variables that are currently on scope and will let you modify the values for primitive types. Using the immediate window, you will be able to execute X++ expressions while debugging.
 ![debugger](Assets/debugger.png)
 
 ### Script repository
