@@ -95,6 +95,17 @@ public class MXTXppInterpreterVariablesInspectorControl extends FormTemplateCont
 
 ]]></Source>
 			</Method>
+			<Method>
+				<Name>executeImmediateCode</Name>
+				<Source><![CDATA[
+    [FormCommand("ExecuteImmediateCode", true)]
+    public MXTXppInterpreterImmediateExecutionResult executeImmediateCode(str _code)
+    {
+        return debugSession.executeImmediateCode(_code);
+    }
+
+]]></Source>
+			</Method>
 		</Methods>
 	</SourceCode>
 </AxClass>

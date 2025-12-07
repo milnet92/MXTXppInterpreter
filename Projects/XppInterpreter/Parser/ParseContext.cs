@@ -1,4 +1,7 @@
 ﻿using System;
+using XppInterpreter.Core;
+using XppInterpreter.Interpreter.Proxy;
+using XppInterpreter.Lexer;
 
 namespace XppInterpreter.Parser
 {
@@ -16,6 +19,28 @@ namespace XppInterpreter.Parser
         public ParseContext()
         {
             CurrentScope = _globalScope;
+        }
+
+        public static ParseContext FromRuntimeContext(Interpreter.RuntimeContext runtimeContext)
+        {
+            ParseContext parseContext = new ParseContext();
+
+            // Iterate all variables from the runtime context's current scope and add them to the parse context's current scope
+            using (var scopeEnumerator = new ScopeVariableEnumerator(runtimeContext.ScopeHandler.CurrentScope))
+            {
+                while (scopeEnumerator.MoveNext())
+                {
+                    var variableEntry = scopeEnumerator.Current;
+
+                    parseContext.CurrentScope.VariableDeclarations.Add(new ParseContextScopeVariable(
+                        variableEntry.Name,
+                        new Word("", TType.Var),
+                        variableEntry.DeclarationType,
+                        false));
+                }
+            }
+
+            return parseContext;
         }
 
         public bool CanScapeLoop()

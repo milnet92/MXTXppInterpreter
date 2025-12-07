@@ -15,6 +15,7 @@ internal final class MXTXppInterpreterVariableInspectorEntryManager
     private const int TYPE_TABLEFIELD = 3;
     private const int TYPE_INDEXER = 4;
     private const int TYPE_METADATA = 10;
+    private const int TYPE_STATICMETADATA = 11;
 
 }
 ]]></Declaration>
@@ -124,7 +125,7 @@ internal final class MXTXppInterpreterVariableInspectorEntryManager
         MXTXppInterpreterVariablesInspectorLocalsEntry entry = new MXTXppInterpreterVariablesInspectorLocalsEntry();
         
         entry.parmName(_name);
-        entry.parmValue(_entryType == TYPE_METADATA ? "" : MXTXppInterpreterVariableInspectorEntryManager::GetDebugDisplayValue(_value));
+        entry.parmValue(_entryType == TYPE_METADATA || _entryType == TYPE_STATICMETADATA ? "" : MXTXppInterpreterVariableInspectorEntryManager::GetDebugDisplayValue(_value));
         entry.parmType(_type);
         entry.parmPath(strLen(_parentPath) > 0 ? strFmt("%1.%2", _parentPath, _name) : _name);
         entry.parmExpandable(_forceExpandable ? true : MXTXppInterpreterVariableInspectorEntryManager::IsExpandableType(_type, _value));
@@ -182,8 +183,7 @@ internal final class MXTXppInterpreterVariableInspectorEntryManager
         {
             this.buildRecord(_entry, _value);
         }
-
-        if (_value == null)
+        else if (_value == null)
         {
             return;
         }
@@ -211,7 +211,7 @@ internal final class MXTXppInterpreterVariableInspectorEntryManager
         Common  record = _value as Common;
         SysDictTable dictTable = new SysDictTable(record.TableId);
         SysDictField dictField;
-        MXTXppInterpreterVariablesInspectorLocalsEntry baseFieldsEntry = this.createEntry("Base Fields", "", "", TYPE_MEMBER, _entry.parmPath(), true);
+        MXTXppInterpreterVariablesInspectorLocalsEntry baseFieldsEntry = this.createEntry("Base Fields", "", "", TYPE_METADATA, _entry.parmPath(), true);
         for (int i = 1; i <= dictTable.fieldCnt(TableScope::IncludeBaseTables); i++)
         {
             dictField = new SysDictField(dictTable.id(), dictTable.fieldCnt2Id(i));
@@ -299,7 +299,7 @@ internal final class MXTXppInterpreterVariableInspectorEntryManager
         System.Type type = _value.GetType();
 
         // Static members
-        MXTXppInterpreterVariablesInspectorLocalsEntry staticMembersEntry = this.createEntry("Static Members", "", "", TYPE_STATICMEMBER, _entry.parmPath(), false);
+        MXTXppInterpreterVariablesInspectorLocalsEntry staticMembersEntry = this.createEntry("Static Members", "", "", TYPE_STATICMETADATA, _entry.parmPath(), false);
 
         this.buildClassFields(
             staticMembersEntry,

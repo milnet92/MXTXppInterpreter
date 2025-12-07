@@ -17,6 +17,7 @@
         },
     });
 
+
     function removeAllEntries() {
         $("#inspector tbody").empty();
     }
@@ -38,6 +39,7 @@
             if (entry.Expandable || (entry.Subentries && entry.Subentries.length > 0)) {
                 childRow.setAttribute('data-has-children', 'true');
 
+                // If subentries are already loaded, mark as loaded
                 if (entry.Subentries && entry.Subentries.length > 0) {
                     childRow.setAttribute('data-children-loaded', 'true');
                     childRow.setAttribute('data-expanded', 'false');
@@ -78,7 +80,7 @@
 
         var imgSrc = '/resources/images/ClassField_16x.png';
 
-        if (entry.EntryType && entry.EntryType == 1)
+        if (entry.EntryType && (entry.EntryType == 1 || entry.EntryType == 11))
             imgSrc = '/resources/images/Class_16x.png';
 
         var iconHtml = "<img src='" + imgSrc + "' style='margin-right: 5px; width: 16px; height: 16px;' />";
@@ -177,7 +179,7 @@
             showDirectChildren(path);
             if (callback) callback();
         } else {
-            // Need to load children
+            // Need to load children from F&O
             var requestExpand = function () {
                 $dyn.callFunction(self.RequestExpandVariable, row, { _path: path }, function (result) {
                     if (result !== null && typeof result !== 'undefined') {
@@ -199,6 +201,7 @@
                             row.setAttribute('data-children-loaded', 'true');
                             row.setAttribute('data-expanded', 'true');
 
+                            // Re-query the icon after attachEventHandlers (it might have been cloned)
                             var updatedIcon = row.querySelector('.expand-icon');
                             if (updatedIcon) {
                                 updatedIcon.innerHTML = '&#9660;';
@@ -212,6 +215,7 @@
 
                             if (callback) callback();
                         } else {
+                            // No children, revert icon
                             icon.innerHTML = '&#9654;';
                             if (callback) callback();
                         }
@@ -394,7 +398,9 @@
             });
         });
 
+        // Add focusout handlers for editable fields
         document.querySelectorAll('td div[contenteditable]').forEach(function (element) {
+            // Remove existing listeners by cloning
             var newElement = element.cloneNode(true);
             element.parentNode.replaceChild(newElement, element);
 
@@ -432,19 +438,15 @@
                             errorMsg.textContent = ret.Error;
                             div.parentElement.insertBefore(errorMsg, div);
 
+                            // Auto-remove error after 5 seconds
                             setTimeout(function () {
                                 if (errorMsg.parentElement) {
                                     errorMsg.remove();
                                 }
                             }, 5000);
                         } else {
-                            // Update value and mark as modified
+                            // Success - update value and mark as modified
                             div.innerHTML = ret.Value;
-
-                            // Update the type as well
-                            var typeCell = row.cells[2];
-                            typeCell.innerHTML = ret.TypeName;
-
                             div.style.color = "red";
                             div.setAttribute('data-original-value', ret.Value);
                         }
@@ -512,12 +514,116 @@
         $dyn.ui.Control.apply(self, arguments);
         $dyn.ui.applyDefaults(self, data, $dyn.ui.defaults.MXTXppInterpreterVariablesInspector);
 
+        // Setup search handler
         var searchInput = document.getElementById('inspector-search');
         if (searchInput) {
             searchInput.addEventListener('input', function () {
                 filterRows(searchInput.value);
             });
         }
+
+        // Setup immediate window execute
+        var historyEndPosition = 0;
+
+        function setupImmediateWindow() {
+            var immediateConsole = document.getElementById('immediate-console');
+            if (!immediateConsole) {
+                // Retry after a short delay if element not found
+                setTimeout(setupImmediateWindow, 100);
+                return;
+            }
+
+            // Handle all keys via addEventListener
+            immediateConsole.addEventListener('keydown', function (e) {
+                var keyCode = e.which || e.keyCode;
+
+                // Enter key (13)
+                if (keyCode === 13 && !e.shiftKey && !e.ctrlKey) {
+                    e.preventDefault();
+                    if (e.stopPropagation) e.stopPropagation();
+
+                    var consoleText = immediateConsole.value;
+                    var currentInput = consoleText.substring(historyEndPosition).trim();
+
+                    if (currentInput) {
+                        // Call F&O to execute the code
+                        $dyn.callFunction(self.ExecuteImmediateCode, immediateConsole, { _code: currentInput }, function (result) {
+                            if (result !== null && typeof result !== 'undefined') {
+                                var output = '';
+                                if (result.Error && result.Error !== '') {
+                                    output = result.Error;
+                                } else {
+                                    output = (result.Output || '(No output)');
+                                }
+
+                                // Append output to console
+                                immediateConsole.value = consoleText + '\n' + output + '\n';
+
+                                // Update history end position
+                                historyEndPosition = immediateConsole.value.length;
+
+                                // Scroll to bottom
+                                immediateConsole.scrollTop = immediateConsole.scrollHeight;
+
+                                // Set cursor at the end
+                                immediateConsole.setSelectionRange(historyEndPosition, historyEndPosition);
+                            }
+                        });
+                    }
+
+                    return false;
+                }
+
+                // Prevent deletion or editing of history
+                var selectionStart = this.selectionStart;
+                var selectionEnd = this.selectionEnd;
+
+                // Backspace (8) and Delete (46)
+                if (keyCode === 8 || keyCode === 46) {
+                    if (selectionStart <= historyEndPosition || selectionEnd <= historyEndPosition) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+
+                // ArrowLeft (37), ArrowUp (38), Home (36)
+                if (keyCode === 37 || keyCode === 38 || keyCode === 36) {
+                    setTimeout(function () {
+                        if (immediateConsole.selectionStart < historyEndPosition) {
+                            immediateConsole.setSelectionRange(historyEndPosition, historyEndPosition);
+                        }
+                    }, 0);
+                }
+            });
+
+            // Additional event listeners for click and select
+            immediateConsole.addEventListener('click', function () {
+                // Prevent clicking into history area
+                if (this.selectionStart < historyEndPosition) {
+                    this.setSelectionRange(historyEndPosition, historyEndPosition);
+                }
+            });
+
+            immediateConsole.addEventListener('select', function () {
+                // Prevent selecting into history area
+                if (this.selectionStart < historyEndPosition) {
+                    this.setSelectionRange(historyEndPosition, historyEndPosition);
+                }
+            });
+
+            // Clear button functionality
+            var immediateClearBtn = document.getElementById('immediate-clear-btn');
+            if (immediateClearBtn) {
+                immediateClearBtn.addEventListener('click', function () {
+                    immediateConsole.value = '';
+                    historyEndPosition = 0;
+                    immediateConsole.focus();
+                });
+            }
+        }
+
+        // Initialize immediate window with retry logic
+        setupImmediateWindow();
 
         $dyn.observe(this.InspectVariables, function (root) {
             if (root !== null && typeof root !== 'undefined') {

@@ -102,6 +102,61 @@ internal final class MXTXppInterpreterExecutor
 ]]></Source>
 			</Method>
 			<Method>
+				<Name>executeExpressionWithContext</Name>
+				<Source><![CDATA[
+    /// <summary>
+    ///     Executes the given source code expression with the specified runtime context
+    /// </summary>
+    /// <param name = "_sourceCode">Expression code</param>
+    /// <param name = "_context">Runtime context to give to the parser and interpreter</param>
+    /// <returns></returns>
+    public static anytype executeExpressionWithContext(str _sourceCode, XppInterpreter.Interpreter.RuntimeContext _context)
+    {
+        XppInterpreter.Lexer.XppLexer lexer = new XppInterpreter.Lexer.XppLexer(_sourceCode);
+        XppInterpreter.Parser.ParseContext parseContext = XppInterpreter.Parser.ParseContext::FromRuntimeContext(_context);
+        var result = XppInterpreter.Parser.XppParser::ParseExpressionWithContext(lexer, proxy, parseContext);
+
+        if (result.IsCorrect)
+        {
+            XppInterpreter.Parser.Expression expression = result.AST as XppInterpreter.Parser.Expression;
+
+            // Generate bytecode
+            XppInterpreter.Interpreter.Bytecode.ByteCodeGenerator generator = new XppInterpreter.Interpreter.Bytecode.ByteCodeGenerator();
+
+            expression.Accept(generator);
+
+            XppInterpreter.Interpreter.Bytecode.ByteCode byteCode = generator.GeneratedByteCode;
+            XppInterpreter.Interpreter.XppInterpreter interpreter = new XppInterpreter.Interpreter.XppInterpreter(proxy);
+
+            XppInterpreter.Interpreter.InterpreterResult interpreterResult = interpreter.Interpret(byteCode, _context, false);
+
+            if (_context.Stack.Count == 0)
+            {
+                return "<executed>";
+            }
+
+            return _context.Stack.Pop();
+        }
+        else
+        {
+            MXTXppInterpreterCodeEditorParseExceptionCollection collection = new MXTXppInterpreterCodeEditorParseExceptionCollection();
+
+            System.Collections.IEnumerator enumerator = result.Errors.GetEnumerator();
+
+            while (enumerator.MoveNext())
+            {
+                XppInterpreter.Parser.ParseError err = enumerator.Current;
+
+                throw error(err.Message);
+            }
+
+            throw error("An error occurred while evaluating the expression.");
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>executeProgram</Name>
 				<Source><![CDATA[
     /// <summary>

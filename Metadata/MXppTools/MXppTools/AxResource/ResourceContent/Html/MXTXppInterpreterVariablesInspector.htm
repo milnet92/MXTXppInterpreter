@@ -10,87 +10,87 @@
         table-layout: fixed;
     }
 
-    #inspector td, #inspector th {
-        border: 1px solid #e0e0e0;
-        padding: 3px 3px;
-        vertical-align: middle;
-        height: auto;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
+        #inspector td, #inspector th {
+            border: 1px solid #e0e0e0;
+            padding: 3px 3px;
+            vertical-align: middle;
+            height: auto;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
 
-    #inspector tbody tr:nth-child(even) {
-        background-color: #fafafa;
-    }
+        #inspector tbody tr:nth-child(even) {
+            background-color: #fafafa;
+        }
 
-    #inspector tbody tr:hover {
-        background-color: #e8f4fd;
-        transition: background-color 0.15s ease;
-    }
+        #inspector tbody tr:hover {
+            background-color: #e8f4fd;
+            transition: background-color 0.15s ease;
+        }
 
-    #inspector th {
-        padding: 10px;
-        text-align: left;
-        background: linear-gradient(180deg, #6c757d 0%, #5a6268 100%);
-        color: white;
-        font-weight: 600;
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
+        #inspector th {
+            padding: 10px;
+            text-align: left;
+            background: linear-gradient(180deg, #6c757d 0%, #5a6268 100%);
+            color: white;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
 
-    #inspector .expand-icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 16px;
-        height: 16px;
-        font-size: 10px;
-        color: #0078d4;
-        transition: transform 0.2s ease;
-    }
+        #inspector .expand-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            font-size: 10px;
+            color: #0078d4;
+            transition: transform 0.2s ease;
+        }
 
-    #inspector .expand-icon:hover {
-        color: #106ebe;
-        transform: scale(1.2);
-    }
+            #inspector .expand-icon:hover {
+                color: #106ebe;
+                transform: scale(1.2);
+            }
 
-    #inspector td:first-child {
-        font-weight: 500;
-        color: #2c3e50;
-        width: 40%;
-    }
+        #inspector td:first-child {
+            font-weight: 500;
+            color: #2c3e50;
+            width: 40%;
+        }
 
-    #inspector td:nth-child(2) {
-        color: #333;
-        width: 40%;
-    }
+        #inspector td:nth-child(2) {
+            color: #333;
+            width: 40%;
+        }
 
-    #inspector td:nth-child(3) {
-        width: 20%;
-    }
+        #inspector td:nth-child(3) {
+            width: 20%;
+        }
 
-    #inspector td div[contenteditable] {
-        padding: 2px 4px;
-        border-radius: 3px;
-        outline: none;
-        transition: background-color 0.2s ease;
-    }
+        #inspector td div[contenteditable] {
+            padding: 2px 4px;
+            border-radius: 3px;
+            outline: none;
+            transition: background-color 0.2s ease;
+        }
 
-    #inspector td div[contenteditable]:hover {
-        background-color: #fff3cd;
-        cursor: text;
-    }
+            #inspector td div[contenteditable]:hover {
+                background-color: #fff3cd;
+                cursor: text;
+            }
 
-    #inspector td div[contenteditable]:focus {
-        background-color: #ffffff;
-        box-shadow: 0 0 0 2px #0078d4;
-    }
+            #inspector td div[contenteditable]:focus {
+                background-color: #ffffff;
+                box-shadow: 0 0 0 2px #0078d4;
+            }
 
     .inline-error {
         color: #ffffff;
@@ -105,12 +105,110 @@
 
     #MXTXppInterpreterVariablesInspector {
         border-radius: 4px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.12);
         background-color: white;
         padding: 4px;
         display: flex;
         flex-direction: column;
+        position: relative;
+        box-sizing: border-box;
+        overflow: hidden;
     }
+
+    #main-content {
+        display: flex;
+        flex-direction: row;
+        gap: 4px;
+        flex: 1;
+        box-sizing: border-box;
+        min-width: 0;
+    }
+
+    #inspector-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    #inspector-header {
+        font-weight: 600;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+        padding: 4px 0;
+        margin-bottom: 4px;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    #immediate-window-container {
+        flex: 0 0 20%;
+        padding-left: 4px;
+        padding-right: 4px;
+        display: flex;
+        flex-direction: column;
+        border-left: 1px solid #e0e0e0;
+        height: 250px;
+        box-sizing: border-box;
+        min-width: 0;
+    }
+
+    #immediate-window-header {
+        font-weight: 600;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+        padding: 4px 8px 4px 0;
+        margin-bottom: 4px;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    #immediate-clear-btn {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 2px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s ease;
+    }
+
+        #immediate-clear-btn:hover {
+            background-color: #e0e0e0;
+        }
+
+        #immediate-clear-btn img {
+            width: 16px;
+            height: 16px;
+        }
+
+    #immediate-console {
+        flex: 1;
+        width: 100%;
+        padding: 6px;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-size: 11px;
+        resize: none;
+        outline: none;
+        background-color: #1e1e1e;
+        color: #d4d4d4;
+        box-sizing: border-box;
+    }
+
+        #immediate-console:focus {
+            border-color: #0078d4;
+        }
 
     #inspector-wrapper {
         max-height: 210px;
@@ -119,20 +217,19 @@
     }
 
     #inspector-search {
-        margin-bottom: 8px;
-        padding: 6px 10px;
-        width: 100%;
+        padding: 3px 6px;
+        width: 200px;
+        max-width: 30%;
         box-sizing: border-box;
         border: 1px solid #ddd;
         border-radius: 3px;
-        font-size: 12px;
+        font-size: 11px;
     }
 
-    #inspector-search:focus {
-        outline: none;
-        border-color: #0078d4;
-        box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.2);
-    }
+        #inspector-search:focus {
+            outline: none;
+            border-color: #0078d4;
+        }
 
     .search-highlight {
         background-color: #ffeb3b;
@@ -143,18 +240,34 @@
      data-dyn-bind="
         visible: $data.Visible,
         sizing: $dyn.layout.sizing($data)">
-    <input type="text" id="inspector-search" placeholder="Search variables..." />
-    <div id="inspector-wrapper">
-        <table id="inspector" data-dyn-bind="visible: $data.Visible">
-            <thead>
-                <tr>
-                    <th data-dyn-bind="text: $dyn.label('Name')"></th>
-                    <th data-dyn-bind="text: $dyn.label('Value')"></th>
-                    <th data-dyn-bind="text: $dyn.label('Type')"></th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
+    <div id="main-content">
+        <div id="inspector-container">
+            <div id="inspector-header">
+                <span>Variables inspector</span>
+                <input type="text" id="inspector-search" placeholder="Search variables..." />
+            </div>
+            <div id="inspector-wrapper">
+                <table id="inspector" data-dyn-bind="visible: $data.Visible">
+                    <thead>
+                        <tr>
+                            <th data-dyn-bind="text: $dyn.label('Name')"></th>
+                            <th data-dyn-bind="text: $dyn.label('Value')"></th>
+                            <th data-dyn-bind="text: $dyn.label('Type')"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div id="immediate-window-container">
+            <div id="immediate-window-header">
+                <span>Immediate Window</span>
+                <button id="immediate-clear-btn" title="Clear Window">
+                    <img src="/resources/images/mxt-clear-window-16x16.png" alt="Clear" />
+                </button>
+            </div>
+            <textarea id="immediate-console" spellcheck="false"></textarea>
+        </div>
     </div>
 </div>  

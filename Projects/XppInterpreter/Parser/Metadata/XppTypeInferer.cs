@@ -214,7 +214,6 @@ namespace XppInterpreter.Parser.Metadata
                         }
 
                         return GetTypeFromWord((Word)declaration.Type);
-
                     }
                 }
             }

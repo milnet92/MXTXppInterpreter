@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppInterpreterImmediateExecutionResult</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+[DataContract]
+public class MXTXppInterpreterImmediateExecutionResult
+{
+    str error;
+    str output;
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>parmError</Name>
+				<Source><![CDATA[
+    [DataMember("Error")]
+    public str parmError(str _error = error)
+    {
+        error = _error;
+        return error;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmOutput</Name>
+				<Source><![CDATA[
+    [DataMember("Output")]
+    public str parmOutput(str _output = output)
+    {
+        output = _output;
+        return output;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

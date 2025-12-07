@@ -31,6 +31,11 @@ namespace XppInterpreter.Interpreter.Bytecode
             }
         }
 
+        public ByteCode GeneratedByteCode => new ByteCode(_ss.Peek().Instructions)
+        {
+            DeclaredFunctions = _declaredFunctions
+        };
+
         public ByteCode Generate(Program program, bool generateDebugInfo, List<RefFunction> dependencyFunctions = null)
         {
             if (dependencyFunctions != null)

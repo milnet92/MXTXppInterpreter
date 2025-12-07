@@ -651,6 +651,35 @@ public class MXTXppInterpreterDebugSession
 
 ]]></Source>
 			</Method>
+			<Method>
+				<Name>executeImmediateCode</Name>
+				<Source><![CDATA[
+    public MXTXppInterpreterImmediateExecutionResult executeImmediateCode(str _code)
+    {
+        MXTXppInterpreterImmediateExecutionResult ret = new MXTXppInterpreterImmediateExecutionResult();
+        if (!stopOnBreakpoint)
+        {
+            // Parse as an expression
+            ret.parmError("The interpreter is not paused at a breakpoint.");
+            return ret;
+        }
+        System.Exception ex;
+        try
+        {
+            anytype output = MXTXppInterpreterExecutor::executeExpressionWithContext(_code, currentExecutionResult.SaveState.Context);
+
+            ret.parmOutput(DebugHelper::GetDebugDisplayValue(output));
+            ret.parmError();
+        }
+        catch (ex)
+        {
+            ret.parmError(ex.Message);
+        }
+        return ret;
+    }
+
+]]></Source>
+			</Method>
 		</Methods>
 	</SourceCode>
 </AxClass>

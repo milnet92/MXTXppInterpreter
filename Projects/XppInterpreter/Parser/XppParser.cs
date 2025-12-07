@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Security.Cryptography;
 using XppInterpreter.Core;
 using XppInterpreter.Lexer;
 using XppInterpreter.Parser.Metadata;
@@ -17,8 +15,10 @@ namespace XppInterpreter.Parser
         private IScanResult currentScanResult;
         private bool hasBeenInitialized = false;
         private int currentPeekOffset = -1;
+        private bool validateReturnType = true;
+
+        private ParseContext _parseContext = new ParseContext();
         private readonly ILexer _lexer;
-        private readonly ParseContext _parseContext = new ParseContext();
         private readonly Interpreter.Proxy.XppProxy _proxy;
         private readonly ParseErrorCollection _parseErrors = new ParseErrorCollection();
 
@@ -47,6 +47,25 @@ namespace XppInterpreter.Parser
         {
             _lexer = lexer;
             _proxy = xppProxy;
+        }
+
+        public static ParseResult ParseExpressionWithContext(ILexer lexer, Interpreter.Proxy.XppProxy xppProxy, ParseContext parseContext)
+        {
+            var parser = new XppParser(lexer, xppProxy);
+            parser._parseContext = parseContext;
+            parser.validateReturnType = false;
+            parser.Initialize();
+            Expression expression = null;
+            try
+            {
+                expression = parser.Expression();
+            }
+            catch (ParseException ex)
+            {
+                parser._parseErrors.Add(new ParseError(ex.Token, -1, -1, ex.Message));
+            }
+
+            return new ParseResult(expression, parser._parseErrors);
         }
 
         public ParseResult Parse()
@@ -374,13 +393,13 @@ namespace XppInterpreter.Parser
 
                 if (declaredVariable is null)
                 {
-                        HandleParseError(string.Format(MessageProvider.ExceptionVariableNotDeclared, variableName), stop: false);
-                    }
+                    HandleParseError(string.Format(MessageProvider.ExceptionVariableNotDeclared, variableName), stop: false);
                 }
+            }
 
             System.Type returnType = _typeInferer.InferType(ret, currentToken.TokenType == TType.StaticDoubleDot, _parseContext);
 
-            if (ret is FunctionCall && expectReturn && (returnType is null || returnType == typeof(void)))
+            if (validateReturnType && ret is FunctionCall && expectReturn && (returnType is null || returnType == typeof(void)))
             {
                 HandleParseError(MessageProvider.ExceptionTypeCannotBeNull, stop: false);
             }
