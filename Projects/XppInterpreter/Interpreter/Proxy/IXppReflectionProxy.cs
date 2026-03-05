@@ -26,5 +26,7 @@ namespace XppInterpreter.Interpreter.Proxy
         bool TypeHasMethod(Type type, string methodName);
         bool TypeHasProperty(Type type, string propertyName, bool includeNonPublic = false);
         bool EnumHasMember(string enumName, string memberName);
+        Type GetDateType();
+        Type GetUtcDateTimeType();
     }
 }

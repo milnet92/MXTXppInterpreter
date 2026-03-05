@@ -293,6 +293,10 @@ namespace XppInterpreter.Parser
             {
                 ret = new Constant(conValue, binding);
             }
+            else if (result?.GetType() == _proxy.Reflection.GetDateType())
+            {
+                ret = new Constant(new BaseType(result, TType.Date), binding);
+            }
 
             return ret;
         }

@@ -506,6 +506,26 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 
 ]]></Source>
 			</Method>
+			<Method>
+				<Name>GetDateType</Name>
+				<Source><![CDATA[
+    System.Type GetDateType()
+    {
+        return MXTXppTypes::DateType;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetUtcDateTimeType</Name>
+				<Source><![CDATA[
+    System.Type GetUtcDateTimeType()
+    {
+        return MXTXppTypes::DateTimeType;
+    }
+
+]]></Source>
+			</Method>
 		</Methods>
 	</SourceCode>
 </AxClass>
