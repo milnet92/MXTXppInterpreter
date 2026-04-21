@@ -196,19 +196,18 @@ ace.define('ace/mode/xpp', function (require, exports, module) {
 });
 
 ace.define('ace/mode/xpp_highlight_rules', function (require, exports, module) {
-
     var oop = require("../lib/oop");
+    var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
 
-    var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;  
     var CustomScriptHighlightRules = function () {
-        
-    var keywordMapper = this.createKeywordMapper({
+        var keywordMapper = this.createKeywordMapper({
             "keyword": keywordString,
             "constant.language": "null|true|false",
             "keyword.other": intrinsicFunctionString
         },
-        "identifier",
-        true /* Ignore case */);
+            "identifier",
+            true
+        );
 
         this.$rules = {
             "start": [
@@ -216,37 +215,46 @@ ace.define('ace/mode/xpp_highlight_rules', function (require, exports, module) {
                     token: "comment",
                     regex: "\\/\\/.*$"
                 }, {
-                    token: "comment", // multi line comment
+                    token: "comment",
                     regex: "\\/\\*",
                     next: "comment"
                 }, {
-                    token: "string", // character
-                    regex: /'(?:.|\\(:?u[\da-fA-F]+|x[\da-fA-F]+|[tbrf'"n]))?'/
+                    token: "string",
+                    regex: /'(?:.|\\(?:u[\da-fA-F]+|x[\da-fA-F]+|[tbrf'"n]))?'/
                 }, {
-                    token: "string", start: '"', end: '"|$', next: [
-                        { token: "constant.language.escape", regex: /\\(:?u[\da-fA-F]+|x[\da-fA-F]+|[tbrf'"n])/ },
+                    token: "string",
+                    regex: /"""/,
+                    next: "triple_quoted_string"
+                }, {
+                    token: "string",
+                    start: '"',
+                    end: '"|$',
+                    next: [
+                        { token: "constant.language.escape", regex: /\\(?:u[\da-fA-F]+|x[\da-fA-F]+|[tbrf'"n])/ },
                         { token: "invalid", regex: /\\./ }
                     ]
                 }, {
-                    token: "string", start: /\$"/, end: '"|$', next: [
-                        { token: "constant.language.escape", regex: /\\(:?$)|{{/ },
-                        { token: "constant.language.escape", regex: /\\(:?u[\da-fA-F]+|x[\da-fA-F]+|[tbrf'"n])/ },
+                    token: "string",
+                    start: /\$"/,
+                    end: '"|$',
+                    next: [
+                        { token: "constant.language.escape", regex: /\\(?:$)|{{/ },
+                        { token: "constant.language.escape", regex: /\\(?:u[\da-fA-F]+|x[\da-fA-F]+|[tbrf'"n])/ },
                         { token: "invalid", regex: /\\./ }
                     ]
                 }, {
-                    token: "constant.numeric", // hex
+                    token: "constant.numeric",
                     regex: "0[xX][0-9a-fA-F]+\\b"
                 }, {
-                    token: "constant.numeric", // float
+                    token: "constant.numeric",
                     regex: "[+-]?\\d+(?:(?:\\.\\d*)?(?:[eE][+-]?\\d+)?)?\\b"
                 }, {
                     token: "constant.language.boolean",
                     regex: "(?:true|false)\\b"
-                },
-                {
+                }, {
                     token: ["punctuation.operator", "identifier"],
                     regex: "(\\.)([a-zA-Z_$][a-zA-Z0-9_$]*\\b)"
-                },{
+                }, {
                     token: function (value) {
                         if (appObjects.includes(value)) {
                             return "support.class";
@@ -274,9 +282,24 @@ ace.define('ace/mode/xpp_highlight_rules', function (require, exports, module) {
                     regex: "\\s+"
                 }
             ],
+            "triple_quoted_string": [
+                {
+                    token: "string",
+                    regex: /"""/,
+                    next: "start"
+                }, {
+                    token: "constant.language.escape",
+                    regex: /\\(?:u[\da-fA-F]+|x[\da-fA-F]+|[tbrf'"n])/
+                }, {
+                    token: "invalid",
+                    regex: /\\./
+                }, {
+                    defaultToken: "string"
+                }
+            ],
             "comment": [
                 {
-                    token: "comment", // closing comment
+                    token: "comment",
                     regex: "\\*\\/",
                     next: "start"
                 }, {
@@ -289,6 +312,5 @@ ace.define('ace/mode/xpp_highlight_rules', function (require, exports, module) {
     };
 
     oop.inherits(CustomScriptHighlightRules, TextHighlightRules);
-
     exports.CustomScriptHighlightRules = CustomScriptHighlightRules;
 });

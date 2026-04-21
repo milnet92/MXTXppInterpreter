@@ -295,31 +295,147 @@ namespace XppInterpreter.Lexer
         }
 
         /// <summary>
+        /// Checks if the start of a string is triple quoted
+        /// </summary>
+        /// <param name="startingChar">Starting char of the string</param>
+        /// <param name="reader">An instance of <c>StringReader</c></param>
+        /// <returns>True if is triple quoted string start</returns>
+        private bool IsTripleQuoteStart(char startingChar, StringReader reader)
+        {
+            if (reader.Peek() != startingChar)
+                return false;
+
+            reader.Read();
+
+            if (reader.Peek() != startingChar)
+                return false;
+
+            reader.Read();
+            return true;
+        }
+
+        /// <summary>
+        /// Checks if the start of a string is triple quoted
+        /// </summary>
+        /// <param name="currentChar">Current scanning character</param>
+        /// <param name="startingChar">Starting char of the string</param>
+        /// <param name="reader">An instance of <c>StringReader</c></param>
+        /// <param name="builder">An instance of <c>StringBuilder</c></param>
+        /// <returns></returns>
+        private bool IsTripleQuoteEnd(char currentChar, char startingChar, StringReader reader, StringBuilder builder)
+        {
+            if (currentChar != startingChar)
+                return false;
+
+            if (reader.Peek() != startingChar)
+                return false;
+
+            ReadChar();
+
+            if (reader.Peek() != startingChar)
+            {
+                builder.Append(startingChar);
+                builder.Append(startingChar);
+                return false;
+            }
+
+            ReadChar();
+            return true;
+        }
+
+        private char ReadEscapeSequence(StringReader reader)
+        {
+            ReadChar();
+
+            if (peek == char.MaxValue)
+            {
+                throw new ParseException(
+                    "Invalid escape sequence.",
+                    new Token(TType.String),
+                    line,
+                    positionEnd
+                );
+            }
+
+            switch (peek)
+            {
+                case 'n': return '\n';
+                case 'r': return '\r';
+                case 't': return '\t';
+                case '\\': return '\\';
+                case '"': return '"';
+                case '\'': return '\'';
+                case '0': return '\0';
+                case 'a': return '\a';
+                case 'b': return '\b';
+                case 'f': return '\f';
+                case 'v': return '\v';
+                default: return peek;
+            }
+        }
+
+        /// <summary>
         /// Scans a string token
         /// </summary>
         /// <param name="startingChar">String token delimiter</param>
         /// <returns>Read string</returns>
-        public string ScanString(char startingChar)
+        public string ScanString(char startingChar, bool tripleQuotedAllowed)
         {
             StringBuilder builder = new StringBuilder();
+            bool isTripleQuoted = tripleQuotedAllowed && IsTripleQuoteStart(startingChar, reader);
+
+            while (true)
+            {
+                ReadChar();
+                char ch = peek;
+
+                if (ch == char.MaxValue)
+                {
+                    throw new ParseException(
+                        "String not finalized.",
+                        new Token(TType.String),
+                        line,
+                        positionEnd
+                    );
+                }
+
+                if (!isTripleQuoted)
+                {
+                    if (ch == startingChar)
+                    { 
+                        break;
+                    }
+
+                    if (ch == '\n' || ch == '\r')
+                    {
+                        throw new ParseException(
+                            "Multiline strings are only allowed with triple quotes.",
+                            new Token(TType.String),
+                            line,
+                            positionEnd
+                        );
+                    }
+                }
+                else
+                {
+                    if (IsTripleQuoteEnd(ch, startingChar, reader, builder))
+                    {
+                        break;
+                    }
+                }
+
+                if (ch == '\\')
+                {
+                    builder.Append(ReadEscapeSequence(reader));
+                }
+                else
+                {
+                    builder.Append(ch);
+                }
+            }
 
             ReadChar();
-
-            for (; ; ReadChar())
-            {
-                if (peek == startingChar)
-                {
-                    ReadChar();
-
-                    return builder.ToString();
-                }
-                else if (peek == char.MaxValue)
-                {
-                    throw new ParseException("String not finalized.", new Token(TType.String), line, positionEnd);
-                }
-
-                builder.Append(peek);
-            }
+            return builder.ToString();
         }
 
         /// <summary>
@@ -425,7 +541,7 @@ namespace XppInterpreter.Lexer
                 case '"':
                 case '\'':
                     {
-                        return ScanResult(new String(ScanString(peek)));
+                        return ScanResult(new String(ScanString(peek, peek == '"')));
                     }
                 case '<':
                     {
