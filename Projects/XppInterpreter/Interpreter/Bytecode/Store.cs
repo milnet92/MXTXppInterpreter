@@ -78,11 +78,11 @@ namespace XppInterpreter.Interpreter.Bytecode
                         if (value is null && context.Proxy.Reflection.IsCommonType(ClrType))
                         {
                             var defaultValue = context.Proxy.Casting.GetDefaultValueForType(TypeName);
-                            context.ScopeHandler.CurrentScope.SetVar(Name, defaultValue, context.Proxy.Casting, Top, ClrType);
+                            context.ScopeHandler.CurrentScope.SetVar(Name, defaultValue, context.Proxy.Casting, Top, ClrType, TypeName);
                         }
                         else
                         {
-                            context.ScopeHandler.CurrentScope.SetVar(Name, value, context.Proxy.Casting, Top, ClrType);
+                            context.ScopeHandler.CurrentScope.SetVar(Name, value, context.Proxy.Casting, Top, ClrType, TypeName);
                         }
                     }
                     else

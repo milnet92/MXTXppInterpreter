@@ -178,6 +178,44 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 ]]></Source>
 			</Method>
 			<Method>
+				<Name>IsStringEDT</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Checks if a type is a string Extended Data Type
+    /// </summary>
+    /// <param name = "typeName">EDT to check</param>
+    /// <returns></returns>
+    public boolean IsStringEDT(System.String typeName)
+    {
+        var dictType = SysDictType::newName(typeName);
+
+        if (dictType != null)
+        {
+            return dictType.baseType() == Types::String;
+        }
+
+        return false;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>TruncateEDTString</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Truncates the string based on an EDT
+    /// </summary>
+    /// <param name = "value">String value to truncate</param>
+    /// <param name = "typeName">EDT name</param>
+    /// <returns></returns>
+    public System.String TruncateEDTString(System.String value, System.String typeName)
+    {
+        return Microsoft.Dynamics.Ax.Xpp.EdtHelper::GetEdtStringTruncated(value, typeName);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>CreateDynamicArray</Name>
 				<Source><![CDATA[
     /// <summary>

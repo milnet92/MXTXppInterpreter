@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Linq;
 using XppInterpreter.Interpreter.Debug;
 using XppInterpreter.Interpreter.Proxy;
@@ -53,7 +54,7 @@ namespace XppInterpreter.Core
             throw new Exception($"Variable {varName} was not declared.");
         }
 
-        public void SetVar(string varName, object varValue, Interpreter.Proxy.IXppCastingProxy castingProxy, bool forceOnTop = false, Type declarationType = null)
+        public void SetVar(string varName, object varValue, Interpreter.Proxy.IXppCastingProxy castingProxy, bool forceOnTop = false, Type declarationType = null, string typeName = null)
         {
             Scope current = this;
             bool found = false;
@@ -88,7 +89,12 @@ namespace XppInterpreter.Core
                                 value = varValue;
                             }
 
-                            current.VariableCollection.Add(new VariableEntry(varName, declarationType, value));
+                            if (!string.IsNullOrEmpty(typeName) && castingProxy.IsStringEDT(typeName))
+                            {
+                                value = castingProxy.TruncateEDTString(value as string, typeName);
+                            }
+
+                            current.VariableCollection.Add(new VariableEntry(varName, declarationType, value, typeName));
                         }
                         else
                         {
@@ -97,7 +103,20 @@ namespace XppInterpreter.Core
                     }
                     else
                     {
-                        current.VariableCollection[varName].SetValue(varValue);
+                        var entryTypeName = current.VariableCollection[varName].TypeName;
+
+                        object value;
+
+                        if (!string.IsNullOrEmpty(entryTypeName) && castingProxy.IsStringEDT(entryTypeName))
+                        {
+                            value = castingProxy.TruncateEDTString(varValue as string, entryTypeName);
+                        }
+                        else
+                        {
+                            value = varValue;
+                        }
+
+                        current.VariableCollection[varName].SetValue(value);
                     }
                 }
                 else if (current == null)

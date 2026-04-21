@@ -7,6 +7,7 @@ namespace XppInterpreter.Core
         public string Name { get; }
         public object Value { get; private set; }
         public Type DeclarationType { get; private set; }
+        public string TypeName { get; private set; }
 
         public VariableEntry(string name, object value)
         {
@@ -19,11 +20,12 @@ namespace XppInterpreter.Core
             }
         }
 
-        public VariableEntry(string name, Type declarationType, object value)
+        public VariableEntry(string name, Type declarationType, object value, string typeName)
         {
             Name = name;
             DeclarationType = declarationType;
             Value = value;
+            TypeName = typeName;
         }
 
         public void SetValue(object value)
