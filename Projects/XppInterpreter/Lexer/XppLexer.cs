@@ -23,6 +23,7 @@ namespace XppInterpreter.Lexer
         int positionEnd = 0;
         int positionStart = 0;
 
+        int currentPosition = -1;
         int previousPositionStart = -1;
         int previousPositionEnd = -1;
 
@@ -213,7 +214,7 @@ namespace XppInterpreter.Lexer
             var lastPeek = peek;
 
             peek = (char)reader.Read();
-
+            
             if (lastPeek == char.MaxValue && peek == char.MaxValue)
             {
                 return;
@@ -221,6 +222,7 @@ namespace XppInterpreter.Lexer
 
             previousPositionEnd = positionEnd;
             positionEnd++;
+            currentPosition++;
 
             if (peek == '\n')
             {
@@ -300,47 +302,42 @@ namespace XppInterpreter.Lexer
         /// <param name="startingChar">Starting char of the string</param>
         /// <param name="reader">An instance of <c>StringReader</c></param>
         /// <returns>True if is triple quoted string start</returns>
-        private bool IsTripleQuoteStart(char startingChar, StringReader reader)
+        private bool IsTripleQuoteStart(char startingChar)
         {
-            if (reader.Peek() != startingChar)
-                return false;
+            if (currentPosition + 1 < _sourceCode.Length && _sourceCode[currentPosition + 1] == startingChar &&
+                currentPosition + 2 < _sourceCode.Length && _sourceCode[currentPosition + 2] == startingChar)
+            {
+                ReadChar();
+                ReadChar();
+                return true;
+            }
 
-            reader.Read();
-
-            if (reader.Peek() != startingChar)
-                return false;
-
-            reader.Read();
-            return true;
+            return false;
         }
 
         /// <summary>
-        /// Checks if the start of a string is triple quoted
+        /// Checks if the end of a string is triple quoted
         /// </summary>
         /// <param name="currentChar">Current scanning character</param>
         /// <param name="startingChar">Starting char of the string</param>
         /// <param name="reader">An instance of <c>StringReader</c></param>
         /// <param name="builder">An instance of <c>StringBuilder</c></param>
         /// <returns></returns>
-        private bool IsTripleQuoteEnd(char currentChar, char startingChar, StringReader reader, StringBuilder builder)
+        private bool IsTripleQuoteEnd(char currentChar, char startingChar)
         {
             if (currentChar != startingChar)
                 return false;
 
-            if (reader.Peek() != startingChar)
-                return false;
+            bool secondStartingChar = currentPosition + 1 < _sourceCode.Length && _sourceCode[currentPosition + 1] == startingChar;
 
-            ReadChar();
-
-            if (reader.Peek() != startingChar)
+            if (secondStartingChar && currentPosition + 2 < _sourceCode.Length && _sourceCode[currentPosition + 2] == startingChar)
             {
-                builder.Append(startingChar);
-                builder.Append(startingChar);
-                return false;
+                ReadChar();
+                ReadChar();
+                return true;
             }
 
-            ReadChar();
-            return true;
+            return false;
         }
 
         private char ReadEscapeSequence(StringReader reader)
@@ -382,7 +379,7 @@ namespace XppInterpreter.Lexer
         public string ScanString(char startingChar, bool tripleQuotedAllowed)
         {
             StringBuilder builder = new StringBuilder();
-            bool isTripleQuoted = tripleQuotedAllowed && IsTripleQuoteStart(startingChar, reader);
+            bool isTripleQuoted = tripleQuotedAllowed && IsTripleQuoteStart(startingChar);
 
             while (true)
             {
@@ -418,7 +415,7 @@ namespace XppInterpreter.Lexer
                 }
                 else
                 {
-                    if (IsTripleQuoteEnd(ch, startingChar, reader, builder))
+                    if (IsTripleQuoteEnd(ch, startingChar))
                     {
                         break;
                     }
