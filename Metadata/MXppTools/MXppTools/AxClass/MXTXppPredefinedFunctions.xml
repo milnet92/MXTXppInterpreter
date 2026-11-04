@@ -798,7 +798,7 @@ internal final class MXTXppPredefinedFunctions
 			<Method>
 				<Name>min</Name>
 				<Source><![CDATA[
-    static real min(System.Object[] _parameters)
+    static anytype min(System.Object[] _parameters)
     {
         return Microsoft.Dynamics.Ax.Xpp.PredefinedFunctions::Min(_parameters);
     }
@@ -1446,7 +1446,7 @@ internal final class MXTXppPredefinedFunctions
         System.String invariantMethodName = XppInterpreter.Core.ReflectionHelper::GetMethodInvariantName(ThisType, _methodName);
 
         // Special case...
-        if (invariantMethodName == 'strFmt')
+        if (invariantMethodName == 'strFmt' || invariantMethodName == 'min' || invariantMethodName == 'max')
         {
             System.Object[] params = new System.Object[1]();
             params.SetValue(_parameters, 0);

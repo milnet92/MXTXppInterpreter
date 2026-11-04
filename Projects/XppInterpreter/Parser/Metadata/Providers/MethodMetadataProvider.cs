@@ -66,6 +66,15 @@ namespace XppInterpreter.Parser.Metadata.Providers
             string methodName = IsConstructor ? "new" : MethodName;
             string className = IsConstructor ? MethodName : CallerType?.Name ?? "";
 
+            if (CallerType != null && !proxy.Reflection.IsXppType(CallerType))
+            {
+                string[] signatures = IsConstructor
+                    ? Core.Clr.ClrBinder.GetConstructorSignatures(CallerType)
+                    : Core.Clr.ClrBinder.GetMethodSignatures(CallerType, MethodName, IsStatic);
+
+                return new ClrMethodTokenMetadata(signatures);
+            }
+
             var methodSyntax = proxy.Reflection.GetMethodSyntax(className, methodName);
 
             return new MethodTokenMetadata(methodName, className, methodSyntax, IsStatic);

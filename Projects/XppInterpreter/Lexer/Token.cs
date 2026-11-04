@@ -44,6 +44,7 @@ namespace XppInterpreter.Lexer
                 { '=', TType.Assign },
                 { '?', TType.QuestionMark },
                 { '^', TType.BinaryXOr},
+                { '~', TType.BinaryNot},
             };
 
             public static char GetChar(TType tokenType)
@@ -110,6 +111,7 @@ namespace XppInterpreter.Lexer
         BinaryOr,
         BinaryAnd,
         BinaryXOr,
+        BinaryNot,
         LeftShift,
         RightShift,
         LeftBrace,
@@ -139,6 +141,10 @@ namespace XppInterpreter.Lexer
         Using,
         PlusAssignment,
         MinusAssignment,
+        MultiplyAssignment,
+        DivideAssignment,
+        Const,
+        UtcDateTime,
         Increment,
         Decrement,
         Switch,
@@ -223,6 +229,7 @@ namespace XppInterpreter.Lexer
         Void,
         Return,
         EventHandler,
+        ByRef,
         #endregion
 
         EOF

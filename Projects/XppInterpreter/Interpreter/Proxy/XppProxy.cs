@@ -11,6 +11,11 @@
         public readonly IXppExceptionsProxy Exceptions;
         public readonly IXppQueryGenerationProxy QueryGeneration;
 
+        /// <summary>
+        /// Finds the .NET types of the scripts
+        /// </summary>
+        public readonly Core.Clr.ClrTypeResolver ClrTypes;
+
         public XppProxy(
             IIntrinsicFunctionProvider intrinsic,
             IXppBinaryOperationProxy binary,
@@ -29,6 +34,7 @@
             Reflection = reflection;
             Exceptions = exceptions;
             QueryGeneration = queryGeneration;
+            ClrTypes = new Core.Clr.ClrTypeResolver(reflection.GetReferencedAssemblies);
         }
     }
 }

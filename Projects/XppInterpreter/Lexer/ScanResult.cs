@@ -6,6 +6,7 @@
     public class ScanResult : IScanResult
     {
         public Token Token { get; private set; }
+        public string Text { get; set; }
         public int Start { get; private set; }
         public int End { get; private set; }
         public int Line { get; private set; }

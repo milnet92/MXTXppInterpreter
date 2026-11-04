@@ -14,6 +14,16 @@ namespace XppInterpreter.Parser
         public Expression Expression { get; }
         public string TypeName { get; }
 
+        /// <summary>
+        /// The .NET type, or null for an X++ type
+        /// </summary>
+        public System.Type ClrType { get; set; }
+
+        /// <summary>
+        /// The record is called through a table map: <c>record.Map::method()</c>
+        /// </summary>
+        public bool IsMapCall { get; set; }
+
         public As(Expression expression, string typeName, SourceCodeBinding sourceCodeBinding)
             : base(Word.As, sourceCodeBinding)
         {

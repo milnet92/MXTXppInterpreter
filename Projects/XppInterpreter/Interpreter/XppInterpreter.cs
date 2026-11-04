@@ -14,6 +14,11 @@ namespace XppInterpreter.Interpreter
 
         public IDebugger Debugger { get; set; }
         public XppInterpreterOptions Options { get; }
+        /// <summary>
+        /// It runs a local function: the transaction around the script is not its own to abort
+        /// </summary>
+        internal bool RunsLocalFunction { get; set; }
+
         public XppInterpreter(XppProxy proxy, XppInterpreterOptions options = null)
         {
             _proxy = proxy;
@@ -25,7 +30,7 @@ namespace XppInterpreter.Interpreter
             _isActionDefault = false;
             _nextAction = debugAction;
 
-            bool globalTtsAbort = Options?.EmitGlobalTtsAbort ?? false;
+            bool globalTtsAbort = (Options?.EmitGlobalTtsAbort ?? false) && !RunsLocalFunction;
 
             InterpreterResult ret = null;
             try
@@ -34,7 +39,7 @@ namespace XppInterpreter.Interpreter
             }
             finally
             {
-                if (ret?.HasFinished ?? true && globalTtsAbort)
+                if ((ret?.HasFinished ?? true) && globalTtsAbort)
                 {
                     _proxy.Data.TtsAbort();
                 }
@@ -112,16 +117,11 @@ namespace XppInterpreter.Interpreter
 
                     instruction.Execute(c);
                 }
-                catch (System.Exception ex)
+                catch (System.Exception ex) when (c.ScopeHandler.AreExceptionsHandled)
                 {
-                    if (c.ScopeHandler.AreExceptionsHandled)
-                    {
-                        c.ScopeHandler.CurrentExceptionHandler.HandleException(ex, c);
-                    }
-                    else
-                    {
-                        throw ex;
-                    }
+                    // An exception replaces a return, break or continue that was running a finally block
+                    c.PendingExit = null;
+                    c.ScopeHandler.CurrentExceptionHandler.HandleException(ex, c);
                 }
 
                 if (c.Returned)
@@ -191,7 +191,7 @@ namespace XppInterpreter.Interpreter
             }
             finally
             {
-                if (ret?.HasFinished ?? true && globalTtsAbort)
+                if ((ret?.HasFinished ?? true) && globalTtsAbort)
                 {
                     _proxy.Data.TtsAbort();
                 }
@@ -219,12 +219,6 @@ namespace XppInterpreter.Interpreter
             fullByteCode.DeclaredFunctions.AddRange(compiledProgram.DeclaredFunctions);
             fullByteCode.Instructions.AddRange(compiledProgram.Instructions);
 
-#if DEBUG
-            foreach (var instruction in fullByteCode.Instructions)
-            {
-                System.Console.WriteLine(instruction.OperationCode);
-            }
-#endif
 
             return fullByteCode;
         }

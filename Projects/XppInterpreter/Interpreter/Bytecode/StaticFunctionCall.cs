@@ -3,6 +3,11 @@
     class StaticFunctionCall : Call
     {
         public string ClassName { get; }
+
+        /// <summary>
+        /// The .NET type of the call, or null for an X++ class
+        /// </summary>
+        public System.Type ClrType { get; set; }
         public StaticFunctionCall(string name, int nArgs, bool alloc, string className = null) : base(name, nArgs, alloc)
         {
             ClassName = className;
@@ -10,6 +15,11 @@
 
         public override object MakeCall(RuntimeContext context, object[] arguments)
         {
+            if (ClrType != null)
+            {
+                return Core.Clr.ClrBinder.InvokeStatic(ClrType, Name, arguments, ArgumentTypes);
+            }
+
             if (string.IsNullOrEmpty(ClassName))
             {
                 return context.Proxy.Reflection.CallGlobalOrPredefinedFunction(context, Name, arguments);

@@ -13,9 +13,9 @@ namespace XppInterpreter.Lexer
     public class XppLexer : ILexer
     {
         public static readonly Dictionary<string, Word> Keywords = new Dictionary<string, Word>(StringComparer.InvariantCultureIgnoreCase);
-        readonly StringReader reader;
+        StringReader reader;
         readonly List<IScanResult> peekResults = new List<IScanResult>();
-        readonly string _sourceCode;
+        string _sourceCode;
 
         char peek = ' ';
         int line = 0;
@@ -27,6 +27,9 @@ namespace XppInterpreter.Lexer
         int previousPositionStart = -1;
         int previousPositionEnd = -1;
 
+        private static readonly System.Text.RegularExpressions.Regex UtcDateTimeLiteral = new System.Text.RegularExpressions.Regex(
+            @"\G(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?![\w:])", System.Text.RegularExpressions.RegexOptions.Compiled);
+
         private static DateTime MIN_DATE = new DateTime(1900, 1, 1);
         private static DateTime MAX_DATE = new DateTime(2154, 12, 31);
 
@@ -34,6 +37,21 @@ namespace XppInterpreter.Lexer
         {
             _sourceCode = source;
             reader = new StringReader(_sourceCode);
+        }
+
+        /// <summary>
+        /// Replaces the macros of the source. It has to be called before the first token is read.
+        /// </summary>
+        /// <param name="macroLibrary">Returns the text of a macro library, or null when there is none with that name</param>
+        public void ExpandMacros(Func<string, string> macroLibrary)
+        {
+            string expanded = XppMacroProcessor.Process(_sourceCode, macroLibrary);
+
+            if (!ReferenceEquals(expanded, _sourceCode))
+            {
+                _sourceCode = expanded;
+                reader = new StringReader(_sourceCode);
+            }
         }
 
         static XppLexer()
@@ -282,6 +300,99 @@ namespace XppInterpreter.Lexer
         /// Scans a number
         /// </summary>
         /// <returns></returns>
+        private long ScanHexNumber()
+        {
+            long value = 0;
+
+            ReadChar();
+
+            while (Uri.IsHexDigit(peek))
+            {
+                value = 16 * value + Convert.ToInt32(peek.ToString(), 16);
+                ReadChar();
+            }
+
+            return value;
+        }
+
+        /// <summary>
+        /// An utcdatetime literal starts like a subtraction, so all of it has to match.
+        /// </summary>
+        private bool TryScanUtcDateTime(out IScanResult result)
+        {
+            result = null;
+
+            if (currentPosition + 4 >= _sourceCode.Length || _sourceCode[currentPosition + 4] != '-')
+            {
+                return false;
+            }
+
+            var match = UtcDateTimeLiteral.Match(_sourceCode, currentPosition);
+
+            if (!match.Success)
+            {
+                return false;
+            }
+
+            int Part(int group) => int.Parse(match.Groups[group].Value, System.Globalization.CultureInfo.InvariantCulture);
+
+            System.DateTime value;
+
+            try
+            {
+                value = new System.DateTime(Part(1), Part(2), Part(3), Part(4), Part(5), Part(6));
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                throw new ParseException($"Invalid date time literal \"{match.Value}\"", new Token(TType.UtcDateTime), line, positionEnd);
+            }
+
+            for (int i = 0; i < match.Length; i++)
+            {
+                ReadChar();
+            }
+
+            result = ScanResult(new UtcDateTime(value));
+
+            return true;
+        }
+
+        /// <summary>
+        /// The exponent of a real: 1.5e2 or 1.5e-2. The compiler requires the fraction.
+        /// </summary>
+        private decimal ScanExponent(decimal value)
+        {
+            ReadChar();
+
+            bool negative = peek == '-';
+
+            if (peek == '-' || peek == '+')
+            {
+                ReadChar();
+            }
+
+            if (!char.IsDigit(peek))
+            {
+                throw new ParseException("Invalid real literal.", new Token(TType.Real), line, positionEnd);
+            }
+
+            long exponent = Math.Min(ScanNumber(), 64);
+
+            try
+            {
+                for (long i = 0; i < exponent; i++)
+                {
+                    value = negative ? value / 10 : value * 10;
+                }
+            }
+            catch (OverflowException)
+            {
+                throw new ParseException("Real literal out of range.", new Token(TType.Real), line, positionEnd);
+            }
+
+            return value;
+        }
+
         public long ScanNumber()
         {
             long value = 0;
@@ -436,6 +547,42 @@ namespace XppInterpreter.Lexer
         }
 
         /// <summary>
+        /// Scans a string with no escape sequences, that can have many lines: <c>@"c:\folder"</c>. A doubled delimiter is one delimiter.
+        /// </summary>
+        /// <param name="delimiter">String token delimiter</param>
+        /// <returns>Read string</returns>
+        private string ScanVerbatimString(char delimiter)
+        {
+            StringBuilder builder = new StringBuilder();
+
+            while (true)
+            {
+                ReadChar();
+
+                if (peek == char.MaxValue)
+                {
+                    throw new ParseException("String not finalized.", new Token(TType.String), line, positionEnd);
+                }
+
+                if (peek == delimiter)
+                {
+                    if ((char)reader.Peek() != delimiter)
+                    {
+                        break;
+                    }
+
+                    ReadChar();
+                }
+
+                builder.Append(peek);
+            }
+
+            ReadChar();
+
+            return builder.ToString();
+        }
+
+        /// <summary>
         /// Advances the poisition to skip a code comment
         /// </summary>
         /// <returns>True if the comment was correctly formatted</returns>
@@ -540,6 +687,17 @@ namespace XppInterpreter.Lexer
                     {
                         return ScanResult(new String(ScanString(peek, peek == '"')));
                     }
+                case '@':
+                    {
+                        ReadChar();
+
+                        if (peek != '"' && peek != '\'')
+                        {
+                            throw new ParseException("Character not recognized.", new Token(TType.Invalid), line, previousPositionEnd);
+                        }
+
+                        return ScanResult(new String(ScanVerbatimString(peek)));
+                    }
                 case '<':
                     {
                         char found = ReadChar('=', '<');
@@ -579,6 +737,26 @@ namespace XppInterpreter.Lexer
                         }
 
                         return ScanResult(new Token(TType.Greater));
+                    }
+                case '*':
+                    {
+                        if (ReadChar('='))
+                        {
+                            ReadChar();
+                            return ScanResult(new Token(TType.MultiplyAssignment));
+                        }
+
+                        return ScanResult(new Token(TType.Star));
+                    }
+                case '/':
+                    {
+                        if (ReadChar('='))
+                        {
+                            ReadChar();
+                            return ScanResult(new Token(TType.DivideAssignment));
+                        }
+
+                        return ScanResult(new Token(TType.Division));
                     }
                 case '+':
                     {
@@ -672,13 +850,30 @@ namespace XppInterpreter.Lexer
 
             if (char.IsDigit(peek))
             {
+                if (TryScanUtcDateTime(out IScanResult utcDateTime))
+                {
+                    return utcDateTime;
+                }
+
                 long value = ScanNumber();
+
+                if (value == 0 && (peek == 'x' || peek == 'X'))
+                {
+                    value = ScanHexNumber();
+                }
 
                 if (peek != '.')
                 {
                     if (peek == '\\')
                     {
                         return ScanResult(new Date(ScanDate((int)value)));
+                    }
+
+                    // The u suffix makes the literal an int64
+                    if (peek == 'u' || peek == 'U')
+                    {
+                        ReadChar();
+                        return ScanResult(new Int64(value));
                     }
 
                     if (value > int.MaxValue)
@@ -704,6 +899,11 @@ namespace XppInterpreter.Lexer
                     d *= 10;
                 }
 
+                if (peek == 'e' || peek == 'E')
+                {
+                    x = ScanExponent(x);
+                }
+
                 return ScanResult(new Real(x));
             }
 
@@ -721,7 +921,10 @@ namespace XppInterpreter.Lexer
 
                 if (Keywords.ContainsKey(s))
                 {
-                    return ScanResult(Keywords[s]);
+                    var keyword = ScanResult(Keywords[s]);
+                    keyword.Text = s;
+
+                    return keyword;
                 }
                 else
                 {
@@ -755,6 +958,9 @@ namespace XppInterpreter.Lexer
             Reserve(Word.Throw);
             Reserve(Word.Retry);
             Reserve(Word.Using);
+            Reserve(Word.Const);
+            Reserve(Word.NoFetch);
+            Reserve(Word.ByRef);
             Reserve(Word.IntegerDivision);
             Reserve(Word.Mod);
             Reserve(Word.Increment);

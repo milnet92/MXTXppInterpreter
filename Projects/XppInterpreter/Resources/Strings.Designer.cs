@@ -160,6 +160,69 @@ namespace XppInterpreter.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Only a local variable can be passed with byref..
+        /// </summary>
+        internal static string ExceptionInvalidByRef {
+            get {
+                return ResourceManager.GetString("ExceptionInvalidByRef", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to An X++ array can&apos;t hold a .NET type. Use a .NET array: System.String[] name = new System.String[3]();.
+        /// </summary>
+        internal static string ExceptionClrTypeInXppArray {
+            get {
+                return ResourceManager.GetString("ExceptionClrTypeInXppArray", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The const variable &apos;{0}&apos; cannot be changed..
+        /// </summary>
+        internal static string ExceptionConstCannotChange {
+            get {
+                return ResourceManager.GetString("ExceptionConstCannotChange", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The expression being assigned to &apos;{0}&apos; must be constant..
+        /// </summary>
+        internal static string ExceptionConstNotConstant {
+            get {
+                return ResourceManager.GetString("ExceptionConstNotConstant", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to A const variable requires a value to be provided..
+        /// </summary>
+        internal static string ExceptionConstWithoutValue {
+            get {
+                return ResourceManager.GetString("ExceptionConstWithoutValue", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to A local variable named &apos;{0}&apos; cannot be declared: the name belongs to a system variable..
+        /// </summary>
+        internal static string ExceptionSystemVariableDeclared {
+            get {
+                return ResourceManager.GetString("ExceptionSystemVariableDeclared", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid use of &apos;;&apos;. Use &apos;{ }&apos; if an empty statement is intended..
+        /// </summary>
+        internal static string ExceptionEmptyStatement {
+            get {
+                return ResourceManager.GetString("ExceptionEmptyStatement", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Invalid syntax..
         /// </summary>
         internal static string ExceptionInvalidSyntax {
@@ -249,14 +312,6 @@ namespace XppInterpreter.Resources {
             }
         }
         
-        /// <summary>
-        ///   Looks up a localized string similar to Return statement can only be used inside function declarations..
-        /// </summary>
-        internal static string ExceptionReturnOutOfFunction {
-            get {
-                return ResourceManager.GetString("ExceptionReturnOutOfFunction", resourceCulture);
-            }
-        }
         
         /// <summary>
         ///   Looks up a localized string similar to Syntax error: {0} expected..

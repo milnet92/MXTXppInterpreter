@@ -12,7 +12,7 @@ namespace XppInterpreter.Parser.Metadata
 {
     internal class XppTypeInferer : ITypeInferExpressionVisitor
     {
-        private System.Type _globalType, _predefinedType, _customPredefinedType;
+        private System.Type _globalType, _predefinedType, _customPredefinedType, _lateBoundType, _dateType;
         private readonly XppProxy _proxy;
         private bool _calledStatically;
         private ParseContext _context;
@@ -25,6 +25,8 @@ namespace XppInterpreter.Parser.Metadata
             _globalType = _proxy.Casting.GetSystemTypeFromTypeName("Global");
             _predefinedType = _proxy.Casting.GetSystemTypeFromTypeName("PredefinedFunctions");
             _customPredefinedType = _proxy.Intrinsic.GetCustomPredefinedFunctionProvider();
+            _lateBoundType = _proxy.Casting.GetSystemTypeFromTypeName("Object");
+            _dateType = _proxy.Reflection.GetDateType();
         }
 
         public System.Type InferType(string typeName)
@@ -75,12 +77,41 @@ namespace XppInterpreter.Parser.Metadata
 
         public System.Type VisitBinaryOperation(BinaryOperation binaryOperation)
         {
+            switch (binaryOperation.Token.TokenType)
+            {
+                case TType.Equal:
+                case TType.NotEqual:
+                case TType.Greater:
+                case TType.GreaterOrEqual:
+                case TType.Smaller:
+                case TType.SmallerOrEqual:
+                case TType.And:
+                case TType.Or:
+                case TType.In:
+                case TType.Like:
+                    return typeof(bool);
+            }
+
             var leftType = binaryOperation.LeftOperand.Accept(this);
             var rightType = binaryOperation.RightOperand.Accept(this);
 
             if (leftType == typeof(decimal) || rightType == typeof(decimal))
-            { 
+            {
                 return typeof(decimal);
+            }
+
+            if (_dateType != null && (leftType == _dateType || rightType == _dateType))
+            {
+                // The difference of two dates is a number of days, and a date plus some days is a date
+                if (binaryOperation.Token.TokenType == TType.Minus && leftType == rightType)
+                {
+                    return typeof(int);
+                }
+
+                if (binaryOperation.Token.TokenType == TType.Plus)
+                {
+                    return _dateType;
+                }
             }
 
             return leftType ?? rightType;
@@ -102,7 +133,7 @@ namespace XppInterpreter.Parser.Metadata
 
         public System.Type VisitConstructor(Constructor constructor)
         {
-            return _proxy.Casting.GetSystemTypeFromTypeName(constructor.ClassName);
+            return constructor.ClrType ?? _proxy.Casting.GetSystemTypeFromTypeName(constructor.ClassName);
         }
 
         public System.Type VisitContainerInitialisation(ContainerInitialisation containerInitialisation)
@@ -123,7 +154,15 @@ namespace XppInterpreter.Parser.Metadata
 
                 if (callerType != null)
                 {
-                    return _proxy.Reflection.GetMethodReturnType(callerType, functionCall.Name);
+                    // A record gives its original values and its data as the same table, not as a Common
+                    if (functionCall.Parameters.Count == 0 && IsRecordCopyMethod(functionCall.Name) && _proxy.Reflection.IsCommonType(callerType))
+                    {
+                        return callerType;
+                    }
+
+                    return IsClrType(callerType)
+                        ? Core.Clr.ClrBinder.GetMethodReturnType(callerType, functionCall.Name, functionCall.StaticCall, functionCall.Parameters.Count)
+                        : _proxy.Reflection.GetMethodReturnType(callerType, functionCall.Name);
                 }
             }
             else if (IsGlobalFunction(functionCall.Name))
@@ -172,8 +211,26 @@ namespace XppInterpreter.Parser.Metadata
             return _proxy.Casting.GetSystemTypeFromTypeName(typeName) != null;
         }
 
+        /// <summary>
+        /// A variable of the X++ class Object takes any method: it's resolved when it runs.
+        /// </summary>
+        public bool IsLateBoundType(System.Type type)
+        {
+            return type != null && type == _lateBoundType;
+        }
+
+        public bool IsClrType(System.Type type)
+        {
+            return type != null && !_proxy.Reflection.IsXppType(type);
+        }
+
         public System.Type VisitVariable(Variable variable)
         {
+            if (variable.ClrType != null)
+            {
+                return variable.ClrType;
+            }
+
             if (variable.Caller != null)
             {
                 bool staticSave = _calledStatically;
@@ -184,6 +241,11 @@ namespace XppInterpreter.Parser.Metadata
                 _calledStatically = staticSave;
 
                 if (callerType is null) return null;
+
+                if (IsClrType(callerType))
+                {
+                    return Core.Clr.ClrBinder.GetMemberType(callerType, variable.Name, variable.StaticCall);
+                }
 
                 if (callerType.IsEnum)
                 {
@@ -207,6 +269,11 @@ namespace XppInterpreter.Parser.Metadata
 
                     if (declaration != null)
                     {
+                        if (declaration.IsClrType)
+                        {
+                            return declaration.ClrType;
+                        }
+
                         if (declaration.Type.TokenType == TType.Var)
                         {
                             if (declaration.Initialization is null) return null;
@@ -215,10 +282,23 @@ namespace XppInterpreter.Parser.Metadata
 
                         return GetTypeFromWord((Word)declaration.Type);
                     }
+
+                    string systemVariableType = SystemVariables.GetTypeName(variable.Name);
+
+                    if (systemVariableType != null)
+                    {
+                        return _proxy.Casting.GetSystemTypeFromTypeName(systemVariableType);
+                    }
                 }
             }
 
             return null;
+        }
+
+        private static bool IsRecordCopyMethod(string methodName)
+        {
+            return string.Equals(methodName, "orig", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(methodName, "data", StringComparison.OrdinalIgnoreCase);
         }
 
         private System.Type GetTypeFromWord(Word word)
@@ -233,7 +313,7 @@ namespace XppInterpreter.Parser.Metadata
 
             if (declarationReference != null)
             {
-                return _proxy.Casting.GetSystemTypeFromTypeName(declarationReference.ReturnType.Lexeme);
+                return declarationReference.ClrType ?? _proxy.Casting.GetSystemTypeFromTypeName(declarationReference.ReturnType.Lexeme);
             }
 
             return null;
@@ -241,12 +321,12 @@ namespace XppInterpreter.Parser.Metadata
 
         public System.Type VisitIs(Is @is)
         {
-            return _proxy.Casting.GetSystemTypeFromTypeName(@is.TypeName);
+            return typeof(bool);
         }
 
         public System.Type VisitAs(As @as)
         {
-            return _proxy.Casting.GetSystemTypeFromTypeName(@as.TypeName);
+            return @as.ClrType ?? _proxy.Casting.GetSystemTypeFromTypeName(@as.TypeName);
         }
 
         public System.Type VisitSelectExpression(SelectExpression selectExpression)

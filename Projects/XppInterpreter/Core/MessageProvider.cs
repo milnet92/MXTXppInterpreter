@@ -41,10 +41,16 @@ namespace XppInterpreter.Core
         public static string ExceptionImplicitConversion => GetString(nameof(ExceptionImplicitConversion));
         public static string ExceptionLeaveFinally => GetString(nameof(ExceptionLeaveFinally));
         public static string ExceptionExpressionIDisposable => GetString(nameof(ExceptionExpressionIDisposable));
-        public static string ExceptionReturnOutOfFunction => GetString(nameof(ExceptionReturnOutOfFunction));
         public static string ExceptionInvalidCatchExpr => GetString(nameof(ExceptionInvalidCatchExpr));
         public static string ExceptionNotExceptionMember => GetString(nameof(ExceptionNotExceptionMember));
         public static string ExceptionInvalidSyntax => GetString(nameof(ExceptionInvalidSyntax));
+        public static string ExceptionEmptyStatement => GetString(nameof(ExceptionEmptyStatement));
+        public static string ExceptionInvalidByRef => GetString(nameof(ExceptionInvalidByRef));
+        public static string ExceptionClrTypeInXppArray => GetString(nameof(ExceptionClrTypeInXppArray));
+        public static string ExceptionConstCannotChange => GetString(nameof(ExceptionConstCannotChange));
+        public static string ExceptionConstNotConstant => GetString(nameof(ExceptionConstNotConstant));
+        public static string ExceptionConstWithoutValue => GetString(nameof(ExceptionConstWithoutValue));
+        public static string ExceptionSystemVariableDeclared => GetString(nameof(ExceptionSystemVariableDeclared));
         public static string ExceptionInLikeNotInQuery => GetString(nameof(ExceptionInLikeNotInQuery));
         public static string ExceptionIsInQuery => GetString(nameof(ExceptionIsInQuery));
         public static string ExceptionInNotContainer => GetString(nameof(ExceptionInNotContainer));

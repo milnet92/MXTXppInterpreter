@@ -103,6 +103,101 @@ namespace XppInterpreter.Core
             return typeInfo != null && typeInfo.ImplementedInterfaces.Contains(interfaceType);
         }
 
+        /// <summary>
+        /// A kernel class whose constructor takes variable arguments, like Struct, receives them in an array.
+        /// </summary>
+        public static object[] PackConstructorArguments(Type type, object[] arguments)
+        {
+            var constructors = type.GetConstructors();
+
+            if (constructors.Any(c => c.GetParameters().Length == arguments.Length && !IsVariableArguments(c))
+                || !constructors.Any(IsVariableArguments)
+                || (arguments.Length == 1 && (arguments[0] is null || arguments[0] is object[])))
+            {
+                return arguments;
+            }
+
+            return new object[] { arguments };
+        }
+
+        private static bool IsVariableArguments(ConstructorInfo constructor)
+        {
+            var parameters = constructor.GetParameters();
+
+            return parameters.Length == 1 && parameters[0].ParameterType == typeof(object[]);
+        }
+
+        /// <summary>
+        /// Converts a record to a table map, like the compiled assignment does.
+        /// </summary>
+        public static object CastToMap(object record, Type mapType)
+        {
+            Type common = record.GetType();
+
+            while (common != null && common.FullName != "Microsoft.Dynamics.Ax.Xpp.Common")
+            {
+                common = common.BaseType;
+            }
+
+            if (common is null)
+            {
+                throw new InvalidCastException($"Cannot convert from type '{record.GetType().Name}' to type '{mapType.Name}'.");
+            }
+
+            MethodInfo cast = common.Assembly.GetType("Microsoft.Dynamics.Ax.Xpp.CastHelper").GetMethod("CastCommon").MakeGenericMethod(mapType);
+            ParameterInfo[] parameters = cast.GetParameters();
+
+            const int targetIsMap = 1, implicitContext = 0;
+
+            try
+            {
+                return cast.Invoke(null, new[]
+                {
+                    record,
+                    Enum.ToObject(parameters[1].ParameterType, targetIsMap),
+                    Enum.ToObject(parameters[2].ParameterType, implicitContext)
+                });
+            }
+            catch (TargetInvocationException exception) when (exception.InnerException != null)
+            {
+                System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(exception.InnerException).Throw();
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// A kernel method with variable arguments, like DictClass.callStatic(name, ...), receives them in an array.
+        /// </summary>
+        public static object[] PackVariableArguments(Type type, string methodName, object[] arguments)
+        {
+            var methods = type.GetMethods().Where(m => string.Equals(m.Name, methodName, StringComparison.OrdinalIgnoreCase)).ToArray();
+
+            if (methods.Length != 1)
+            {
+                return arguments;
+            }
+
+            var parameters = methods[0].GetParameters();
+            int fixedCount = parameters.Length - 1;
+
+            if (parameters.Length == 0 || parameters[fixedCount].ParameterType != typeof(object[]) || arguments.Length < fixedCount)
+            {
+                return arguments;
+            }
+
+            if (arguments.Length == parameters.Length && (arguments[fixedCount] is null || arguments[fixedCount] is object[]))
+            {
+                return arguments;
+            }
+
+            object[] packed = new object[parameters.Length];
+
+            Array.Copy(arguments, packed, fixedCount);
+            packed[fixedCount] = arguments.Skip(fixedCount).ToArray();
+
+            return packed;
+        }
+
         public static bool IsDelegateType(Type type)
         {
             if (type is null || type.BaseType is null) return false;

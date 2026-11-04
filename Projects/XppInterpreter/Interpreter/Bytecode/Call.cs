@@ -11,6 +11,16 @@ namespace XppInterpreter.Interpreter.Bytecode
         public bool Alloc { get; }
         public bool ProcessParameters { get; }
 
+        /// <summary>
+        /// The arguments passed with byref: the position of the argument and the variable that receives the value back.
+        /// </summary>
+        public List<KeyValuePair<int, string>> ByRefArguments { get; set; }
+
+        /// <summary>
+        /// The declared type of the arguments, when they are .NET variables.
+        /// </summary>
+        public System.Type[] ArgumentTypes { get; set; }
+
         public Call(string name, int nArgs, bool allocate, bool processParameters = true)
         {
             Name = name;
@@ -23,7 +33,8 @@ namespace XppInterpreter.Interpreter.Bytecode
         {
             object[] arguments = new object[NArgs];
 
-            for (int narg = 0; narg < NArgs; narg++)
+            // Arguments are evaluated from left to right, so the last one is on top
+            for (int narg = NArgs - 1; narg >= 0; narg--)
             {
                 arguments[narg] = stack.Pop();
             }
@@ -39,6 +50,14 @@ namespace XppInterpreter.Interpreter.Bytecode
             {
                 var arguments = GetParametersFromStack(context.Stack);
                 returnValue = MakeCall(context, arguments);
+
+                if (ByRefArguments != null)
+                {
+                    foreach (var byRefArgument in ByRefArguments)
+                    {
+                        context.ScopeHandler.CurrentScope.SetVar(byRefArgument.Value, arguments[byRefArgument.Key], context.Proxy.Casting);
+                    }
+                }
             }
             else
             {

@@ -47,6 +47,7 @@ namespace XppInterpreter.Parser
                    token == Word.CrossCompany ||
                    token == Word.RepeatableRead ||
                    token == Word.ForUpdate ||
+                   token == Word.NoFetch ||
                    token == Word.GenerateOnly;
         }
 
@@ -350,7 +351,7 @@ namespace XppInterpreter.Parser
             var start = Match(TType.While);
             Select select = Select();
             var end = lastScanResult;
-            Block block = Block();
+            Block block = BlockOrStatement();
 
             return new WhileSelect(select, block, SourceCodeBinding(start, lastScanResult), SourceCodeBinding(start, end));
         }
@@ -504,6 +505,13 @@ namespace XppInterpreter.Parser
         string Index(Word tableNameVar)
         {
             Match(TType.Index);
+
+            // index hint name
+            if (currentToken is Word word && string.Equals(word.Lexeme, "hint", System.StringComparison.OrdinalIgnoreCase) && AdvancePeek(true).Token.TokenType == TType.Id)
+            {
+                Match(TType.Id);
+            }
+
             HandleAutocompletion(new Variable(tableNameVar, null, false, null));
             return (Match(TType.Id).Token as Word).Lexeme;
         }

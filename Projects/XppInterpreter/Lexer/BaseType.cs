@@ -67,6 +67,14 @@
         public Date(DateLiteral date) : base(date, TType.Date) { }
     }
 
+    /// <summary>
+    /// Utcdatetime base type token: 2020-01-02T03:04:05
+    /// </summary>
+    public class UtcDateTime : BaseType
+    {
+        public UtcDateTime(System.DateTime value) : base(value, TType.UtcDateTime) { }
+    }
+
     public readonly struct DateLiteral
     {
         public int Day { get; }

@@ -87,6 +87,12 @@ internal final class MXTXppQueryExpressionGenerator
 				<Source><![CDATA[
     private SysDaQueryExpression visitBinaryOperation(Parser.BinaryOperation _binaryOperation)
     {
+        // Without fields the value is known now: the database would not add two strings
+        if (this.isArithmetic(_binaryOperation) && this.isComputable(_binaryOperation))
+        {
+            return new SysDaValueExpression(generationHelper.ComputeExpression(_binaryOperation));
+        }
+
         var left = this.visitExpression(_binaryOperation.LeftOperand);
         var right = this.visitExpression(_binaryOperation.RightOperand);
 
@@ -121,6 +127,28 @@ internal final class MXTXppQueryExpressionGenerator
     private SysDaQueryExpression visitUnaryOperation(Parser.UnaryOperation _unaryOperation)
     {
         SysDaQueryExpression left, right;
+
+        if (_unaryOperation.Token.TokenType != Lexer.TType::Negation)
+        {
+            if (this.isComputable(_unaryOperation))
+            {
+                return new SysDaValueExpression(generationHelper.ComputeExpression(_unaryOperation));
+            }
+
+            if (_unaryOperation.Token.TokenType == Lexer.TType::Minus)
+            {
+                return new SysDaMinusExpression(new SysDaValueExpression(0), this.visitExpression(_unaryOperation.Expression));
+            }
+
+            return this.visitExpression(_unaryOperation.Expression);
+        }
+
+        if (_unaryOperation.Expression is Parser.BinaryOperation || _unaryOperation.Expression is Parser.UnaryOperation)
+        {
+            return new SysDaNotExpression(this.visitExpression(_unaryOperation.Expression));
+        }
+
+
 
         if (_unaryOperation.Expression is Parser.Variable)
         {
@@ -183,6 +211,15 @@ internal final class MXTXppQueryExpressionGenerator
 				<Source><![CDATA[
     private SysDaQueryExpression visitVariable(Parser.Variable _variable)
     {
+        if (_variable is Parser.FieldByIdAccess && this.isVariableTable(_variable))
+        {
+            Parser.FieldByIdAccess fieldById = _variable as Parser.FieldByIdAccess;
+            Common record = generationHelper.ComputeVariable(fieldById.Caller);
+            int fieldId = generationHelper.ComputeExpression(fieldById.FieldId);
+
+            return new SysDaFieldExpression(record, fieldId2Name(record.TableId, fieldId));
+        }
+
         if (this.isVariableTable(_variable))
         {
             Common common = generationHelper.ComputeVariable(_variable.Caller);
@@ -198,6 +235,66 @@ internal final class MXTXppQueryExpressionGenerator
         {
             return new SysDaValueExpression(generationHelper.ComputeVariable(_variable));
         }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>isArithmetic</Name>
+				<Source><![CDATA[
+    private boolean isArithmetic(Parser.BinaryOperation _binaryOperation)
+    {
+        switch (_binaryOperation.Token.TokenType)
+        {
+            case Lexer.TType::Plus:
+            case Lexer.TType::Minus:
+            case Lexer.TType::Division:
+            case Lexer.TType::Star:
+            case Lexer.TType::Mod:
+            case Lexer.TType::IntegerDivision:
+                return true;
+        }
+
+        return false;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>isComputable</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Checks if the expression has a value without reading the tables of the query
+    /// </summary>
+    /// <param name = "_expression">Expression</param>
+    /// <returns>True when it doesn't use their fields</returns>
+    private boolean isComputable(Parser.Expression _expression)
+    {
+        if (_expression is Parser.Constant)
+        {
+            return true;
+        }
+
+        if (_expression is Parser.BinaryOperation)
+        {
+            Parser.BinaryOperation binaryOperation = _expression as Parser.BinaryOperation;
+
+            return this.isComputable(binaryOperation.LeftOperand) && this.isComputable(binaryOperation.RightOperand);
+        }
+
+        if (_expression is Parser.UnaryOperation)
+        {
+            Parser.UnaryOperation unaryOperation = _expression as Parser.UnaryOperation;
+
+            return this.isComputable(unaryOperation.Expression);
+        }
+
+        if (_expression is Parser.Variable)
+        {
+            return !this.isVariableTable(_expression as Parser.Variable);
+        }
+
+        return false;
     }
 
 ]]></Source>

@@ -489,6 +489,11 @@
       <Name>MXTSymbolTable</Name>
       <Link>Resources\MXTSymbolTable</Link>
     </Content>
+    <Content Include="AxResource\MXTSymbolNamespace">
+      <SubType>Content</SubType>
+      <Name>MXTSymbolNamespace</Name>
+      <Link>Resources\MXTSymbolNamespace</Link>
+    </Content>
     <Content Include="AxResource\MXTSymbolTableIndex">
       <SubType>Content</SubType>
       <Name>MXTSymbolTableIndex</Name>
@@ -708,6 +713,11 @@
       <SubType>Content</SubType>
       <Name>MXTXppInterpreterVariablesInspector.js</Name>
       <DependentUpon>AxResource\MXTXppInterpreterVariablesInspectorJS</DependentUpon>
+    </Content>
+    <Content Include="Namespace_16x.png">
+      <SubType>Content</SubType>
+      <Name>Namespace_16x.png</Name>
+      <DependentUpon>AxResource\MXTSymbolNamespace</DependentUpon>
     </Content>
     <Content Include="TableIndex_16x.png">
       <SubType>Content</SubType>

@@ -16,6 +16,12 @@ namespace XppInterpreter.Interpreter.Bytecode
         private readonly bool _hasMaxIterations;
         private bool _generateDebugInfo;
 
+        // How many try statements enclose the code being generated, and how many enclosed the
+        // statements a break or a continue goes to: the difference is the handlers they leave.
+        private int _tryDepth;
+        private readonly Stack<int> _breakTargets = new Stack<int>();
+        private readonly Stack<int> _continueTargets = new Stack<int>();
+
         public XppInterpreterOptions Options { get; }
 
         public ByteCodeGenerator(XppInterpreterOptions options = null, List<RefFunction> declaredFunctions = null)
@@ -156,12 +162,15 @@ namespace XppInterpreter.Interpreter.Bytecode
             whileSelect.Select.Accept(this);
             var selectScope = ReleaseScope();
 
+            BeginLoop();
             CreateScope();
             whileSelect.Block.Accept(this);
             var blockScope = ReleaseScope();
+            EndLoop();
 
+            Emit(new ResetQuery(whileSelect.Select.Query));
             EmitScope(selectScope);
-            Emit(new JumpIfFalse(blockScope.Count + 1 + 1 /*Jump instruction*/));
+            Emit(new JumpIfFalse(blockScope.Count + 1 + 1 /*Jump instruction*/, false));
             EmitScope(blockScope);
             Emit(new Jump(-(blockScope.Count + selectScope.Count) - 1));
 
@@ -174,23 +183,23 @@ namespace XppInterpreter.Interpreter.Bytecode
         {
             @unchecked.Expression.Accept(this);
             Emit(new Unchecked());
-            @unchecked.Block.Accept(this);
-            Emit(new DisposeHandle());
+            EmitTry(new Try(@unchecked.Block, @unchecked.Block.SourceCodeBinding), new DisposeHandle());
         }
 
         public void VisitChangeCompany(Parser.ChangeCompany changeCompany)
         {
             changeCompany.Expression.Accept(this);
             Emit(new ChangeCompany());
-            changeCompany.Block.Accept(this);
-            Emit(new DisposeHandle());
+
+            // The company comes back however the block ends: a return, a break or an exception
+            EmitTry(new Try(changeCompany.Block, changeCompany.Block.SourceCodeBinding), new DisposeHandle());
         }
 
         public void VisitContainerInitialisation(ContainerInitialisation containerInitialisation)
         {
-            for (int nElement = containerInitialisation.Elements.Count - 1; nElement >= 0; nElement--)
+            foreach (var element in containerInitialisation.Elements)
             {
-                containerInitialisation.Elements[nElement].Accept(this);
+                element.Accept(this);
             }
 
             Emit(new Container(containerInitialisation.Elements.Count));
@@ -217,17 +226,21 @@ namespace XppInterpreter.Interpreter.Bytecode
         public void VisitLoopControl(Parser.LoopControl loopControl)
         {
             EmitDebugSymbol(loopControl);
-            Emit(new LoopControl(0, loopControl.Token.TokenType, true));
+
+            var targets = loopControl.Token.TokenType == TType.Break ? _breakTargets : _continueTargets;
+            int handlersToLeave = targets.Count > 0 ? _tryDepth - targets.Peek() : 0;
+
+            Emit(new LoopControl(0, loopControl.Token.TokenType, true, handlersToLeave));
         }
 
         public void VisitConstructor(Constructor constructor)
         {
-            for (var narg = constructor.Parameters.Count - 1; narg >= 0; narg--)
+            foreach (var parameter in constructor.Parameters)
             {
-                constructor.Parameters[narg].Accept(this);
+                parameter.Accept(this);
             }
 
-            Emit(new NewObject(constructor.ClassName, constructor.Parameters.Count, true));
+            Emit(WithArgumentInfo(new NewObject(constructor.ClassName, constructor.Parameters.Count, true) { ClrType = constructor.ClrType }, constructor));
         }
 
         public void VisitAssignment(Assignment assignment)
@@ -235,6 +248,23 @@ namespace XppInterpreter.Interpreter.Bytecode
             EmitDebugSymbol(assignment);
 
             assignment.Expression.Accept(this);
+
+            if (assignment.Assignee is FieldByIdAccess fieldById)
+            {
+                fieldById.Caller.Accept(this);
+                fieldById.FieldId.Accept(this);
+                Emit(new Store(fieldById.Name, true, false, false, null, null) { IsFieldById = true });
+                return;
+            }
+
+            if (assignment.Assignee.StaticCall)
+            {
+                Emit(new StaticStore(assignment.Assignee.Name, ((Word)assignment.Assignee.Caller.Token).Lexeme)
+                {
+                    ClrType = (assignment.Assignee.Caller as Variable)?.ClrType
+                });
+                return;
+            }
 
             bool fromCaller = false;
 
@@ -279,7 +309,11 @@ namespace XppInterpreter.Interpreter.Bytecode
                     access.Index.Accept(this);
                 }
 
-                Emit(new ContainerStore(assignee.Name, containerIndex, containerIndex == maxIndex, fromCaller, false, isArray, null, null));
+                var fieldById = assignee as FieldByIdAccess;
+
+                fieldById?.FieldId.Accept(this);
+
+                Emit(new ContainerStore(assignee.Name, containerIndex, containerIndex == maxIndex, fromCaller, false, isArray, null, null) { IsFieldById = fieldById != null });
 
                 containerIndex++;
             }
@@ -301,6 +335,7 @@ namespace XppInterpreter.Interpreter.Bytecode
                 // Create scope for left operand
                 CreateScope();
                 binaryOperation.RightOperand.Accept(this);
+                Emit(new ToBooleanValue());
                 var scope = ReleaseScope();
 
                 if (tokenType == TType.And)
@@ -356,13 +391,35 @@ namespace XppInterpreter.Interpreter.Bytecode
         {
             EmitDebugSymbol(@do);
 
+            BeginLoop();
             CreateScope();
             @do.Block.Accept(this);
-            @do.Expression.Accept(this);
-            var scope = ReleaseScope();
+            var blockScope = ReleaseScope();
+            EndLoop();
 
-            EmitScope(scope);
-            Emit(new JumpIfTrue(-(scope.Count)));
+            CreateScope();
+            @do.Expression.Accept(this);
+            var expressionScope = ReleaseScope();
+
+            CreateScope();
+            if (_hasMaxIterations)
+            {
+                Emit(new MaxLoopThrow());
+            }
+
+            var loopCheckScope = ReleaseScope();
+
+            if (_hasMaxIterations)
+            {
+                Emit(new Push(Options.MaxLoopIterations));
+            }
+
+            EmitScope(loopCheckScope);
+            EmitScope(blockScope);
+            EmitScope(expressionScope);
+            Emit(new JumpIfTrue(-(loopCheckScope.Count + blockScope.Count + expressionScope.Count), false));
+
+            RecalculateLoopControlOffsets(expressionScope.Instructions.First());
         }
 
         public void VisitElse(Else @else)
@@ -384,9 +441,11 @@ namespace XppInterpreter.Interpreter.Bytecode
             @for.Condition?.Accept(this);
             var forScope = ReleaseScope();
 
+            BeginLoop();
             CreateScope();
             @for.Block.Accept(this);
             var blockScope = ReleaseScope();
+            EndLoop();
 
             CreateScope();
             @for.LoopStatement.Accept(this);
@@ -406,7 +465,7 @@ namespace XppInterpreter.Interpreter.Bytecode
             }
 
             EmitScope(forScope);
-            Emit(new JumpIfFalse(maxLoopScope.Count + blockScope.Count + loopScope.Count + 1 + 1 /* Jump instruction */));
+            Emit(new JumpIfFalse(maxLoopScope.Count + blockScope.Count + loopScope.Count + 1 + 1 /* Jump instruction */, false));
             EmitScope(maxLoopScope);
             EmitScope(blockScope);
             EmitScope(loopScope);
@@ -460,11 +519,11 @@ namespace XppInterpreter.Interpreter.Bytecode
 
             if (elseScope != null)
             {
-                Emit(new JumpIfFalse(statementScope.Count + 2));
+                Emit(new JumpIfFalse(statementScope.Count + 2, false));
             }
             else
             {
-                Emit(new JumpIfFalse(statementScope.Count + 1));
+                Emit(new JumpIfFalse(statementScope.Count + 1, false));
             }
 
             EmitScope(statementScope);
@@ -484,9 +543,11 @@ namespace XppInterpreter.Interpreter.Bytecode
             @while.Expression.Accept(this);
             var expressionScope = ReleaseScope();
 
+            BeginLoop();
             CreateScope();
             @while.Block.Accept(this);
             var blockScope = ReleaseScope();
+            EndLoop();
 
             CreateScope();
             if (_hasMaxIterations)
@@ -502,12 +563,24 @@ namespace XppInterpreter.Interpreter.Bytecode
             }
 
             EmitScope(expressionScope);
-            Emit(new JumpIfFalse(loopCheckScope.Count + blockScope.Count + 1 + 1 /*Jump instruction*/));
+            Emit(new JumpIfFalse(loopCheckScope.Count + blockScope.Count + 1 + 1 /*Jump instruction*/, false));
             EmitScope(loopCheckScope);
             EmitScope(blockScope);
             Emit(new Jump(-(loopCheckScope.Count + blockScope.Count + expressionScope.Count) - 1));
 
             RecalculateLoopControlOffsets(expressionScope.Instructions.First());
+        }
+
+        private void BeginLoop()
+        {
+            _breakTargets.Push(_tryDepth);
+            _continueTargets.Push(_tryDepth);
+        }
+
+        private void EndLoop()
+        {
+            _breakTargets.Pop();
+            _continueTargets.Pop();
         }
 
         private void RecalculateLoopControlOffsets(IInstruction jumpInstructionForContinue)
@@ -536,9 +609,17 @@ namespace XppInterpreter.Interpreter.Bytecode
 
         private void VisitFunctionCall(FunctionCall functionCall, bool allocate)
         {
-            for (var narg = functionCall.Parameters.Count - 1; narg >= 0; narg--)
+            bool isInstanceCall = functionCall.Caller != null && !functionCall.StaticCall;
+
+            // Evaluation order is the one of the X++ compiler: the caller, then the arguments from left to right
+            if (isInstanceCall)
             {
-                functionCall.Parameters[narg].Accept(this);
+                functionCall.Caller.Accept(this);
+            }
+
+            foreach (var parameter in functionCall.Parameters)
+            {
+                parameter.Accept(this);
             }
 
             int nArgs = functionCall.Parameters.Count;
@@ -546,26 +627,44 @@ namespace XppInterpreter.Interpreter.Bytecode
             if (_declaredFunctions.Exists(f => f.Declaration.Name.ToLowerInvariant() == functionCall.Name.ToLowerInvariant()) && functionCall.Caller is null)
             {
                 var declaredFunctionRef = _declaredFunctions.First(f => f.Declaration.Name.ToLowerInvariant() == functionCall.Name.ToLowerInvariant());
-                Emit(new DeclaredFunctionCall(declaredFunctionRef, nArgs));
+                Emit(new DeclaredFunctionCall(declaredFunctionRef, nArgs, allocate));
             }
             else if (functionCall.Intrinsical)
             {
-                Emit(new IntrinsicCall(functionCall.Name, nArgs, allocate));
+                Emit(WithArgumentInfo(new IntrinsicCall(functionCall.Name, nArgs, allocate), functionCall));
             }
             else if (functionCall.Caller is null)
             {
-                Emit(new StaticFunctionCall(functionCall.Name, nArgs, allocate));
+                Emit(WithArgumentInfo(new StaticFunctionCall(functionCall.Name, nArgs, allocate), functionCall));
             }
             else if (functionCall.StaticCall)
             {
-                string callerName = ((Word)(functionCall.Caller as Variable).Token).Lexeme;
-                Emit(new StaticFunctionCall(functionCall.Name, nArgs, allocate, callerName));
+                var caller = functionCall.Caller as Variable;
+                string callerName = ((Word)caller.Token).Lexeme;
+                Emit(WithArgumentInfo(new StaticFunctionCall(functionCall.Name, nArgs, allocate, callerName) { ClrType = caller.ClrType }, functionCall));
             }
             else
             {
-                functionCall.Caller.Accept(this);
-                Emit(new InstanceFunctionCall(functionCall.Name, nArgs, allocate));
+                Emit(WithArgumentInfo(new InstanceFunctionCall(functionCall.Name, nArgs, allocate), functionCall));
             }
+        }
+
+        private static Call WithArgumentInfo(Call call, FunctionCall functionCall)
+        {
+            call.ArgumentTypes = functionCall.ArgumentTypes;
+
+            var byRefArguments = functionCall.Parameters
+                .Select((parameter, position) => new { Variable = parameter as Variable, Position = position })
+                .Where(p => p.Variable != null && p.Variable.IsByRef)
+                .Select(p => new KeyValuePair<int, string>(p.Position, p.Variable.Name))
+                .ToList();
+
+            if (byRefArguments.Count > 0)
+            {
+                call.ByRefArguments = byRefArguments;
+            }
+
+            return call;
         }
 
         public void VisitTernary(Ternary ternary)
@@ -601,11 +700,30 @@ namespace XppInterpreter.Interpreter.Bytecode
                     Emit(new Push(-1));
                     Emit(new Arithmetic(TType.Star));
                     break;
+
+                case TType.BinaryNot:
+                    Emit(new Push(-1));
+                    Emit(new Arithmetic(TType.BinaryXOr));
+                    break;
             }
         }
 
         public void VisitVariable(Variable variable)
         {
+            if (variable.IsSystemVariable)
+            {
+                Emit(new SystemVariableLoad(variable.Name));
+                return;
+            }
+
+            if (variable is FieldByIdAccess fieldById)
+            {
+                fieldById.Caller.Accept(this);
+                fieldById.FieldId.Accept(this);
+                Emit(new FieldByIdLoad());
+                return;
+            }
+
             bool isArray = false;
 
             if (variable is ArrayAccess arrayAccess)
@@ -626,13 +744,24 @@ namespace XppInterpreter.Interpreter.Bytecode
             else
             {
                 string callerName = (variable.Caller.Token as Word).Lexeme;
-                Emit(new StaticLoad(variable.Name, callerName, isArray));
+                Emit(new StaticLoad(variable.Name, callerName, isArray) { ClrType = (variable.Caller as Variable)?.ClrType });
             }
         }
 
         public void VisitVariableDeclarations(VariableDeclarations variableDeclarations)
         {
-            EmitDebugSymbol(variableDeclarations);
+            // An array is part of the statement that declares it: one step for the debugger
+            if (!(variableDeclarations is VariableArrayDeclaration))
+            {
+                EmitDebugSymbol(variableDeclarations);
+            }
+
+
+            foreach (var arrayDeclaration in variableDeclarations.ArrayDeclarations)
+            {
+                arrayDeclaration.Accept(this);
+            }
+
             foreach (var declaration in variableDeclarations.Identifiers)
             {
                 if (declaration.Value != null)
@@ -644,12 +773,19 @@ namespace XppInterpreter.Interpreter.Bytecode
                     arrayDeclaration.Size?.Accept(this);
                     Emit(new DefaultValueArray(variableDeclarations.DeclarationType.Lexeme, arrayDeclaration.Size != null));
                 }
+                else if (variableDeclarations.IsClrType)
+                {
+                    Emit(new ClrDefaultValue(variableDeclarations.DeclarationClrType));
+                }
                 else
                 {
                     Emit(new DefaultValue(variableDeclarations.DeclarationType.Lexeme));
                 }
 
-                Emit(new Store(declaration.Key.Lexeme, false, true, false, variableDeclarations.DeclarationType.Lexeme, variableDeclarations.DeclarationClrType));
+                Emit(new Store(declaration.Key.Lexeme, false, true, false, variableDeclarations.IsClrType ? null : variableDeclarations.DeclarationType.Lexeme, variableDeclarations.DeclarationClrType)
+                {
+                    StringLength = variableDeclarations.StringLength
+                });
             }
         }
 
@@ -666,17 +802,32 @@ namespace XppInterpreter.Interpreter.Bytecode
             @switch.Expression.Accept(this);
             var expressionScope = ReleaseScope();
 
-            var caseScopes = new Dictionary<ByteCodeGenerationScope, ByteCodeGenerationScope>();
+            var cases = new List<System.Tuple<List<ByteCodeGenerationScope>, ByteCodeGenerationScope>>();
+
+            _breakTargets.Push(_tryDepth);
 
             // Emit cases
             foreach (var @case in @switch.Cases)
             {
+                var values = new List<ByteCodeGenerationScope>();
+
                 CreateScope();
                 EmitDebugSymbol(@case.Key);
                 @case.Key.Accept(this);
                 // delete all debug symbols that are created by the expression itself
                 DeleteAllDebugSymbolsInScope(true);
-                var caseExpressionScope = ReleaseScope();
+                values.Add(ReleaseScope());
+
+                if (@switch.ExtraCaseValues.TryGetValue(@case.Key, out var extraValues))
+                {
+                    foreach (var extraValue in extraValues)
+                    {
+                        CreateScope();
+                        extraValue.Accept(this);
+                        DeleteAllDebugSymbolsInScope(false);
+                        values.Add(ReleaseScope());
+                    }
+                }
 
                 CreateScope();
                 foreach (var caseStatement in @case.Value)
@@ -685,7 +836,7 @@ namespace XppInterpreter.Interpreter.Bytecode
                 }
                 var caseStatementsScope = ReleaseScope();
 
-                caseScopes.Add(caseExpressionScope, caseStatementsScope);
+                cases.Add(new System.Tuple<List<ByteCodeGenerationScope>, ByteCodeGenerationScope>(values, caseStatementsScope));
             }
 
             // Emit default
@@ -696,15 +847,36 @@ namespace XppInterpreter.Interpreter.Bytecode
             }
             var defaultScope = ReleaseScope();
 
+            _breakTargets.Pop();
+
             Emit(new BeginScope());
 
             EmitScope(expressionScope);
 
-            foreach (var caseScope in caseScopes)
+            for (int nCase = 0; nCase < cases.Count; nCase++)
             {
-                EmitScope(caseScope.Key);
-                Emit(new Case(caseScope.Value.Count + 1));
-                EmitScope(caseScope.Value);
+                var values = cases[nCase].Item1;
+                var statements = cases[nCase].Item2;
+
+                // A case without break runs into the statements of the next one, without testing its values
+                int nextTestsCount = nCase + 1 < cases.Count ? cases[nCase + 1].Item1.Sum(v => v.Count + 1) : 0;
+
+                for (int nValue = 0; nValue < values.Count - 1; nValue++)
+                {
+                    int remainingTests = values.Skip(nValue + 1).Sum(v => v.Count + 1);
+
+                    EmitScope(values[nValue]);
+                    Emit(new CaseMatch(remainingTests + 1));
+                }
+
+                EmitScope(values.Last());
+                Emit(new Case(statements.Count + (nextTestsCount > 0 ? 1 : 0) + 1));
+                EmitScope(statements);
+
+                if (nextTestsCount > 0)
+                {
+                    Emit(new Jump(nextTestsCount + 1));
+                }
             }
 
             EmitScope(defaultScope);
@@ -739,9 +911,28 @@ namespace XppInterpreter.Interpreter.Bytecode
             RefFunction refFunction = new RefFunction(functionDeclaration);
             _declaredFunctions.Add(refFunction);
 
+            // The function runs with its own exception handlers
+            int enclosingTryDepth = _tryDepth;
+            _tryDepth = 0;
+
             CreateScope();
+
+            // A default value can use the previous parameters, so it runs inside the function
+            foreach (var parameter in functionDeclaration.Parameters.Where(p => p.DefaultValue != null))
+            {
+                CreateScope();
+                parameter.DefaultValue.Accept(this);
+                Emit(new Store(parameter.Name, false, true, false, null, parameter.DeclarationClrType));
+                var defaultValueScope = ReleaseScope();
+
+                Emit(new JumpIfParameterPassed(parameter.Name, defaultValueScope.Count + 1));
+                EmitScope(defaultValueScope);
+            }
+
             functionDeclaration.Block.Accept(this);
             var blockScope = ReleaseScope();
+
+            _tryDepth = enclosingTryDepth;
 
             refFunction.Instructions = blockScope.Instructions;
         }
@@ -749,8 +940,8 @@ namespace XppInterpreter.Interpreter.Bytecode
         public void VisitReturn(Parser.Return @return)
         {
             EmitDebugSymbol(@return);
-            @return.Expression.Accept(this);
-            Emit(new Return());
+            @return.Expression?.Accept(this);
+            Emit(new Return(@return.Expression != null));
         }
 
         public void VisitPrint(Print print)
@@ -758,19 +949,15 @@ namespace XppInterpreter.Interpreter.Bytecode
             EmitDebugSymbol(print);
 
             // Print call is translated into strFmt and info calls
-            StringBuilder sb = new StringBuilder();
-            for (var narg = print.Parameters.Count - 1; narg >= 0; narg--)
-            {
-                if (narg != print.Parameters.Count - 1)
-                {
-                    sb.Append(' ');
-                }
+            string format = string.Join(" ", Enumerable.Range(1, print.Parameters.Count).Select(n => $"%{n}"));
 
-                sb.Append($"%{print.Parameters.Count - narg}");
-                print.Parameters[narg].Accept(this);
+            Emit(new Push(format));
+
+            foreach (var parameter in print.Parameters)
+            {
+                parameter.Accept(this);
             }
 
-            Emit(new Push(sb.ToString()));
             Emit(new StaticFunctionCall("strFmt", print.Parameters.Count + 1, true));
             Emit(new StaticFunctionCall("info", 1, false));
         }
@@ -778,13 +965,13 @@ namespace XppInterpreter.Interpreter.Bytecode
         public void VisitIs(Parser.Is @is)
         {
             @is.Expression.Accept(this);
-            Emit(new Is(@is.TypeName));
+            Emit(new Is(@is.TypeName) { ClrType = @is.ClrType });
         }
 
         public void VisitAs(Parser.As @as)
         {
             @as.Expression.Accept(this);
-            Emit(new As(@as.TypeName));
+            Emit(new As(@as.TypeName) { ClrType = @as.ClrType, IsMapCall = @as.IsMapCall });
         }
 
         public void VisitTry(Try @try)
@@ -794,7 +981,10 @@ namespace XppInterpreter.Interpreter.Bytecode
 
         private void EmitTry(Try @try, IInstruction finallyInstruction = null)
         {
-            var catchBlockScopes = new List<System.Tuple<string, ByteCodeGenerationScope>>(@try.Catches.Count);
+            var catchBlockScopes = new List<System.Tuple<Catch, ByteCodeGenerationScope>>(@try.Catches.Count);
+
+            // The handler stays active during the try and the catch blocks
+            _tryDepth++;
 
             int totalCatchInstructions = 0;
             foreach (var @catch in @try.Catches)
@@ -802,7 +992,7 @@ namespace XppInterpreter.Interpreter.Bytecode
                 CreateScope();
                 @catch.Block.Accept(this);
                 ByteCodeGenerationScope catchScope = ReleaseScope();
-                catchBlockScopes.Add(new System.Tuple<string, ByteCodeGenerationScope>(@catch.ExceptionMember, catchScope));
+                catchBlockScopes.Add(new System.Tuple<Catch, ByteCodeGenerationScope>(@catch, catchScope));
                 totalCatchInstructions += catchScope.Count;
             }
 
@@ -832,12 +1022,20 @@ namespace XppInterpreter.Interpreter.Bytecode
                     accumulatedCatchOffset += catchBlockScopes[i - 1].Item2.Count + 1 /* Jump instruction */;
                 }
 
-                handler.CatchReferences.Add(new ExceptionCatchReference(catchBlockScopes[i].Item1, accumulatedCatchOffset));
+                var @catch = catchBlockScopes[i].Item1;
+
+                handler.CatchReferences.Add(new ExceptionCatchReference(@catch.ExceptionMember, accumulatedCatchOffset)
+                {
+                    ClrType = @catch.ClrType,
+                    VariableName = @catch.VariableName
+                });
             }
 
-            Emit(new EndHandleException(@try.HasFinally));
+            _tryDepth--;
 
             bool emitFinally = @try.HasFinally || finallyInstruction != null;
+
+            Emit(new EndHandleException(emitFinally));
 
             if (@try.HasFinally)
             {

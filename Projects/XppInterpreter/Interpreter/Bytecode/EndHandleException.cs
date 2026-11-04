@@ -29,12 +29,18 @@ namespace XppInterpreter.Interpreter.Bytecode
                 }
                 else
                 {
-                    throw handler.Exception;
+                    System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(handler.Exception).Throw();
                 }
             }
             else if (handler.Catched)
             {
                 context.LastException = null;
+            }
+
+            // With a finally block, the exit goes on when the block ends
+            if (!NeedToFinalize && context.PendingExit != null)
+            {
+                context.ContinueExit();
             }
         }
     }

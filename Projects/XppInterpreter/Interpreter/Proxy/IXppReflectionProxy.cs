@@ -28,5 +28,36 @@ namespace XppInterpreter.Interpreter.Proxy
         bool EnumHasMember(string enumName, string memberName);
         Type GetDateType();
         Type GetUtcDateTimeType();
+
+        /// <summary>
+        /// Tells if the type comes from X++: a class, a table or an enumeration. Any other type is called as .NET.
+        /// </summary>
+        bool IsXppType(Type type);
+
+        /// <summary>
+        /// The display names of the assemblies referenced by the models.
+        /// </summary>
+        string[] GetReferencedAssemblies();
+
+        /// <summary>
+        /// The value of a variable that X++ code has without declaring it: appl, infolog or classFactory.
+        /// </summary>
+        object GetSystemVariable(string name);
+
+        /// <summary>
+        /// The value of <c>record.(fieldId)</c>
+        /// </summary>
+        object GetFieldValueById(object record, int fieldId);
+
+        /// <summary>
+        /// Assigns <c>record.(fieldId)</c>
+        /// </summary>
+        void SetFieldValueById(object record, int fieldId, object value);
+
+        /// <summary>
+        /// The text of a macro library.
+        /// </summary>
+        /// <returns>The text, or null when there is no library with that name</returns>
+        string GetMacroLibrary(string name);
     }
 }

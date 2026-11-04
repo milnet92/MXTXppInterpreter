@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Linq;
+using System;
 using XppInterpreter.Lexer;
 
 namespace XppInterpreter.Interpreter.Bytecode
@@ -6,19 +7,23 @@ namespace XppInterpreter.Interpreter.Bytecode
     internal class DeclaredFunctionCall : IInstruction, ICall, IInterpretableInstruction
     {
         private RefFunction _ref;
+        private readonly bool _allocate;
         public string OperationCode => "CALL";
         public string Name => _ref.Declaration.Name;
         public int NArgs { get; set; }
-        public bool Alloc => _ref.Declaration.Type.TokenType != TType.Void;
+        public bool Alloc => _allocate && _ref.Declaration.Type.TokenType != TType.Void;
         public bool ProcessParameters => true;
         public InterpreterResult LastResult { get; private set; }
 
-        public DeclaredFunctionCall(RefFunction refFunction, int nArgs)
+        public DeclaredFunctionCall(RefFunction refFunction, int nArgs, bool allocate = true)
         {
             _ref = refFunction;
+            _allocate = allocate;
             NArgs = nArgs;
 
-            if (_ref.Declaration.Parameters.Count != nArgs)
+            var parameters = _ref.Declaration.Parameters;
+
+            if (nArgs > parameters.Count || parameters.Skip(nArgs).Any(p => p.DefaultValue is null))
             {
                 throw new Exception($"Definied function '{Name}' parameter count missmatch.");
             }
@@ -39,8 +44,7 @@ namespace XppInterpreter.Interpreter.Bytecode
             {
                 // Get parameters from stack
                 object[] arguments = new object[NArgs];
-
-                for (int narg = 0; narg < NArgs; narg++)
+                for (int narg = NArgs - 1; narg >= 0; narg--)
                 {
                     if (context.Stack.Count > 0)
                         arguments[narg] = context.Stack.Pop();
@@ -52,7 +56,8 @@ namespace XppInterpreter.Interpreter.Bytecode
                     DeclaredFunctions = context.ByteCode.DeclaredFunctions
                 };
 
-                newContext = new RuntimeContext(context.Proxy, newByteCode);
+                // The function sees the variables of the script
+                newContext = new RuntimeContext(context.Proxy, newByteCode, new Core.ScopeHandler(context.Proxy, context.ScopeHandler.ClosureScope));
 
                 // Assign callee parameter to function definition parameter's scope
                 for (int numParam = 0; numParam < NArgs; numParam++)
@@ -75,7 +80,8 @@ namespace XppInterpreter.Interpreter.Bytecode
 
                 interpreter = new XppInterpreter(context.Proxy, context.Interpreter.Options)
                 {
-                    Debugger = context.Interpreter.Debugger
+                    Debugger = context.Interpreter.Debugger,
+                    RunsLocalFunction = true
                 };
 
                 newContext.Interpreter = interpreter;
@@ -96,10 +102,10 @@ namespace XppInterpreter.Interpreter.Bytecode
             }
             
             // Check if interpreter modified return flag
-            if (newContext.Returned)
+            if (newContext.Returned && Alloc)
             {
-                // Push the inner context last value into current context stack
-                context.Stack.Push(context.InnerContext.Stack.Pop());
+                // Push the returned value into current context stack
+                context.Stack.Push(newContext.ReturnValue);
             }
 
             return result;

@@ -8,9 +8,150 @@ using CArray = Microsoft.Dynamics.Ax.Xpp.Array;
 
 public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.Proxy.IXppReflectionProxy
 {
+    private static System.String[] referencedAssemblies;
+    private static System.Collections.Hashtable macroLibraries;
 }
 ]]></Declaration>
 		<Methods>
+			<Method>
+				<Name>IsXppType</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Tells if the type comes from X++: a class, a table or an enumeration. Any other type is called as .NET
+    /// </summary>
+    /// <param name = "_type">Type</param>
+    /// <returns>True if it's an X++ type</returns>
+    public boolean IsXppType(System.Type _type)
+    {
+        if (!_type) return false;
+
+        str typeNamespace = _type.Namespace;
+
+        return strStartsWith(typeNamespace, 'Dynamics.AX')
+            || MXTXppTypes::CommonType.IsAssignableFrom(_type)
+            || MXTXppTypes::ObjectType.IsAssignableFrom(_type);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetMacroLibrary</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// The text of a macro library
+    /// </summary>
+    /// <param name = "_name">Library name</param>
+    /// <returns>The text, or null when there is no library with that name</returns>
+    public System.String GetMacroLibrary(System.String _name)
+    {
+        // The parser asks on every change in the editor, also for a macro that is being written
+        if (!macroLibraries)
+        {
+            macroLibraries = System.Collections.Hashtable::Synchronized(new System.Collections.Hashtable(System.StringComparer::OrdinalIgnoreCase));
+        }
+
+        if (macroLibraries.ContainsKey(_name))
+        {
+            return macroLibraries.get_Item(_name);
+        }
+
+        System.String source = null;
+
+        try
+        {
+            source = XppInterpreter.Core.Clr.AosMetadata::get_Current().ReadMacroLibrary(_name);
+        }
+        catch (Exception::CLRError)
+        {
+            // There is no library with that name
+        }
+
+        macroLibraries.set_Item(_name, source);
+
+        return source;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetSystemVariable</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// The value of a variable that X++ code has without declaring it
+    /// </summary>
+    /// <param name = "_name">Variable name</param>
+    /// <returns>The value</returns>
+    public System.Object GetSystemVariable(System.String _name)
+    {
+        str name = _name;
+
+        switch (strLwr(name))
+        {
+            case 'appl': return appl;
+            case 'infolog': return infolog;
+            case 'classfactory': return classFactory;
+        }
+
+        return null;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetFieldValueById</Name>
+				<Source><![CDATA[
+    public System.Object GetFieldValueById(System.Object _record, System.Int32 _fieldId)
+    {
+        Common record = _record;
+
+        return record.(_fieldId);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>SetFieldValueById</Name>
+				<Source><![CDATA[
+    public void SetFieldValueById(System.Object _record, System.Int32 _fieldId, System.Object _value)
+    {
+        Common record = _record;
+
+        record.(_fieldId) = _value;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetReferencedAssemblies</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// The display names of the assemblies referenced by the models. The script can use their types without any reference
+    /// </summary>
+    /// <returns>Assembly display names</returns>
+    public System.String[] GetReferencedAssemblies()
+    {
+        if (referencedAssemblies)
+        {
+            return referencedAssemblies;
+        }
+
+        try
+        {
+            referencedAssemblies = XppInterpreter.Core.Clr.AosMetadata::get_Current().ReadReferencedAssemblies();
+
+            return referencedAssemblies;
+        }
+        catch (Exception::CLRError)
+        {
+            // The types of the loaded assemblies can still be used
+            warning(AifUtil::getClrErrorMessage());
+        }
+
+        return new System.String[0]();
+    }
+
+]]></Source>
+			</Method>
 			<Method>
 				<Name>IsEnum</Name>
 				<Source><![CDATA[
@@ -98,11 +239,13 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 				<Source><![CDATA[
     public System.Object CreateInstance(System.String _className, System.Object[] parameters)
     {
+        System.Type classType = this.getClassType(_className);
+
         return System.Activator::CreateInstance(
-            this.getClassType(_className),
-            System.Reflection.BindingFlags::Public | System.Reflection.BindingFlags::Instance, 
-            null, 
-            parameters, 
+            classType,
+            System.Reflection.BindingFlags::Public | System.Reflection.BindingFlags::Instance,
+            null,
+            XppInterpreter.Core.ReflectionHelper::PackConstructorArguments(classType, parameters),
             null);
     }
 
@@ -380,7 +523,7 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 				<Source><![CDATA[
     public System.String LabelIdToValue(System.String _labelId, System.String _languageId)
     {
-        str languageId = _languageId ? _labelId : Global::infolog().language();
+        str languageId = _languageId ? _languageId : Global::infolog().language();
         return SysLabel::labelId2String(_labelId, languageId);
     }
 
@@ -446,26 +589,20 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 
         if (dictMethod)
         {
-            if (dictMethod.returnTypeName())
-            {
-                return MXTXppCastingProxy::getClrTypeFromTypeName(dictMethod.returnTypeName());
-            }
-            else
-            {
-                return MXTXppCastingProxy::getSystemTypeFromTypes(dictMethod.returnType());
-            }
-        }
-        else
-        {
-            System.Reflection.MethodInfo methodInfo = XppInterpreter.Core.ReflectionHelper::GetMethod(_caller, _methodName);
+            System.Type returnType = dictMethod.returnTypeName()
+                ? MXTXppCastingProxy::getClrTypeFromTypeName(dictMethod.returnTypeName())
+                : MXTXppCastingProxy::getSystemTypeFromTypes(dictMethod.returnType());
 
-            if (methodInfo)
+            if (returnType)
             {
-                return methodInfo.ReturnType;
+                return returnType;
             }
         }
 
-        return null;
+        // A .NET type is not in the data dictionary
+        System.Reflection.MethodInfo methodInfo = XppInterpreter.Core.ReflectionHelper::GetMethod(_caller, _methodName);
+
+        return methodInfo ? methodInfo.ReturnType : null;
     }
 
 ]]></Source>

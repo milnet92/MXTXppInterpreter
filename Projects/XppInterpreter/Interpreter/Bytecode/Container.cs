@@ -14,7 +14,8 @@
         {
             object[] elements = new object[NElements];
 
-            for (int nElement = 0; nElement < NElements; nElement++)
+            // Elements are evaluated from left to right, so the last one is on top
+            for (int nElement = NElements - 1; nElement >= 0; nElement--)
             {
                 elements[nElement] = context.Stack.Pop();
             }

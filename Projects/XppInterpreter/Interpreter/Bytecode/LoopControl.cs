@@ -10,14 +10,26 @@ namespace XppInterpreter.Interpreter.Bytecode
         public TType TokenType { get; }
         public bool IsDirty { get; private set; }
 
-        public LoopControl(int offset, TType tokenType, bool isDirty) : base(offset)
+        /// <summary>
+        /// The try statements between this instruction and its loop
+        /// </summary>
+        public int HandlersToLeave { get; }
+
+        public LoopControl(int offset, TType tokenType, bool isDirty, int handlersToLeave = 0) : base(offset)
         {
             TokenType = tokenType;
             IsDirty = isDirty;
+            HandlersToLeave = handlersToLeave;
         }
 
         public override void Execute(RuntimeContext context)
         {
+            if (HandlersToLeave > 0)
+            {
+                context.BeginExit(PendingExit.Jump(context.Counter + Offset, HandlersToLeave));
+                return;
+            }
+
             int start = Offset < 0 ? Math.Abs(context.Counter + Offset) : context.Counter;
 
             // Close un-balanced scopes

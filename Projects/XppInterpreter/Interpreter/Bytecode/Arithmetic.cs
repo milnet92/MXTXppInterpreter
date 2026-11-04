@@ -28,6 +28,15 @@ namespace XppInterpreter.Interpreter.Bytecode
 
             object result = null;
 
+            if (Core.Clr.ClrValues.TryEvaluate(TokenType, left, right, context.Proxy, out result))
+            {
+                context.Stack.Push(result);
+                return;
+            }
+
+            left = Core.Clr.ClrValues.ToXppOperand(left, context.Proxy);
+            right = Core.Clr.ClrValues.ToXppOperand(right, context.Proxy);
+
             switch (TokenType)
             {
                 case TType.Plus:
@@ -51,7 +60,7 @@ namespace XppInterpreter.Interpreter.Bytecode
                     break;
 
                 case TType.IntegerDivision:
-                    result = context.Proxy.Binary.Divide(left, right);
+                    result = context.Proxy.Binary.IntDivide(left, right);
                     break;
 
                 case TType.LeftShift:
@@ -101,6 +110,10 @@ namespace XppInterpreter.Interpreter.Bytecode
                 case TType.SmallerOrEqual:
                     result = !context.Proxy.Binary.Greater(left, right);
                     break;
+
+                case TType.Like:
+                    result = context.Proxy.Binary.Like(left, right);
+                    break;
             }
 
             context.Stack.Push(result);
@@ -134,6 +147,7 @@ namespace XppInterpreter.Interpreter.Bytecode
             { TType.BinaryOr, "BOR" },
             { TType.BinaryAnd, "BAND" },
             { TType.BinaryXOr, "BXOR" },
+            { TType.Like, "LIKE" },
         };
     }
 }

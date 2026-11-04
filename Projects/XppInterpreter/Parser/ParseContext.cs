@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using XppInterpreter.Core;
 using XppInterpreter.Interpreter.Proxy;
 using XppInterpreter.Lexer;
-
 namespace XppInterpreter.Parser
 {
     public class ParseContext
@@ -15,6 +15,16 @@ namespace XppInterpreter.Parser
         public ParseContextStack<bool> LoopStack { get; } = new ParseContextStack<bool>();
         internal readonly ParseContextStack FinallyStack = new ParseContextStack();
         internal readonly ParseContextStack CatchStack = new ParseContextStack();
+
+        /// <summary>
+        /// The namespaces of the <c>using A.B;</c> directives
+        /// </summary>
+        internal readonly List<string> Usings = new List<string>();
+
+        /// <summary>
+        /// The names of the <c>using X = A.B;</c> directives
+        /// </summary>
+        internal readonly Dictionary<string, string> UsingAliases = new Dictionary<string, string>();
 
         public ParseContext()
         {

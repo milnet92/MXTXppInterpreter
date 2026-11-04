@@ -7,6 +7,11 @@ namespace XppInterpreter.Interpreter.Proxy
         void TtsBegin();
         void TtsCommit();
         void TtsAbort();
+
+        /// <summary>
+        /// The number of open transactions: <c>appl.ttsLevel()</c>
+        /// </summary>
+        int TtsLevel();
         IDisposable CreateChangeCompanyHandler(string datAreaId);
         IDisposable CreateUncheckedHandler(int uncheckedValue, string className, string methodName);
         void Next(object common);

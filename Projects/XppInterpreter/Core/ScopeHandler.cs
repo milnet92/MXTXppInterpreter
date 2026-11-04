@@ -10,17 +10,37 @@ namespace XppInterpreter.Core
     {
         private readonly Stack<ExceptionHandler> _handlerStack = new Stack<ExceptionHandler>();
 
-        internal readonly Scope GlobalScope = new Scope();
+        internal readonly Scope GlobalScope;
+        private Scope _programScope;
         public Scope CurrentScope { get; private set; }
         public ExceptionHandler CurrentExceptionHandler => AreExceptionsHandled ? _handlerStack.Peek() : null;
         public bool AreExceptionsHandled => _handlerStack.Count > 0;
         private readonly Interpreter.Proxy.XppProxy _proxy;
 
-        public ScopeHandler(Interpreter.Proxy.XppProxy proxy)
+        public ScopeHandler(Interpreter.Proxy.XppProxy proxy, Scope closureScope = null)
         {
+            GlobalScope = new Scope() { Parent = closureScope };
             CurrentScope = GlobalScope;
+            ClosureScope = closureScope;
             _proxy = proxy;
         }
+
+        /// <summary>
+        /// The scope with the variables of the script, that the local functions can use.
+        /// </summary>
+        public Scope ClosureScope
+        {
+            get => _closureScope ?? _programScope ?? GlobalScope;
+            private set => _closureScope = value;
+        }
+        private Scope _closureScope;
+
+        public int ExceptionHandlerCount => _handlerStack.Count;
+
+        /// <summary>
+        /// The try statements that were opened inside the running catch block.
+        /// </summary>
+        public int HandlersInsideCatchBlock =>_handlerStack.TakeWhile(h => !h.Catched).Count();
 
         private object InternalGetVar(Scope scope, string varName)
         {
@@ -44,12 +64,19 @@ namespace XppInterpreter.Core
 
         public void BeginScope()
         {
+            bool isProgramScope = CurrentScope == GlobalScope;
+
             CurrentScope = CurrentScope.Begin();
+
+            if (isProgramScope)
+            {
+                _programScope = CurrentScope;
+            }
         }
 
         public void EndScope()
         {
-            if (CurrentScope.Parent != null)
+            if (CurrentScope != GlobalScope)
             {
                 CurrentScope = CurrentScope.End();
             }

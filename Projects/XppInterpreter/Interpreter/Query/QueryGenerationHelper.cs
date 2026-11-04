@@ -24,34 +24,22 @@ namespace XppInterpreter.Interpreter.Query
             return _context.Proxy.Casting.GetDefaultValueForSystemType(type);
         }
 
-        public object ComputeVariable(Parser.Variable variable)
-        {
-            // Compile
-            var generator = new Bytecode.ByteCodeGenerator();
-            generator.VisitVariable(variable);
-            ByteCode bytecode = generator.GetProgram();
+        public object ComputeVariable(Parser.Variable variable) => ComputeExpression(variable);
 
-            return Interpret(bytecode);
-        }
+        public object ComputeFunctionCall(Parser.FunctionCall functionCall) => ComputeExpression(functionCall);
 
-        public object ComputeFunctionCall(Parser.FunctionCall functionCall)
+        public object ComputeConstant(Parser.Constant constant) => ComputeExpression(constant);
+
+
+        public object ComputeExpression(Parser.Expression expression)
         {
             // Compile
             var generator = new Bytecode.ByteCodeGenerator(declaredFunctions: _context.ByteCode.DeclaredFunctions);
-            generator.VisitFunctionCall(functionCall);
+            expression.Accept(generator);
             ByteCode bytecode = generator.GetProgram();
 
             return Interpret(bytecode);
         }
 
-        public object ComputeConstant(Parser.Constant constant)
-        {
-            // Compile
-            var generator = new Bytecode.ByteCodeGenerator();
-            generator.VisitConstant(constant);
-            ByteCode bytecode = generator.GetProgram();
-
-            return Interpret(bytecode);
-        }
     }
 }

@@ -19,6 +19,7 @@ namespace XppInterpreter.Interpreter.Proxy
         object Cast(object value, Type toType);
         Type GetArrayType(Type type);
         object CreateDate(int day, int month, int year);
+        object CreateUtcDateTime(int year, int month, int day, int hour, int minute, int second);
         bool IsStringEDT(string typeName);
         string TruncateEDTString(string value, string typeName);
     }

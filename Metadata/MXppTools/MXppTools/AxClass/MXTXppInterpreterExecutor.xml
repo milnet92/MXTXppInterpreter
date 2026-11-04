@@ -177,9 +177,68 @@ internal final class MXTXppInterpreterExecutor
         options.EmitGlobalTtsAbort = _parameters.EmitGlobalTtsAbort;
         options.MaxLoopIterations = _parameters.MaxLoopIteratations;
 
-        XppInterpreter.Interpreter.XppInterpreter interpreter = new XppInterpreter.Interpreter.XppInterpreter(proxy);
+        XppInterpreter.Interpreter.XppInterpreter interpreter = new XppInterpreter.Interpreter.XppInterpreter(proxy, options);
 
         interpreter.Interpret(_program, _dependencies);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getRootNamespaces</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// The first part of the .NET namespaces a script can use
+    /// </summary>
+    /// <returns>List of names</returns>
+    public static List getRootNamespaces()
+    {
+        List ret = new List(Types::String);
+        System.String[] names = proxy.ClrTypes.GetRootNamespaces();
+
+        for (int i = 0; i < names.Length; i++)
+        {
+            str name = names.GetValue(i);
+
+            ret.addEnd(name);
+        }
+
+        return ret;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>evaluate</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Runs the given source code and gives back what its return statement returns
+    /// </summary>
+    /// <param name = "_sourceCode">X++ source code</param>
+    /// <returns>The returned value</returns>
+    public static System.Object evaluate(str _sourceCode)
+    {
+        XppInterpreter.Parser.ParseResult parseResult = MXTXppInterpreterExecutor::parse(_sourceCode);
+
+        if (!parseResult.IsCorrect)
+        {
+            System.Collections.IEnumerator enumerator = parseResult.Errors.GetEnumerator();
+
+            while (enumerator.MoveNext())
+            {
+                XppInterpreter.Parser.ParseError parseError = enumerator.Current;
+
+                throw error(parseError.Message);
+            }
+        }
+
+        XppInterpreter.Interpreter.XppInterpreter interpreter = new XppInterpreter.Interpreter.XppInterpreter(proxy);
+        XppInterpreter.Interpreter.Bytecode.ByteCode byteCode = interpreter.Compile(parseResult.AST as XppInterpreter.Parser.Program, null);
+        XppInterpreter.Interpreter.RuntimeContext context = new XppInterpreter.Interpreter.RuntimeContext(proxy, byteCode);
+
+        interpreter.Interpret(byteCode, context, true, XppInterpreter.Interpreter.Debug.DebugAction::None);
+
+        return context.ReturnValue;
     }
 
 ]]></Source>

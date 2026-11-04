@@ -11,6 +11,11 @@ namespace XppInterpreter.Interpreter.Bytecode
         public string OperationCode => $"IS {TypeName}";
         public string TypeName { get; }
 
+        /// <summary>
+        /// The .NET type, or null for an X++ type
+        /// </summary>
+        public System.Type ClrType { get; set; }
+
         public Is(string typeName)
         {
             TypeName = typeName;
@@ -20,7 +25,7 @@ namespace XppInterpreter.Interpreter.Bytecode
         {
             var value = context.Stack.Pop();
 
-            context.Stack.Push(context.Proxy.Casting.Is(value, TypeName));
+            context.Stack.Push(ClrType != null ? ClrType.IsInstanceOfType(value) : context.Proxy.Casting.Is(value, TypeName));
         }
     }
 }

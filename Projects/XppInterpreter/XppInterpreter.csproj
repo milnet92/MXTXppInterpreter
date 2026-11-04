@@ -50,6 +50,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\Clr\AosMetadata.cs" />
+    <Compile Include="Core\Clr\ClrBinder.cs" />
+    <Compile Include="Core\Clr\ClrConversions.cs" />
+    <Compile Include="Core\Clr\ClrTypeResolver.cs" />
+    <Compile Include="Core\Clr\ClrValues.cs" />
     <Compile Include="Core\ExceptionHandler.cs" />
     <Compile Include="Core\ParseException.cs" />
     <Compile Include="Core\ReflectionHelper.cs" />
@@ -71,6 +76,12 @@
     <Compile Include="Interpreter\Bytecode\ByteCodeGenerator.cs" />
     <Compile Include="Interpreter\Bytecode\Call.cs" />
     <Compile Include="Interpreter\Bytecode\Case.cs" />
+    <Compile Include="Interpreter\Bytecode\CaseMatch.cs" />
+    <Compile Include="Interpreter\Bytecode\ClrDefaultValue.cs" />
+    <Compile Include="Interpreter\Bytecode\JumpIfParameterPassed.cs" />
+    <Compile Include="Interpreter\Bytecode\StaticStore.cs" />
+    <Compile Include="Interpreter\Bytecode\ToBooleanValue.cs" />
+    <Compile Include="Interpreter\PendingExit.cs" />
     <Compile Include="Interpreter\Bytecode\ContainerStore.cs" />
     <Compile Include="Interpreter\Bytecode\DeclaredFunctionCall.cs" />
     <Compile Include="Interpreter\Bytecode\Dispose.cs" />
@@ -217,6 +228,14 @@
     <Compile Include="Parser\ParseContext.cs" />
     <Compile Include="Parser\ParseContextScope.cs" />
     <Compile Include="Parser\ParseContextScopeVariable.cs" />
+    <Compile Include="Parser\ParsedType.cs" />
+    <Compile Include="Parser\SystemVariables.cs" />
+    <Compile Include="Parser\FieldByIdAccess.cs" />
+    <Compile Include="Lexer\XppMacroProcessor.cs" />
+    <Compile Include="Interpreter\Bytecode\FieldByIdLoad.cs" />
+    <Compile Include="Interpreter\Bytecode\ResetQuery.cs" />
+    <Compile Include="Interpreter\Bytecode\SystemVariableLoad.cs" />
+    <Compile Include="Parser\Metadata\ClrMethodTokenMetadata.cs" />
     <Compile Include="Parser\ParseContextStack.cs" />
     <Compile Include="Parser\ParseError.cs" />
     <Compile Include="Parser\ParseErrorCollection.cs" />

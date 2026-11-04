@@ -22,11 +22,31 @@ namespace XppInterpreter.Parser.Metadata
             XppLexer lexer = new XppLexer(sourceCode);
             XppParser parser = new XppParser(lexer, _proxy);
 
-            System.Type inferedType = parser.ParseForAutoCompletion(row, column, purpose);
+            AutoCompletionTypeInterruption interruption = parser.ParseForAutoCompletion(row, column, purpose);
 
-            if (inferedType is null) return new CompletionCollection();
+            if (interruption is null) return new CompletionCollection();
 
             CompletionCollection completions = new CompletionCollection();
+
+            if (interruption.Namespace != null)
+            {
+                completions.Union(GetNamespaceCompletions(interruption.Namespace));
+                return completions;
+            }
+
+            System.Type inferedType = interruption.InferedType;
+
+            if (inferedType is null) return completions;
+
+            if (!_proxy.Reflection.IsXppType(inferedType))
+            {
+                if (purpose == AutoCompletionPurpose.InstanceMembers || purpose == AutoCompletionPurpose.StaticMembers)
+                {
+                    completions.Union(GetClrCompletions(inferedType, purpose == AutoCompletionPurpose.StaticMembers));
+                }
+
+                return completions;
+            }
 
             if (purpose == AutoCompletionPurpose.InstanceMembers ||
                 purpose == AutoCompletionPurpose.StaticMembers)
@@ -61,6 +81,57 @@ namespace XppInterpreter.Parser.Metadata
                 { 
                     completions.Union(nativeProvider.GetIndexCompletions(inferedType.Name));
                 }
+            }
+
+            return completions;
+        }
+
+        private CompletionCollection GetNamespaceCompletions(string @namespace)
+        {
+            CompletionCollection completions = new CompletionCollection();
+
+            foreach (var member in _proxy.ClrTypes.GetNamespaceMembers(@namespace).OrderBy(m => m))
+            {
+                bool isNamespace = member.EndsWith(".");
+                string name = isNamespace ? member.TrimEnd('.') : member;
+
+                completions.Add(new Completion(name, name, isNamespace ? CompletionEntryType.Namespace : CompletionEntryType.Class)
+                {
+                    DocHtml = isNamespace ? $"namespace {@namespace}.{name}" : $"{@namespace}.{name}"
+                });
+            }
+
+            return completions;
+        }
+
+        private CompletionCollection GetClrCompletions(System.Type type, bool @static)
+        {
+            CompletionCollection completions = new CompletionCollection();
+
+            if (type.IsEnum && @static)
+            {
+                foreach (var member in System.Enum.GetNames(type))
+                {
+                    completions.Add(new Completion(member, member, CompletionEntryType.EnumValue));
+                }
+
+                return completions;
+            }
+
+            foreach (var method in Core.Clr.ClrBinder.GetPublicMethods(type, @static))
+            {
+                completions.Add(new Completion(method.Name, method.Name, @static ? CompletionEntryType.StaticMethod : CompletionEntryType.Method)
+                {
+                    DocHtml = string.Join("<br/>", Core.Clr.ClrBinder.GetMethodSignatures(type, method.Name, @static).Select(System.Net.WebUtility.HtmlEncode))
+                });
+            }
+
+            foreach (var member in Core.Clr.ClrBinder.GetPublicMembers(type, @static))
+            {
+                completions.Add(new Completion(member.Name, member.Name, CompletionEntryType.ClassProperty)
+                {
+                    DocHtml = System.Net.WebUtility.HtmlEncode($"{Core.Clr.ClrBinder.FriendlyName(Core.Clr.ClrBinder.GetMemberType(type, member.Name, @static))} {member.Name}")
+                });
             }
 
             return completions;

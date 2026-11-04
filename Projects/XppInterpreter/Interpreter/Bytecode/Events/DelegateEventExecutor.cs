@@ -103,7 +103,7 @@
                 DeclaredFunctions = _context.ByteCode.DeclaredFunctions
             };
 
-            RuntimeContext newContext = new RuntimeContext(_context.Proxy, newByteCode);
+            RuntimeContext newContext = new RuntimeContext(_context.Proxy, newByteCode, new Core.ScopeHandler(_context.Proxy, _context.ScopeHandler.ClosureScope));
 
             for (int numParam = 0; numParam < arguments.Length; numParam++)
             {

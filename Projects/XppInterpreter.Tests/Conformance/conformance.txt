@@ -1,0 +1,4499 @@
+// Golden conformance file: every expected value below is what the real X++ compiler and runtime produced on
+// platform 7.0.8199 (update 10.0.47 family). Do not edit an expected value by hand: re-run the probes instead.
+//
+// Format:   ### name [D365]    the [D365] tag marks a case that needs real D365 types, so only the AOS run covers it
+//           source lines       the body of a method that returns a str
+//           => expected        the returned value
+//           !! note            the real compiler refused it, or it kills the AOS: no value to compare
+
+
+
+
+
+
+### pA01_andOrPrecedence
+boolean t = true, f = false;
+return strFmt("%1 %2", t || f && f, f && f || t);
+=> false true
+
+### pA02_unaryMinus
+int a = -1 + 2; int b = 5; int c = -b + 10;
+return strFmt("%1 %2", a, c);
+=> 1 5
+
+### pA03_divMod
+return strFmt("%1 %2 %3 %4 %5", 7 div 2, 7 / 2, 7 mod 3, -7 div 2, -7 mod 3);
+=> 3 3.50 1 -3 -1
+
+### pA04_binaryNot
+return int2Str(~5);
+=> -6
+
+### pA05_hex
+return int2Str(0xFF);
+=> 255
+
+### pA06_int64Suffix
+int64 v = 10u;
+return int642Str(v);
+=> 10
+
+### pA07_strLength
+str 3 s = 'abcdef'; str r1 = s; s = 'xyzabc';
+return strFmt("%1 %2", r1, s);
+=> abc xyz
+
+### pA08_prefixIncrement
+int i; ++i; i++; --i; i--; ++i;
+return int2Str(i);
+=> 1
+
+### pA09_defaultParamLocalFunction
+int f(int a = 5) { return a; }
+return strFmt("%1 %2", f(), f(9));
+=> 5 9
+
+### pA10_caseMultiValue
+int a = 2; str r;
+switch (a) { case 1, 2: r = 'low'; break; default: r = 'high'; }
+return r;
+=> low
+
+### pA11_caseFallThrough
+int x = 1; str r;
+switch (x) { case 1: r += 'a'; case 2: r += 'b'; break; default: r += 'c'; }
+return r;
+=> ab
+
+### pA12_noBraces
+int i; int n; str r;
+if (true) r = 'a'; else r = 'b';
+while (i < 3) i++;
+for (i = 0; i < 3; i++) n++;
+do i--; while (i > 0);
+return strFmt("%1 %2 %3", r, n, i);
+=> a 3 0
+
+### pA13_returnVoidLocalFunction
+str r;
+void f() { r = 'a'; return; r = 'b'; }
+f();
+return r;
+=> a
+
+### pA14_doBreakContinue
+int i; int j;
+do { i++; break; } while (i < 5);
+do { j++; continue; } while (j < 3);
+return strFmt("%1 %2", i, j);
+=> 1 3
+
+### pA15_argsLeftToRight
+counter = 0;
+return strFmt("%1 %2", DEVXppProbe::nx(), DEVXppProbe::nx());
+=> 1 2
+
+### pA16_containerLeftToRight
+counter = 0;
+container c = [DEVXppProbe::nx(), DEVXppProbe::nx()];
+return strFmt("%1 %2", conPeek(c, 1), conPeek(c, 2));
+=> 1 2
+
+### pA17_callerBeforeArgs
+counter = 0;
+return DEVXppProbe::make().show(DEVXppProbe::nx());
+=> arg=2 counter=2
+
+### pA18_binaryOperandsLeftToRight
+counter = 0;
+return int2Str(DEVXppProbe::nx() - DEVXppProbe::nx());
+=> -1
+
+### pA19_newChainInExpression
+return strFmt("%1 %2 %3", 1 + new DEVXppProbe().num(), new DEVXppProbe().num() + 1, 1 + (new DEVXppProbe()).num());
+=> 42 42 42
+
+### pA20_localFunctionUsesOuterVariable
+int n = 1;
+int f() { n++; return n; }
+int r = f();
+return strFmt("%1 %2", r, n);
+=> 2 2
+
+### pA21_realToInt
+int i; real r = 2.5; i = r; int j = 3.7; int k; k = -2.5; int m; m = 3.5;
+return strFmt("%1 %2 %3 %4", i, j, k, m);
+=> 2 3 -2 3
+
+### pA22_intAssignedKeepsType
+int i; i = 5; real r; r = 1; real d = r / 2;
+return strFmt("%1 %2", i, d);
+=> 5 0.50
+
+### pA23_booleanFromComparison
+str s = 'x'; boolean b = s == 'x'; boolean c = s && 'y'; boolean d = 5; boolean e; e = 0;
+return strFmt("%1 %2 %3 %4", b, c, d, e);
+=> true true true false
+
+### pA26_ternaryNested
+int a = 2;
+return a == 1 ? 'one' : a == 2 ? 'two' : 'many';
+=> two
+
+### pA27_int64ToInt
+int64 big = 5000000000; int i = big;
+return int2Str(i);
+=> 705032704
+
+### pA28_arrayIndexTypes [D365]
+int a[3]; int64 idx = 2; a[idx] = 7; a[NoYes::Yes] = 9;
+return strFmt("%1 %2", a[2], a[1]);
+=> 7 9
+
+### pA29_stringNullFromClr
+System.String s = null; str t = s;
+return strFmt("[%1] %2", t, strLen(t));
+=> [] 0
+
+### pA30_returnInsideTryFinally
+str r;
+str f() { try { return 'try'; } finally { r = 'fin'; } return 'end'; }
+str v = f();
+return strFmt("%1 %2", v, r);
+=> try fin
+
+### pA32_staticFieldAssign
+staticValue = 11;
+DEVXppProbe::staticValue = 12;
+return int2Str(staticValue);
+=> 12
+
+### pA33_stringPlusNumber
+str s = 'a' + int2Str(1);
+return s;
+=> a1
+
+### pA34_assignInCaseInsensitive
+INT Abc = 1; abC = 2;
+RETURN INT2STR(ABC);
+=> 2
+
+### pB01_staticCall
+return System.IO.Path::Combine("a", "b");
+=> a\b
+
+### pB03_usingDirective
+return Path::GetFileName(@"c:\x\y.txt");
+=> y.txt
+
+### pB04_usingAlias
+return IO.Path::GetExtension("y.txt");
+=> .txt
+
+### pB05_instanceAndProperty
+System.Text.StringBuilder sb = new System.Text.StringBuilder();
+sb.Append("ab");
+int len = sb.Length;
+int len2 = sb.get_Length();
+return strFmt("%1 %2 %3", sb.ToString(), len, len2);
+=> ab 2 2
+
+### pB06_propertySet
+System.Text.StringBuilder sb = new System.Text.StringBuilder("abcdef");
+sb.Length = 2;
+sb.set_Capacity(100);
+return strFmt("%1 %2", sb.ToString(), sb.Capacity);
+=> ab 100
+
+### pB07_overloadsFromXppTypes
+System.Text.StringBuilder sb = new System.Text.StringBuilder();
+sb.Append(1); sb.Append("|"); sb.Append(1.5); sb.Append("|"); sb.Append(true); sb.Append("|");
+int64 big = 5; sb.Append(big); sb.Append("|"); real r = 2.25; sb.Append(r);
+return sb.ToString();
+=> 1|1.5|True|5|2.25
+
+### pB08_intToLongParam
+int i = 5;
+System.Int64 v = System.Math::Abs(i);
+return strFmt("%1 %2", v, System.Math::Max(i, 7));
+=> 5 7
+
+### pB09_realDoubleConversions
+real r = System.Math::Sqrt(16);
+real r2 = 2.25;
+real q = System.Math::Sqrt(r2);
+real add = System.Math::Sqrt(16) + 1;
+return strFmt("%1 %2 %3", r, q, add);
+=> 4.00 1.50 5.00
+
+### pB10_byref
+int i;
+boolean ok = System.Int32::TryParse("5", byref i);
+return strFmt("%1 %2", ok, i);
+=> true 5
+
+### pB11_paramsExpanded
+return System.String::Format("{0}-{1}", "a", "b");
+=> a-b
+
+### pB12_paramsAsArray
+System.Object[] args = new System.Object[2]();
+args.SetValue("a", 0); args.SetValue(1, 1);
+return System.String::Format("{0}-{1}", args);
+=> a-1
+
+### pB13_arrays
+System.String[] a = new System.String[2]();
+a.SetValue("x", 0);
+a.SetValue("y", 1);
+return strFmt("%1 %2 %3", a.GetValue(0), a.Length, a.get_Length());
+=> x 2 2
+
+### pB15_splitWithCharArray
+System.String s = "a,b";
+System.Char[] sep = new System.Char[1]();
+sep.SetValue(System.Convert::ToChar(","), 0);
+System.String[] parts = s.Split(sep);
+return strFmt("%1", parts.Length);
+=> 2
+
+### pB16_stringInstanceMembers
+System.String s = "abc";
+return strFmt("%1 %2", s.ToUpper(), s.Length);
+=> ABC 3
+
+### pB18_enums
+System.DayOfWeek d = System.DayOfWeek::Monday;
+int i = d;
+return strFmt("%1 %2 %3", i, d.ToString(), d == System.DayOfWeek::Monday);
+=> 1 Monday true
+
+### pB19_enumFlagsAndParam
+System.Reflection.BindingFlags fl = System.Reflection.BindingFlags::Public | System.Reflection.BindingFlags::Instance;
+boolean eq = System.String::Equals("a", "A", System.StringComparison::OrdinalIgnoreCase);
+return strFmt("%1 %2", fl.ToString(), eq);
+=> Instance, Public true
+
+### pB20_intToClrEnum
+System.DayOfWeek d = 2;
+return d.ToString();
+=> Tuesday
+
+### pB22_nestedType
+System.Environment.SpecialFolder f = System.Environment.SpecialFolder::Desktop;
+return f.ToString();
+!! CRASHES the AOS when compiled (nested type used through a variable)
+
+### pB23_struct
+System.DateTime dt = new System.DateTime(2020, 1, 2);
+System.DateTime dt2 = dt.AddDays(1);
+return strFmt("%1 %2 %3", dt.Year, dt2.get_Day(), dt2.ToString("yyyy-MM-dd"));
+=> 2020 3 2020-01-03
+
+### pB24_utcFromDateTime [D365]
+utcdatetime u = new System.DateTime(2020, 1, 2, 3, 4, 5, System.DateTimeKind::Utc);
+return DateTimeUtil::toStr(u);
+=> 
+
+### pB25_dateTimeFromUtc [D365]
+System.DateTime d = DateTimeUtil::parse("2020-01-02T03:04:05");
+return d.ToString("yyyy-MM-dd HH:mm");
+=> 2020-01-02 03:04
+
+### pB26_utcPassedToParam [D365]
+utcdatetime u = DateTimeUtil::parse("2020-01-02T03:04:05");
+System.DateTime d = System.DateTime::SpecifyKind(u, System.DateTimeKind::Utc);
+return d.ToString("yyyy");
+=> 2020
+
+### pB27_datePassedToParam [D365]
+date dd = 2\1\2020;
+System.DateTime d = System.DateTime::SpecifyKind(dd, System.DateTimeKind::Utc);
+return d.ToString("yyyy-MM-dd");
+=> 2020-01-02
+
+### pB30_catchClrError [D365]
+try { System.IO.File::ReadAllText(@"c:\no\such\file.txt"); }
+catch (Exception::CLRError) { System.Exception ex = CLRInterop::getLastException(); return 'clr:' + ex.GetType().Name + ':' + (ex.InnerException ? ex.InnerException.GetType().Name : ''); }
+return 'none';
+=> clr:TargetInvocationException:DirectoryNotFoundException
+
+### pB31_catchAll
+try { System.IO.File::ReadAllText(@"c:\no\such\file.txt"); }
+catch { return 'any'; }
+return 'none';
+=> any
+
+### pB33_isAs [D365]
+System.Object o = "text";
+System.String s = o as System.String;
+System.Text.StringBuilder sb = o as System.Text.StringBuilder;
+return strFmt("%1 %2 %3 %4", o is System.String, o is System.Text.StringBuilder, s, sb == null);
+=> true false text true
+
+### pB34_var
+var sb = new System.Text.StringBuilder();
+sb.Append("x");
+return sb.ToString();
+=> x
+
+### pB35_usingStatement
+using (var ms = new System.IO.MemoryStream())
+{
+    return int2Str(ms.CanRead);
+}
+=> 1
+
+### pB36_arrayListAndIndexer
+System.Collections.ArrayList l = new System.Collections.ArrayList();
+l.Add("a");
+return strFmt("%1 %2", l.get_Item(0), l.Count);
+=> a 1
+
+### pB38_genericDeclaration
+System.Collections.Generic.List<str> l = new System.Collections.Generic.List<str>();
+l.Add("a");
+return int2Str(l.Count);
+=> 1
+
+### pB39_genericViaVar
+var d = new System.Collections.Generic.Dictionary<str, int>();
+d.Add("a", 1);
+return int2Str(d.Count);
+=> 1
+
+### pB40_nullChecks
+System.Text.StringBuilder sb, sb2 = new System.Text.StringBuilder();
+return strFmt("%1 %2 %3", sb == null, !sb, sb2 != null);
+=> true true true
+
+### pB41_ifOnClrObject
+System.Text.StringBuilder sb = new System.Text.StringBuilder();
+if (sb) { return 'nonnull'; }
+return 'null';
+=> nonnull
+
+### pB42_charParameter
+System.Text.StringBuilder sb = new System.Text.StringBuilder();
+sb.Append(System.Convert::ToChar("a"));
+return sb.ToString();
+=> a
+
+### pB43_strToCharParameter
+System.String s = "abc";
+return int2Str(s.IndexOf("b"));
+=> 1
+
+### pB44_objectParamFromXppTypes
+return System.String::Format("{0}", 5) + System.String::Format("{0}", "x") + System.String::Format("{0}", 1.5);
+=> 5x1.5
+
+### pB45_clrObjectInStrFmt
+System.Text.StringBuilder sb = new System.Text.StringBuilder("sb");
+return strFmt("%1", sb);
+=> sb
+
+### pB46_clrObjectInAnytype
+anytype a = new System.Text.StringBuilder("any");
+System.Text.StringBuilder sb = a;
+return sb.ToString();
+=> any
+
+### pB47_clrDoubleVariable
+System.Double d = 1.5;
+real r = d * 2;
+return strFmt("%1 %2", d, r);
+=> 1.5 3.00
+
+### pB48_clrShortByte
+System.Byte b = System.Convert::ToByte(5);
+int i = b + 1;
+return int2Str(i);
+=> 6
+
+### pB49_decimalParse
+real r = System.Decimal::Parse("1.5", System.Globalization.CultureInfo::InvariantCulture);
+return strFmt("%1", r * 2);
+=> 3.00
+
+### pB50_comparingClrValues
+System.DateTime a = new System.DateTime(2020, 1, 1), b = new System.DateTime(2021, 1, 1);
+return strFmt("%1 %2", a < b, System.DateTime::Compare(a, b));
+=> true -1
+
+### pB51_xppClassesFirst [D365]
+Map m = new Map(Types::String, Types::Integer);
+return m.definitionString();
+=> [str -> int]
+
+### pB52_optionalParameterOmitted
+return System.IO.Path::Combine("a", "b", "c");
+=> a\b\c
+
+### pB53_guid [D365]
+System.Guid g = System.Guid::Empty;
+guid x = g;
+return strFmt("%1", g.ToString());
+=> 00000000-0000-0000-0000-000000000000
+
+### pB54_objectMethodsOnEnumAndInt
+System.Int32 i = 5;
+return i.ToString();
+=> 5
+
+### pB56_typeof
+System.Type t = System.Type::GetType("System.String");
+return t.FullName;
+=> System.String
+
+### pB58_clrInContainer
+container c = [new System.Text.StringBuilder()];
+return strFmt("%1", conLen(c));
+=> 1
+
+### pB59_lastInfologAfterClr
+System.Exception ex = new System.Exception("m");
+return ex.Message;
+=> m
+
+### pB60_stringMethodStatic
+return strFmt("%1 %2", System.String::IsNullOrEmpty(""), System.String::Concat("a", "b"));
+=> true ab
+
+### pB61_mathOverloadReal
+real r = 2.5;
+return strFmt("%1", System.Math::Round(r));
+=> 2.00
+
+### pB62_structField [D365]
+System.Drawing.Point p = new System.Drawing.Point(1, 2);
+p.X = 5;
+return strFmt("%1 %2", p.X, p.get_Y());
+=> 5 2
+
+### pB63_ternaryClr
+System.String s = true ? "a" : "b";
+return s;
+=> a
+
+### pB64_clrStringConcat
+System.String s = "a";
+str r = s + "b";
+return r;
+=> ab
+
+### pB65_clrBoolean
+System.Boolean b = true;
+if (b) { return 'yes'; }
+return 'no';
+=> yes
+
+### pB66_int64ToInt32Param
+int64 v = 5;
+return System.Convert::ToString(v);
+=> 5
+
+### pB67_enumToIntParam [D365]
+return System.Convert::ToString(NoYes::Yes);
+=> Yes
+
+### pB68_recordAsObject [D365]
+CustGroup g;
+System.Object o = g;
+return o.GetType().Name;
+=> CustGroup
+
+### pB69_outOnInstance
+System.Collections.Hashtable h = new System.Collections.Hashtable();
+h.Add("a", 1);
+return strFmt("%1 %2", h.ContainsKey("a"), h.get_Item("a"));
+=> true 1
+
+### pB70_newArrayFromVariable
+int n = 3;
+System.Int32[] a = new System.Int32[n]();
+return int2Str(a.Length);
+=> 3
+
+### pA40_doubleSemicolonAfterDeclaration
+int a;
+;
+a = 1;
+return int2Str(a);
+=> 1
+
+### pA41_doubleSemicolonInline
+int a;
+a = 1;;
+return int2Str(a);
+=> 1
+
+### pA42_ifEmptySemicolon
+int a = 1;
+if (a == 1) ;
+return int2Str(a);
+!! REJECTED: Invalid use of ';'. Use '{ }' if an empty statement is intended.
+
+### pA43_forWithoutInit
+int i;
+for (i = 0; i < 3; i++) { }
+return int2Str(i);
+=> 3
+
+### pA44_relationalParenthesised
+int a = 1, b = 2, c = 3;
+return strFmt("%1", (a == b) < c);
+=> true
+
+### pA45_notEqualChain
+int a = 1, b = 2, c = 3;
+return strFmt("%1", a < b == true);
+!! REJECTED: ')' expected. (a < b == true)
+
+### pA46_asPrecedence [D365]
+Object o = new DEVXppProbe();
+DEVXppProbe p = o as DEVXppProbe;
+return int2Str(p.num() + 1);
+=> 42
+
+### pB72_methodNameCaseInsensitive
+return System.IO.Path::COMBINE("a", "b");
+=> a\b
+
+### pB73_instanceMemberCaseInsensitive
+System.Text.StringBuilder sb = new System.Text.StringBuilder();
+sb.APPEND("x");
+return strFmt("%1 %2", sb.tostring(), sb.length);
+=> x 1
+
+### pB74_namespaceCaseVariant
+return System.io.Path::Combine("a", "b");
+!! REJECTED: namespaces and type names are case sensitive
+
+### pB75_catchDeclaredVariable
+System.IO.DirectoryNotFoundException dnf;
+System.Exception e;
+try { System.IO.File::ReadAllText(@"c:\no\such\file.txt"); }
+catch (dnf) { return 'typed:' + dnf.GetType().Name; }
+catch (e) { return 'base:' + e.GetType().Name; }
+return 'none';
+=> typed:DirectoryNotFoundException
+
+### pB76_catchDeclaredBase
+System.Exception e;
+try { System.IO.File::ReadAllText(@"c:\no\such\file.txt"); }
+catch (e) { return 'base:' + e.GetType().Name + ':' + e.Message; }
+return 'none';
+=> base:DirectoryNotFoundException:Could not find a part of the path 'c:\no\such\file.txt'.
+
+### pB77_catchDeclaredWrongTypeFallsThrough
+System.ArithmeticException a;
+try {
+    try { System.IO.File::ReadAllText(@"c:\no\such\file.txt"); }
+    catch (a) { return 'wrong'; }
+}
+catch { return 'outer'; }
+return 'none';
+=> outer
+
+### pB78_throwClrCaughtByVariable
+System.InvalidOperationException e;
+try { throw new System.InvalidOperationException("boom"); }
+catch (e) { return e.Message; }
+return 'none';
+=> boom
+
+### pB79_throwClrCaughtByClrError [D365]
+try { throw new System.InvalidOperationException("boom"); }
+catch (Exception::CLRError) { System.Exception ex = CLRInterop::getLastException(); return ex.GetType().Name + ':' + ex.Message; }
+return 'none';
+=> TargetInvocationException:Exception has been thrown by the target of an invocation.
+
+### pB80_xppErrorNotCaughtByClrVariable [D365]
+System.Exception e;
+try {
+    try { throw error('x'); }
+    catch (e) { return 'clrvar:' + e.GetType().FullName; }
+}
+catch { return 'outer'; }
+return 'none';
+=> clrvar:Microsoft.Dynamics.Ax.Xpp.ErrorException
+
+### pB81_genericListStr
+System.Collections.Generic.List<str> l = new System.Collections.Generic.List<str>();
+l.Add("a"); l.Add("b");
+return strFmt("%1 %2 %3", l.Count, l.get_Item(1), l.GetType().FullName);
+=> 2 b System.Collections.Generic.List`1[[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]
+
+### pB82_genericDictionary
+var d = new System.Collections.Generic.Dictionary<str, int>();
+d.Add("a", 1);
+int v;
+boolean ok = d.TryGetValue("a", byref v);
+return strFmt("%1 %2 %3", d.Count, ok, v);
+=> 1 true 0
+
+### pB83_genericWithClrTypeArgs
+System.Collections.Generic.List<System.Int64> l = new System.Collections.Generic.List<System.Int64>();
+l.Add(5);
+return l.GetType().FullName;
+=> System.Collections.Generic.List`1[[System.Int64, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]
+
+### pB84_genericOfRealDateEnum
+System.Collections.Generic.List<real> a = new System.Collections.Generic.List<real>();
+a.Add(1.5);
+return a.GetType().FullName;
+=> System.Collections.Generic.List`1[[System.Decimal, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]
+
+### pB85_genericNested
+var l = new System.Collections.Generic.List<System.Collections.Generic.List<int>>();
+return l.GetType().FullName;
+=> System.Collections.Generic.List`1[[System.Collections.Generic.List`1[[System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]
+
+### pB86_usingGeneric
+List<str> l = new List<str>();
+return int2Str(l.Count);
+!! REJECTED: using does not apply to generic types
+
+### pB87_foreachLikeEnumerator
+System.Collections.ArrayList l = new System.Collections.ArrayList();
+l.Add("a");
+System.Collections.IEnumerator en = l.GetEnumerator();
+str r;
+while (en.MoveNext()) { r += en.Current; }
+return r;
+=> a
+
+### pB88_staticGenericMethod
+System.String[] a = System.Array::Empty<str>();
+return int2Str(a.Length);
+!! REJECTED: generic methods cannot be called
+
+### pB89_multiDimensionalArray
+System.Int32[,] a = new System.Int32[2,3]();
+return int2Str(a.Length);
+=> 6
+
+### pB90_arrayParamDeclaredArray
+System.String[] parts = System.String::Join(",", new System.String[1]()).Split(new System.Char[1]());
+return int2Str(parts.Length);
+=> 1
+
+### pB91_constFieldBlocked
+return System.Math::PI;
+!! REJECTED: Access to const fields defined in referenced assemblies is not supported.
+
+### pB92_staticReadonlyField
+System.DBNull n = System.DBNull::Value;
+return n.ToString();
+=> 
+
+### pB93_staticMemberAssign
+System.Environment::CurrentDirectory = System.Environment::CurrentDirectory;
+return 'ok';
+=> ok
+
+### pB94_instanceFieldRead
+System.Collections.DictionaryEntry en = new System.Collections.DictionaryEntry("k", "v");
+return en.Key;
+=> k
+
+### pB95_ifOnClrString
+System.String s = "";
+System.String t = "x";
+return strFmt("%1 %2", s ? 1 : 0, t ? 1 : 0);
+=> 0 1
+
+### pB96_strFromClrObjectMember [D365]
+System.Object o = "x";
+str s = o;
+return s;
+=> x
+
+### pB97_realFromClrObject [D365]
+System.Object o = 1.5;
+real r = o;
+return strFmt("%1 %2", r, o.GetType().Name);
+=> 1.50 Decimal
+
+### pB98_intLiteralAsObject [D365]
+System.Object o = 5;
+return o.GetType().Name;
+=> Int32
+
+### pB99_clrNumericTypesInArithmetic
+System.Int16 a = System.Convert::ToInt16(5);
+System.Single b = System.Convert::ToSingle(1.5);
+System.UInt32 c = System.Convert::ToUInt32(3);
+real r = a + b + c;
+return strFmt("%1", r);
+=> 9.50
+
+### pC01_trueParamsExpanded
+return System.String::Format("{0}{1}{2}{3}{4}", 1, 2, 3, 4, 5);
+=> 12345
+
+### pC02_trueParamsConcat
+return System.String::Concat("a", "b", "c", "d", "e");
+=> abcde
+
+### pC03_nullableParam
+System.Nullable<System.Int64> n;
+return "ok";
+!! ABORTS the class runner when compiled (uninitialized Nullable)
+
+### pC04_defaultStruct [D365]
+System.Threading.CancellationToken t;
+System.Object o;
+return strFmt("%1 %2", t.CanBeCanceled, o == null);
+=> false true
+
+### pC05_objectNullToTypedParam [D365]
+System.Object o;
+System.Text.StringBuilder sb = new System.Text.StringBuilder("x");
+sb.Append(o);
+return sb.ToString();
+=> x
+
+### pC06_objectToTypedVariable [D365]
+System.Object o = new System.Text.StringBuilder("y");
+System.Text.StringBuilder sb = o;
+return sb.ToString();
+=> y
+
+### pC07_implicitOperatorOnAssign
+System.DateTimeOffset dto = new System.DateTime(2020, 1, 2);
+return int2Str(dto.Year);
+=> 1
+
+### pC08_implicitOperatorInParam
+System.DateTimeOffset dto = System.DateTimeOffset::op_Implicit(new System.DateTime(2020, 1, 2));
+return int2Str(dto.Year);
+=> 2020
+
+### pC09_iteratorPrivateClass
+System.Collections.Generic.List<str> l = new System.Collections.Generic.List<str>();
+l.Add("a");
+var en = l.GetEnumerator();
+str r;
+while (en.MoveNext()) { r += en.Current; }
+return r;
+!! REJECTED: nested generic struct List<T>.Enumerator cannot be named by var
+
+### pC10_xppArrayToClr
+System.Collections.Generic.List<str> l = new System.Collections.Generic.List<str>();
+l.Add("a");
+System.String[] arr = l.ToArray();
+return arr.GetValue(0);
+=> a
+
+### pC11_interfaceDeclaration
+System.Collections.IList l = new System.Collections.ArrayList();
+l.Add("a");
+System.Collections.ICollection c = l;
+return int2Str(c.Count);
+=> 1
+
+### pC12_ternaryNullObj
+System.Text.StringBuilder sb;
+return sb ? "non" : "null";
+=> null
+
+### pC13_uint64Field
+System.UInt64 u = System.UInt64::Parse("5");
+return u.ToString();
+=> 5
+
+### pC14_realPassedToDoubleParam
+real r = 2.5;
+return strFmt("%1", System.Math::Pow(r, 2));
+=> 6.25
+
+### pC15_intPassedToDoubleParam
+return strFmt("%1", System.Math::Pow(2, 3));
+=> 8
+
+### pC16_realPassedToIntParam
+System.Text.StringBuilder sb = new System.Text.StringBuilder();
+real r = 2.0;
+sb.Append("abc", 0, r);
+return sb.ToString();
+=> ab
+
+### pC17_int64PassedToIntParam
+System.Text.StringBuilder sb = new System.Text.StringBuilder();
+int64 r = 2;
+sb.Append("abc", 0, r);
+return sb.ToString();
+=> ab
+
+### pC18_enumPassedToIntParam [D365]
+System.Text.StringBuilder sb = new System.Text.StringBuilder();
+sb.Append("abc", 0, NoYes::Yes);
+return sb.ToString();
+=> a
+
+### pC19_booleanPassedToIntParam
+System.Text.StringBuilder sb = new System.Text.StringBuilder();
+boolean b = true;
+sb.Append("abc", 0, b);
+return sb.ToString();
+=> a
+
+### pC20_intPassedToBooleanParam
+return System.Convert::ToString(System.Boolean::Parse("true"));
+=> True
+
+### pC21_clrEnumPassedToIntParam
+System.Text.StringBuilder sb = new System.Text.StringBuilder();
+sb.Append("abcdef", 0, System.DayOfWeek::Tuesday);
+return sb.ToString();
+=> ab
+
+### pC22_clrEnumToXppEnum [D365]
+NoYes n = System.DayOfWeek::Monday;
+return int2Str(n);
+=> 1
+
+### pC23_xppEnumToClrEnum [D365]
+System.DayOfWeek d = NoYes::Yes;
+return d.ToString();
+=> Monday
+
+### pC24_dateTimeToDate [D365]
+date d = new System.DateTime(2020, 3, 4);
+return date2Str(d, 321, 2, 3, 2, 3, 4);
+=> 2020-03-04
+
+### pC25_guidBetween [D365]
+guid g = newGuid();
+System.Guid c = g;
+guid back = c;
+return strFmt("%1", g == back);
+=> true
+
+### pC26_realToClrDecimalVariable
+System.Decimal d = 1.5;
+System.Double x = d;
+System.Single y = 2.5;
+return strFmt("%1 %2 %3", d, x, y);
+=> 1.50 1.5 2.5
+
+### pC27_stringEquality
+System.String a = "A", b = "a";
+str c = "a";
+return strFmt("%1 %2", a == b, b == c);
+=> true true
+
+### pC28_objectEquality
+System.Object a = 5, b = 5;
+return strFmt("%1", a == b);
+=> true
+
+### pC29_objectAddition
+System.Object a = 5;
+System.Object b = 6;
+int r = a + b;
+return int2Str(r);
+!! REJECTED: Types 'System.Object' and 'System.Object' are not compatible with operator '+'.
+
+### pC30_clrExceptionMessageShape [D365]
+try { System.Int32::Parse("x"); }
+catch (Exception::CLRError) { System.Exception ex = CLRInterop::getLastException(); return strFmt("%1|%2", ex.GetType().FullName, ex.InnerException ? ex.InnerException.GetType().FullName : "none"); }
+return 'none';
+=> System.Reflection.TargetInvocationException|System.FormatException
+
+### pC31_aifUtilMessage [D365]
+try { System.Int32::Parse("x"); }
+catch (Exception::CLRError) { return AifUtil::getClrErrorMessage(); }
+return 'none';
+=>  Input string was not in a correct format.
+
+### pC32_finallyWithClrException
+str r;
+try { try { System.Int32::Parse("x"); } finally { r = 'f'; } } catch (Exception::CLRError) { r += 'c'; }
+return r;
+=> fc
+
+### pC33_clrPropertyChainThroughInterface [D365]
+var env = Microsoft.Dynamics.ApplicationPlatform.Environment.EnvironmentFactory::GetApplicationEnvironment();
+return env.get_Aos().get_PackageDirectory();
+=> C:\AOSService\PackagesLocalDirectory
+
+### pC34_clrPropertyChainNoGet [D365]
+var env = Microsoft.Dynamics.ApplicationPlatform.Environment.EnvironmentFactory::GetApplicationEnvironment();
+return env.Aos.PackageDirectory;
+=> C:\AOSService\PackagesLocalDirectory
+
+### pC35_staticFieldInstance
+System.Text.Encoding e = System.Text.Encoding::UTF8;
+return e.WebName;
+=> utf-8
+
+### pC36_bytesRoundTrip
+System.Byte[] b = System.Text.Encoding::UTF8.GetBytes("ab");
+return strFmt("%1 %2", b.Length, System.Convert::ToBase64String(b));
+=> 2 YWI=
+
+### pC37_streamReaderUsing
+System.IO.MemoryStream ms = new System.IO.MemoryStream(System.Text.Encoding::UTF8.GetBytes("ab"));
+using (System.IO.StreamReader rd = new System.IO.StreamReader(ms))
+{
+    return rd.ReadToEnd();
+}
+=> ab
+
+### pC38_regex
+System.Text.RegularExpressions.Regex rx = new System.Text.RegularExpressions.Regex("a+");
+System.Text.RegularExpressions.Match m = rx.Match("baaa");
+return strFmt("%1 %2", m.Success, m.Value);
+=> true aaa
+
+### pC39_xmlDoc
+System.Xml.XmlDocument x = new System.Xml.XmlDocument();
+x.LoadXml("<a><b>1</b></a>");
+return x.SelectSingleNode("/a/b").InnerText;
+=> 1
+
+### pC40_linqNotAvailable
+System.Collections.Generic.List<int> l = new System.Collections.Generic.List<int>();
+l.Add(1); l.Add(2);
+int total;
+var en = l.GetEnumerator();
+while (en.MoveNext()) { total += en.Current; }
+return int2Str(total);
+!! REJECTED: nested generic struct List<T>.Enumerator cannot be named by var
+
+### pC41_structCopySemantics [D365]
+System.Drawing.Point p = new System.Drawing.Point(1, 2);
+System.Drawing.Point q = p;
+q.X = 9;
+return strFmt("%1 %2", p.X, q.X);
+=> 1 9
+
+### pC42_structPropertyOnField [D365]
+System.Drawing.Rectangle rc = new System.Drawing.Rectangle(1, 2, 3, 4);
+return strFmt("%1 %2", rc.Location.X, rc.get_Size().get_Width());
+=> 1 3
+
+### pC43_ifIntegerClr
+System.Int32 i = 0;
+return i ? 'true' : 'false';
+=> false
+
+### pC44_voidResultIgnored
+System.Collections.ArrayList l = new System.Collections.ArrayList();
+l.Clear();
+return 'ok';
+=> ok
+
+### pC45_returnValueIgnored
+System.Text.StringBuilder sb = new System.Text.StringBuilder();
+sb.Append("x");
+sb.Append("y").Append("z");
+return sb.ToString();
+=> xyz
+
+### pC46_newWithNoParens
+System.Text.StringBuilder sb = new System.Text.StringBuilder();
+return strFmt("%1", sb.Length);
+=> 0
+
+### pD01_andOrShortCircuit
+boolean t = true, f = false;
+counter = 0;
+boolean a = t || (DEVXppProbe::nx() > 0) && f;
+int calls1 = counter;
+counter = 0;
+boolean b = f && (DEVXppProbe::nx() > 0) || t;
+return strFmt("%1 %2 %3 %4", a, calls1, b, counter);
+=> false 0 true 0
+
+### pD02_andOrThreeTerms
+boolean t = true, f = false;
+return strFmt("%1 %2 %3", f || t && f, t && f || t, f || f && t || t);
+=> false true true
+
+### pD03_comparisonVsAnd
+int a = 1, b = 2;
+return strFmt("%1 %2", a == 1 && b == 2, a == 2 || b == 2);
+=> true true
+
+### pD04_ternaryAndOr
+boolean t = true, f = false;
+return t || f ? 'y' : 'n';
+=> y
+
+### pD05_bitwisePrecedence
+return strFmt("%1 %2 %3 %4", 1 + 2 * 3, 1 | 2 & 3, 8 >> 1 + 1, 7 & 3 + 1);
+=> 7 3 5 4
+
+### pD06_negationOfComparison
+int a = 1;
+boolean r = !(a == 2);
+boolean s = !a == 0;
+return strFmt("%1 %2", r, s);
+=> true true
+
+### pD07_unaryOnCalls
+return strFmt("%1", -DEVXppProbe::fortyOne() + 1);
+=> -40
+
+### pD08_modVsTimes
+return strFmt("%1 %2", 2 * 7 mod 4, 7 div 2 * 2);
+=> 2 6
+
+### pD09_stringCompare
+return strFmt("%1 %2 %3", 'a' == 'A', 'a' < 'b', 'abc' like 'a*');
+=> true true true
+
+### pD10_intDivideReal
+return strFmt("%1 %2", 7.5 div 2, 7 / 2 * 2);
+=> 3 7.00
+
+### pD11_enumArithmetic [D365]
+return int2Str(NoYes::Yes + 1);
+=> 2
+
+### pD12_compoundAssignInArray
+int a[3];
+a[1] = 1;
+a[1] += 2;
+return int2Str(a[1]);
+=> 3
+
+### pD13_stringPlusAssign
+str s = 'a';
+s += 'b';
+return s;
+=> ab
+
+### pD14_shadowingInBlock
+int a = 1;
+{
+    a = 2;
+}
+return int2Str(a);
+=> 2
+
+### pD15_localFunctionDeclaredAfterVariableAndCalledInLoop
+int total;
+void add(int v) { total += v; }
+int i;
+for (i = 0; i < 3; i++) { add(i); }
+return int2Str(total);
+=> 3
+
+### pD17_localFunctionRecursion
+int fact(int n) { if (n <= 1) { return 1; } return n * fact(n - 1); }
+return int2Str(fact(4));
+=> 24
+
+### pD18_returnInLoopFinally
+str r;
+int f() { int i; for (i = 0; i < 3; i++) { try { if (i == 1) { return i; } } finally { r += int2Str(i); } } return -1; }
+int v = f();
+return strFmt("%1 %2", v, r);
+=> 1 01
+
+### pD19_usingDisposesOnReturn
+System.IO.MemoryStream held;
+boolean f() { using (var ms = new System.IO.MemoryStream()) { held = ms; return true; } }
+f();
+return strFmt("%1", held.CanRead);
+=> false
+
+### pD20_usingDisposesOnThrow [D365]
+System.IO.MemoryStream held;
+try { using (var ms = new System.IO.MemoryStream()) { held = ms; throw error('x'); } } catch { }
+return strFmt("%1", held.CanRead);
+=> false
+
+### pD21_throwInFinallyOrder [D365]
+str r;
+try { try { throw error('x'); } catch (Exception::Numeric) { r += 'n'; } finally { r += 'f'; } } catch { r += 'o'; }
+return r;
+=> fo
+
+### pD22_breakInsideTryFinally
+str r; int i;
+for (i = 0; i < 3; i++) { try { break; } finally { r += 'f'; } }
+return strFmt("%1 %2", r, i);
+=> f 0
+
+### pD23_continueInsideTryFinally
+str r; int i;
+for (i = 0; i < 2; i++) { try { continue; } finally { r += 'f'; } }
+return strFmt("%1 %2", r, i);
+=> ff 2
+
+### pD24_defaultArgExpression
+int f(int a, int b = a + 1) { return a + b; }
+return int2Str(f(1));
+=> 3
+
+### pD25_retryInCatch [D365]
+int n;
+try { n++; if (n < 3) { throw error('x'); } } catch { retry; }
+return int2Str(n);
+=> 3
+
+### pE01_filterClrException [D365]
+System.Exception clr = new System.InvalidOperationException("a");
+boolean r1 = Microsoft.Dynamics.Ax.Xpp.CLRInterop::filterCLRException(clr);
+System.Exception last = CLRInterop::getLastException();
+str lastText = last ? last.GetType().Name : 'null';
+System.Exception xpp;
+boolean r2;
+try { throw error('x'); } catch (xpp) { r2 = Microsoft.Dynamics.Ax.Xpp.CLRInterop::filterCLRException(xpp); }
+return strFmt("%1 %2 %3", r1, lastText, r2);
+=> true TargetInvocationException false
+
+### pE02_setClrException [D365]
+System.Exception clr = new System.InvalidOperationException("msg");
+Microsoft.Dynamics.Ax.Xpp.CLRInterop::setCLRException(clr);
+System.Exception last = CLRInterop::getLastException();
+return strFmt("%1 %2", last.GetType().Name, last.InnerException ? last.InnerException.Message : 'noinner');
+=> TargetInvocationException msg
+
+### pE03_lastExceptionAfterGenericCatch [D365]
+try { System.Int32::Parse("x"); }
+catch { System.Exception ex = CLRInterop::getLastException(); return ex ? ex.GetType().Name : 'null'; }
+return 'none';
+=> TargetInvocationException
+
+### pE04_newStatement
+new DEVXppProbe().num();
+return 'ok';
+=> ok
+
+### pE05_breakInTryThenThrow [D365]
+int i; str r;
+try { for (i = 0; i < 2; i++) { try { break; } catch { r += 'inner'; } } throw error('x'); } catch { r += 'outer'; }
+return r;
+=> outer
+
+### pE06_retryLateInScript [D365]
+int a1; int a2; int a3; int a4; int a5; int a6; int a7; int a8; int a9; int a10; int a11; int a12; int n;
+try { n++; if (n < 2) { throw error('x'); } } catch { retry; }
+return int2Str(n);
+=> 2
+
+### pE07_likeVariants
+str s = 'abc';
+return strFmt("%1 %2 %3", s like 'A?C', !(s like 'x*'), s like 'a\\*');
+=> true true false
+
+### pE11_httpRangeNullableArgs [D365]
+System.Int64 len = 10;
+Azure.HttpRange range = new Azure.HttpRange(0, len);
+return strFmt("%1 %2", range.Offset, range.Length);
+=> 0 10
+
+### pF01_constLocal
+const int X = 5;
+return int2Str(X + 1);
+=> 6
+
+### pF02_multiDeclare
+int a, b = 2, c;
+a = b + 1;
+c = a * b;
+return strFmt("%1 %2 %3", a, b, c);
+=> 3 2 6
+
+### pF03_containerAppend [D365]
+container c = [1, 'a'];
+c += 2;
+return strFmt("%1 %2 %3", conLen(c), conPeek(c, 1), conPeek(c, 3));
+=> 3 1 2
+
+### pF04_containerFunctions [D365]
+container c;
+c = conIns(c, 1, 'x');
+c = conIns(c, 2, 'z');
+c = conPoke(c, 1, 'y');
+str first = conPeek(c, 1);
+c = conDel(c, 1, 1);
+return strFmt("%1 %2 %3", conLen(c), first, conPeek(c, 1));
+=> 1 y z
+
+### pF05_containerUnpack
+int a;
+str b;
+[a, b] = [1, 'x'];
+return strFmt("%1 %2", a, b);
+=> 1 x
+
+### pF06_containerUnpackFewer
+int a = 5;
+str b = 'keep';
+[a, b] = [1];
+return strFmt("%1 [%2]", a, b);
+=> 1 []
+
+### pF07_containerUnpackMore
+int a;
+str b;
+[a, b] = [1, 'x', 3];
+return strFmt("%1 %2", a, b);
+=> 1 x
+
+### pF08_containerConcat [D365]
+container a = [1], b = [2, 3];
+container c = a + b;
+return strFmt("%1 %2", conLen(c), conPeek(c, 3));
+=> 3 3
+
+### pF09_containerEquals [D365]
+container a = [1, 'x'], b = [1, 'x'], c = [1, 'y'];
+return strFmt("%1 %2 %3", a == b, a == c, a != c);
+=> true false true
+
+### pF10_containerNested
+container c = [1, [2, 3]];
+container d = conPeek(c, 2);
+return strFmt("%1 %2", conLen(c), conPeek(d, 2));
+=> 2 3
+
+### pF11_conFind [D365]
+return strFmt("%1 %2", conFind([1, 2, 3], 2), conFind(['a', 'b'], 'z'));
+=> 2 0
+
+### pF12_containerOutOfRange [D365]
+container c = [1];
+return strFmt("[%1] [%2]", conPeek(c, 5), conPeek(c, 0));
+=> [] []
+
+### pF13_con2Str [D365]
+return strFmt("%1 %2", con2Str([1, 'a', 2.5]), conLen(str2Con('a;b;c', ';')));
+=> 1,a,2.5 3
+
+### pF14_dateLiteral [D365]
+date d = 31\12\2020;
+return date2Str(d, 321, DateDay::Digits2, DateSeparator::Hyphen, DateMonth::Digits2, DateSeparator::Hyphen, DateYear::Digits4, DateFlags::None);
+=> 2020-12-31
+
+### pF15_dateArithmetic [D365]
+date d = 1\1\2020;
+date e = d + 31;
+int diff = e - d;
+return strFmt("%1 %2 %3 %4 %5", dayOfMth(e), mthOfYr(e), year(e), diff, e > d);
+=> 1 2 2020 31 true
+
+### pF16_dateNull [D365]
+date d;
+return strFmt("%1 %2 %3", d == dateNull(), d ? 'set' : 'empty', d == str2Date('', 123));
+=> true empty true
+
+### pF17_dateFunctions [D365]
+date d = 15\2\2020;
+return strFmt("%1 %2 %3 %4", dayOfWk(d), wkOfYr(d), dayOfYr(d), endMth(d) == 29\2\2020);
+=> 6 7 46 true
+
+### pF18_utcLiteral [D365]
+utcdatetime u = 2020-01-02T03:04:05;
+return DateTimeUtil::toStr(u);
+=> 2020-01-02T03:04:05
+
+### pF19_utcFunctions [D365]
+utcdatetime u = DateTimeUtil::newDateTime(1\2\2020, 3600);
+utcdatetime v = DateTimeUtil::addDays(u, 1);
+return strFmt("%1 %2 %3 %4", DateTimeUtil::year(v), DateTimeUtil::day(v), DateTimeUtil::hour(v), DateTimeUtil::getDifference(v, u));
+=> 2020 2 1 86400
+
+### pF20_utcNull [D365]
+utcdatetime u;
+return strFmt("%1 %2", u == utcDateTimeNull(), u ? 'set' : 'empty');
+=> true empty
+
+### pF21_timeOfDay [D365]
+timeOfDay t = 3661;
+return strFmt("%1 %2", t, time2Str(t, TimeSeparator::Colon, TimeFormat::Auto));
+=> 3661 01:01:01 am
+
+### pF22_stringEscapes [D365]
+str a = "a\tb\\c\"d";
+str b = 'x\'y';
+return strFmt("%1 %2 %3", strLen(a), b, strScan(a, '\\', 1, strLen(a)));
+=> 7 x'y 4
+
+### pF23_stringCompareCase [D365]
+return strFmt("%1 %2 %3 %4", 'ABC' == 'abc', 'a' < 'B', 'a' != 'A', strCmp('a', 'A'));
+=> true true false 1
+
+### pF24_realExponent
+real c = 1.5e2;
+return strFmt("%1", c);
+=> 150.00
+
+### pF99_realNoFraction
+real a = 1e3;
+return strFmt("%1", a);
+!! REJECTED: ; expected
+
+### pH10_realNoInteger
+real b = .5;
+return strFmt("%1", b);
+!! REJECTED: Invalid token .
+
+### pH11_realNegativeExponent
+real c = 1.5e-2;
+return strFmt("%1", c);
+=> 0.02
+
+### pF25_realDivision
+real r = 10;
+r = r / 4;
+int i = 5 / 2;
+return strFmt("%1 %2 %3", r, i, 1 / 3);
+=> 2.50 2 0.33
+
+### pF26_intOverflow [D365]
+int i = 2147483647;
+i++;
+int64 j = 2147483647;
+j++;
+return strFmt("%1 %2", i, j);
+=> -2147483648 2147483648
+
+### pF27_int64Literal
+int64 x = 9223372036854775807;
+return int642Str(x);
+=> 9223372036854775807
+
+### pF28_boolFormat [D365]
+boolean b = 5;
+return strFmt("%1 %2 %3", true, b, any2Int(b));
+=> true true 1
+
+### pF29_switchString
+str s = 'B';
+switch (s)
+{
+    case 'a':
+        return 'is a';
+    case 'b':
+        return 'is b';
+    default:
+        return 'other';
+}
+=> is b
+
+### pF30_switchEnum [D365]
+NoYes n = NoYes::Yes;
+str r;
+switch (n)
+{
+    case NoYes::No:
+        r = 'no';
+        break;
+    case NoYes::Yes:
+        r = 'yes';
+        break;
+}
+return r;
+=> yes
+
+### pF31_forDeclaration
+int total;
+for (int i = 0; i < 3; i++)
+{
+    total += i;
+}
+return int2Str(total);
+=> 3
+
+### pF32_forDeclarationScope
+for (int i = 0; i < 3; i++)
+{
+}
+int i = 9;
+return int2Str(i);
+=> 9
+
+### pF33_dynamicArray [D365]
+int a[];
+a[5] = 1;
+return strFmt("%1 %2 %3", dimOf(a), a[5], a[2]);
+=> 16 1 0
+
+### pF34_fixedArray [D365]
+int a[3];
+a[1] = 5;
+return strFmt("%1 %2", dimOf(a), a[1]);
+=> 3 5
+
+### pF35_arrayOutOfRange [D365]
+int a[3];
+try
+{
+    a[4] = 5;
+}
+catch
+{
+    return 'caught';
+}
+return 'not caught';
+=> caught
+
+### pF36_arrayZeroClears [D365]
+int a[3];
+a[1] = 5;
+a[0] = 0;
+return int2Str(a[1]);
+=> 0
+
+### pF37_arrayStr
+str a[2];
+a[1] = 'x';
+return a[1] + '|' + a[2];
+=> x|
+
+### pF38_arrayCopy
+int a[2], b[2];
+a[1] = 1;
+b = a;
+b[1] = 2;
+return strFmt("%1 %2", a[1], b[1]);
+=> 2 2
+
+### pF39_ternaryNested
+int i = 5;
+return i > 3 ? (i > 4 ? 'a' : 'b') : 'c';
+=> a
+
+### pF40_compoundAssign
+int i = 2;
+i += 3;
+i -= 1;
+return int2Str(i);
+=> 4
+
+### pF41_multiplyAssign
+int i = 2;
+i *= 3;
+return int2Str(i);
+=> 6
+
+### pF42_divideAssign
+real r = 6;
+r /= 3;
+return strFmt("%1", r);
+=> 2.00
+
+### pF43_bitOperators
+return strFmt("%1 %2 %3 %4 %5", 5 & 3, 5 | 3, 5 ^ 3, 1 << 3, 16 >> 2);
+=> 1 7 6 8 4
+
+### pF44_numericComparison
+int i = 1;
+real r = 1.0;
+int64 l = 1;
+return strFmt("%1 %2 %3 %4", i == r, i == l, i < 2.5, l >= r);
+=> true true true true
+
+### pF45_enumArithmetic [D365]
+int a = NoYes::Yes + 1;
+return strFmt("%1 %2 %3 %4", a, enum2Str(NoYes::Yes), any2Int(NoYes::Yes), NoYes::Yes == 1);
+=> 2 Yes 1 true
+
+### pF46_enumFromInt [D365]
+NoYes n = 1;
+NoYes m = 5;
+int i = m;
+return strFmt("%1 %2 %3", n, m == NoYes::Yes, i);
+=> Yes false 5
+
+### pF47_enumFormat [D365]
+return strFmt("%1 %2 %3", NoYes::Yes, ABC::B, enumNum(NoYes) != 0);
+=> Yes B true
+
+### pF48_dictEnum [D365]
+DictEnum de = new DictEnum(enumNum(NoYes));
+return strFmt("%1 %2 %3", de.values(), de.index2Symbol(1), de.index2Value(1));
+=> 2 Yes 1
+
+### pF49_anytype [D365]
+anytype a = 1;
+int i = a;
+a = 'x';
+str s = a;
+return strFmt("%1 %2 %3", i, s, typeOf(a));
+=> 1 x String
+
+### pF50_objectNull [D365]
+Object o;
+Map m;
+return strFmt("%1 %2 %3 %4", o == null, m == null, m ? 'y' : 'n', !m);
+=> true true n true
+
+### pF51_mapBasics [D365]
+Map m = new Map(Types::String, Types::Integer);
+m.insert('a', 1);
+m.insert('b', 2);
+m.insert('a', 3);
+return strFmt("%1 %2 %3 %4", m.elements(), m.lookup('a'), m.exists('b'), m.exists('z'));
+=> 2 3 true false
+
+### pF52_mapEnumerator [D365]
+Map m = new Map(Types::String, Types::Integer);
+m.insert('a', 1);
+m.insert('b', 2);
+MapEnumerator e = m.getEnumerator();
+str r;
+while (e.moveNext())
+{
+    r += strFmt("%1=%2;", e.currentKey(), e.currentValue());
+}
+return r;
+=> a=1;b=2;
+
+### pF53_mapIterator [D365]
+Map m = new Map(Types::Integer, Types::String);
+m.insert(1, 'x');
+MapIterator it = new MapIterator(m);
+it.begin();
+return strFmt("%1 %2 %3", it.more(), it.key(), it.value());
+=> true 1 x
+
+### pF54_mapPack [D365]
+Map m = new Map(Types::Integer, Types::String);
+m.insert(1, 'x');
+container c = m.pack();
+Map n = Map::create(c);
+return strFmt("%1", n.lookup(1));
+=> x
+
+### pF55_listEnumerator [D365]
+List l = new List(Types::String);
+l.addEnd('a');
+l.addStart('b');
+ListEnumerator e = l.getEnumerator();
+str r;
+while (e.moveNext())
+{
+    r += e.current();
+}
+return strFmt("%1 %2 %3", r, l.elements(), l.toString());
+=> ba 2 <"b", "a">
+
+### pF56_setBasics [D365]
+Set s = new Set(Types::Integer);
+s.add(1);
+s.add(1);
+s.add(2);
+SetEnumerator e = s.getEnumerator();
+int total;
+while (e.moveNext())
+{
+    total += e.current();
+}
+return strFmt("%1 %2 %3", s.elements(), s.in(2), total);
+=> 2 true 3
+
+### pF57_struct [D365]
+Struct s = new Struct('int a; str b');
+s.value('a', 1);
+s.value('b', 'x');
+return strFmt("%1 %2 %3", s.value('a'), s.value('b'), s.fields());
+=> 1 x 2
+
+### pF58_arrayClass [D365]
+Array a = new Array(Types::String);
+a.value(1, 'x');
+a.value(3, 'z');
+return strFmt("%1 %2 %3", a.lastIndex(), a.value(3), a.exists(2));
+=> 3 z true
+
+### pF59_argsClass [D365]
+Args a = new Args();
+a.parm('x');
+a.parmEnum(NoYes::Yes);
+return strFmt("%1 %2", a.parm(), a.parmEnum());
+=> x 1
+
+### pF60_lateBoundObject [D365]
+Object o = new List(Types::String);
+o.addEnd('a');
+return int2Str(o.elements());
+=> 1
+
+### pF61_isAs [D365]
+Object o = new Map(Types::String, Types::Integer);
+Map m = o as Map;
+List l = o as List;
+return strFmt("%1 %2 %3 %4", o is Map, o is List, m != null, l == null);
+=> true false true true
+
+### pF62_classIdFunctions [D365]
+Map m = new Map(Types::String, Types::Integer);
+return strFmt("%1 %2 %3 %4", classIdGet(m) == classNum(Map), classStr(Map), className2Id('Map') == classNum(Map), classId2Name(classNum(Map)));
+=> true Map true Map
+
+### pF63_namesIntrinsics [D365]
+return strFmt("%1 %2 %3 %4 %5 %6", tableStr(CustGroup), fieldStr(CustGroup, Name), enumStr(NoYes), extendedTypeStr(CustGroupId), methodStr(Map, elements), staticMethodStr(Map, create));
+=> CustGroup Name NoYes CustGroupId elements create
+
+### pF64_numbersIntrinsics [D365]
+return strFmt("%1 %2 %3 %4", tableNum(CustGroup) == tableName2Id('CustGroup'), fieldNum(CustGroup, Name) == fieldName2Id(tableNum(CustGroup), 'Name'), tableId2Name(tableNum(CustGroup)), fieldId2Name(tableNum(CustGroup), fieldNum(CustGroup, Name)));
+=> true true CustGroup Name
+
+### pF65_moreNames [D365]
+return strFmt("%1 %2 %3 %4", identifierStr(abc), literalStr('abc'), formStr(CustGroup), menuItemDisplayStr(CustGroup));
+=> abc abc CustGroup CustGroup
+
+### pF66_stringFunctions [D365]
+return strFmt("%1|%2|%3|%4|%5|%6", subStr('abcdef', 2, 3), subStr('abcdef', 4, -2), strLwr('AB'), strUpr('ab'), strRTrim('a  '), strLTrim('  a'));
+=> bcd|cd|ab|AB|a|a
+
+### pF67_stringFunctions2 [D365]
+return strFmt("%1|%2|%3|%4|%5|%6|%7", strScan('abcabc', 'c', 1, 6), strNFind('aab', 'a', 1, 3), strFind('abc', 'bc', 1, 3), strRem('abca', 'a'), strKeep('abca', 'a'), strRep('ab', 2), strAlpha('a1-b'));
+=> 3|3|2|bc|aa|abab|a1b
+
+### pF68_stringFunctions3 [D365]
+return strFmt("%1|%2|%3|%4|%5", strDel('abcd', 2, 1), strIns('ad', 'bc', 2), strPoke('abcd', 'x', 2), strReplace('aXbX', 'X', 'y'), strLine('a\nb', 1));
+=> acd|abcd|axcd|ayby|b
+
+### pF69_mathFunctions [D365]
+return strFmt("%1 %2 %3 %4 %5 %6 %7", abs(-2), min(1, 2), max(1.5, 2), round(1.26, 0.1), trunc(1.9), frac(1.25), decRound(1.255, 2));
+=> 2.00 1 2 1.30 1.00 0.25 1.26
+
+### pF70_mathFunctions2 [D365]
+return strFmt("%1 %2 %3 %4 %5", power(2, 3), sqrt(9), exp10(2), log10(100), sign(-3));
+=> 8.00 3.00 100.00 2.00 -1.00
+
+### pF71_conversions [D365]
+return strFmt("%1 %2 %3 %4 %5", str2Int('12'), str2Int64('123456789012'), str2Num('1.5'), int2Str(5), int642Str(5));
+=> 12 123456789012 1.50 5 5
+
+### pF72_num2Str [D365]
+return strFmt("%1|%2|%3", num2Str(1.5, 0, 2, 1, 0), num2Str0(5, 3), num2Char(65));
+=> 1.50|005|A
+
+### pF73_any2 [D365]
+return strFmt("%1 %2 %3 %4", any2Str(5), any2Real(2), any2Int('5'), any2Int64(5));
+=> 5 2.00 5 5
+
+### pF74_str2Enum [D365]
+NoYes n;
+n = str2Enum(n, 'Yes');
+return strFmt("%1 %2", n, symbol2Enum(enumNum(NoYes), 'No'));
+=> Yes 0
+
+### pF75_guid [D365]
+guid g = str2Guid('{00000000-0000-0000-0000-000000000001}');
+guid e;
+return strFmt("%1 %2 %3 %4", guid2Str(g), e == emptyGuid(), strLen(guid2Str(newGuid())), g != e);
+=> {00000000-0000-0000-0000-000000000001} true 38 true
+
+### pF76_strFmtFormats [D365]
+return strFmt("%1|%2|%3|%4|%%|%5", 1.5, 1\2\2020, NoYes::Yes, true, 'x');
+=> 1.50|2/1/2020|Yes|true|%%|x
+
+### pF77_throwError [D365]
+try
+{
+    throw error('x');
+}
+catch (Exception::Error)
+{
+    return 'caught';
+}
+=> caught
+
+### pF78_infoReturns [D365]
+int before = infologLine();
+Exception e = info('x');
+boolean ok = checkFailed('y');
+Exception w = warning('z');
+int added = infologLine() - before;
+infolog.clear(before);
+return strFmt("%1 %2 %3 %4", e, ok, w, added);
+=> Info false Warning 3
+
+### pF79_nestedTryRethrow
+str r;
+try
+{
+    try
+    {
+        throw Exception::Error;
+    }
+    catch (Exception::Error)
+    {
+        r += 'inner ';
+        throw Exception::Warning;
+    }
+}
+catch (Exception::Warning)
+{
+    r += 'outer';
+}
+return r;
+=> inner outer
+
+### pF80_catchAll
+try
+{
+    throw Exception::Info;
+}
+catch
+{
+    return 'any';
+}
+=> any
+
+### pF81_catchOrder
+try
+{
+    throw Exception::Error;
+}
+catch (Exception::Deadlock)
+{
+    return 'deadlock';
+}
+catch (Exception::Error)
+{
+    return 'error';
+}
+=> error
+
+### pF82_retry
+int tries;
+try
+{
+    tries++;
+    if (tries < 3)
+    {
+        throw Exception::Error;
+    }
+}
+catch (Exception::Error)
+{
+    retry;
+}
+return int2Str(tries);
+=> 3
+
+### pF83_ttsLevel
+int a = appl.ttsLevel();
+ttsbegin;
+int b = appl.ttsLevel();
+ttsbegin;
+int c = appl.ttsLevel();
+ttscommit;
+ttscommit;
+return strFmt("%1 %2 %3 %4", a, b, c, appl.ttsLevel());
+=> 0 1 2 0
+
+### pF84_ttsAbort
+ttsbegin;
+ttsabort;
+return int2Str(appl.ttsLevel());
+=> 0
+
+### pF85_throwAbortsTts
+try
+{
+    ttsbegin;
+    throw Exception::Error;
+}
+catch (Exception::Error)
+{
+    return int2Str(appl.ttsLevel());
+}
+=> 0
+
+### pF86_catchInsideTts
+str r = 'outer';
+try
+{
+    ttsbegin;
+    try
+    {
+        throw Exception::Error;
+    }
+    catch (Exception::Error)
+    {
+        r = 'inner';
+    }
+    ttsabort;
+}
+catch (Exception::Error)
+{
+    r += ' caught';
+}
+return strFmt("%1 %2", r, appl.ttsLevel());
+=> outer caught 0
+
+### pF87_changeCompany [D365]
+str before = curExt();
+str inner;
+changecompany('USRT')
+{
+    inner = curExt();
+}
+return strFmt("%1 %2 %3", before, inner, curExt());
+=> USMF usrt usmf
+
+### pF88_changeCompanyReturn [D365]
+changecompany('USRT')
+{
+    return curExt();
+}
+=> usrt
+
+### pF89_selectFirstOnly [D365]
+CustGroup cg;
+select firstonly cg order by cg.CustGroup;
+return strFmt("%1 %2", cg.CustGroup != '', cg.RecId != 0);
+=> true true
+
+### pF90_selectEmpty [D365]
+CustGroup cg;
+select firstonly cg where cg.CustGroup == 'no such';
+return strFmt("%1 %2 %3 %4", cg.RecId, cg ? 'y' : 'n', !cg, cg.CustGroup == '');
+=> 0 n true true
+
+### pF91_selectCount [D365]
+CustGroup cg;
+select count(RecId) from cg;
+int64 n = cg.RecId;
+int m;
+while select cg
+{
+    m++;
+}
+return strFmt("%1", n == m);
+=> true
+
+### pF92_selectFields [D365]
+CustGroup cg;
+select firstonly CustGroup, Name from cg order by CustGroup desc;
+CustGroup other;
+select firstonly other order by other.CustGroup desc;
+return strFmt("%1", cg.CustGroup == other.CustGroup);
+=> true
+
+### pF93_selectExpressionField [D365]
+str first = (select firstonly CustGroup from CustGroup order by CustGroup asc).CustGroup;
+CustGroup cg;
+select firstonly cg order by cg.CustGroup;
+return strFmt("%1", first == cg.CustGroup);
+=> true
+
+### pF94_selectWhere [D365]
+CustGroup cg;
+str top = (select firstonly CustGroup from CustGroup order by CustGroup asc).CustGroup;
+select firstonly cg where cg.CustGroup == top && (cg.RecId != 0 || cg.Name == '');
+return strFmt("%1", cg.CustGroup == top);
+=> true
+
+### pF95_selectWhereFunction [D365]
+CustGroup cg;
+str top = (select firstonly CustGroup from CustGroup order by CustGroup asc).CustGroup;
+select firstonly cg where cg.CustGroup == strUpr(top) || cg.CustGroup == subStr(top, 1, 20);
+return strFmt("%1", cg.CustGroup == top);
+=> true
+
+### pF96_selectLike [D365]
+int n;
+CustGroup cg;
+while select cg where cg.CustGroup like '*'
+{
+    n++;
+}
+select count(RecId) from cg;
+return strFmt("%1", n == cg.RecId);
+=> true
+
+### pF97_selectNext [D365]
+CustGroup cg;
+select cg order by cg.CustGroup;
+str a = cg.CustGroup;
+next cg;
+return strFmt("%1", a < cg.CustGroup);
+=> true
+
+### pF98_selectJoin [D365]
+CustTable ct;
+CustGroup cg;
+select firstonly ct join cg where cg.CustGroup == ct.CustGroup;
+return strFmt("%1 %2", ct.CustGroup == cg.CustGroup, ct.RecId != 0);
+=> true true
+
+### pG01_selectExistsJoin [D365]
+CustGroup cg;
+CustTable ct;
+int found, missing, total;
+while select cg exists join ct where ct.CustGroup == cg.CustGroup
+{
+    found++;
+}
+while select cg notexists join ct where ct.CustGroup == cg.CustGroup
+{
+    missing++;
+}
+while select cg
+{
+    total++;
+}
+return strFmt("%1", found + missing == total);
+=> true
+
+### pG02_selectOuterJoin [D365]
+CustGroup cg;
+CustTable ct;
+int n, total;
+while select cg outer join ct where ct.CustGroup == cg.CustGroup && ct.AccountNum == 'no such'
+{
+    n++;
+}
+while select cg
+{
+    total++;
+}
+return strFmt("%1", n == total);
+=> true
+
+### pG03_selectGroupBy [D365]
+CustTable ct, other;
+int groups, grouped;
+while select count(RecId), CustGroup from ct group by ct.CustGroup
+{
+    groups += ct.RecId > 0 ? 1 : 0;
+}
+while select CustGroup from other group by other.CustGroup
+{
+    grouped++;
+}
+return strFmt("%1", groups == grouped);
+=> true
+
+### pG04_selectAggregates [D365]
+CustGroup cg;
+select maxof(RecId) from cg;
+int64 highest = cg.RecId;
+select minof(RecId) from cg;
+int64 lowest = cg.RecId;
+select sum(RecId) from cg;
+int64 total = cg.RecId;
+return strFmt("%1 %2", highest >= lowest, total >= highest);
+=> true true
+
+### pG05_selectCrossCompany [D365]
+CustGroup cg, other;
+select count(RecId) from cg;
+select crossCompany count(RecId) from other;
+return strFmt("%1", other.RecId >= cg.RecId);
+=> true
+
+### pG06_selectCrossCompanyList [D365]
+CustGroup cg, here;
+container companies = [curExt()];
+select crossCompany:companies count(RecId) from cg;
+select count(RecId) from here;
+return strFmt("%1", cg.RecId == here.RecId);
+=> true
+
+### pG07_selectHints [D365]
+CustGroup cg, other;
+ttsbegin;
+select firstonly forupdate firstfast cg;
+ttsabort;
+select firstonly nofetch other;
+return strFmt("%1 %2", cg.RecId != 0, other.RecId != 0);
+=> true false
+
+### pG08_selectIndexHint [D365]
+CustGroup cg;
+select firstonly cg index hint GroupIdx;
+return strFmt("%1", cg.RecId != 0);
+=> true
+
+### pG09_selectReverse [D365]
+CustGroup a, b;
+select firstonly reverse a order by a.CustGroup;
+select firstonly b order by b.CustGroup desc;
+return strFmt("%1", a.CustGroup == b.CustGroup);
+=> true
+
+### pG10_selectMultipleOrder [D365]
+CustTable ct, o;
+select firstonly ct order by ct.CustGroup desc, ct.AccountNum asc;
+select firstonly o order by CustGroup desc, AccountNum;
+return strFmt("%1", ct.AccountNum == o.AccountNum);
+=> true
+
+### pG11_selectEnumWhere [D365]
+CustTable ct;
+select firstonly ct where ct.Blocked == CustVendorBlocked::No;
+return strFmt("%1", ct.Blocked == CustVendorBlocked::No);
+=> true
+
+### pG12_insertUpdateDeleteRollback [D365]
+CustGroup cg;
+str r;
+ttsbegin;
+cg.CustGroup = 'ZZ1';
+cg.Name = 'a';
+cg.insert();
+select forupdate cg where cg.CustGroup == 'ZZ1';
+r += cg.Name;
+cg.Name = 'b';
+cg.update();
+select cg where cg.CustGroup == 'ZZ1';
+r += cg.Name;
+select forupdate cg where cg.CustGroup == 'ZZ1';
+cg.delete();
+select cg where cg.CustGroup == 'ZZ1';
+r += int642Str(cg.RecId);
+ttsabort;
+select cg where cg.CustGroup == 'ZZ1';
+return strFmt("%1 %2", r, cg.RecId);
+=> ab0 0
+
+### pG13_updateRecordset [D365]
+CustGroup cg, check;
+ttsbegin;
+cg.CustGroup = 'ZZ2';
+cg.Name = 'a';
+cg.insert();
+update_recordset cg setting Name = 'b' where cg.CustGroup == 'ZZ2';
+int64 rows = cg.RowCount();
+select check where check.CustGroup == 'ZZ2';
+str r = check.Name;
+ttsabort;
+return strFmt("%1 %2", r, rows);
+=> b 1
+
+### pG14_deleteFrom [D365]
+CustGroup cg, check;
+ttsbegin;
+cg.CustGroup = 'ZZ3';
+cg.insert();
+delete_from cg where cg.CustGroup == 'ZZ3';
+select check where check.CustGroup == 'ZZ3';
+int64 rec = check.RecId;
+ttsabort;
+return int642Str(rec);
+=> 0
+
+### pG15_insertRecordset [D365]
+CustGroup cg, target, check;
+str 10 newName = 'ZZ5';
+ttsbegin;
+cg.CustGroup = 'ZZ4';
+cg.insert();
+insert_recordset target (CustGroup, Name) select newName, Name from cg where cg.CustGroup == 'ZZ4';
+select check where check.CustGroup == 'ZZ5';
+str found = check.CustGroup;
+ttsabort;
+return found;
+=> ZZ5
+
+### pG16_tableMethods [D365]
+CustGroup first;
+select firstonly first;
+CustGroup cg = CustGroup::find(first.CustGroup);
+return strFmt("%1 %2 %3 %4", cg.RecId != 0, cg.TableId == tableNum(CustGroup), cg.DataAreaId, CustGroup::exist(cg.CustGroup));
+=> true true usmf true
+
+### pG17_bufferData [D365]
+CustGroup a, b;
+a.CustGroup = 'x';
+a.Name = 'n';
+b.data(a);
+a.clear();
+CustGroup c = b.data();
+return strFmt("[%1] %2 %3", a.CustGroup, b.Name, c.Name);
+=> [] n n
+
+### pG18_bufferAssignment [D365]
+CustGroup a, b;
+a.Name = 'n';
+b = a;
+b.Name = 'm';
+return a.Name;
+=> m
+
+### pG19_orig [D365]
+CustGroup cg;
+select firstonly cg;
+str name = cg.Name;
+cg.Name = 'changed';
+return strFmt("%1", cg.orig().Name == name);
+=> true
+
+### pG20_dynamicFieldRead [D365]
+CustGroup cg;
+cg.Name = 'dyn';
+return strFmt("%1", cg.(fieldNum(CustGroup, Name)));
+=> dyn
+
+### pG21_dynamicFieldWrite [D365]
+CustGroup cg;
+cg.(fieldNum(CustGroup, Name)) = 'dyn';
+return cg.Name;
+=> dyn
+
+### pG22_dynamicFieldCommon [D365]
+Common c = new DictTable(tableNum(CustGroup)).makeRecord();
+select firstonly c;
+c.(fieldNum(CustGroup, Name)) = 'dyn';
+return strFmt("%1 %2", c.(fieldNum(CustGroup, Name)), c.TableId == tableNum(CustGroup));
+=> dyn true
+
+### pG23_mapMethod [D365]
+SalesLine salesLine;
+return strFmt("%1", salesLine.SysExtensionSerializerMap::hasExtensionTableRecord());
+=> false
+
+### pG24_mapAssignment [D365]
+CustTable ct;
+select firstonly ct;
+CustVendTable vendorOrCustomer = ct;
+return strFmt("%1", vendorOrCustomer.AccountNum == ct.AccountNum);
+=> true
+
+### pG25_commonCast [D365]
+CustGroup cg;
+cg.Name = 'x';
+Common c = cg;
+CustGroup back = c;
+CustGroup asCast = c as CustGroup;
+return strFmt("%1 %2 %3 %4", c.TableId == tableNum(CustGroup), back.Name, asCast.Name, c is CustGroup);
+=> true x x true
+
+### pG27_tmpTable [D365]
+CustGroup cg, other;
+cg.setTmp();
+cg.CustGroup = 'T1';
+cg.doInsert();
+other.setTmpData(cg);
+select firstonly other where other.CustGroup == 'T1';
+return strFmt("%1 [%2]", cg.isTmp(), other.CustGroup);
+=> true []
+
+### pG28_queryClasses [D365]
+CustGroup first;
+select firstonly first;
+Query q = new Query();
+QueryBuildDataSource ds = q.addDataSource(tableNum(CustGroup));
+ds.addRange(fieldNum(CustGroup, CustGroup)).value(queryValue(first.CustGroup));
+QueryRun qr = new QueryRun(q);
+int n;
+while (qr.next())
+{
+    CustGroup cg = qr.get(tableNum(CustGroup));
+    if (cg.CustGroup == first.CustGroup)
+    {
+        n++;
+    }
+}
+return int2Str(n);
+=> 1
+
+### pG29_dictTable [D365]
+DictTable dt = new DictTable(tableNum(CustGroup));
+DictField df = new DictField(tableNum(CustGroup), fieldNum(CustGroup, Name));
+return strFmt("%1 %2 %3", dt.name(), df.name(), dt.fieldCnt() > 0);
+=> CustGroup Name true
+
+### pG30_recordInsertList [D365]
+RecordInsertList l = new RecordInsertList(tableNum(CustGroup));
+CustGroup cg, check;
+ttsbegin;
+cg.CustGroup = 'ZZ6';
+l.add(cg);
+l.insertDatabase();
+select check where check.CustGroup == 'ZZ6';
+str f = check.CustGroup;
+ttsabort;
+return f;
+=> ZZ6
+
+### pG31_edtVariables [D365]
+CustAccount a = 'abc';
+AmountMST m = 1.5;
+TransDate d = 1\2\2020;
+RecId r = 5;
+return strFmt("%1 %2 %3 %4", a, m, d, r);
+=> abc 1.50 2/1/2020 5
+
+### pG32_edtStringLength [D365]
+CustAccount a = strRep('x', 50);
+return int2Str(strLen(a));
+=> 20
+
+### pG33_fieldStringLength [D365]
+CustGroup cg;
+cg.CustGroup = strRep('x', 50);
+return int2Str(strLen(cg.CustGroup));
+=> 10
+
+### pG34_classConst [D365]
+return IfxAuditHelper::AuditCategory_Other;
+=> Other
+
+### pG35_globalPrefix [D365]
+return strFmt("%1 %2", Global::strMax() != '', maxInt());
+=> true 2147483647
+
+### pG36_sysQuery [D365]
+return strFmt("%1 %2 %3", SysQuery::value('a'), SysQuery::range(1, 2), SysQuery::valueEmptyString());
+=> a 1..2 ""
+
+### pG37_labels [D365]
+return strFmt("%1 %2", "@SYS1", literalStr("@SYS1"));
+=> Time transactions @SYS1
+
+### pG38_curFunctions [D365]
+return strFmt("%1 %2 %3", curExt(), strLen(curUserId()) > 0, today() != dateNull());
+=> usmf true true
+
+### pG39_dateTimeUtil [D365]
+return strFmt("%1", DateTimeUtil::getToday(DateTimeUtil::getUserPreferredTimeZone()) != dateNull());
+=> true
+
+### pG40_parameters [D365]
+CustParameters p = CustParameters::find();
+return strFmt("%1", p.TableId == tableNum(CustParameters));
+=> true
+
+### pG41_macroDefine
+#define.Foo(5)
+#define.Bar('x')
+return strFmt("%1 %2", #Foo, #Bar);
+=> 5 x
+
+### pG42_macroLocal
+#localmacro.Add
+    (%1 + %2)
+#endmacro
+return int2Str(#Add(1, 2));
+=> 3
+
+### pG43_macroLibrary [D365]
+#AOT
+return #TablesPath;
+=> \Data Dictionary\Tables
+
+### pG44_macroIf
+#define.Foo(5)
+#if.Foo
+return 'defined';
+#endif
+return 'not';
+=> defined
+
+### pG45_recursion
+int fact(int n)
+{
+    return n <= 1 ? 1 : n * fact(n - 1);
+}
+return int2Str(fact(5));
+=> 120
+
+### pG46_localFunctionContainer
+container f()
+{
+    return [1, 'a'];
+}
+int a;
+str b;
+[a, b] = f();
+return strFmt("%1 %2", a, b);
+=> 1 a
+
+### pG47_blockScope
+{
+    int a = 1;
+}
+{
+    int a = 2;
+}
+return 'ok';
+=> ok
+
+### pG48_shadowInInnerBlock
+int a = 1;
+{
+    int a = 2;
+}
+return int2Str(a);
+!! REJECTED: A local variable named a cannot be declared in this scope
+
+### pG49_defaults [D365]
+str s;
+int i;
+real r;
+boolean b;
+int64 l;
+date d;
+container c;
+guid g;
+NoYes n;
+return strFmt("[%1][%2][%3][%4][%5][%6][%7][%8][%9]", s, i, r, b, l, d, conLen(c), g, n);
+=> [][0][0.00][false][0][][0][{00000000-0000-0000-0000-000000000000}][No]
+
+### pG50_truthyValues [D365]
+str s = 'x', e;
+int i = 1, z;
+real r = 0.5, q;
+container c = [1], k;
+return strFmt("%1 %2 %3 %4 %5 %6 %7 %8", s ? 1 : 0, e ? 1 : 0, i ? 1 : 0, z ? 1 : 0, r ? 1 : 0, q ? 1 : 0, c ? 1 : 0, k ? 1 : 0);
+=> 1 0 1 0 1 0 1 0
+
+### pG51_notOnValues
+str e;
+int z;
+real q;
+return strFmt("%1 %2 %3", !e, !z, !q);
+=> true true true
+
+### pG52_andOnValues
+str s = 'x';
+int i = 1;
+boolean b = s && i;
+return strFmt("%1", b);
+=> true
+
+### pG53_chainedAssign
+int a, b;
+a = b = 3;
+return strFmt("%1 %2", a, b);
+!! REJECTED: ; expected
+
+### pG54_postIncrementExpression
+int a = 1;
+int b = a++;
+return strFmt("%1 %2", a, b);
+!! REJECTED: ; expected
+
+### pG55_commentsInside
+int /* c */ a = 1; // line
+/* multi
+   line */
+return int2Str(a /* x */ + 1);
+=> 2
+
+### pG56_multilineString
+str s = @"a
+b";
+return strFmt("%1", strLen(s) > 2);
+=> true
+
+### pG57_semicolonAfterBlock
+{
+    int a = 1;
+};
+return 'ok';
+=> ok
+
+### pG58_nonAscii [D365]
+str s = 'é€';
+return strFmt("%1 %2", strLen(s), char2Num(s, 1));
+=> 2 233
+
+### pG59_strFmtManyArgs
+return strFmt("%1%2%3%4%5%6%7%8%9%10%11", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
+=> 1234567891011
+
+### pG60_stringPlusInt
+str s = 'a' + int2Str(1);
+s += 'b';
+return s;
+=> a1b
+
+### pG61_subStrOutside [D365]
+return subStr('abc', 5, 2) + '|';
+=> |
+
+### pG62_debugAssert [D365]
+Debug::assert(true);
+return 'ok';
+=> ok
+
+### pG63_typesPrint [D365]
+return strFmt("%1 %2 %3", Types::String, Types::Integer, typeOf(1));
+=> String Integer Integer
+
+### pG64_int64Conversion [D365]
+int64 x = 5000000000;
+int y = x;
+real r = x;
+return strFmt("%1 %2", y, r);
+=> 705032704 5,000,000,000.00
+
+### pG65_realToInt
+int a = 2.9;
+int b = -2.9;
+return strFmt("%1 %2", a, b);
+=> 2 -2
+
+### pG66_realFormat [D365]
+return strFmt("%1 %2 %3", 1.0, 0.1 + 0.2, 1234567.891);
+=> 1.00 0.30 1,234,567.89
+
+### pG67_realPrecision [D365]
+real a = 1.0 / 3.0;
+real b = a * 3;
+return strFmt("%1 %2", b == 1.0, num2Str(a, 0, 10, 1, 0));
+=> false 0.3333333333
+
+### pG68_ifElseIf
+int i = 2;
+if (i == 1) return 'a';
+else if (i == 2) return 'b';
+else return 'c';
+=> b
+
+### pG69_whileBraceless
+int i;
+while (i < 3) i++;
+return int2Str(i);
+=> 3
+
+### pG70_doWhile
+int i;
+do
+{
+    i++;
+}
+while (i < 3);
+return int2Str(i);
+=> 3
+
+### pG72_callStaticByName [D365]
+return strFmt("%1", new DictClass(classNum(DEVXppProbe)).callStatic('fortyOne'));
+=> 41
+
+### pG73_newObjectChain [D365]
+return int2Str(new Map(Types::String, Types::String).elements());
+=> 0
+
+### pG74_tableFieldFromMethodChain [D365]
+CustTable ct;
+select firstonly ct;
+return strFmt("%1", CustTable::find(ct.AccountNum).CustGroup == ct.CustGroup);
+=> true
+
+### pG75_fieldIncrement [D365]
+CustTable ct;
+ct.CreditMax = 1;
+ct.CreditMax += 2;
+ct.CreditMax++;
+return strFmt("%1", ct.CreditMax);
+=> 4.00
+
+### pG76_fieldEnum [D365]
+CustTable ct;
+ct.Blocked = CustVendorBlocked::All;
+return strFmt("%1 %2", ct.Blocked, ct.Blocked == CustVendorBlocked::All);
+=> All true
+
+### pG78_whileSelectBreak [D365]
+CustGroup cg;
+int n;
+while select cg
+{
+    n++;
+    if (n == 2)
+    {
+        break;
+    }
+}
+return int2Str(n);
+=> 2
+
+### pG79_whileSelectContinue [D365]
+CustGroup cg;
+int n, m;
+while select cg
+{
+    n++;
+    if (n > 1)
+    {
+        continue;
+    }
+    m++;
+}
+return strFmt("%1 %2", n > 1, m);
+=> true 1
+
+### pG80_selectInLocalFunction [D365]
+int countGroups()
+{
+    CustGroup cg;
+    select count(RecId) from cg;
+    return any2Int(cg.RecId);
+}
+CustGroup other;
+int m;
+while select other
+{
+    m++;
+}
+return strFmt("%1", countGroups() == m);
+=> true
+
+### pG83_exceptionTextInfolog [D365]
+int before = infologLine();
+try
+{
+    throw error('boom');
+}
+catch (Exception::Error)
+{
+}
+str msg = infolog.text(infologLine());
+infolog.clear(before);
+return msg;
+=> boom
+
+### pG85_setPrefix [D365]
+setPrefix('a');
+return 'ok';
+=> ok
+
+### pG87_dateFunctions2 [D365]
+date d = mkDate(15, 2, 2020);
+return strFmt("%1 %2 %3 %4 %5", date2Num(d), num2Date(date2Num(d)) == d, nextMth(d) == mkDate(15, 3, 2020), prevYr(d) == mkDate(15, 2, 2019), dayName(1));
+=> 43874 true true true Monday
+
+### pG90_enumCnt [D365]
+return strFmt("%1 %2", enumCnt(NoYes), NoYes::Yes == NoYes::No);
+=> 2 false
+
+### pG91_globalObjects [D365]
+return strFmt("%1 %2 %3", appl.ttsLevel(), classFactory != null, infolog != null);
+=> 0 true true
+
+### pG92_switchReturnsFallsOut
+int i = 9;
+switch (i)
+{
+    case 1:
+        return 'one';
+}
+return 'after';
+=> after
+
+### pG93_selectIntoSameBufferTwice [D365]
+CustGroup cg;
+select firstonly cg order by cg.CustGroup;
+str a = cg.CustGroup;
+select firstonly cg order by cg.CustGroup desc;
+return strFmt("%1", a <= cg.CustGroup);
+=> true
+
+### pG94_whileSelectNested [D365]
+CustGroup a, b;
+int n, inner;
+while select a
+{
+    n++;
+    while select firstonly b where b.CustGroup == a.CustGroup
+    {
+        inner++;
+    }
+}
+return strFmt("%1", n == inner);
+=> true
+
+### pG95_whereWithVariableAndEnum [D365]
+CustTable ct;
+CustVendorBlocked blocked = CustVendorBlocked::No;
+select firstonly ct where ct.Blocked == blocked;
+return strFmt("%1", ct.Blocked);
+=> No
+
+### pG96_fieldAssignFromField [D365]
+CustGroup a, b;
+a.Name = 'n';
+b.Name = a.Name + 'x';
+return b.Name;
+=> nx
+
+### pG97_bufferAsArgument [D365]
+str nameOf(CustGroup _cg)
+{
+    return _cg.Name;
+}
+CustGroup a;
+a.Name = 'n';
+return nameOf(a);
+=> n
+
+### pG98_bufferChangedInFunction [D365]
+void change(CustGroup _cg)
+{
+    _cg.Name = 'changed';
+}
+CustGroup a;
+a.Name = 'n';
+change(a);
+return a.Name;
+=> changed
+
+### pH01_objectChangedInFunction [D365]
+void change(Map _m)
+{
+    _m.insert(1, 1);
+}
+Map m = new Map(Types::Integer, Types::Integer);
+change(m);
+return int2Str(m.elements());
+=> 1
+
+### pH02_containerNotChangedInFunction [D365]
+void change(container _c)
+{
+    _c += 1;
+}
+container c;
+change(c);
+return int2Str(conLen(c));
+=> 0
+
+### pH03_validateWrite [D365]
+CustGroup cg;
+int before = infologLine();
+boolean ok = cg.validateWrite();
+infolog.clear(before);
+return strFmt("%1", ok);
+=> false
+
+### pH04_initValue [D365]
+CustTable ct;
+ct.initValue();
+return strFmt("%1", ct.RecId);
+=> 0
+
+### pH05_fieldLabel [D365]
+return strFmt("%1", new DictField(tableNum(CustGroup), fieldNum(CustGroup, CustGroup)).type());
+=> UserType
+
+### pH06_extendedTypeNum [D365]
+return strFmt("%1", new DictType(extendedTypeNum(CustAccount)).stringLen() > 0);
+=> true
+
+### pH07_queryRange [D365]
+Query q = new Query(queryStr(Cust));
+return strFmt("%1", q.dataSourceCount() > 0);
+=> true
+
+### pH08_sysDa [D365]
+CustGroup cg;
+SysDaQueryObject qo = new SysDaQueryObject(cg);
+SysDaSearchObject so = new SysDaSearchObject(qo);
+SysDaSearchStatement ss = new SysDaSearchStatement();
+int n;
+while (ss.nextRecord(so))
+{
+    n++;
+}
+return strFmt("%1", n > 0);
+=> true
+
+### pH09_exceptionEnumValue [D365]
+return strFmt("%1 %2", Exception::Error, any2Int(Exception::Error));
+=> Error 3
+
+### pH12_orAssign
+int i = 2;
+i |= 1;
+return int2Str(i);
+!! REJECTED: Invalid token '|'
+
+### pH13_andAssign
+int i = 3;
+i &= 1;
+return int2Str(i);
+!! REJECTED: Invalid token '&'
+
+### pH14_xorAssign
+int i = 3;
+i ^= 1;
+return int2Str(i);
+!! REJECTED: Invalid token '^'
+
+### pH15_shiftAssign
+int i = 1;
+i <<= 2;
+i >>= 1;
+return int2Str(i);
+!! REJECTED: Invalid token '<<'
+
+### pH16_modAssign
+int i = 7;
+i %= 3;
+return int2Str(i);
+!! REJECTED: Invalid token '%'
+
+### pH17_multiplyAssignReal
+int i = 2;
+i *= 2.5;
+real r = 1;
+r *= 2.5;
+return strFmt("%1 %2", i, r);
+=> 5 2.50
+
+### pH18_multiplyAssignField [D365]
+CustTable ct;
+ct.CreditMax = 2;
+ct.CreditMax *= 3;
+ct.CreditMax /= 2;
+return strFmt("%1", ct.CreditMax);
+=> 3.00
+
+### pH19_macroInString
+#define.Foo(5)
+return "x#Foo";
+=> x#Foo
+
+### pH20_macroStringValue
+#define.S('abc')
+str s = #S;
+return s;
+=> abc
+
+### pH21_macroNoValue
+#define.Flag
+#if.Flag
+return 'yes';
+#endif
+return 'no';
+=> yes
+
+### pH22_macroIfNot
+#define.Foo(5)
+#ifnot.Foo
+return 'not defined';
+#endif
+#ifnot.Bar
+return 'bar not defined';
+#endif
+return 'end';
+=> bar not defined
+
+### pH23_macroIfValue
+str r;
+#define.Foo(5)
+#if.Foo(5)
+r += 'five ';
+#endif
+#if.Foo(6)
+r += 'six ';
+#endif
+return r + 'end';
+=> five end
+
+### pH24_macroUndef
+str r;
+#define.Foo(5)
+#undef.Foo
+#if.Foo
+r = 'defined';
+#endif
+return r + 'end';
+=> end
+
+### pH25_macroStatements
+#localmacro.Pick
+    if (%1 > %2)
+    {
+        return int2Str(%1);
+    }
+    return int2Str(%2);
+#endmacro
+#Pick(1, 2)
+=> 2
+
+### pH26_macroTextual
+#define.Foo(1 + 2)
+return int2Str(#Foo * 3);
+=> 7
+
+### pH27_macroLib [D365]
+#macrolib.AOT
+return #TablesPath;
+=> \Data Dictionary\Tables
+
+### pH28_macroCase
+#define.FooBar(5)
+return int2Str(#FOOBAR + #foobar);
+=> 10
+
+### pH29_macroNested
+#define.A(1)
+#define.B(#A + 1)
+return int2Str(#B);
+=> 2
+
+### pH30_macroInComment
+#define.Foo(5)
+// #Foo is here
+/* #Foo */
+return int2Str(#Foo);
+=> 5
+
+### pH31_macroRedefine
+#define.Foo(1)
+#define.Foo(2)
+return int2Str(#Foo);
+=> 2
+
+### pH32_macroGlobal
+#globalmacro.G
+    7
+#endmacro
+return int2Str(#G);
+=> 7
+
+### pH33_macroWord
+#macro.M
+    8
+#endmacro
+return int2Str(#M);
+=> 8
+
+### pH34_macroMissingArgument
+#localmacro.Two
+    %1 + %2 + 1
+#endmacro
+return int2Str(#Two(1));
+!! REJECTED: Invalid token '+': a missing argument becomes empty text
+
+### pH35_macroExtraArgument
+#localmacro.One
+    %1
+#endmacro
+return int2Str(#One(1, 2));
+=> 1
+
+### pH36_macroArgumentWithComma
+#localmacro.One
+    strFmt("%1", %1)
+#endmacro
+return #One(strFmt("%1", 5));
+!! REJECTED: Invalid token '%': the macro replaces %1 inside the string too
+
+### pH37_macroSemicolonAfter
+#define.Foo(5);
+return int2Str(#Foo);
+=> 5
+
+### pH38_macroInDeclaration [D365]
+#define.Size(3)
+int a[#Size];
+return int2Str(dimOf(a));
+=> 3
+
+### pH39_macroSpaces
+#define.A( 1 )
+return strFmt("[%1]", #A);
+=> [1]
+
+### pH40_macroUndefinedUse
+#define.Foo(1)
+return "#Bar";
+=> #Bar
+
+### pH41_macroInsideIf
+#define.Foo(1)
+int i = 1;
+if (i == #Foo)
+{
+    return 'one';
+}
+return 'other';
+=> one
+
+### pH42_macroBlockIf
+#define.Foo(1)
+#if.Foo
+#define.Bar(2)
+#endif
+return int2Str(#Bar);
+=> 2
+
+### pH43_ttsCatchUpdateConflict
+str r = 'none';
+try
+{
+    ttsbegin;
+    try
+    {
+        throw Exception::UpdateConflict;
+    }
+    catch (Exception::UpdateConflict)
+    {
+        r = 'inner';
+    }
+    ttsabort;
+}
+catch
+{
+    r += ' outer';
+}
+return strFmt("%1 %2", r, appl.ttsLevel());
+=> inner 0
+
+### pH44_ttsCatchDuplicateKey
+str r = 'none';
+try
+{
+    ttsbegin;
+    try
+    {
+        throw Exception::DuplicateKeyException;
+    }
+    catch (Exception::DuplicateKeyException)
+    {
+        r = 'inner';
+    }
+    ttsabort;
+}
+catch
+{
+    r += ' outer';
+}
+return strFmt("%1 %2", r, appl.ttsLevel());
+=> inner 0
+
+### pH45_ttsCatchDeadlock
+str r = 'none';
+try
+{
+    ttsbegin;
+    try
+    {
+        throw Exception::Deadlock;
+    }
+    catch (Exception::Deadlock)
+    {
+        r = 'inner';
+    }
+    ttsabort;
+}
+catch
+{
+    r += ' outer';
+}
+return strFmt("%1 %2", r, appl.ttsLevel());
+=> none outer 0
+
+### pH46_ttsCatchAll
+str r = 'none';
+try
+{
+    ttsbegin;
+    try
+    {
+        throw Exception::Error;
+    }
+    catch
+    {
+        r = 'inner';
+    }
+    ttsabort;
+}
+catch
+{
+    r += ' outer';
+}
+return strFmt("%1 %2", r, appl.ttsLevel());
+=> none outer 0
+
+### pH47_ttsCatchClr
+str r = 'none';
+try
+{
+    ttsbegin;
+    try
+    {
+        System.Convert::ToInt32('x');
+    }
+    catch (Exception::CLRError)
+    {
+        r = 'inner';
+    }
+    ttsabort;
+}
+catch
+{
+    r += ' outer';
+}
+return strFmt("%1 %2", r, appl.ttsLevel());
+=> none outer 0
+
+### pH48_ttsFinally
+str r = 'none';
+try
+{
+    ttsbegin;
+    try
+    {
+        throw Exception::Error;
+    }
+    finally
+    {
+        r = 'finally';
+    }
+}
+catch
+{
+    r += ' outer';
+}
+return strFmt("%1 %2", r, appl.ttsLevel());
+=> finally outer 0
+
+### pH49_ttsLevelAfterCatch
+str r;
+try
+{
+    ttsbegin;
+    ttsbegin;
+    throw Exception::Error;
+}
+catch
+{
+    r = int2Str(appl.ttsLevel());
+}
+return r;
+=> 0
+
+### pH50_ttsTryInsideNoThrow
+str r = 'none';
+ttsbegin;
+try
+{
+    r = 'body';
+}
+catch
+{
+    r = 'catch';
+}
+ttsabort;
+return r;
+=> body
+
+### pH51_ttsBeginInsideCaught
+str r = 'none';
+try
+{
+    ttsbegin;
+    ttscommit;
+    throw Exception::Error;
+}
+catch
+{
+    r = int2Str(appl.ttsLevel());
+}
+return r;
+=> 0
+
+### pH52_ttsErrorOutsideRethrow
+str r = 'none';
+try
+{
+    try
+    {
+        ttsbegin;
+        throw Exception::Error;
+    }
+    catch (Exception::Error)
+    {
+        r = int2Str(appl.ttsLevel());
+        throw Exception::Warning;
+    }
+}
+catch (Exception::Warning)
+{
+    r += ' warning ' + int2Str(appl.ttsLevel());
+}
+return r;
+=> 0 warning 0
+
+### pH53_labelSingleQuote
+return strFmt("%1", '@SYS1');
+=> Time transactions
+
+### pH54_labelWithText
+return strFmt("%1|%2", "@SYS1 x", " @SYS1");
+=> @SYS1 x| @SYS1
+
+### pH55_labelVerbatim
+return @"@SYS1";
+=> Time transactions
+
+### pH56_labelNewFormat
+return strFmt("%1", "@ApplicationPlatform:SysClassRunner_Completed");
+=> @ApplicationPlatform:SysClassRunner_Completed
+
+### pH57_labelUnknown
+return strFmt("%1", "@NOSUCH99999");
+=> @NOSUCH99999
+
+### pH58_labelConcat
+return "@SYS1" + 'x';
+=> Time transactionsx
+
+### pH59_labelInSelect [D365]
+CustGroup cg;
+select firstonly cg where cg.Name != "@SYS1";
+return strFmt("%1", cg.RecId != 0);
+=> true
+
+### pH60_labelInSwitch
+str s = "@SYS1";
+switch (s)
+{
+    case "@SYS1":
+        return 'same';
+}
+return 'other';
+=> same
+
+### pH61_selectFirstFast [D365]
+CustGroup cg;
+select firstfast cg;
+return strFmt("%1", cg.RecId != 0);
+=> true
+
+### pH62_selectFirstOnly10 [D365]
+CustGroup cg;
+int n;
+while select firstonly10 cg
+{
+    n++;
+}
+return strFmt("%1", n > 0 && n <= 10);
+=> true
+
+### pH63_selectFirstOnly100 [D365]
+CustGroup cg;
+select firstonly100 cg;
+return strFmt("%1", cg.RecId != 0);
+=> true
+
+### pH64_selectFirstOnly1000 [D365]
+CustGroup cg;
+select firstonly1000 cg;
+return strFmt("%1", cg.RecId != 0);
+=> true
+
+### pH65_selectForceNestedLoop [D365]
+CustGroup cg;
+select firstonly forcenestedloop cg;
+return strFmt("%1", cg.RecId != 0);
+=> true
+
+### pH66_selectForceSelectOrder [D365]
+CustGroup cg;
+select firstonly forceselectorder cg;
+return strFmt("%1", cg.RecId != 0);
+=> true
+
+### pH67_selectForcePlaceholders [D365]
+CustGroup cg;
+select firstonly forceplaceholders cg;
+return strFmt("%1", cg.RecId != 0);
+=> true
+
+### pH68_selectForceLiterals [D365]
+CustGroup cg;
+select firstonly forceliterals cg;
+return strFmt("%1", cg.RecId != 0);
+=> true
+
+### pH69_selectLocks [D365]
+CustGroup a, b, c;
+ttsbegin;
+select firstonly optimisticlock a;
+select firstonly pessimisticlock b;
+select firstonly repeatableread c;
+ttsabort;
+return strFmt("%1 %2 %3", a.RecId != 0, b.RecId != 0, c.RecId != 0);
+=> true true true
+
+### pH70_selectNoFetchNext [D365]
+CustGroup cg;
+select nofetch cg order by cg.CustGroup;
+next cg;
+return strFmt("%1", cg.RecId != 0);
+=> true
+
+### pH71_selectGenerateOnly [D365]
+CustGroup cg;
+select generateonly cg;
+return strFmt("%1", strScan(cg.getSQLStatement(), 'CUSTGROUP', 1, 2000) > 0);
+=> true
+
+### pH72_selectIndex [D365]
+CustGroup cg;
+select firstonly cg index GroupIdx;
+return strFmt("%1", cg.RecId != 0);
+=> true
+
+### pH73_selectIn [D365]
+CustGroup first, cg;
+select firstonly first;
+container c = [first.CustGroup, 'no such'];
+int n;
+while select cg where cg.CustGroup in c
+{
+    n++;
+}
+return int2Str(n);
+!! REJECTED: Types str and container are not compatible with operator in
+
+### pH74_selectInEnum [D365]
+CustTable ct;
+container c = [CustVendorBlocked::No];
+select firstonly ct where ct.Blocked in c;
+return strFmt("%1", ct.RecId != 0);
+=> true
+
+### pH75_selectHaving [D365]
+CustTable ct;
+int n, m;
+while select count(RecId), CustGroup from ct group by CustGroup having count(RecId) > 0
+{
+    n++;
+}
+CustTable other;
+while select CustGroup from other group by CustGroup
+{
+    m++;
+}
+return strFmt("%1", n == m);
+!! REJECTED: Invalid token 'count'
+
+### pH76_selectStar [D365]
+CustGroup cg;
+select * from cg;
+return strFmt("%1", cg.RecId != 0);
+=> true
+
+### pH77_selectOrderBeforeWhere [D365]
+CustGroup cg;
+select firstonly cg order by cg.CustGroup desc where cg.CustGroup != '';
+return strFmt("%1", cg.RecId != 0);
+=> true
+
+### pH78_selectTwoAggregates [D365]
+CustGroup cg;
+select count(RecId), maxof(ClearingPeriod) from cg;
+return strFmt("%1", cg.RecId > 0);
+=> true
+
+### pH79_selectAvg [D365]
+CustGroup cg;
+select avg(RecId) from cg;
+return strFmt("%1", cg.RecId > 0);
+=> true
+
+### pH80_selectFieldsInJoin [D365]
+CustTable ct;
+CustGroup cg;
+select firstonly AccountNum from ct join Name from cg where cg.CustGroup == ct.CustGroup;
+return strFmt("%1", ct.AccountNum != '');
+=> true
+
+### pH81_selectThreeTables [D365]
+CustTable ct;
+CustGroup cg;
+DirPartyTable party;
+select firstonly ct join cg where cg.CustGroup == ct.CustGroup join party where party.RecId == ct.Party;
+return strFmt("%1", party.RecId == ct.Party);
+=> true
+
+### pH82_selectFieldToField [D365]
+CustGroup cg;
+select firstonly cg where cg.CustGroup == cg.CustGroup;
+return strFmt("%1", cg.RecId != 0);
+=> true
+
+### pH83_selectLikeVariable [D365]
+CustGroup first, cg;
+select firstonly first;
+str pattern = first.CustGroup + '*';
+select firstonly cg where cg.CustGroup like pattern;
+return strFmt("%1", cg.RecId != 0);
+=> true
+
+### pH84_selectNotLike [D365]
+CustGroup cg;
+select firstonly cg where !(cg.CustGroup like 'no such*');
+return strFmt("%1", cg.RecId != 0);
+=> true
+
+### pH85_selectDateLiteral [D365]
+CustTable ct;
+select firstonly ct where ct.CreatedDateTime >= 2000-01-01T00:00:00;
+return strFmt("%1", ct.RecId != 0);
+=> true
+
+### pH86_selectNotOperator [D365]
+CustTable ct;
+select firstonly ct where !ct.AccountNum;
+return strFmt("%1", ct.RecId);
+=> 0
+
+### pH87_selectExpressionInWhere [D365]
+CustGroup cg;
+int n = 1;
+select firstonly cg where cg.RecId + n > 0;
+return strFmt("%1", cg.RecId != 0);
+=> true
+
+### pH88_updateRecordsetArithmetic [D365]
+CustGroup cg, check;
+ttsbegin;
+cg.CustGroup = 'ZZ7';
+cg.ClearingPeriod = '';
+cg.insert();
+update_recordset cg setting Name = 'a' + 'b' where cg.CustGroup == 'ZZ7';
+select check where check.CustGroup == 'ZZ7';
+str r = check.Name;
+ttsabort;
+return r;
+=> ab
+
+### pH89_updateRecordsetJoin [D365]
+CustGroup cg, check;
+CustGroup other;
+ttsbegin;
+cg.CustGroup = 'ZZ8';
+cg.insert();
+update_recordset cg setting Name = 'joined' where cg.CustGroup == 'ZZ8' exists join other where other.CustGroup == cg.CustGroup;
+select check where check.CustGroup == 'ZZ8';
+str r = check.Name;
+ttsabort;
+return r;
+=> joined
+
+### pH90_deleteFromJoin [D365]
+CustGroup cg, check;
+CustGroup other;
+ttsbegin;
+cg.CustGroup = 'ZZ9';
+cg.insert();
+delete_from cg where cg.CustGroup == 'ZZ9' exists join other where other.CustGroup == cg.CustGroup;
+select check where check.CustGroup == 'ZZ9';
+int64 rec = check.RecId;
+ttsabort;
+return int642Str(rec);
+=> 0
+
+### pH91_skipMethods [D365]
+CustGroup cg, check;
+ttsbegin;
+cg.CustGroup = 'ZY1';
+cg.skipDataMethods(true);
+cg.skipEvents(true);
+cg.skipDatabaseLog(true);
+cg.doInsert();
+select forupdate check where check.CustGroup == 'ZY1';
+check.Name = 'x';
+check.doUpdate();
+select forupdate check where check.CustGroup == 'ZY1';
+str r = check.Name;
+check.doDelete();
+ttsabort;
+return r;
+=> x
+
+### pH92_commonWhileSelect [D365]
+Common c = new DictTable(tableNum(CustGroup)).makeRecord();
+int n;
+while select c
+{
+    n++;
+}
+return strFmt("%1", n > 0);
+=> true
+
+### pH93_multipleArrayDeclaration [D365]
+int a[2], c, b[3];
+c = 1;
+a[1] = c;
+b[3] = 2;
+return strFmt("%1 %2 %3 %4", dimOf(a), dimOf(b), a[1], b[3]);
+=> 2 3 1 2
+
+### pH94_arrayAfterVariable
+int c = 1, a[2];
+a[2] = c;
+return int2Str(a[2]);
+=> 1
+
+### pH95_arrayInitializedNext
+int a[2], c = 5;
+return int2Str(c);
+=> 5
+
+### pH96_arrayParameter
+int first(int _a[])
+{
+    return _a[1];
+}
+int a[2];
+a[1] = 4;
+return int2Str(first(a));
+=> 4
+
+### pH97_arrayCopyStr
+str a[2], b[2];
+a[1] = 'x';
+b = a;
+a[1] = 'y';
+return b[1];
+=> y
+
+### pH98_dataFieldAccess [D365]
+CustGroup cg;
+cg.Name = 'n';
+return strFmt("%1", cg.data().Name);
+=> n
+
+### pH99_origOnFind [D365]
+CustGroup first;
+select firstonly first;
+return strFmt("%1", CustGroup::find(first.CustGroup).orig().CustGroup == first.CustGroup);
+=> true
+
+### pI01_commonMethodsOnFind [D365]
+Common c = new DictTable(tableNum(CustGroup)).makeRecord();
+select firstonly c;
+return strFmt("%1", c.orig().RecId == c.RecId);
+=> true
+
+### pI02_dateOperators [D365]
+date d = 1\1\2020;
+d++;
+date e = d;
+e += 2;
+date f = 1 + e;
+date g = f - 1;
+return strFmt("%1 %2 %3 %4", dayOfMth(d), dayOfMth(e), dayOfMth(f), dayOfMth(g));
+=> 2 4 5 4
+
+### pI03_dateMinusUntyped [D365]
+date a = 1\1\2020, b = 11\1\2020;
+return strFmt("%1 %2 %3", b - a, a - b, int2Str(b - a));
+=> 10 -10 10
+
+### pI04_utcComparison [D365]
+utcdatetime a = 2020-01-01T00:00:00, b = 2020-01-02T00:00:00;
+return strFmt("%1 %2 %3", a < b, a == b, a != b);
+=> true false true
+
+### pI05_utcInStrFmt [D365]
+utcdatetime a = 2020-01-02T03:04:05;
+return strFmt("%1", a);
+=> 1/2/2020 03:04:05 am
+
+### pI07_constString
+const str S = 'x';
+const real R = 1.5;
+return strFmt("%1 %2", S, R);
+=> x 1.50
+
+### pI08_constMultiple
+const int A = 1, B = 2;
+return int2Str(A + B);
+=> 3
+
+### pI09_constAssign
+const int A = 1;
+A = 2;
+return int2Str(A);
+!! REJECTED: The const variable 'A' cannot be changed
+
+### pI10_constInBlock
+{
+    const int A = 1;
+    return int2Str(A);
+}
+=> 1
+
+### pI11_constInLocalFunction
+const int A = 1;
+int plusOne()
+{
+    return A + 1;
+}
+return int2Str(plusOne());
+=> 2
+
+### pI12_constNoValue
+const int A;
+return int2Str(A);
+!! REJECTED: A const variable requires a value to be provided
+
+### pI13_constFromVariable
+int i = 5;
+const int A = i;
+return int2Str(A);
+!! REJECTED: The expression 'i' being assigned to 'A' must be constant
+
+### pI14_constArray
+const int A[2];
+return 'x';
+!! REJECTED: A const variable requires a value to be provided
+
+### pI15_globalVariables [D365]
+return strFmt("%1 %2 %3", appl != null, infolog != null, classFactory != null);
+=> true true true
+
+### pI16_infologMethods [D365]
+int before = infologLine();
+info('a');
+int n = infolog.num();
+str t = infolog.text(infologLine());
+infolog.clear(before);
+return strFmt("%1 %2", t, n >= 1);
+=> a true
+
+### pI17_shadowAppl [D365]
+int appl = 5;
+return int2Str(appl);
+!! REJECTED: A local variable named 'appl' cannot be declared in this scope
+
+### pI18_globalCache [D365]
+SysGlobalCache cache = appl.globalCache();
+cache.set('DEVXppProbe', 'k', 5);
+int v = cache.get('DEVXppProbe', 'k');
+cache.remove('DEVXppProbe', 'k');
+return int2Str(v);
+=> 5
+
+### pI19_applCompany [D365]
+return strFmt("%1", appl.company() != null);
+=> true
+
+### pI20_structVarArgs [D365]
+Struct s = new Struct(Types::Integer, 'a', Types::String, 'b');
+s.value('a', 1);
+return strFmt("%1 %2", s.value('a'), s.fieldName(2));
+=> 1 b
+
+### pI21_structMethods [D365]
+Struct s = new Struct('int a');
+s.add('c', 'x');
+return strFmt("%1 %2 %3", s.exists('c'), s.fieldType(1), s.toString());
+=> true Integer (a:0; c:"x")
+
+### pI22_textBuffer [D365]
+TextBuffer t = new TextBuffer();
+t.setText('abc');
+return strFmt("%1 %2", t.size(), t.getText());
+=> 3 abc
+
+### pI23_recordSortedList [D365]
+RecordSortedList l = new RecordSortedList(tableNum(CustGroup));
+l.sortOrder(fieldNum(CustGroup, CustGroup));
+CustGroup cg;
+cg.CustGroup = 'b';
+l.ins(cg);
+cg.CustGroup = 'a';
+l.ins(cg);
+CustGroup first;
+l.first(first);
+return strFmt("%1 %2", l.len(), first.CustGroup);
+=> 2 a
+
+### pI24_sessionClasses [D365]
+return strFmt("%1 %2", new xSession().userId() != '', sessionId() != 0);
+=> true true
+
+### pI25_sysDictTable [D365]
+SysDictTable d = new SysDictTable(tableNum(CustGroup));
+return strFmt("%1 %2", d.name(), d.isSql());
+=> CustGroup true
+
+### pI26_extensionTableMethod [D365]
+CustTable ct;
+return strFmt("%1", ct.TableId);
+=> 10347
+
+### pI27_objectInStrFmt [D365]
+Map m = new Map(Types::Integer, Types::Integer);
+return strFmt("%1", m.toString());
+=> []
+
+### pI28_bufferInStrFmt [D365]
+CustGroup cg;
+cg.CustGroup = 'x';
+return strFmt("%1", cg.toString());
+!! REJECTED: Table 'CustGroup' does not contain a definition for method 'toString'
+
+### pI29_conPeekWrongType [D365]
+container c = ['a'];
+int i;
+try
+{
+    i = conPeek(c, 1);
+}
+catch
+{
+    return 'caught';
+}
+return int2Str(i);
+=> 0
+
+### pI30_containerSwap
+int a = 1, b = 2;
+[a, b] = [b, a];
+return strFmt("%1 %2", a, b);
+=> 2 1
+
+### pI31_containerToField [D365]
+CustGroup cg;
+int i;
+[cg.Name, i] = ['x', 1];
+return strFmt("%1 %2", cg.Name, i);
+=> x 1
+
+### pI32_ternaryMixed
+boolean b = true;
+real r = b ? 1 : 2.5;
+return strFmt("%1", r);
+=> 1.00
+
+### pI33_localFunctionBeforeDeclaration
+int a = f();
+int f()
+{
+    return 3;
+}
+return int2Str(a);
+!! REJECTED: The name 'f' does not denote a predefined function, a static method on the Global class nor a previously defined local function
+
+### pI34_upperCaseKeywords
+INT i = 1;
+IF (I == 1)
+{
+    RETURN STRFMT("%1", I);
+}
+return '';
+=> 1
+
+### pI35_mixedCaseMembers [D365]
+CUSTGROUP cg;
+cg.NAME = 'n';
+return CG.name;
+=> n
+
+### pI36_docComment
+/// <summary>x</summary>
+int a = 1;
+return int2Str(a);
+=> 1
+
+### pI37_hexBig
+int64 a = 0x1FFFFFFFF;
+return int642Str(a);
+=> 8589934591
+
+### pI38_globalFunctionPrefix
+return Global::int642Str(1);
+!! REJECTED: Class 'Global' does not contain the static method 'int642Str'
+
+### pI39_infoInCondition [D365]
+int before = infologLine();
+boolean ok = true;
+ok = checkFailed('x') && ok;
+infolog.clear(before);
+return strFmt("%1", ok);
+=> false
+
+### pI40_throwInLocalFunction
+void f()
+{
+    throw Exception::Error;
+}
+try
+{
+    f();
+}
+catch
+{
+    return 'caught';
+}
+return 'no';
+=> caught
+
+### pI41_returnInsideLoopInFunction
+int f()
+{
+    for (int i = 0; i < 5; i++)
+    {
+        if (i == 2)
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+return int2Str(f());
+=> 2
+
+### pI42_tableIdOfVariable [D365]
+CustGroup cg;
+Common c = cg;
+return strFmt("%1 %2", tableId2Name(c.TableId), new SysDictTable(c.TableId).name());
+=> CustGroup CustGroup
+
+### pI43_changeCompanyVariable [D365]
+str target = 'USRT';
+changecompany(target)
+{
+    CustGroup cg;
+    select firstonly cg;
+    return cg.DataAreaId;
+}
+=> usrt
+
+### pI44_changeCompanyThrow [D365]
+str before = curExt();
+try
+{
+    changecompany('USRT')
+    {
+        throw Exception::Error;
+    }
+}
+catch
+{
+}
+return strFmt("%1", curExt() == before);
+=> true
+
+### pI45_changeCompanyBreak [D365]
+str before = curExt();
+while (true)
+{
+    changecompany('USRT')
+    {
+        break;
+    }
+}
+return strFmt("%1", curExt() == before);
+=> true
+
+### pI46_changeCompanyContinue [D365]
+str before = curExt();
+int i;
+while (i < 2)
+{
+    i++;
+    changecompany('USRT')
+    {
+        continue;
+    }
+}
+return strFmt("%1", curExt() == before);
+=> true
+
+### pI47_changeCompanyNested [D365]
+str r;
+changecompany('USRT')
+{
+    r = curExt();
+    changecompany('USMF')
+    {
+        r += curExt();
+    }
+    r += curExt();
+}
+return r;
+=> usrtusmfusrt
+
+### pI48_changeCompanyInLocalFunction [D365]
+str inside()
+{
+    changecompany('USRT')
+    {
+        return curExt();
+    }
+    return '';
+}
+str before = curExt();
+str value = inside();
+return strFmt("%1 %2", value, curExt() == before);
+=> usrt true
+
+### pI49_uncheckedReturn [D365]
+unchecked(Uncheck::XDS)
+{
+    return 'x';
+}
+=> x
+
+### pI50_ttsBareCatchUpdateConflict
+str r = 'none';
+try
+{
+    ttsbegin;
+    try
+    {
+        throw Exception::UpdateConflict;
+    }
+    catch
+    {
+        r = 'inner';
+    }
+    ttsabort;
+}
+catch
+{
+    r += ' outer';
+}
+return strFmt("%1 %2", r, appl.ttsLevel());
+=> none outer 0
+
+### pI51_ttsTypedClrCatch
+str r = 'none';
+System.Exception ex;
+try
+{
+    ttsbegin;
+    try
+    {
+        System.Convert::ToInt32('x');
+    }
+    catch (ex)
+    {
+        r = 'inner';
+    }
+    ttsabort;
+}
+catch
+{
+    r += ' outer';
+}
+return strFmt("%1 %2", r, appl.ttsLevel());
+=> none outer 0
+
+### pI52_ttsFinallyNoException
+str r = 'none';
+ttsbegin;
+try
+{
+    r = 'body';
+}
+finally
+{
+    r += ' finally';
+}
+int level = appl.ttsLevel();
+ttsabort;
+return strFmt("%1 %2", r, level);
+=> body finally 1
+
+### pI53_ttsConflictLevelInside
+str r = 'none';
+try
+{
+    ttsbegin;
+    try
+    {
+        ttsbegin;
+        throw Exception::UpdateConflict;
+    }
+    catch (Exception::UpdateConflict)
+    {
+        r = int2Str(appl.ttsLevel());
+    }
+    ttsabort;
+}
+catch
+{
+    r += ' outer';
+}
+return strFmt("%1 %2", r, appl.ttsLevel());
+=> 1 0
+
+### pI54_ttsConflictAtLevelZero
+str r = 'none';
+try
+{
+    ttsbegin;
+    ttsbegin;
+    throw Exception::UpdateConflict;
+}
+catch (Exception::UpdateConflict)
+{
+    r = int2Str(appl.ttsLevel());
+}
+return strFmt("%1 %2", r, appl.ttsLevel());
+=> 0 0
+
+### pI55_ttsDuplicateFromInsert [D365]
+CustGroup first, cg;
+select firstonly first;
+str r = 'none';
+ttsbegin;
+try
+{
+    cg.CustGroup = first.CustGroup;
+    cg.doInsert();
+}
+catch (Exception::DuplicateKeyException)
+{
+    r = 'duplicate';
+}
+ttsabort;
+return r;
+=> duplicate
+
+### pI56_ttsRetryOnConflict
+int tries;
+try
+{
+    ttsbegin;
+    tries++;
+    if (tries < 3)
+    {
+        throw Exception::UpdateConflict;
+    }
+    ttscommit;
+}
+catch (Exception::UpdateConflict)
+{
+    retry;
+}
+return strFmt("%1 %2", tries, appl.ttsLevel());
+=> 3 0
+
+### pI57_ttsNotRecovered
+str r = 'none';
+try
+{
+    ttsbegin;
+    try
+    {
+        throw Exception::UpdateConflictNotRecovered;
+    }
+    catch (Exception::UpdateConflictNotRecovered)
+    {
+        r = 'inner';
+    }
+    ttsabort;
+}
+catch
+{
+    r += ' outer';
+}
+return strFmt("%1 %2", r, appl.ttsLevel());
+=> none outer 0
+
+### pI58_ttsCommitInsideCatchAll
+str r = 'none';
+try
+{
+    ttsbegin;
+    ttscommit;
+    ttsbegin;
+    throw Exception::Error;
+}
+catch (Exception::Error)
+{
+    r = 'caught ' + int2Str(appl.ttsLevel());
+}
+return r;
+=> caught 0
+
+### pI59_arrayIndexVariable
+int a[3];
+int i = 2;
+a[i] = 7;
+a[i + 1] = a[i] + 1;
+return strFmt("%1 %2", a[2], a[3]);
+=> 7 8
+
+### pI60_arrayOfBuffers [D365]
+CustGroup a[2];
+a[1].Name = 'x';
+return strFmt("%1", a[1].Name);
+!! REJECTED: Invalid token '.'
+
+### pI61_compoundOnArray
+int a[2];
+a[1] = 2;
+a[1] += 1;
+a[1] *= 2;
+a[1]++;
+return int2Str(a[1]);
+=> 7
+
+### pI62_arrayEnumIndex [D365]
+int a[3];
+a[NoYes::Yes] = 5;
+return int2Str(a[1]);
+=> 5
+
+### pI64_edtArray [D365]
+CustAccount a[2];
+a[1] = 'x';
+return strFmt("%1 %2", a[1], dimOf(a));
+=> x 2
+
+### pI65_macroPercentWithoutArguments
+#define.F("%1!")
+return strFmt(#F, 5);
+=> !
+
+### pI66_macroArgumentWithNestedComma [D365]
+#localmacro.One
+    %1
+#endmacro
+return int2Str(#One(max(1, 2)));
+=> 2
+
+### pI67_macroArgumentWithStringComma
+#localmacro.One
+    %1
+#endmacro
+return #One("a,b");
+=> a,b
+
+### pI68_macroPercentInString
+#localmacro.Q
+    "x%1"
+#endmacro
+return #Q(5);
+=> x5
+
+### pI69_macroDefinePercentArgument
+#define.Q("x%1")
+return #Q(5);
+=> x5
+
+### pI70_macroUsedInSelect [D365]
+#define.Value('no such')
+CustGroup cg;
+select firstonly cg where cg.CustGroup == #Value;
+return strFmt("%1", cg.RecId);
+=> 0
+
+### pI71_macroInsideMacroCall
+#define.A(2)
+#localmacro.Twice
+    (%1 * 2)
+#endmacro
+return int2Str(#Twice(#A));
+=> 4
+
+### pI72_macroIfNested
+str r;
+#define.A(1)
+#if.A
+    r += 'a';
+    #ifnot.B
+    r += 'b';
+    #endif
+    #if.B
+    r += 'c';
+    #endif
+#endif
+return r;
+=> ab
+
+### pI73_macroIfSkipsDefinitions
+#if.Missing
+#define.A(1)
+#endif
+#ifnot.A
+return 'not defined';
+#endif
+return 'defined';
+=> not defined
+
+### pI74_macroFollowedByText
+#define.A(1)
+int a1 = 5;
+return strFmt("%1 %2", #A+1, a1);
+=> 2 5
+
+### pI75_macroNameLonger
+#define.Foo(1)
+#define.FooBar(2)
+return int2Str(#FooBar);
+=> 2
+
+### pI76_mapToMethod [D365]
+CustTable ct;
+select firstonly ct;
+return strFmt("%1", DEVXppProbe::mapArg(ct) == ct.AccountNum);
+=> true
+
+### pI78_mapBackToTable [D365]
+CustTable ct;
+select firstonly ct;
+CustVendTable m = ct;
+CustTable back = m;
+return strFmt("%1", back.AccountNum == ct.AccountNum);
+=> true
+
+### pI79_mapInLocalFunction [D365]
+str account(CustVendTable _m)
+{
+    return _m.AccountNum;
+}
+CustTable ct;
+select firstonly ct;
+return strFmt("%1", account(ct) == ct.AccountNum);
+=> true
+
+### pI80_mapWithArgument [D365]
+CustTable ct;
+return strFmt("%1", ct.SysExtensionSerializerMap::getExtensionTable(tableNum(CustTable)) == null);
+=> true
+
+### pI81_retryInsideChangeCompany [D365]
+int tries;
+try
+{
+    tries++;
+    if (tries < 2)
+    {
+        throw Exception::Error;
+    }
+}
+catch (Exception::Error)
+{
+    changecompany('USRT')
+    {
+        retry;
+    }
+}
+return strFmt("%1 %2", tries, curExt());
+=> 2 usmf
+
+### pI82_retryInsideUsing
+int tries;
+try
+{
+    tries++;
+    if (tries < 2)
+    {
+        throw Exception::Error;
+    }
+}
+catch (Exception::Error)
+{
+    using (var w = new System.IO.StringWriter())
+    {
+        retry;
+    }
+}
+return int2Str(tries);
+=> 2
+
+### pI83_tryInsideChangeCompanyCatches [D365]
+str r;
+changecompany('USRT')
+{
+    try
+    {
+        throw Exception::Error;
+    }
+    catch (Exception::Error)
+    {
+        r = curExt();
+    }
+}
+return r;
+=> usrt
+
+### pI84_dynamicFieldVariable [D365]
+CustGroup cg;
+FieldId id = fieldNum(CustGroup, Name);
+cg.(id) = 'x';
+str s = cg.(id);
+return s;
+=> x
+
+### pI85_dynamicFieldIncrement [D365]
+CustTable ct;
+FieldId id = fieldNum(CustTable, CreditMax);
+ct.(id) = 2;
+ct.(id) += 3;
+return strFmt("%1", ct.CreditMax);
+=> 5.00
+
+### pI86_dynamicFieldToMethod [D365]
+CustGroup cg;
+cg.Name = 'x';
+return strUpr(cg.(fieldNum(CustGroup, Name)));
+=> X
+
+### pJ01_xppReturnsClr [D365]
+return DEVXppProbe::makeBuilder().ToString();
+=> abc
+
+### pJ02_xppReturnsClrVariable [D365]
+System.Text.StringBuilder sb = DEVXppProbe::makeBuilder();
+sb.Append('d');
+return sb.ToString();
+=> abcd
+
+### pJ03_xppInstanceReturnsClr [D365]
+return new DEVXppProbe().builderOf().ToString();
+=> inst
+
+### pJ04_xppTakesClr [D365]
+System.Text.StringBuilder sb = new System.Text.StringBuilder('x');
+return DEVXppProbe::readBuilder(sb);
+=> x
+
+### pJ05_xppStaticClrField [D365]
+DEVXppProbe::builder = new System.Text.StringBuilder('f');
+return DEVXppProbe::builder.ToString();
+=> f
+
+### pJ06_xppReturnsClrArray [D365]
+System.String[] a = DEVXppProbe::makeArray();
+return strFmt("%1 %2", a.Length, a.GetValue(1));
+=> 2 y
+
+### pJ07_xppReturnsNull [D365]
+System.Text.StringBuilder sb = DEVXppProbe::nullBuilder();
+return strFmt("%1", sb == null);
+=> true
+
+### pJ08_selectUnaryMinus [D365]
+CustGroup cg;
+select firstonly cg where cg.RecId > -1;
+return strFmt("%1", cg.RecId != 0);
+=> true
+
+### pJ09_selectUnaryMinusField [D365]
+CustGroup cg;
+select firstonly cg where -cg.RecId < 0;
+return strFmt("%1", cg.RecId != 0);
+=> true
+
+### pJ10_selectNotBinary [D365]
+CustGroup cg;
+select firstonly cg where !(cg.CustGroup == 'no such');
+return strFmt("%1", cg.RecId != 0);
+=> true
+
+### pJ11_selectNotAnd [D365]
+CustGroup cg;
+select firstonly cg where !(cg.CustGroup == 'x' && cg.Name == 'y');
+return strFmt("%1", cg.RecId != 0);
+=> true
+
+### pJ12_selectStringConcatVariable [D365]
+CustGroup first, cg;
+select firstonly first;
+str a = first.CustGroup;
+select firstonly cg where cg.CustGroup == a + '';
+return strFmt("%1", cg.CustGroup == a);
+=> true
+
+### pJ13_selectArithmeticVariables [D365]
+CustGroup cg;
+int i = 1, j = 2;
+select firstonly cg where cg.RecId > i - j;
+return strFmt("%1", cg.RecId != 0);
+=> true
+
+### pJ14_updateSettingFieldConcat [D365]
+CustGroup cg, check;
+ttsbegin;
+cg.CustGroup = 'ZY2';
+cg.insert();
+update_recordset cg setting Name = cg.CustGroup + 'x' where cg.CustGroup == 'ZY2';
+select check where check.CustGroup == 'ZY2';
+str r = check.Name;
+ttsabort;
+return r;
+=> ZY2x
+
+### pJ15_updateSettingFieldArithmetic [D365]
+CustGroup cg, check;
+ttsbegin;
+cg.CustGroup = 'ZY3';
+cg.insert();
+update_recordset cg setting ClearingPeriod = cg.ClearingPeriod where cg.CustGroup == 'ZY3';
+select check where check.CustGroup == 'ZY3';
+str r = check.CustGroup;
+ttsabort;
+return r;
+=> ZY3
+
+### pJ16_whileSelectBreakAgain [D365]
+CustGroup cg;
+str first, second;
+int i;
+for (i = 1; i <= 2; i++)
+{
+    while select cg order by cg.CustGroup
+    {
+        if (i == 1)
+        {
+            first = cg.CustGroup;
+        }
+        else
+        {
+            second = cg.CustGroup;
+        }
+        break;
+    }
+}
+return strFmt("%1", first == second);
+=> true
+
+### pJ17_selectNoFetchTwice [D365]
+CustGroup cg, first;
+select nofetch cg order by cg.CustGroup;
+select nofetch cg order by cg.CustGroup;
+next cg;
+select firstonly first order by first.CustGroup;
+return strFmt("%1", cg.CustGroup == first.CustGroup);
+=> true
+
+### pJ18_selectAfterNoFetch [D365]
+CustGroup cg;
+select nofetch cg order by cg.CustGroup;
+select cg order by cg.CustGroup desc;
+str last = cg.CustGroup;
+next cg;
+return strFmt("%1", cg.CustGroup < last);
+=> true
+
+### pJ19_tableToOtherTable [D365]
+CustTable ct;
+Common c = ct;
+try
+{
+    CustGroup g = c;
+    return strFmt("no error %1", g.TableId == tableNum(CustGroup));
+}
+catch
+{
+    return 'error';
+}
+=> error
+
+### pJ20_selectDynamicField [D365]
+CustGroup cg;
+FieldId id = fieldNum(CustGroup, CustGroup);
+select firstonly cg where cg.(id) != '';
+return strFmt("%1", cg.RecId != 0);
+=> true
+
+### pJ21_selectDoubleNot [D365]
+CustGroup cg;
+select firstonly cg where !(!(cg.CustGroup != ''));
+return strFmt("%1", cg.RecId != 0);
+=> true
+
+### pJ22_finallyInsideCatch
+str r;
+try
+{
+    try
+    {
+        throw Exception::Error;
+    }
+    finally
+    {
+        r += 'f';
+    }
+}
+catch
+{
+    try
+    {
+        r += 'b';
+    }
+    finally
+    {
+        r += 'g';
+    }
+}
+return r;
+=> fbg
+
+### pJ23_changeCompanyInCatch [D365]
+str r;
+try
+{
+    changecompany('USRT')
+    {
+        throw Exception::Error;
+    }
+}
+catch
+{
+    changecompany('USMF')
+    {
+        r = 'handled';
+    }
+}
+return r;
+=> handled
+
+### pJ24_usingInCatch
+str r;
+try
+{
+    using (var a = new System.IO.StringWriter())
+    {
+        throw Exception::Error;
+    }
+}
+catch
+{
+    using (var b = new System.IO.StringWriter())
+    {
+        r = 'handled';
+    }
+}
+return r;
+=> handled
+
+### pJ25_containerDynamicField [D365]
+CustGroup cg;
+FieldId id = fieldNum(CustGroup, Name);
+int i;
+[cg.(id), i] = ['x', 1];
+return strFmt("%1 %2", cg.Name, i);
+=> x 1
+
+### pJ26_macroMultilineArgument
+#localmacro.Add
+    (%1 + %2)
+#endmacro
+int a = #Add(1,
+    2);
+return int2Str(a);
+=> 3
+
+### pJ27_ttsCatchInsideChangeCompany [D365]
+str r = 'none';
+try
+{
+    changecompany('USRT')
+    {
+        ttsbegin;
+        throw Exception::Error;
+    }
+}
+catch
+{
+    r = strFmt("%1", appl.ttsLevel());
+}
+return r;
+=> 0

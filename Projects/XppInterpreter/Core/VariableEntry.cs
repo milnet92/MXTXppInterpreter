@@ -9,6 +9,12 @@ namespace XppInterpreter.Core
         public Type DeclarationType { get; private set; }
         public string TypeName { get; private set; }
 
+        /// <summary>
+        /// The n of <c>str n name;</c>. Zero when the type has no length.
+        /// </summary>
+        public int StringLength { get; set; }
+
+
         public VariableEntry(string name, object value)
         {
             Name = name;

@@ -19,14 +19,7 @@ namespace XppInterpreter.Interpreter.Bytecode
 
             if (IsArray)
             {
-                object index = context.Stack.Pop();
-
-                if (index is null || index.GetType() != typeof(int))
-                {
-                    throw new Exception($"Invalid array index type {(index is null ? "null" : index.GetType().Name)}");
-                }
-
-                value = MakeLoadFromArray(context, (int)index);
+                value = MakeLoadFromArray(context, ToArrayIndex(context.Stack.Pop()));
             }
             else
             {
@@ -34,6 +27,21 @@ namespace XppInterpreter.Interpreter.Bytecode
             }
 
             context.Stack.Push(value);
+        }
+
+        /// <summary>
+        /// Any integer type or enumeration can index an array
+        /// </summary>
+        internal static int ToArrayIndex(object index)
+        {
+            switch (index)
+            {
+                case int value: return value;
+                case long value: return (int)value;
+                case System.Enum value: return Convert.ToInt32(value);
+                default:
+                    throw new Exception($"Invalid array index type {(index is null ? "null" : index.GetType().Name)}");
+            }
         }
 
         public abstract object MakeLoad(RuntimeContext context);

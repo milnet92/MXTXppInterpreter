@@ -37,6 +37,22 @@ namespace XppInterpreter.Interpreter.Bytecode
             else
             {
                 searchInstance = context.Proxy.QueryGeneration.NewQueryGenerator().NewSearchInstance(Query, context, false, null);
+
+                if (!IsWhileSelect)
+                {
+                    object record = context.ScopeHandler.CurrentScope.GetVar(Query.TableVariableName);
+
+                    // A new select replaces what the record was waiting for
+                    context.PendingFetches.Remove(record);
+
+                    // nofetch leaves the record empty: the first next reads it
+                    if (Query.NoFetch)
+                    {
+                        context.PendingFetches.Add(record, searchInstance);
+                        return;
+                    }
+                }
+
                 found = searchInstance.Next();
             }
 
