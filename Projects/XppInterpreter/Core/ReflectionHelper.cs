@@ -95,14 +95,6 @@ namespace XppInterpreter.Core
                 : null;
         }
 
-        public static bool TypeImplementsInterface(Type type, Type interfaceType)
-        {
-            if (type is null || interfaceType is null) return false;
-            
-            TypeInfo typeInfo = type as TypeInfo;
-            return typeInfo != null && typeInfo.ImplementedInterfaces.Contains(interfaceType);
-        }
-
         /// <summary>
         /// A kernel class whose constructor takes variable arguments, like Struct, receives them in an array.
         /// </summary>
@@ -127,9 +119,6 @@ namespace XppInterpreter.Core
             return parameters.Length == 1 && parameters[0].ParameterType == typeof(object[]);
         }
 
-        /// <summary>
-        /// Converts a record to a table map, like the compiled assignment does.
-        /// </summary>
         public static object CastToMap(object record, Type mapType)
         {
             Type common = record.GetType();

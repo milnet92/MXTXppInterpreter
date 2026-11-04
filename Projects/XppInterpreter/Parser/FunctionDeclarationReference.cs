@@ -13,9 +13,6 @@ namespace XppInterpreter.Parser
         public Token Type { get; }
         public Word ReturnType => Type as Word;
 
-        /// <summary>
-        /// The .NET type of the return value, or null for an X++ type
-        /// </summary>
         public System.Type ClrType { get; set; }
 
         public FunctionDeclarationReference(string name, Word type)

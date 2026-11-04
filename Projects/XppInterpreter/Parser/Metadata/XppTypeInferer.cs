@@ -161,7 +161,7 @@ namespace XppInterpreter.Parser.Metadata
                     }
 
                     return IsClrType(callerType)
-                        ? Core.Clr.ClrBinder.GetMethodReturnType(callerType, functionCall.Name, functionCall.StaticCall, functionCall.Parameters.Count)
+                        ? ClrMethodReturnType(callerType, functionCall)
                         : _proxy.Reflection.GetMethodReturnType(callerType, functionCall.Name);
                 }
             }
@@ -186,6 +186,25 @@ namespace XppInterpreter.Parser.Metadata
             }
 
             return null;
+        }
+
+        private System.Type ClrMethodReturnType(System.Type callerType, FunctionCall functionCall)
+        {
+            System.Type returnType = Core.Clr.ClrBinder.GetMethodReturnType(callerType, functionCall.Name, functionCall.StaticCall, functionCall.Parameters.Count);
+
+            if (returnType != null)
+            {
+                return returnType;
+            }
+
+            bool staticSave = _calledStatically;
+            _calledStatically = false;
+
+            System.Type[] argumentTypes = functionCall.Parameters.Select(parameter => parameter.Accept(this)).ToArray();
+
+            _calledStatically = staticSave;
+
+            return Core.Clr.ClrBinder.GetMethodReturnType(callerType, functionCall.Name, functionCall.StaticCall, argumentTypes);
         }
 
         public System.Type VisitTernary(Ternary ternary)

@@ -222,12 +222,6 @@ internal final class MXTXppBinaryOperationProxy implements XppInterpreter.Interp
 			<Method>
 				<Name>Like</Name>
 				<Source><![CDATA[
-    /// <summary>
-    /// Checks if a string matches a pattern
-    /// </summary>
-    /// <param name = "left">String</param>
-    /// <param name = "right">Pattern</param>
-    /// <returns>If it matches, true, otherwise false</returns>
     public System.Boolean Like(System.Object left, System.Object right)
     {
         str text = left, pattern = right;

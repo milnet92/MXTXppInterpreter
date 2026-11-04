@@ -25,9 +25,6 @@ namespace XppInterpreter.Core
             _proxy = proxy;
         }
 
-        /// <summary>
-        /// The scope with the variables of the script, that the local functions can use.
-        /// </summary>
         public Scope ClosureScope
         {
             get => _closureScope ?? _programScope ?? GlobalScope;
@@ -37,9 +34,6 @@ namespace XppInterpreter.Core
 
         public int ExceptionHandlerCount => _handlerStack.Count;
 
-        /// <summary>
-        /// The try statements that were opened inside the running catch block.
-        /// </summary>
         public int HandlersInsideCatchBlock =>_handlerStack.TakeWhile(h => !h.Catched).Count();
 
         private object InternalGetVar(Scope scope, string varName)
@@ -106,7 +100,6 @@ namespace XppInterpreter.Core
 
             return null;
         }
-
 
         public void EndScope(int num)
         {

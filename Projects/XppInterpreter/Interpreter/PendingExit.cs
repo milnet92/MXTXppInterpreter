@@ -10,9 +10,6 @@ namespace XppInterpreter.Interpreter
 
         public bool IsRetry { get; private set; }
 
-        /// <summary>
-        /// Where a break or a continue goes when all the handlers are left
-        /// </summary>
         public int TargetCounter { get; private set; }
 
         public int HandlersToLeave { get; set; }

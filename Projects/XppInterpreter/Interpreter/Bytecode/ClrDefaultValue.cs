@@ -2,9 +2,6 @@ using System;
 
 namespace XppInterpreter.Interpreter.Bytecode
 {
-    /// <summary>
-    /// The value of a .NET variable without initialization: an empty struct, or null.
-    /// </summary>
     class ClrDefaultValue : IInstruction
     {
         public string OperationCode => "PUSH_CLR_DEFAULT";

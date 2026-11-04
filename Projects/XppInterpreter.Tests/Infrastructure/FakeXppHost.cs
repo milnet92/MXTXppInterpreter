@@ -501,7 +501,9 @@ namespace XppInterpreter.Tests.Infrastructure
 
         public Exception LastClrException { get; private set; }
 
-        public void SetRetryCount(int retryCount) { }
+        public List<int> RetryCounts { get; } = new List<int>();
+
+        public void SetRetryCount(int retryCount) => RetryCounts.Add(retryCount);
         #endregion
 
         public IQueryGenerator NewQueryGenerator() => throw new NotSupportedException();

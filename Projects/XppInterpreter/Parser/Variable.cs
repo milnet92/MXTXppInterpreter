@@ -17,14 +17,8 @@ namespace XppInterpreter.Parser
         /// </summary>
         public System.Type ClrType { get; set; }
 
-        /// <summary>
-        /// The variable is an argument passed with byref
-        /// </summary>
         public bool IsByRef { get; set; }
 
-        /// <summary>
-        /// The variable is one that X++ code has without declaring it: appl, infolog or classFactory
-        /// </summary>
         public bool IsSystemVariable { get; set; }
 
         public Variable(Word identifier, Expression caller, bool staticCall, SourceCodeBinding sourceCodeBinding) : base(identifier, sourceCodeBinding)

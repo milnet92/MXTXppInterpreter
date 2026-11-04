@@ -12,14 +12,8 @@ namespace XppInterpreter.Core
     {
         private const string CLR_ERROR_MEMBER = "CLRError";
 
-        /// <summary>
-        /// The number of open transactions when the try statement started
-        /// </summary>
         private readonly int _transactionLevel;
 
-        /// <summary>
-        /// The transactions that the interpreter opened around the script
-        /// </summary>
         private readonly int _globalTransactions;
 
         public List<ExceptionCatchReference> ExceptionCatchReferences { get; }
@@ -63,6 +57,8 @@ namespace XppInterpreter.Core
             exception = Unwrap(exception);
 
             Exception = exception;
+
+            context.AbandonFinallyBlocks(context.ScopeHandler.ExceptionHandlerCount);
 
             if (CanCatch)
             {
@@ -145,9 +141,6 @@ namespace XppInterpreter.Core
             }
         }
 
-        /// <summary>
-        /// Code called through reflection throws its exception wrapped
-        /// </summary>
         private static Exception Unwrap(Exception exception)
         {
             while (exception is System.Reflection.TargetInvocationException && exception.InnerException != null)
@@ -200,9 +193,6 @@ namespace XppInterpreter.Core
             }
         }
 
-        /// <summary>
-        /// Leaves the try or catch block, going to the end of the handler
-        /// </summary>
         internal void MoveToEnd(RuntimeContext context)
         {
             int endOffset = TryEndOffset - (context.Counter - TryPointer);

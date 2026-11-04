@@ -37,9 +37,6 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 			<Method>
 				<Name>GetMacroLibrary</Name>
 				<Source><![CDATA[
-    /// <summary>
-    /// The text of a macro library
-    /// </summary>
     /// <param name = "_name">Library name</param>
     /// <returns>The text, or null when there is no library with that name</returns>
     public System.String GetMacroLibrary(System.String _name)
@@ -76,11 +73,6 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 			<Method>
 				<Name>GetSystemVariable</Name>
 				<Source><![CDATA[
-    /// <summary>
-    /// The value of a variable that X++ code has without declaring it
-    /// </summary>
-    /// <param name = "_name">Variable name</param>
-    /// <returns>The value</returns>
     public System.Object GetSystemVariable(System.String _name)
     {
         str name = _name;
@@ -124,10 +116,6 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 			<Method>
 				<Name>GetReferencedAssemblies</Name>
 				<Source><![CDATA[
-    /// <summary>
-    /// The display names of the assemblies referenced by the models. The script can use their types without any reference
-    /// </summary>
-    /// <returns>Assembly display names</returns>
     public System.String[] GetReferencedAssemblies()
     {
         if (referencedAssemblies)

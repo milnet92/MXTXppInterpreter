@@ -12,25 +12,22 @@ namespace XppInterpreter.Interpreter.Bytecode
 
         public void Execute(RuntimeContext context)
         {
-            var exception = context.LastException;
+            FinallyBlock block = context.FinallyBlocks.Pop();
 
-            if (exception != null)
+            if (block.Exception != null)
             {
-                // It's on its way out: a finally block inside the catch that handles it must not see it
-                context.LastException = null;
-
                 if (context.ScopeHandler.AreExceptionsHandled)
                 {
-                    context.ScopeHandler.CurrentExceptionHandler.HandleException(exception, context);
+                    context.ScopeHandler.CurrentExceptionHandler.HandleException(block.Exception, context);
                 }
                 else
                 {
-                    System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(exception).Throw();
+                    System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(block.Exception).Throw();
                 }
             }
-            else if (context.PendingExit != null)
+            else if (block.Exit != null)
             {
-                context.ContinueExit();
+                context.BeginExit(block.Exit);
             }
         }
     }

@@ -187,10 +187,6 @@ internal final class MXTXppInterpreterExecutor
 			<Method>
 				<Name>getRootNamespaces</Name>
 				<Source><![CDATA[
-    /// <summary>
-    /// The first part of the .NET namespaces a script can use
-    /// </summary>
-    /// <returns>List of names</returns>
     public static List getRootNamespaces()
     {
         List ret = new List(Types::String);
@@ -211,11 +207,6 @@ internal final class MXTXppInterpreterExecutor
 			<Method>
 				<Name>evaluate</Name>
 				<Source><![CDATA[
-    /// <summary>
-    /// Runs the given source code and gives back what its return statement returns
-    /// </summary>
-    /// <param name = "_sourceCode">X++ source code</param>
-    /// <returns>The returned value</returns>
     public static System.Object evaluate(str _sourceCode)
     {
         XppInterpreter.Parser.ParseResult parseResult = MXTXppInterpreterExecutor::parse(_sourceCode);

@@ -16,9 +16,6 @@ namespace XppInterpreter.Interpreter.Bytecode
         /// </summary>
         public List<KeyValuePair<int, string>> ByRefArguments { get; set; }
 
-        /// <summary>
-        /// The declared type of the arguments, when they are .NET variables.
-        /// </summary>
         public System.Type[] ArgumentTypes { get; set; }
 
         public Call(string name, int nArgs, bool allocate, bool processParameters = true)

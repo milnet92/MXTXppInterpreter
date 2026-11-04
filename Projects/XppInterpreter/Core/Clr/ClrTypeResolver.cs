@@ -122,9 +122,6 @@ namespace XppInterpreter.Core.Clr
             }
         }
 
-        /// <summary>
-        /// The types and the namespaces directly inside a namespace.
-        /// </summary>
         /// <returns>The simple names. A namespace ends with a dot.</returns>
         public IEnumerable<string> GetNamespaceMembers(string name)
         {
@@ -222,9 +219,9 @@ namespace XppInterpreter.Core.Clr
             }
 
             // Assemblies with the same root: Azure.HttpRange is in Azure.Core
-            foreach (var name in TakePendingReferences(n => SimpleName(n).StartsWith(root, StringComparison.Ordinal)))
+            foreach (var name in PendingReferences(n => SimpleName(n).StartsWith(root, StringComparison.Ordinal)))
             {
-                var type = FindInAssembly(TryLoad(name), candidates);
+                var type = FindInAssembly(LoadReference(name), candidates);
 
                 if (type != null)
                 {
@@ -233,9 +230,9 @@ namespace XppInterpreter.Core.Clr
             }
 
             // Finally, the rest: OfficeOpenXml is in EPPlus
-            foreach (var name in TakePendingReferences(n => true))
+            foreach (var name in PendingReferences(n => true))
             {
-                var type = FindInAssembly(TryLoad(name), candidates);
+                var type = FindInAssembly(LoadReference(name), candidates);
 
                 if (type != null)
                 {
@@ -267,19 +264,28 @@ namespace XppInterpreter.Core.Clr
             }
         }
 
-        /// <summary>
-        /// Every reference is tried only once in the life of the process.
-        /// </summary>
-        private List<string> TakePendingReferences(Func<string, bool> filter)
+        private List<string> PendingReferences(Func<string, bool> filter)
         {
             lock (IndexLock)
             {
-                var taken = References().Where(n => !TriedReferences.Contains(n) && filter(n)).ToList();
-
-                TriedReferences.UnionWith(taken);
-
-                return taken;
+                return References().Where(n => !TriedReferences.Contains(n) && filter(n)).ToList();
             }
+        }
+
+        /// <summary>
+        /// Every reference is tried once in the life of the process. It counts as tried after the load,
+        /// so another search can't skip one that is still loading.
+        /// </summary>
+        private static Assembly LoadReference(string name)
+        {
+            Assembly assembly = TryLoad(name);
+
+            lock (IndexLock)
+            {
+                TriedReferences.Add(name);
+            }
+
+            return assembly;
         }
 
         private static string SimpleName(string displayName)
@@ -312,9 +318,9 @@ namespace XppInterpreter.Core.Clr
             // The assemblies of the first part of the name may not be loaded yet
             string root = name.Split('.')[0];
 
-            foreach (var reference in TakePendingReferences(n => SimpleName(n).StartsWith(root, StringComparison.Ordinal)))
+            foreach (var reference in PendingReferences(n => SimpleName(n).StartsWith(root, StringComparison.Ordinal)))
             {
-                TryLoad(reference);
+                LoadReference(reference);
             }
 
             foreach (var framework in FrameworkAssemblies.Where(n => SimpleName(n).StartsWith(root, StringComparison.Ordinal)))

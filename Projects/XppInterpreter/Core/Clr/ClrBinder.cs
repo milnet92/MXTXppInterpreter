@@ -19,17 +19,11 @@ namespace XppInterpreter.Core.Clr
         private static readonly ConcurrentDictionary<Tuple<Type, string, bool>, MethodBase[]> Methods = new ConcurrentDictionary<Tuple<Type, string, bool>, MethodBase[]>();
 
         #region Calls
-        /// <summary>
-        /// Calls a static method.
-        /// </summary>
         /// <param name="arguments">The arguments. The values of the byref parameters are written back here.</param>
         /// <param name="argumentTypes">The declared type of each argument, null when it's not known. Optional.</param>
         public static object InvokeStatic(Type type, string name, object[] arguments, Type[] argumentTypes = null) =>
             Invoke(GetMethods(type, name, true), null, type, name, arguments, argumentTypes);
 
-        /// <summary>
-        /// Calls an instance method.
-        /// </summary>
         /// <param name="arguments">The arguments. The values of the byref parameters are written back here.</param>
         /// <param name="argumentTypes">The declared type of each argument, null when it's not known. Optional.</param>
         public static object InvokeInstance(object instance, string name, object[] arguments, Type[] argumentTypes = null)
@@ -44,9 +38,6 @@ namespace XppInterpreter.Core.Clr
             return Invoke(GetMethods(type, name, false), instance, type, name, arguments, argumentTypes);
         }
 
-        /// <summary>
-        /// Creates an object, or an array with the given sizes.
-        /// </summary>
         public static object Construct(Type type, object[] arguments, Type[] argumentTypes = null)
         {
             if (type.IsArray)
@@ -69,7 +60,7 @@ namespace XppInterpreter.Core.Clr
 
         private static object Invoke(MethodBase[] candidates, object instance, Type type, string name, object[] arguments, Type[] argumentTypes)
         {
-            var binding = SelectOverload(candidates, arguments, argumentTypes);
+            var binding = SelectOverload(candidates, arguments.Length, (i, target) => ClrConversions.GetCost(arguments[i], argumentTypes?[i], target));
 
             if (binding is null)
             {
@@ -164,7 +155,7 @@ namespace XppInterpreter.Core.Clr
         private static Type ParameterType(ParameterInfo parameter) =>
             parameter.ParameterType.IsByRef ? parameter.ParameterType.GetElementType() : parameter.ParameterType;
 
-        private static Binding SelectOverload(MethodBase[] candidates, object[] arguments, Type[] argumentTypes)
+        private static Binding SelectOverload(MethodBase[] candidates, int argumentCount, Func<int, Type, int> costOf)
         {
             Binding best = null;
 
@@ -172,8 +163,8 @@ namespace XppInterpreter.Core.Clr
             {
                 var parameters = candidate.GetParameters();
 
-                var binding = BindNormalForm(candidate, parameters, arguments, argumentTypes)
-                    ?? BindExpandedForm(candidate, parameters, arguments, argumentTypes);
+                var binding = BindNormalForm(candidate, parameters, argumentCount, costOf)
+                    ?? BindExpandedForm(candidate, parameters, argumentCount, costOf);
 
                 if (binding != null && (best is null || binding.Cost < best.Cost))
                 {
@@ -184,9 +175,9 @@ namespace XppInterpreter.Core.Clr
             return best;
         }
 
-        private static Binding BindNormalForm(MethodBase method, ParameterInfo[] parameters, object[] arguments, Type[] argumentTypes)
+        private static Binding BindNormalForm(MethodBase method, ParameterInfo[] parameters, int argumentCount, Func<int, Type, int> costOf)
         {
-            if (arguments.Length > parameters.Length)
+            if (argumentCount > parameters.Length)
             {
                 return null;
             }
@@ -195,7 +186,7 @@ namespace XppInterpreter.Core.Clr
 
             for (int i = 0; i < parameters.Length; i++)
             {
-                if (i >= arguments.Length)
+                if (i >= argumentCount)
                 {
                     if (!parameters[i].IsOptional)
                     {
@@ -212,7 +203,7 @@ namespace XppInterpreter.Core.Clr
                     continue;
                 }
 
-                int argumentCost = ClrConversions.GetCost(arguments[i], argumentTypes?[i], ParameterType(parameters[i]));
+                int argumentCost = costOf(i, ParameterType(parameters[i]));
 
                 if (argumentCost == ClrConversions.NoConversion)
                 {
@@ -225,12 +216,9 @@ namespace XppInterpreter.Core.Clr
             return new Binding { Method = method, Parameters = parameters, Cost = cost };
         }
 
-        /// <summary>
-        /// The arguments of a params parameter, one by one.
-        /// </summary>
-        private static Binding BindExpandedForm(MethodBase method, ParameterInfo[] parameters, object[] arguments, Type[] argumentTypes)
+        private static Binding BindExpandedForm(MethodBase method, ParameterInfo[] parameters, int argumentCount, Func<int, Type, int> costOf)
         {
-            if (parameters.Length == 0 || !parameters.Last().IsDefined(typeof(ParamArrayAttribute), false) || arguments.Length < parameters.Length - 1)
+            if (parameters.Length == 0 || !parameters.Last().IsDefined(typeof(ParamArrayAttribute), false) || argumentCount < parameters.Length - 1)
             {
                 return null;
             }
@@ -240,11 +228,11 @@ namespace XppInterpreter.Core.Clr
             // A method with exactly that number of parameters is a better match
             int cost = 2;
 
-            for (int i = 0; i < arguments.Length; i++)
+            for (int i = 0; i < argumentCount; i++)
             {
                 Type target = i < fixedCount ? ParameterType(parameters[i]) : parameters[fixedCount].ParameterType.GetElementType();
 
-                int argumentCost = ClrConversions.GetCost(arguments[i], argumentTypes?[i], target);
+                int argumentCost = costOf(i, target);
 
                 if (argumentCost == ClrConversions.NoConversion)
                 {
@@ -274,9 +262,6 @@ namespace XppInterpreter.Core.Clr
         #endregion
 
         #region Members
-        /// <summary>
-        /// Reads a property or a field of an object.
-        /// </summary>
         public static object GetMember(object instance, string name)
         {
             if (instance is null)
@@ -304,15 +289,9 @@ namespace XppInterpreter.Core.Clr
             WriteMember(FindMember(type, name, false), instance, type, name, value);
         }
 
-        /// <summary>
-        /// Reads a static property or field, or a member of an enumeration.
-        /// </summary>
         public static object GetStaticMember(Type type, string name) =>
             ReadMember(FindMember(type, name, true), null, type, name);
 
-        /// <summary>
-        /// Writes a static property or field.
-        /// </summary>
         public static void SetStaticMember(Type type, string name, object value) =>
             WriteMember(FindMember(type, name, true), null, type, name, value);
 
@@ -449,9 +428,6 @@ namespace XppInterpreter.Core.Clr
         public static bool HasMember(Type type, string name, bool isStatic) =>
             FindMember(type, name, isStatic) != null;
 
-        /// <summary>
-        /// The type of a property or field. Null when there is no such member.
-        /// </summary>
         public static Type GetMemberType(Type type, string name, bool isStatic)
         {
             switch (FindMember(type, name, isStatic))
@@ -478,6 +454,22 @@ namespace XppInterpreter.Core.Clr
             return returnTypes.Length == 1 ? returnTypes[0] : null;
         }
 
+        /// <summary>
+        /// The type a call returns when it depends on the overload: the types of the arguments choose it, as in the compiler.
+        /// </summary>
+        /// <returns>Null when the type of an argument is not known, or no overload accepts them</returns>
+        public static Type GetMethodReturnType(Type type, string name, bool isStatic, Type[] argumentTypes)
+        {
+            if (argumentTypes.Contains(null))
+            {
+                return null;
+            }
+
+            var binding = SelectOverload(GetMethods(type, name, isStatic), argumentTypes.Length, (i, target) => ClrConversions.GetCost(argumentTypes[i], target));
+
+            return (binding?.Method as MethodInfo)?.ReturnType;
+        }
+
         private static bool AcceptsArgumentCount(ParameterInfo[] parameters, int argumentCount)
         {
             if (parameters.Length == argumentCount)
@@ -493,15 +485,9 @@ namespace XppInterpreter.Core.Clr
             return argumentCount < parameters.Length && parameters.Skip(argumentCount).All(p => p.IsOptional);
         }
 
-        /// <summary>
-        /// The signatures of all the overloads of a method.
-        /// </summary>
         public static string[] GetMethodSignatures(Type type, string name, bool isStatic) =>
             GetMethods(type, name, isStatic).Select(m => Signature(m)).ToArray();
 
-        /// <summary>
-        /// The signatures of all the constructors of a type.
-        /// </summary>
         public static string[] GetConstructorSignatures(Type type) =>
             GetConstructors(type).Select(c => Signature(c, type.Name)).ToArray();
 
@@ -522,9 +508,6 @@ namespace XppInterpreter.Core.Clr
             return $"{returnType}{nameOverride ?? method.Name}({parameters})";
         }
 
-        /// <summary>
-        /// A type name as it is written in a script.
-        /// </summary>
         public static string FriendlyName(Type type)
         {
             if (type == typeof(void)) return "void";
@@ -547,9 +530,6 @@ namespace XppInterpreter.Core.Clr
             return name;
         }
 
-        /// <summary>
-        /// The public methods of a type, for the editor.
-        /// </summary>
         public static IEnumerable<MethodInfo> GetPublicMethods(Type type, bool isStatic)
         {
             var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -559,9 +539,6 @@ namespace XppInterpreter.Core.Clr
                 .Where(m => !m.IsSpecialName && !m.ContainsGenericParameters && names.Add(m.Name));
         }
 
-        /// <summary>
-        /// The public properties and fields of a type, for the editor.
-        /// </summary>
         public static IEnumerable<MemberInfo> GetPublicMembers(Type type, bool isStatic)
         {
             BindingFlags flags = isStatic ? StaticMembers : InstanceMembers;

@@ -4,9 +4,6 @@
     {
         public override string OperationCode => $"NEW_OBJ {Name} {NArgs}";
 
-        /// <summary>
-        /// The .NET type to create, or null for an X++ class
-        /// </summary>
         public System.Type ClrType { get; set; }
 
         public NewObject(string className, int nArgs, bool alloc) : base(className, nArgs, alloc) { }

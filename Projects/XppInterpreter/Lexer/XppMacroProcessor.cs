@@ -25,7 +25,6 @@ namespace XppInterpreter.Lexer
         private readonly HashSet<string> _libraries = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private int _expansions;
 
-
         private XppMacroProcessor(Func<string, string> library)
         {
             _library = library;
@@ -241,9 +240,6 @@ namespace XppInterpreter.Lexer
             return i;
         }
 
-        /// <summary>
-        /// Reads the text between the parentheses that start at the position.
-        /// </summary>
         /// <returns>The text, or null when no parenthesis starts there</returns>
         private static string ReadParenthesized(string text, ref int position)
         {

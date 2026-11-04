@@ -547,7 +547,7 @@ namespace XppInterpreter.Lexer
         }
 
         /// <summary>
-        /// Scans a string with no escape sequences, that can have many lines: <c>@"c:\folder"</c>. A doubled delimiter is one delimiter.
+        /// Scans a string with no escape sequences, that can have many lines: <c>@"c:\folder"</c>. It ends at the first delimiter, as in the compiler.
         /// </summary>
         /// <param name="delimiter">String token delimiter</param>
         /// <returns>Read string</returns>
@@ -566,12 +566,7 @@ namespace XppInterpreter.Lexer
 
                 if (peek == delimiter)
                 {
-                    if ((char)reader.Peek() != delimiter)
-                    {
-                        break;
-                    }
-
-                    ReadChar();
+                    break;
                 }
 
                 builder.Append(peek);

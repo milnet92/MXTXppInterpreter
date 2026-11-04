@@ -34,9 +34,6 @@ namespace XppInterpreter.Interpreter.Proxy
         /// </summary>
         bool IsXppType(Type type);
 
-        /// <summary>
-        /// The display names of the assemblies referenced by the models.
-        /// </summary>
         string[] GetReferencedAssemblies();
 
         /// <summary>
@@ -44,19 +41,10 @@ namespace XppInterpreter.Interpreter.Proxy
         /// </summary>
         object GetSystemVariable(string name);
 
-        /// <summary>
-        /// The value of <c>record.(fieldId)</c>
-        /// </summary>
         object GetFieldValueById(object record, int fieldId);
 
-        /// <summary>
-        /// Assigns <c>record.(fieldId)</c>
-        /// </summary>
         void SetFieldValueById(object record, int fieldId, object value);
 
-        /// <summary>
-        /// The text of a macro library.
-        /// </summary>
         /// <returns>The text, or null when there is no library with that name</returns>
         string GetMacroLibrary(string name);
     }

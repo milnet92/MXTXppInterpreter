@@ -1,8 +1,5 @@
 namespace XppInterpreter.Interpreter.Bytecode
 {
-    /// <summary>
-    /// Skips the default value of a parameter that the caller passed.
-    /// </summary>
     class JumpIfParameterPassed : Jump
     {
         public override string OperationCode => $"JUMP_IF_PASSED {Name} {Offset}";

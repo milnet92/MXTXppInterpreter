@@ -5,9 +5,6 @@ using System.Text;
 
 namespace XppInterpreter.Parser.Metadata
 {
-    /// <summary>
-    /// The hint of a .NET method: all its overloads, one per line.
-    /// </summary>
     public class ClrMethodTokenMetadata : TokenMetadata
     {
         public string[] Signatures { get; }
@@ -22,9 +19,6 @@ namespace XppInterpreter.Parser.Metadata
             return string.Join("<br/>", Signatures.Select(WebUtility.HtmlEncode));
         }
 
-        /// <summary>
-        /// All the overloads, with the parameter being written in bold.
-        /// </summary>
         public string GetDisplayHtml(int parameterPosition)
         {
             return string.Join("<br/>", Signatures.Select(s => Highlight(s, parameterPosition)));

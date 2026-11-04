@@ -24,6 +24,9 @@ namespace XppInterpreter.Parser
         // The .NET type of the new statement whose arguments are being parsed
         private System.Type _constructorType;
 
+        // Null at the top level of the script, where a return takes a value or not
+        private bool? _isVoidFunction;
+
         private ParseContext _parseContext = new ParseContext();
         private readonly ILexer _lexer;
         private readonly Interpreter.Proxy.XppProxy _proxy;
@@ -266,9 +269,6 @@ namespace XppInterpreter.Parser
             };
         }
 
-        /// <summary>
-        /// The name of a type: a built-in one, an X++ one, or a .NET one, maybe generic or an array.
-        /// </summary>
         /// <param name="allowArray">The name can be followed by [] or [,]</param>
         /// <param name="otherTokens">Tokens that are also accepted as the type</param>
         private ParsedType TypeName(bool allowArray, params TType[] otherTokens)
@@ -385,7 +385,14 @@ namespace XppInterpreter.Parser
 
             if (type != null && arity > 0)
             {
-                type = type.MakeGenericType(typeArguments.ToArray());
+                try
+                {
+                    type = type.MakeGenericType(typeArguments.ToArray());
+                }
+                catch (ArgumentException exception)
+                {
+                    HandleParseError(exception.Message);
+                }
             }
 
             return type;
@@ -438,9 +445,6 @@ namespace XppInterpreter.Parser
             return offset < 0 ? currentToken : _lexer.Peek(offset).Token;
         }
 
-        /// <summary>
-        /// Looks at the name of a type starting at the current token, without moving.
-        /// </summary>
         /// <returns>The offset for <see cref="ILexer.Peek"/> of its last token, -1 when it's only the current token</returns>
         private int SkipTypeName()
         {
@@ -536,9 +540,6 @@ namespace XppInterpreter.Parser
             return PeekToken(last + 1).TokenType == TType.Id;
         }
 
-        /// <summary>
-        /// The name of a .NET type followed by ::
-        /// </summary>
         /// <returns>The reference to the type, or null when the current token is something else</returns>
         private Variable ClrTypeReference()
         {
@@ -603,9 +604,6 @@ namespace XppInterpreter.Parser
             return types;
         }
 
-        /// <summary>
-        /// <c>using A.B;</c> or <c>using X = A.B;</c>
-        /// </summary>
         private Statement UsingDirective()
         {
             var start = Match(TType.Using);
@@ -708,9 +706,6 @@ namespace XppInterpreter.Parser
             return parameters;
         }
 
-        /// <summary>
-        /// <c>byref variable</c>: the value the method writes goes back to the variable.
-        /// </summary>
         private Expression ByRefArgument()
         {
             Match(TType.ByRef);
@@ -1311,7 +1306,11 @@ namespace XppInterpreter.Parser
 
                     Match(TType.RightBracket);
 
-                    arrays.Add(new VariableArrayDeclaration(typeWord, _proxy.Casting.GetArrayType(declarationType), id, arraySize, SourceCodeBinding(arrayStart, lastScanResult)));
+                    var array = new VariableArrayDeclaration(typeWord, _proxy.Casting.GetArrayType(declarationType), id, arraySize, SourceCodeBinding(arrayStart, lastScanResult));
+
+                    arrays.Add(array);
+                    _parseContext.CurrentScope.VariableDeclarations.Add(
+                        new ParseContextScopeVariable(id.Lexeme, typeWord, array.DeclarationClrType, true, null));
                     continue;
                 }
 
@@ -1339,6 +1338,14 @@ namespace XppInterpreter.Parser
                         HandleParseError(string.Format(MessageProvider.ExceptionImplicitConversion, initializationType.Name, declarationType.Name), stop: false);
                     }
                 }
+
+                // The next declarations of the statement can use it
+                _parseContext.CurrentScope.VariableDeclarations.Add(
+                    new ParseContextScopeVariable(id.Lexeme, typeWord, declarationType, false, initialisation)
+                    {
+                        IsClrType = isClrType,
+                        IsConst = isConst
+                    });
             } while (currentToken.TokenType == TType.Comma);
 
             if (matchSemicolon)
@@ -1352,22 +1359,6 @@ namespace XppInterpreter.Parser
                 IsClrType = isClrType,
                 ArrayDeclarations = arrays
             };
-
-            foreach (var identifier in ret.Identifiers)
-            {
-                _parseContext.CurrentScope.VariableDeclarations.Add(
-                    new ParseContextScopeVariable(identifier.Key.Lexeme, ret.DeclarationType, ret.DeclarationClrType, false, identifier.Value)
-                    {
-                        IsClrType = isClrType,
-                        IsConst = isConst
-                    });
-            }
-
-            foreach (var array in arrays)
-            {
-                _parseContext.CurrentScope.VariableDeclarations.Add(
-                    new ParseContextScopeVariable(array.Identifiers.Keys.First().Lexeme, typeWord, array.DeclarationClrType, true, null));
-            }
 
             return ret;
         }
@@ -1484,10 +1475,14 @@ namespace XppInterpreter.Parser
             return new Flush(id.Lexeme, SourceCodeBinding(start, lastScanResult));
         }
 
-
         internal Throw Throw()
         {
             var start = currentScanResult;
+
+            if (_parseContext.WithinFinally())
+            {
+                HandleParseError(MessageProvider.ExceptionLeaveFinally, stop: false);
+            }
 
             Match(TType.Throw);
             var exception = Expression();
@@ -1553,6 +1548,16 @@ namespace XppInterpreter.Parser
 
             Match(TType.Return);
             var expression = currentToken.TokenType == TType.Semicolon ? null : Expression();
+
+            if (_isVoidFunction == true && expression != null)
+            {
+                HandleParseError(MessageProvider.ExceptionVoidFunctionReturnsValue, stop: false);
+            }
+            else if (_isVoidFunction == false && expression is null)
+            {
+                HandleParseError(MessageProvider.ExceptionFunctionMustReturnValue, stop: false);
+            }
+
             Match(TType.Semicolon);
 
             return new Return(expression, SourceCodeBinding(start, lastScanResult));
@@ -1709,9 +1714,6 @@ namespace XppInterpreter.Parser
             return new Try(tryBlock,SourceCodeBinding(start, lastScanResult), catches, finallyBlock);
         }
 
-        /// <summary>
-        /// <c>catch (e)</c> where e is a variable of a .NET exception type
-        /// </summary>
         private bool IsExceptionVariable(Expression expression, out System.Type type)
         {
             type = null;
@@ -1926,7 +1928,14 @@ namespace XppInterpreter.Parser
             }
 
             Match(TType.RightParenthesis);
+
+            bool? enclosingIsVoid = _isVoidFunction;
+
+            _isVoidFunction = type.TokenType == TType.Void;
+
             var block = Block();
+
+            _isVoidFunction = enclosingIsVoid;
 
             _parseContext.FunctionDeclarationStack.Release();
             _parseContext.CurrentScope.End();
@@ -2165,9 +2174,6 @@ namespace XppInterpreter.Parser
             return Variable(caller, expectReturn: expectReturn);
         }
 
-        /// <summary>
-        /// The body of a control statement: a block, or a single statement.
-        /// </summary>
         private Block BlockOrStatement()
         {
             if (currentToken.TokenType == TType.LeftBrace)
@@ -2744,9 +2750,6 @@ namespace XppInterpreter.Parser
                 scanResult.End >= _stopAtColumn;
         }
 
-        /// <summary>
-        /// The dot just read in the name of a type: the editor can suggest what the namespace has.
-        /// </summary>
         private void HandleNamespaceAutocompletion(string name)
         {
             if (IsAtAutocompletionPosition(lastScanResult))

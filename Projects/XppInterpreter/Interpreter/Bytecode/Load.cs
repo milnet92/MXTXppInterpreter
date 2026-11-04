@@ -29,9 +29,6 @@ namespace XppInterpreter.Interpreter.Bytecode
             context.Stack.Push(value);
         }
 
-        /// <summary>
-        /// Any integer type or enumeration can index an array
-        /// </summary>
         internal static int ToArrayIndex(object index)
         {
             switch (index)

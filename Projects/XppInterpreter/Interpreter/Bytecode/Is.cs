@@ -11,9 +11,6 @@ namespace XppInterpreter.Interpreter.Bytecode
         public string OperationCode => $"IS {TypeName}";
         public string TypeName { get; }
 
-        /// <summary>
-        /// The .NET type, or null for an X++ type
-        /// </summary>
         public System.Type ClrType { get; set; }
 
         public Is(string typeName)

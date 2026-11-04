@@ -31,7 +31,15 @@ namespace XppInterpreter.Interpreter.Bytecode
 
         public void Execute(RuntimeContext context)
         {
-            LastResult = Interpret(context);
+            try
+            {
+                LastResult = Interpret(context);
+            }
+            finally
+            {
+                // The try statements of the function wrote their own retry count
+                context.NativeRetryCount = -1;
+            }
         }
 
         public InterpreterResult Interpret(RuntimeContext context)

@@ -25,14 +25,8 @@ namespace XppInterpreter.Interpreter.Bytecode
         public string TypeName { get; }
         public Type ClrType { get; }
 
-        /// <summary>
-        /// The n of <c>str n name;</c>
-        /// </summary>
         public int StringLength { get; set; }
 
-        /// <summary>
-        /// The value goes to <c>record.(fieldId)</c>
-        /// </summary>
         public bool IsFieldById { get; set; }
 
         public Store(string name, bool fromStack, bool top, bool isArray, string typeName, Type clrType)

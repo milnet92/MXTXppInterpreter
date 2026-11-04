@@ -81,6 +81,7 @@
     <Compile Include="Interpreter\Bytecode\JumpIfParameterPassed.cs" />
     <Compile Include="Interpreter\Bytecode\StaticStore.cs" />
     <Compile Include="Interpreter\Bytecode\ToBooleanValue.cs" />
+    <Compile Include="Interpreter\FinallyBlock.cs" />
     <Compile Include="Interpreter\PendingExit.cs" />
     <Compile Include="Interpreter\Bytecode\ContainerStore.cs" />
     <Compile Include="Interpreter\Bytecode\DeclaredFunctionCall.cs" />

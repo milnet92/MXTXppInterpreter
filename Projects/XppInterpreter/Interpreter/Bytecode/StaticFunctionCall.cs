@@ -4,9 +4,6 @@
     {
         public string ClassName { get; }
 
-        /// <summary>
-        /// The .NET type of the call, or null for an X++ class
-        /// </summary>
         public System.Type ClrType { get; set; }
         public StaticFunctionCall(string name, int nArgs, bool alloc, string className = null) : base(name, nArgs, alloc)
         {

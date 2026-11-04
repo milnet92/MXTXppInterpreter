@@ -20,27 +20,22 @@ namespace XppInterpreter.Interpreter.Bytecode
         public void Execute(RuntimeContext context)
         {
             ExceptionHandler handler = context.ScopeHandler.RemoveExceptionHandler();
+            Exception exception = handler.NeedsToPropagateException() ? handler.Exception : null;
+            PendingExit exit = context.PendingExit;
 
-            if (handler.NeedsToPropagateException())
-            {
-                if (NeedToFinalize)
-                {
-                    context.LastException = handler.Exception;
-                }
-                else
-                {
-                    System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(handler.Exception).Throw();
-                }
-            }
-            else if (handler.Catched)
-            {
-                context.LastException = null;
-            }
+            context.PendingExit = null;
 
-            // With a finally block, the exit goes on when the block ends
-            if (!NeedToFinalize && context.PendingExit != null)
+            if (NeedToFinalize)
             {
-                context.ContinueExit();
+                context.FinallyBlocks.Push(new FinallyBlock(exception, exit, context.ScopeHandler.ExceptionHandlerCount));
+            }
+            else if (exception != null)
+            {
+                System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(exception).Throw();
+            }
+            else if (exit != null)
+            {
+                context.BeginExit(exit);
             }
         }
     }

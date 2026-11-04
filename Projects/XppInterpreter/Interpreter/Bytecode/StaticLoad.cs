@@ -4,9 +4,6 @@
     {
         public string CallerName { get; }
 
-        /// <summary>
-        /// The .NET type of the member, or null for an X++ class or enumeration
-        /// </summary>
         public System.Type ClrType { get; set; }
 
         public StaticLoad(string name, string callerName, bool isArray) : base(name, isArray)

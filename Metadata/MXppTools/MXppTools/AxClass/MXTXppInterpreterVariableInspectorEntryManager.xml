@@ -364,7 +364,7 @@ internal final class MXTXppInterpreterVariableInspectorEntryManager
         {
             System.Reflection.PropertyInfo property = properties.GetValue(i);
 
-            if (property.GetIndexParameters().Length > 0)
+            if (property.GetIndexParameters().Length > 0 || !XppInterpreter.Core.Clr.ClrValues::CanInspect(_value, property.Name))
             {
                 continue;
             }

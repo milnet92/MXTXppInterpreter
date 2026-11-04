@@ -48,6 +48,8 @@ namespace XppInterpreter.Core
         public static string ExceptionInvalidByRef => GetString(nameof(ExceptionInvalidByRef));
         public static string ExceptionClrTypeInXppArray => GetString(nameof(ExceptionClrTypeInXppArray));
         public static string ExceptionConstCannotChange => GetString(nameof(ExceptionConstCannotChange));
+        public static string ExceptionVoidFunctionReturnsValue => GetString(nameof(ExceptionVoidFunctionReturnsValue));
+        public static string ExceptionFunctionMustReturnValue => GetString(nameof(ExceptionFunctionMustReturnValue));
         public static string ExceptionConstNotConstant => GetString(nameof(ExceptionConstNotConstant));
         public static string ExceptionConstWithoutValue => GetString(nameof(ExceptionConstWithoutValue));
         public static string ExceptionSystemVariableDeclared => GetString(nameof(ExceptionSystemVariableDeclared));

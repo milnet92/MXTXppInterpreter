@@ -249,8 +249,8 @@ namespace XppInterpreter.Tests
             Assert.AreEqual("a\nb", Evaluate("return @\"a\nb\";"));
 
         [TestMethod]
-        public void VerbatimString_DoubledDelimiter() =>
-            Assert.AreEqual("say \"hi\"", Evaluate("return @\"say \"\"hi\"\"\";"));
+        public void VerbatimString_EndsAtTheFirstDelimiter() =>
+            Assert.IsFalse(Parse("return @\"say \"\"hi\"\"\";").IsCorrect);
 
         [TestMethod]
         public void KeywordsCanBeInTypeNames_KeepingTheirCase() =>

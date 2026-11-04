@@ -10,9 +10,6 @@ namespace XppInterpreter.Parser
         public IDictionary<Expression, List<Statement>> Cases { get; }
         public List<Statement> Default { get; }
 
-        /// <summary>
-        /// The other values of a case with many values (<c>case 1, 2:</c>), by the case's first value.
-        /// </summary>
         public IDictionary<Expression, List<Expression>> ExtraCaseValues { get; }
         public Switch(
             Expression switchExpression,

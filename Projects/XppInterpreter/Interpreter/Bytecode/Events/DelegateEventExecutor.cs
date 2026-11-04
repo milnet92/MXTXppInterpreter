@@ -115,7 +115,15 @@
 
             XppInterpreter interpreter = new XppInterpreter(_context.Proxy, _context.Interpreter.Options);
 
-            interpreter.Interpret(newContext.ByteCode, newContext, nextAction: Interpreter.Debug.DebugAction.None);
+            try
+            {
+                interpreter.Interpret(newContext.ByteCode, newContext, nextAction: Interpreter.Debug.DebugAction.None);
+            }
+            finally
+            {
+                // The try statements of the handler wrote their own retry count
+                _context.NativeRetryCount = -1;
+            }
         }
     }
 }

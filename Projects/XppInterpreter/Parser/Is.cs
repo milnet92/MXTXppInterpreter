@@ -14,9 +14,6 @@ namespace XppInterpreter.Parser
         public Expression Expression { get; }
         public string TypeName { get; }
 
-        /// <summary>
-        /// The .NET type, or null for an X++ type
-        /// </summary>
         public System.Type ClrType { get; set; }
 
         public Is(Expression expression, string typeName, SourceCodeBinding sourceCodeBinding)

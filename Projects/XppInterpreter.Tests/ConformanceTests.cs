@@ -52,7 +52,11 @@ namespace XppInterpreter.Tests
             ["pI38_globalFunctionPrefix"] = "Global:: with a function the class doesn't declare",
         };
 
-        private static List<ConformanceCase> LoadCases()
+        private static List<ConformanceCase> LoadCases() => ReadCases("=> ", "=>");
+
+        private static List<ConformanceCase> LoadRefusedCases() => ReadCases("!! REJECTED");
+
+        private static List<ConformanceCase> ReadCases(params string[] resultStarts)
         {
             string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Conformance", "conformance.txt");
             var cases = new List<ConformanceCase>();
@@ -63,7 +67,7 @@ namespace XppInterpreter.Tests
                 var title = lines[0].Trim();
                 var result = lines.Last();
 
-                if (!result.StartsWith("=> ") && result != "=>")
+                if (!resultStarts.Any(resultStart => result == resultStart || result.StartsWith(resultStart)))
                 {
                     continue;
                 }
@@ -73,7 +77,7 @@ namespace XppInterpreter.Tests
                     Name = title.Split(' ')[0],
                     NeedsD365 = title.EndsWith("[D365]"),
                     Source = string.Join("\n", lines.Skip(1).Take(lines.Length - 2)),
-                    Expected = result.Length > 3 ? result.Substring(3) : string.Empty
+                    Expected = result.Length > 3 && result.StartsWith("=> ") ? result.Substring(3) : string.Empty
                 });
             }
 
@@ -92,29 +96,6 @@ namespace XppInterpreter.Tests
 
         public static IEnumerable<object[]> Cases() =>
             LoadCases().Where(c => !c.NeedsD365).Select(c => new object[] { c.Name });
-
-        private static List<ConformanceCase> LoadRefusedCases()
-        {
-            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Conformance", "conformance.txt");
-            var cases = new List<ConformanceCase>();
-
-            foreach (var block in Regex.Split(File.ReadAllText(path).Replace("\r\n", "\n"), @"^### ", RegexOptions.Multiline).Skip(1))
-            {
-                var lines = block.TrimEnd().Split('\n');
-
-                if (lines.Last().StartsWith("!! REJECTED"))
-                {
-                    cases.Add(new ConformanceCase
-                    {
-                        Name = lines[0].Trim().Split(' ')[0],
-                        NeedsD365 = lines[0].Trim().EndsWith("[D365]"),
-                        Source = string.Join("\n", lines.Skip(1).Take(lines.Length - 2))
-                    });
-                }
-            }
-
-            return cases;
-        }
 
         public static IEnumerable<object[]> RefusedCases() =>
             LoadRefusedCases().Where(c => !c.NeedsD365).Select(c => new object[] { c.Name });

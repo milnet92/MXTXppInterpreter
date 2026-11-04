@@ -30,9 +30,6 @@ namespace XppInterpreter.Core.Clr
         /// </summary>
         public static AosMetadata Current => current ?? (current = new AosMetadata(CreateRuntimeProvider()));
 
-        /// <summary>
-        /// The text of a macro library
-        /// </summary>
         /// <param name="name">Library name</param>
         /// <returns>The text, or null when there is no library with that name</returns>
         public string ReadMacroLibrary(string name)
@@ -42,10 +39,6 @@ namespace XppInterpreter.Core.Clr
             return library == null ? null : (string)Get(library, "Source");
         }
 
-        /// <summary>
-        /// The display names of the assemblies referenced by the models
-        /// </summary>
-        /// <returns>Assembly display names</returns>
         public string[] ReadReferencedAssemblies()
         {
             object references = Get(provider, "References");

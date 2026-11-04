@@ -154,7 +154,18 @@ internal final class MXTXppQueryExpressionGenerator
         {
             Parser.Variable variable = _unaryOperation.Expression as Parser.Variable;
 
-            if (this.isVariableTable(variable))
+            if (variable is Parser.FieldByIdAccess && this.isVariableTable(variable))
+            {
+                Parser.FieldByIdAccess fieldById = variable as Parser.FieldByIdAccess;
+                Common record = generationHelper.ComputeVariable(fieldById.Caller);
+                int fieldId = generationHelper.ComputeExpression(fieldById.FieldId);
+                Common emptyRecord = new DictTable(record.TableId).makeRecord();
+
+                // The type of the field is not known before this, and an empty record has its default value
+                left = new SysDaFieldExpression(record, fieldId2Name(record.TableId, fieldId));
+                right = new SysDaValueExpression(emptyRecord.(fieldId));
+            }
+            else if (this.isVariableTable(variable))
             {
                 Common common = generationHelper.ComputeVariable(variable.Caller);
                 Lexer.Word word = variable.Token;

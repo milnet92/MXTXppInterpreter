@@ -41,9 +41,6 @@ namespace XppInterpreter.Core.Clr
             return proxy.Casting.ToBoolean(ToXppOperand(value, proxy));
         }
 
-        /// <summary>
-        /// The X++ logical not.
-        /// </summary>
         public static object Negate(object value, XppProxy proxy)
         {
             if (value is null || IsClrObject(value, proxy))
@@ -75,13 +72,15 @@ namespace XppInterpreter.Core.Clr
             }
         }
 
-        /// <summary>
-        /// Evaluates the operators that need .NET rules.
-        /// </summary>
         /// <returns>False when the X++ proxies have to evaluate it</returns>
         public static bool TryEvaluate(TType operation, object left, object right, XppProxy proxy, out object result)
         {
             result = null;
+
+            if (TryFloatingPoint(operation, left, right, out result))
+            {
+                return true;
+            }
 
             switch (operation)
             {
@@ -112,6 +111,46 @@ namespace XppInterpreter.Core.Clr
                 default:
                     return false;
             }
+        }
+
+        /// <summary>
+        /// A .NET double or float stays one: a real can't hold all their values.
+        /// </summary>
+        private static bool TryFloatingPoint(TType operation, object left, object right, out object result)
+        {
+            result = null;
+
+            bool isFloatingPoint = left is double || left is float || right is double || right is float;
+
+            if (!isFloatingPoint || !IsFloatingPointOperand(left) || !IsFloatingPointOperand(right))
+            {
+                return false;
+            }
+
+            double a = Convert.ToDouble(left), b = Convert.ToDouble(right);
+
+            switch (operation)
+            {
+                case TType.Equal: result = a == b; return true;
+                case TType.NotEqual: result = a != b; return true;
+                case TType.Greater: result = a > b; return true;
+                case TType.GreaterOrEqual: result = a >= b; return true;
+                case TType.Smaller: result = a < b; return true;
+                case TType.SmallerOrEqual: result = a <= b; return true;
+                case TType.Plus: result = FloatingPointResult(a + b, left, right); return true;
+                case TType.Minus: result = FloatingPointResult(a - b, left, right); return true;
+                case TType.Star: result = FloatingPointResult(a * b, left, right); return true;
+                case TType.Division: result = FloatingPointResult(a / b, left, right); return true;
+                default: return false;
+            }
+        }
+
+        private static bool IsFloatingPointOperand(object value) =>
+            value is double || value is float || value is int || value is long;
+
+        private static object FloatingPointResult(double value, object left, object right)
+        {
+            return left is double || right is double ? value : (object)(float)value;
         }
 
         private static bool TryAreEqual(object left, object right, XppProxy proxy, out bool equal)
@@ -159,9 +198,6 @@ namespace XppInterpreter.Core.Clr
             return false;
         }
 
-        /// <summary>
-        /// An X++ date compared to a DateTime is compared as a DateTime.
-        /// </summary>
         private static object AlignWith(object value, object other)
         {
             if (other is DateTime && value != null && ClrConversions.IsXppDateType(value.GetType()))
@@ -172,9 +208,6 @@ namespace XppInterpreter.Core.Clr
             return value;
         }
 
-        /// <summary>
-        /// The result of combining flags of a .NET enumeration is of the same enumeration.
-        /// </summary>
         private static bool TryFlags(TType operation, object left, object right, XppProxy proxy, out object result)
         {
             result = null;
@@ -195,5 +228,25 @@ namespace XppInterpreter.Core.Clr
         /// A variable that receives a struct has its own copy.
         /// </summary>
         public static object CopyIfStruct(object value) => RuntimeHelpers.GetObjectValue(value);
+
+        /// <summary>
+        /// The debugger reads the properties of an object when it pauses: these would block it, or start work the script didn't ask for.
+        /// </summary>
+        public static bool CanInspect(object instance, string propertyName)
+        {
+            if (propertyName == "Result" && instance is System.Threading.Tasks.Task task)
+            {
+                return task.IsCompleted;
+            }
+
+            System.Type type = instance.GetType();
+
+            if (propertyName == "Value" && type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Lazy<>))
+            {
+                return (bool)type.GetProperty("IsValueCreated").GetValue(instance);
+            }
+
+            return true;
+        }
     }
 }

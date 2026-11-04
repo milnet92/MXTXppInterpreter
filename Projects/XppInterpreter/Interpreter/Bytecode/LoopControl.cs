@@ -10,9 +10,6 @@ namespace XppInterpreter.Interpreter.Bytecode
         public TType TokenType { get; }
         public bool IsDirty { get; private set; }
 
-        /// <summary>
-        /// The try statements between this instruction and its loop
-        /// </summary>
         public int HandlersToLeave { get; }
 
         public LoopControl(int offset, TType tokenType, bool isDirty, int handlersToLeave = 0) : base(offset)

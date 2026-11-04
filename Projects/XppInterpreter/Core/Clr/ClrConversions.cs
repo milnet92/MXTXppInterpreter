@@ -12,9 +12,6 @@ namespace XppInterpreter.Core.Clr
     /// </summary>
     public static class ClrConversions
     {
-        /// <summary>
-        /// The value can't be converted to the type.
-        /// </summary>
         public const int NoConversion = -1;
 
         // The cost of a conversion ranks the overloads of a method: the lowest wins
@@ -35,30 +32,30 @@ namespace XppInterpreter.Core.Clr
 
         private static readonly ConcurrentDictionary<Tuple<Type, Type>, MethodInfo> ImplicitOperators = new ConcurrentDictionary<Tuple<Type, Type>, MethodInfo>();
 
-        /// <summary>
-        /// The cost of passing a value to a parameter.
-        /// </summary>
         /// <param name="value">The value</param>
         /// <param name="staticType">The declared type of the variable holding the value, when it's known. It decides for null values.</param>
         /// <param name="target">The type of the parameter</param>
         /// <returns>The cost, or <see cref="NoConversion"/></returns>
-        public static int GetCost(object value, Type staticType, Type target)
-        {
-            if (value is null)
-            {
-                return GetNullCost(staticType, target);
-            }
+        public static int GetCost(object value, Type staticType, Type target) =>
+            value is null ? GetNullCost(staticType, target) : GetConversionCost(value.GetType(), target, value);
 
+        /// <summary>
+        /// The cost when only the type of the value is known, while a script is parsed.
+        /// </summary>
+        public static int GetCost(Type from, Type target) => GetConversionCost(from, target, null);
+
+        private static int GetConversionCost(Type from, Type target, object value)
+        {
             Type underlying = Nullable.GetUnderlyingType(target);
 
-            if (underlying != null)
+            if (underlying is null)
             {
-                int cost = GetCost(value, staticType, underlying);
-
-                return cost == NoConversion ? NoConversion : cost + CostNullable;
+                return GetTypeCost(from, target, value);
             }
 
-            return GetTypeCost(value.GetType(), target, value);
+            int cost = GetTypeCost(from, underlying, value);
+
+            return cost == NoConversion ? NoConversion : cost + CostNullable;
         }
 
         private static int GetNullCost(Type staticType, Type target)
@@ -176,9 +173,6 @@ namespace XppInterpreter.Core.Clr
             return CostNarrowingNumber;
         }
 
-        /// <summary>
-        /// The size of an integer type
-        /// </summary>
         private static int NumberRank(Type type)
         {
             switch (Type.GetTypeCode(type))
@@ -249,9 +243,6 @@ namespace XppInterpreter.Core.Clr
             return from == target || GetTypeCost(from, target, null) != NoConversion;
         }
 
-        /// <summary>
-        /// Converts a value to a type.
-        /// </summary>
         /// <returns>False when there is no conversion</returns>
         public static bool TryConvert(object value, Type target, out object result)
         {
@@ -336,9 +327,6 @@ namespace XppInterpreter.Core.Clr
             return TryUserDefined(value, from, target, out result);
         }
 
-        /// <summary>
-        /// Converts a value to a type, or fails like a wrong cast does in compiled code.
-        /// </summary>
         public static object Convert(object value, Type target)
         {
             if (TryConvert(value, target, out object result))

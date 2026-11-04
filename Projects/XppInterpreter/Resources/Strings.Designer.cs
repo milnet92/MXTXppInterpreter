@@ -178,6 +178,24 @@ namespace XppInterpreter.Resources {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to A function declared as void cannot return a value..
+        /// </summary>
+        internal static string ExceptionVoidFunctionReturnsValue {
+            get {
+                return ResourceManager.GetString("ExceptionVoidFunctionReturnsValue", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The function has to return a value..
+        /// </summary>
+        internal static string ExceptionFunctionMustReturnValue {
+            get {
+                return ResourceManager.GetString("ExceptionFunctionMustReturnValue", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to The const variable &apos;{0}&apos; cannot be changed..
         /// </summary>
         internal static string ExceptionConstCannotChange {

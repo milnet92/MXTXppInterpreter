@@ -17,18 +17,15 @@ namespace XppInterpreter.Interpreter
         public Dictionary<Parser.Data.Query, ISearchInstance> Queries = new Dictionary<Parser.Data.Query, ISearchInstance>();
         public Stack<IDisposable> Disposables = new Stack<IDisposable>();
 
-        /// <summary>
-        /// The records selected with nofetch that were not read yet
-        /// </summary>
         internal readonly System.Runtime.CompilerServices.ConditionalWeakTable<object, ISearchInstance> PendingFetches = new System.Runtime.CompilerServices.ConditionalWeakTable<object, ISearchInstance>();
         public readonly ScopeHandler ScopeHandler;
         public readonly XppProxy Proxy;
         public readonly ByteCode ByteCode;
-        public Exception LastException;
 
         public bool Returned;
         public object ReturnValue;
         internal PendingExit PendingExit;
+        internal readonly Stack<FinallyBlock> FinallyBlocks = new Stack<FinallyBlock>();
         internal int NativeRetryCount = -1;
         public RuntimeContext InnerContext;
         public XppInterpreter Interpreter;
@@ -73,9 +70,6 @@ namespace XppInterpreter.Interpreter
             _pc = counter;
         }
 
-        /// <summary>
-        /// Starts a return, break or continue that leaves try statements
-        /// </summary>
         internal void BeginExit(PendingExit exit)
         {
             PendingExit = exit;
@@ -112,6 +106,17 @@ namespace XppInterpreter.Interpreter
 
                 EndScopeRange(offset < 0 ? exit.TargetCounter : Counter, Math.Abs(offset));
                 SetCounter(exit.TargetCounter);
+            }
+        }
+
+        /// <summary>
+        /// An exception that leaves a finally block replaces what the block was holding
+        /// </summary>
+        internal void AbandonFinallyBlocks(int handlerCount)
+        {
+            while (FinallyBlocks.Count > 0 && FinallyBlocks.Peek().HandlerCount >= handlerCount)
+            {
+                FinallyBlocks.Pop();
             }
         }
 

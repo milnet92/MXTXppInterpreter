@@ -11,14 +11,8 @@ namespace XppInterpreter.Interpreter.Bytecode
         public string OperationCode => $"AS {TypeName}";
         public string TypeName { get; }
 
-        /// <summary>
-        /// The .NET type, or null for an X++ type
-        /// </summary>
         public System.Type ClrType { get; set; }
 
-        /// <summary>
-        /// The record is called through a table map: <c>record.Map::method()</c>
-        /// </summary>
         public bool IsMapCall { get; set; }
 
         public As(string typeName)

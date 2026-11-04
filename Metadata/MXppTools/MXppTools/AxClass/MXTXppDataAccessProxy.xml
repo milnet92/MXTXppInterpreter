@@ -42,10 +42,6 @@ internal final class MXTXppDataAccessProxy implements XppInterpreter.Interpreter
 			<Method>
 				<Name>TtsLevel</Name>
 				<Source><![CDATA[
-    /// <summary>
-    /// The number of open transactions
-    /// </summary>
-    /// <returns>The level</returns>
     public System.Int32 TtsLevel()
     {
         return appl.ttsLevel();

@@ -119,8 +119,6 @@ namespace XppInterpreter.Interpreter
                 }
                 catch (System.Exception ex) when (c.ScopeHandler.AreExceptionsHandled)
                 {
-                    // An exception replaces a return, break or continue that was running a finally block
-                    c.PendingExit = null;
                     c.ScopeHandler.CurrentExceptionHandler.HandleException(ex, c);
                 }
 
