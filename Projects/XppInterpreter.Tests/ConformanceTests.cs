@@ -39,6 +39,19 @@ namespace XppInterpreter.Tests
             ["pB24_utcFromDateTime"] = "2020-01-02T03:04:05",
         };
 
+        // The compiler refuses these and the interpreter runs them, so a script that runs doesn't always compile in a class
+        private static readonly Dictionary<string, string> AcceptedByTheInterpreter = new Dictionary<string, string>
+        {
+            ["pA45_notEqualChain"] = "a < b == true needs parentheses",
+            ["pB91_constFieldBlocked"] = "const fields of referenced assemblies",
+            ["pC09_iteratorPrivateClass"] = "var with a nested generic struct",
+            ["pC29_objectAddition"] = "+ on two System.Object values",
+            ["pC40_linqNotAvailable"] = "var with a nested generic struct",
+            ["pG48_shadowInInnerBlock"] = "a local variable with the name of another one in an outer block",
+            ["pH34_macroMissingArgument"] = "a macro argument that becomes empty text leaves a valid expression here",
+            ["pI38_globalFunctionPrefix"] = "Global:: with a function the class doesn't declare",
+        };
+
         private static List<ConformanceCase> LoadCases()
         {
             string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Conformance", "conformance.txt");
@@ -79,6 +92,41 @@ namespace XppInterpreter.Tests
 
         public static IEnumerable<object[]> Cases() =>
             LoadCases().Where(c => !c.NeedsD365).Select(c => new object[] { c.Name });
+
+        private static List<ConformanceCase> LoadRefusedCases()
+        {
+            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Conformance", "conformance.txt");
+            var cases = new List<ConformanceCase>();
+
+            foreach (var block in Regex.Split(File.ReadAllText(path).Replace("\r\n", "\n"), @"^### ", RegexOptions.Multiline).Skip(1))
+            {
+                var lines = block.TrimEnd().Split('\n');
+
+                if (lines.Last().StartsWith("!! REJECTED"))
+                {
+                    cases.Add(new ConformanceCase
+                    {
+                        Name = lines[0].Trim().Split(' ')[0],
+                        NeedsD365 = lines[0].Trim().EndsWith("[D365]"),
+                        Source = string.Join("\n", lines.Skip(1).Take(lines.Length - 2))
+                    });
+                }
+            }
+
+            return cases;
+        }
+
+        public static IEnumerable<object[]> RefusedCases() =>
+            LoadRefusedCases().Where(c => !c.NeedsD365).Select(c => new object[] { c.Name });
+
+        [DataTestMethod]
+        [DynamicData(nameof(RefusedCases), DynamicDataSourceType.Method)]
+        public void RefusedLikeTheCompiler(string name)
+        {
+            var conformanceCase = LoadRefusedCases().Single(c => c.Name == name);
+
+            Assert.AreEqual(AcceptedByTheInterpreter.ContainsKey(name), ScriptRunner.Parse(ToScript(conformanceCase)).IsCorrect);
+        }
 
         [TestMethod]
         public void TheFileHasCases()

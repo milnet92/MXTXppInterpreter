@@ -42,6 +42,7 @@ A script runs as the AOS process, and with .NET calls it can reach everything th
 ## Limitations
 * **Class declarations** are not supported
 * On a line that uses a macro, the editor can't complete or show hints after the macro, because the columns of the expanded code are different
+* A script that runs doesn't always compile in a class: the interpreter accepts a few things the compiler refuses, such as `System.Math::PI`. `ConformanceTests.cs` has the list
 
 # .NET libraries
 Scripts can use any .NET type the AOS can load: the framework, the assemblies in its `bin` folder and the references of the installed models. It follows the rules of the X++ compiler.
