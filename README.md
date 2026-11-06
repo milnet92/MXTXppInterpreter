@@ -97,16 +97,12 @@ dotnet test Projects\XppInterpreter.Tests
 ```
 They run the real lexer, parser, bytecode generator and interpreter against a fake of the D365 proxies, so they need no environment.
 
-`Conformance\conformance.txt` holds X++ snippets with the value the **real X++ compiler** gave for each one. It is the specification: when the compiler and the documentation disagree, the compiler wins. The snippets that need real D365 types are marked `[D365]` and run only on an environment, with `Conformance\conformance-tool.js`:
+`Conformance\conformance.txt` holds X++ snippets with the value the **real X++ compiler** gave for each one. It is the specification: when the compiler and the documentation disagree, the compiler wins. The snippets that need real D365 types are marked `[D365]` and run only on an environment, with `Scripts\RunConformance.ps1`.
 
-```
-node conformance-tool.js compiled <AxClass folder of a model>      writes the snippets as an X++ class for the compiler
-node conformance-tool.js update                                    keeps what the compiler gave as the expected values
-node conformance-tool.js interpreted <AxClass folder of a model>   writes a class that runs them through the interpreter
-node conformance-tool.js compare                                   shows the differences
-```
-
-After `compiled` or `interpreted`, compile that model, restart IIS and open `/?mi=SysClassRunner&cls=DEVXppProbe` or `cls=DEVXppConformance`. The generated classes are not part of any project: remove them when you finish.
+## More
+* [Docs/Development.md](Docs/Development.md): setting up a VM, the conformance workflow and the build dependency check
+* [Docs/XppSemantics.md](Docs/XppSemantics.md): what the X++ compiler really does, with the case that shows each fact
+* [Docs/Backlog.md](Docs/Backlog.md): open work and known gaps
 
 # Build Action
 The GitHub build action is based on [FSC-PS for GitHub](https://github.com/fscpscollaborative/fscps).

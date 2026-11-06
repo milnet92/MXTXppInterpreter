@@ -13,6 +13,7 @@
 
 
 
+
 ### pA01_andOrPrecedence
 boolean t = true, f = false;
 return strFmt("%1 %2", t || f && f, f && f || t);
@@ -4725,6 +4726,13 @@ int a;
 try { } finally { try { throw Exception::Error; } catch { a = 5; } }
 return int2Str(a);
 !! REJECTED: Control cannot leave a finally block.
+
+### pK48_defaultNotLast
+int x = 1;
+str s;
+switch (x) { case 1: s += "a"; default: s += "d"; break; case 2: s += "c"; break; }
+return s;
+!! REJECTED: A default part must be the last case item in the switch statement.
 
 ### pK50_notFieldById [D365]
 CustGroup a;
