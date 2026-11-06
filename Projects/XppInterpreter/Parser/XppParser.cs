@@ -220,6 +220,16 @@ namespace XppInterpreter.Parser
 
             _constructorType = enclosingConstructorType;
 
+            if (type.ClrType != null)
+            {
+                var argumentTypes = InferredArgumentTypes(parameters);
+
+                if (argumentTypes != null && !Core.Clr.ClrBinder.HasConstructor(type.ClrType, argumentTypes))
+                {
+                    HandleParseError(MethodNotFoundMessage(type.ClrType, "Constructor", argumentTypes), stop: false);
+                }
+            }
+
             return new Constructor(
                 identifier,
                 parameters,
@@ -809,6 +819,12 @@ namespace XppInterpreter.Parser
 
             IScanResult identifier = caller is null ? Match(TType.Id) : MatchAnyWord();
 
+            // A member named like an X++ keyword (Count, Exists, Throw) keeps the casing it was written with, for the messages
+            if (caller != null && identifier.Text != null && identifier.Token.TokenType != TType.Id)
+            {
+                identifier = new ScanResult(new Word(identifier.Text, TType.Id), identifier.Start, identifier.End, identifier.Line);
+            }
+
             // record.Map::method()
             if (caller != null && !staticCall && currentToken.TokenType == TType.StaticDoubleDot)
             {
@@ -893,6 +909,14 @@ namespace XppInterpreter.Parser
 
                 if (currentToken.TokenType == TType.LeftBracket)
                 {
+                    // Only X++ arrays take [index]: a .NET list or array needs get_Item, GetValue and SetValue, as compiled X++ requires
+                    var indexedVariable = caller is null ? _parseContext.CurrentScope.FindVariableDeclaration(((Word)identifier.Token).Lexeme) : null;
+
+                    if (indexedVariable != null && !indexedVariable.IsArray)
+                    {
+                        HandleParseError(MessageProvider.ExceptionArrayIndexingClrType, stop: false);
+                    }
+
                     Match(TType.LeftBracket);
                     Expression index = Expression();
                     Match(TType.RightBracket);
@@ -983,7 +1007,17 @@ namespace XppInterpreter.Parser
             {
                 if (expression is FunctionCall clrCall)
                 {
-                    if (!Core.Clr.ClrBinder.HasMethod(callerType, clrCall.Name, isStatic))
+                    // The compiler names the argument types when the method is missing, generic or has no such overload
+                    var argumentTypes = InferredArgumentTypes(clrCall.Parameters);
+
+                    if (argumentTypes != null)
+                    {
+                        if (!Core.Clr.ClrBinder.HasOverload(callerType, clrCall.Name, isStatic, argumentTypes))
+                        {
+                            HandleParseError(MethodNotFoundMessage(callerType, clrCall.Name, argumentTypes), stop: false);
+                        }
+                    }
+                    else if (!Core.Clr.ClrBinder.HasMethod(callerType, clrCall.Name, isStatic))
                     {
                         HandleParseError(string.Format(MessageProvider.ExceptionInvalidTypeMethod, callerType.Name, clrCall.Name), stop: false);
                     }
@@ -1024,6 +1058,37 @@ namespace XppInterpreter.Parser
                     HandleParseError(string.Format(MessageProvider.ExceptionInvalidTypeField, callerType.Name, variable.Name), stop: false);
                 }
             }
+        }
+
+        /// <summary>
+        /// The types of the arguments of a .NET call when the parser knows every one of them, for the compiler's overload check.
+        /// Null when one is unknown: a late-bound object, an anytype or a container, which the X++ compiler accepts for many parameters.
+        /// </summary>
+        private System.Type[] InferredArgumentTypes(List<Expression> arguments)
+        {
+            var types = new System.Type[arguments.Count];
+
+            for (int i = 0; i < arguments.Count; i++)
+            {
+                types[i] = _typeInferer.InferType(arguments[i], _parseContext);
+
+                if (types[i] is null || types[i] == typeof(object) || types[i] == typeof(object[]) || _typeInferer.IsLateBoundType(types[i]))
+                {
+                    return null;
+                }
+            }
+
+            return types;
+        }
+
+        /// <summary>
+        /// The compiler's message: Method 'Name(System.String)' is not found on type 'T'. A generic type is named without its arguments.
+        /// </summary>
+        private static string MethodNotFoundMessage(System.Type type, string name, System.Type[] argumentTypes)
+        {
+            string arguments = string.Join(", ", argumentTypes.Select(t => t.IsGenericType ? t.Namespace + "." + t.Name : t.FullName));
+
+            return string.Format(MessageProvider.ExceptionMethodNotFoundForArguments, name, arguments, type.FullName);
         }
 
         internal List<Statement> Default()
@@ -2130,7 +2195,10 @@ namespace XppInterpreter.Parser
                 case TType.UtcDateTime:
                     var utcScan = Match(TType.UtcDateTime);
                     var utc = (System.DateTime)(utcScan.Token as BaseType).Value;
-                    return new Constant(new BaseType(_proxy.Casting.CreateUtcDateTime(utc.Year, utc.Month, utc.Day, utc.Hour, utc.Minute, utc.Second), TType.UtcDateTime), SourceCodeBinding(utcScan));
+                    // The compiler builds the literal with the constructor of the utcdatetime struct, which marks the value Utc.
+                    // DateTimeUtil::newDateTime leaves the kind unspecified, also in compiled code (conformance pL25, pL33)
+                    var utcValue = Core.Clr.ClrConversions.Convert(System.DateTime.SpecifyKind(utc, DateTimeKind.Utc), _proxy.Reflection.GetUtcDateTimeType());
+                    return new Constant(new BaseType(utcValue, TType.UtcDateTime), SourceCodeBinding(utcScan));
 
                 case TType.True:
                 case TType.False:

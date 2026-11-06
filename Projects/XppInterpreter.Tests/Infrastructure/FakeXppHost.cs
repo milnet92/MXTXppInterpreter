@@ -375,7 +375,6 @@ namespace XppInterpreter.Tests.Infrastructure
 
         public Type GetArrayType(Type type) => typeof(FakeXppArray);
         public object CreateDate(int day, int month, int year) => new FakeDate(day, month, year);
-        public object CreateUtcDateTime(int year, int month, int day, int hour, int minute, int second) => new FakeUtcDateTime(new DateTime(year, month, day, hour, minute, second));
         public bool IsStringEDT(string typeName) => false;
         public string TruncateEDTString(string value, string typeName) => value;
         #endregion
@@ -528,6 +527,9 @@ namespace XppInterpreter.Tests.Infrastructure
                 case null: return string.Empty;
                 case bool b: return b ? "true" : "false";
                 case decimal d: return d.ToString("0.00", CultureInfo.InvariantCulture);
+                case Guid g: return g.ToString("B");
+                // strFmt on the AOS prints a .NET enum as its number (conformance pL11, pL25); an X++ enum prints its name
+                case Enum e when !(e is TestXppEnum) && !(e is FakeExceptionEnum): return Convert.ToInt32(e).ToString(CultureInfo.InvariantCulture);
                 case IFormattable f: return f.ToString(null, CultureInfo.InvariantCulture);
                 default: return value.ToString();
             }

@@ -425,6 +425,23 @@ namespace XppInterpreter.Core.Clr
         public static bool HasMethod(Type type, string name, bool isStatic) =>
             GetMethods(type, name, isStatic).Length > 0;
 
+        /// <summary>
+        /// Tells if an overload takes arguments of these types, as the compiler checks before anything runs.
+        /// A null type is an argument whose type isn't known while parsing: it fits any parameter.
+        /// </summary>
+        public static bool HasOverload(Type type, string name, bool isStatic, Type[] argumentTypes) =>
+            HasBinding(GetMethods(type, name, isStatic), argumentTypes);
+
+        /// <summary>
+        /// Tells if a constructor takes arguments of these types. A struct without arguments always has one.
+        /// </summary>
+        public static bool HasConstructor(Type type, Type[] argumentTypes) =>
+            (type.IsValueType && argumentTypes.Length == 0) || HasBinding(GetConstructors(type), argumentTypes);
+
+        private static bool HasBinding(MethodBase[] candidates, Type[] argumentTypes) =>
+            SelectOverload(candidates, argumentTypes.Length,
+                (i, target) => argumentTypes[i] is null ? 0 : ClrConversions.GetCost(argumentTypes[i], target)) != null;
+
         public static bool HasMember(Type type, string name, bool isStatic) =>
             FindMember(type, name, isStatic) != null;
 

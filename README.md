@@ -35,7 +35,7 @@ You can save X++ scripts into the built-in repository to later execute them.
 * Get metadata information quickly (class and table ids, label texts, enum values...)
 
 ## Security
-For development environments no additional security is needed, but if you run the script on a non-development system a user should have **MXT Script executor** role.
+For development environments no additional security is needed. On any other system a user needs the **System administrator** role and the **MXT Script executor** role (`MXTXppInterpreterScriptExecutionLog::checkSecurityRights`).
 
 A script runs as the AOS process, and with .NET calls it can reach everything that process can: files, the network and the configuration of the environment. Give this role only to people who could deploy code to that environment.
 
@@ -78,12 +78,15 @@ while (enumerator.MoveNext())
 | `using` statement | `using (var writer = new System.IO.StringWriter()) { ... }` |
 | Methods of X++ classes that use .NET types | `ShareClient share = MyClass::getShare();` |
 
-The editor completes namespaces, types and members, shows every overload of a method, and the debugger shows the properties of a .NET object.
+The editor completes namespaces, types and members, shows every overload of a method, and the debugger shows the properties of a .NET object. A call that no overload takes is marked while typing, with the compiler's message: `Method 'IsLetter(System.String)' is not found on type 'System.Char'.`
 
 Things that surprise people, because compiled X++ does them too:
 * Type names and namespaces are case sensitive. Member names are not.
 * `if (obj)` on a .NET object means *not null*, even when the object is a `Response<bool>` with the value `false`. `boolean b = obj;` does apply its implicit conversion. So `if (file.Exists(token))` is always true: assign it to a `boolean` first.
 * A catch block with `Exception::CLRError` or `System.Exception` also catches the X++ errors of the code it calls.
+* `strFmt("%1", dateTime)` fails with "Wrong argument type for function" for a `System.DateTime`: assign it to an utcdatetime first.
+* `list[0]` and `array[0]` are refused on .NET objects, as the compiler does: use `get_Item`, `GetValue` and `SetValue`.
+* A `str` is not a `System.Char`: `System.Char::IsLetter("A")` doesn't compile, `System.Convert::ToChar("A")` does.
 
 # Development
 The C# source of the interpreter is in `Projects\XppInterpreter`, and the X++ classes it talks to are in the **MXppTools** model. `Scripts\BuildInterpreter.ps1` builds the DLL, copies it to the package and restarts IIS. Add `-IncludeModel` when X++ code changed, or the C# classes X++ calls did.

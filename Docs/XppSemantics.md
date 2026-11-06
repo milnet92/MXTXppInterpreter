@@ -18,6 +18,7 @@ Each fact was measured with the real compiler on platform 7.0.8199.55. The case 
 | `date - date` is an int, and a date plus an int is a date | `pI02`, `pI03` |
 | An utcdatetime literal is written `2020-01-02T03:04:05` | `pF18` |
 | A real assigned to an int is truncated | `pA21` |
+| The `u` suffix is an unsigned 32-bit literal, not an int64: `5u` is an int, `3000000000u` is the negative int with the same bits, `4294967301u` is an int64 | `pL32`, `pL35`, `pL37`, `pL40` |
 
 ## Declarations
 
@@ -71,6 +72,15 @@ Each fact was measured with the real compiler on platform 7.0.8199.55. The case 
 | `var` can't name a nested generic struct, such as `List<T>.Enumerator` | `pC09`, `pC40` |
 | `System.Double` values are compared and computed as doubles. Comparing one with a `real` is refused, which the interpreter doesn't check yet | `pK10` to `pK15` |
 | The argument types choose the overload: `var n = System.Math::Abs(-1);` is an int | `pK01` to `pK03` |
+| `strFmt` refuses a `System.DateTime` ("Wrong argument type for function"), also `d.Date`, and the error is not an `Exception::Error`: assign it to an utcdatetime first | `pL01` to `pL03` |
+| `strFmt` prints a .NET object with `ToString()`, a .NET enum as its number | `pL06` to `pL09`, `pL11` |
+| A `str` is not a `System.Char`, in either direction: `System.Char c = 'A'`, `System.Char::IsLetter("A")` and `str s = text.get_Chars(1)` are refused. `System.Convert::ToChar` converts | `pL10`, `pL36`, `pL38` |
+| `[index]` is only for X++ arrays, also on a .NET list, array or string: use `get_Item`, `GetValue` and `SetValue` | `pL15` to `pL17`, `pL26` |
+| A nested generic struct can't be named at all (`List<int>.Enumerator`); a nested enum can (`System.Environment.SpecialFolder`) | `pL18`, `pL19` |
+| `+=` on a .NET event takes an `eventhandler` whose parameters match the delegate exactly | `pL20` |
+| A member can't be read directly on a static property: `Thread::CurrentThread.CurrentCulture` is refused, a variable in between works | `pL30`, `pL31` |
+| An utcdatetime literal becomes a `DateTime` with `Kind` Utc. A `date`, or an utcdatetime from `DateTimeUtil::newDateTime`, becomes Unspecified | `pL25`, `pL33`, `pL34` |
+| Boxed in a `System.Object`: `5u` is an `Int32`, a date a `Date`, `NoYes::Yes` the enum, a container an `Object[]`, an X++ object its `Microsoft.Dynamics.Ax.Xpp` type | `pL12` to `pL14` |
 
 ## Records and queries
 
@@ -95,4 +105,4 @@ These run in the interpreter, but compiled code fails, so the cases have no valu
 ## Where the interpreter differs on purpose
 
 - **Values compiled X++ loses** (`KnownDifferences` in `ConformanceTests.cs`): a generic dictionary declared with `var` (`pB82`), an implicit operator on assignment (`pC07`), and a `DateTime` assigned to an utcdatetime (`pB24`). The interpreter keeps the value.
-- **Code the compiler refuses and the interpreter runs** (`AcceptedByTheInterpreter`): 8 cases, such as `System.Math::PI` and `var` with a nested enumerator. A script that runs doesn't always compile in a class.
+- **Code the compiler refuses and the interpreter runs** (`AcceptedByTheInterpreter`): 10 cases, such as `System.Math::PI`, `var` with a nested enumerator, `"d=" + dateTime` and `Thread::CurrentThread.CurrentCulture`. A script that runs doesn't always compile in a class.

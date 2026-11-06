@@ -34,12 +34,15 @@ namespace XppInterpreter.Core
             return Activator.CreateInstance(makeType, arg1, arg2);
         }
 
-        public static bool TypeHasMethod(Type type, string methodName)
-        {
-            if (type is null) return false;
+        // Every global function call of a script looks its method up by name: the methods of a type don't change while the process runs
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<Tuple<Type, string>, MethodInfo> MethodsByName =
+            new System.Collections.Concurrent.ConcurrentDictionary<Tuple<Type, string>, MethodInfo>();
 
-            return type.GetMethods().Any(m => m.Name?.ToLower() == methodName.ToLower());
-        }
+        private static MethodInfo FindMethod(Type type, string methodName) =>
+            type is null ? null : MethodsByName.GetOrAdd(Tuple.Create(type, methodName.ToLowerInvariant()),
+                key => key.Item1.GetMethods().FirstOrDefault(m => m.Name.ToLowerInvariant() == key.Item2));
+
+        public static bool TypeHasMethod(Type type, string methodName) => FindMethod(type, methodName) != null;
 
         public static bool TypeHasProperty(Type type, string propertyName, bool includeNonPublic = false)
         {
@@ -53,12 +56,7 @@ namespace XppInterpreter.Core
             return type.GetFields(GetBindingFlags(includeNonPublic)).Any(f => f.Name?.ToLower() == fieldName.ToLower());
         }
 
-        public static string GetMethodInvariantName(Type type, string methodName)
-        {
-            return TypeHasMethod(type, methodName)
-                ? type.GetMethods().FirstOrDefault(m => m.Name.ToLowerInvariant() == methodName.ToLowerInvariant()).Name
-                : null;
-        }
+        public static string GetMethodInvariantName(Type type, string methodName) => FindMethod(type, methodName)?.Name;
 
         public static PropertyInfo GetProperty(Type type, string propertyName, bool includeNonPublic = false)
         {
@@ -86,14 +84,7 @@ namespace XppInterpreter.Core
             return bindingFlags;
         }
 
-        public static MethodInfo GetMethod(Type type, string methodName)
-        {
-            string invariantMethodName = GetMethodInvariantName(type, methodName);
-
-            return !string.IsNullOrEmpty(invariantMethodName)
-                ? type.GetMethods().FirstOrDefault(m => m.Name.ToLowerInvariant() == methodName.ToLowerInvariant())
-                : null;
-        }
+        public static MethodInfo GetMethod(Type type, string methodName) => FindMethod(type, methodName);
 
         /// <summary>
         /// A kernel class whose constructor takes variable arguments, like Struct, receives them in an array.

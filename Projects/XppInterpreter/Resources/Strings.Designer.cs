@@ -268,6 +268,24 @@ namespace XppInterpreter.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The array indexing syntax can only be applied to X++ array types. Use the SetValue and GetValue methods on managed array types..
+        /// </summary>
+        internal static string ExceptionArrayIndexingClrType {
+            get {
+                return ResourceManager.GetString("ExceptionArrayIndexingClrType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Method &apos;{0}({1})&apos; is not found on type &apos;{2}&apos;..
+        /// </summary>
+        internal static string ExceptionMethodNotFoundForArguments {
+            get {
+                return ResourceManager.GetString("ExceptionMethodNotFoundForArguments", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid using expression..
         /// </summary>
         internal static string ExceptionInvalidUsing {

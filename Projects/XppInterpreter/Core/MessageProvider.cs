@@ -65,5 +65,7 @@ namespace XppInterpreter.Core
         public static string ExceptionInvalidEnumMember = GetString(nameof(ExceptionInvalidEnumMember));
         public static string ExceptionInvalidTypeMethod = GetString(nameof(ExceptionInvalidTypeMethod));
         public static string ExceptionInvalidTypeField = GetString(nameof(ExceptionInvalidTypeField));
+        public static string ExceptionArrayIndexingClrType => GetString(nameof(ExceptionArrayIndexingClrType));
+        public static string ExceptionMethodNotFoundForArguments => GetString(nameof(ExceptionMethodNotFoundForArguments));
     }
 }

@@ -864,11 +864,12 @@ namespace XppInterpreter.Lexer
                         return ScanResult(new Date(ScanDate((int)value)));
                     }
 
-                    // The u suffix makes the literal an int64
+                    // The compiler reads the u suffix as an unsigned 32-bit literal: up to 4294967295 it is the int with the same
+                    // bits (3000000000u is negative), above that an int64 (conformance pL32, pL35, pL37, pL40)
                     if (peek == 'u' || peek == 'U')
                     {
                         ReadChar();
-                        return ScanResult(new Int64(value));
+                        return value <= uint.MaxValue ? ScanResult(new Int32(unchecked((int)(uint)value))) : ScanResult(new Int64(value));
                     }
 
                     if (value > int.MaxValue)

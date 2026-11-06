@@ -8,8 +8,12 @@ using CArray = Microsoft.Dynamics.Ax.Xpp.Array;
 
 public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.Proxy.IXppReflectionProxy
 {
+    #define.MacroLibraryCacheSeconds(5)
+    #define.TicksPerSecond(10000000)
+
     private static System.String[] referencedAssemblies;
     private static System.Collections.Hashtable macroLibraries;
+    private static System.Collections.Hashtable macroLibraryReadTicks;
 }
 ]]></Declaration>
 		<Methods>
@@ -41,15 +45,25 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
     /// <returns>The text, or null when there is no library with that name</returns>
     public System.String GetMacroLibrary(System.String _name)
     {
-        // The parser asks on every change in the editor, also for a macro that is being written
+        // The parser asks on every change in the editor, also for a macro that is being written, so the answer is kept for
+        // a few seconds. The library comes from the model source when the environment has it, so a change shows after that
+        // without a compile or a restart of the AOS.
+        int64 now = System.DateTime::UtcNow.Ticks;
+
         if (!macroLibraries)
         {
             macroLibraries = System.Collections.Hashtable::Synchronized(new System.Collections.Hashtable(System.StringComparer::OrdinalIgnoreCase));
+            macroLibraryReadTicks = System.Collections.Hashtable::Synchronized(new System.Collections.Hashtable(System.StringComparer::OrdinalIgnoreCase));
         }
 
         if (macroLibraries.ContainsKey(_name))
         {
-            return macroLibraries.get_Item(_name);
+            int64 readTicks = macroLibraryReadTicks.get_Item(_name);
+
+            if (now - readTicks < #MacroLibraryCacheSeconds * #TicksPerSecond)
+            {
+                return macroLibraries.get_Item(_name);
+            }
         }
 
         System.String source = null;
@@ -64,6 +78,7 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
         }
 
         macroLibraries.set_Item(_name, source);
+        macroLibraryReadTicks.set_Item(_name, now);
 
         return source;
     }

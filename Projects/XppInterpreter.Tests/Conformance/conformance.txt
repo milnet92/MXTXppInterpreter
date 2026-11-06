@@ -14,6 +14,12 @@
 
 
 
+
+
+
+
+
+
 ### pA01_andOrPrecedence
 boolean t = true, f = false;
 return strFmt("%1 %2", t || f && f, f && f || t);
@@ -4747,3 +4753,264 @@ CustGroup a;
 select count(RecId) from a where !a.(fieldNum(CustGroup, RecId));
 return strFmt("%1", a.RecId);
 => 0
+
+### pL01_strFmtDateTime [D365]
+System.DateTime d = new System.DateTime(2024, 1, 31, 10, 20, 30);
+try { return strFmt("%1", d); }
+catch (Exception::Error) { return "Error"; }
+catch (Exception::Internal) { return "Internal"; }
+catch (Exception::CLRError) { return "CLRError"; }
+catch { return "other"; }
+=> other
+
+### pL02_strFmtDateTimeDate [D365]
+System.DateTime d = new System.DateTime(2024, 1, 31, 10, 20, 30);
+try { return strFmt("%1", d.Date); }
+catch (Exception::Error) { return "Error"; }
+catch (Exception::Internal) { return "Internal"; }
+catch (Exception::CLRError) { return "CLRError"; }
+catch { return "other"; }
+=> other
+
+### pL03_strFmtDateTimeFromUtc [D365]
+utcdatetime u = 2024-01-31T10:20:30;
+System.DateTime d = u;
+try { return strFmt("%1", d); }
+catch (Exception::Error) { return "Error"; }
+catch (Exception::Internal) { return "Internal"; }
+catch (Exception::CLRError) { return "CLRError"; }
+catch { return "other"; }
+=> other
+
+### pL04_concatDateTime
+System.DateTime d = new System.DateTime(2024, 1, 31);
+return "d=" + d;
+!! REJECTED: Types 'str' and 'System.DateTime' are not compatible with operator '+'.
+
+### pL05_dateTimeToStr
+System.DateTime d = new System.DateTime(2024, 1, 31);
+str s = d;
+return s;
+!! REJECTED: Cannot implicitly convert from type 'System.DateTime' to type 'str'.
+
+### pL06_strFmtClrObject
+System.Exception e = new System.Exception("boom");
+return strFmt("%1", e);
+=> System.Exception: boom
+
+### pL07_strFmtTimeSpan
+return strFmt("%1", System.TimeSpan::FromMinutes(90));
+=> 01:30:00
+
+### pL08_strFmtDecimal
+System.Decimal x = System.Decimal::Parse("10.5", System.Globalization.CultureInfo::InvariantCulture);
+return strFmt("%1 %2", x, System.Decimal::Multiply(x, 2));
+=> 10.50 21.00
+
+### pL09_strFmtGuid
+System.Guid g = System.Guid::Empty;
+return strFmt("%1", g);
+=> {00000000-0000-0000-0000-000000000000}
+
+### pL10_strFmtChar
+System.Char c = 'A';
+return strFmt("%1 %2", c, System.Convert::ToInt32(c));
+!! REJECTED: Cannot implicitly convert from type 'str' to type 'System.Char'.
+
+### pL11_strFmtClrEnum
+System.DayOfWeek dow = System.DayOfWeek::Friday;
+int n = dow;
+return strFmt("%1 %2 %3", dow, n, dow.ToString());
+=> 5 5 Friday
+
+### pL12_boxedXppTypes [D365]
+System.Object d = 31\01\2024;
+System.Object e = NoYes::Yes;
+System.Object l = 5u;
+System.Object r = 2.5;
+System.Object b = true;
+return strFmt("%1 %2 %3 %4 %5", d.GetType().Name, e.GetType().Name, l.GetType().Name, r.GetType().Name, b.GetType().Name);
+=> Date NoYes Int32 Decimal Boolean
+
+### pL13_boxedContainer
+container c = [1, "a"];
+System.Object o = c;
+return o.GetType().Name;
+=> Object[]
+
+### pL14_boxedXppObject [D365]
+Set s = new Set(Types::String);
+System.Object o = s;
+return o.GetType().FullName;
+=> Microsoft.Dynamics.Ax.Xpp.Set
+
+### pL15_indexerOnList
+System.Collections.Generic.List<str> l = new System.Collections.Generic.List<str>();
+l.Add("a");
+return l[0];
+!! REJECTED: The array indexing syntax can only be applied to X++ array types. Use the SetValue and GetValue methods on managed array types.
+
+### pL16_indexerOnClrArray
+System.String[] a = new System.String[1]();
+a.SetValue("x", 0);
+return a[0];
+!! REJECTED: The array indexing syntax can only be applied to X++ array types. Use the SetValue and GetValue methods on managed array types.
+
+### pL17_indexerOnString
+System.String s = "abc";
+return strFmt("%1", s[1]);
+!! REJECTED: The array indexing syntax can only be applied to X++ array types. Use the SetValue and GetValue methods on managed array types.
+
+### pL18_nestedGenericStructNamed
+System.Collections.Generic.List<int> l = new System.Collections.Generic.List<int>();
+l.Add(5);
+System.Collections.Generic.List<int>.Enumerator en = l.GetEnumerator();
+en.MoveNext();
+return int2Str(en.Current);
+!! REJECTED: nested generic struct List<T>.Enumerator cannot be named: 'identifier' expected.
+
+### pL19_nestedEnumNamed
+System.Environment.SpecialFolder sf = System.Environment.SpecialFolder::System;
+int n = sf;
+return int2Str(n);
+=> 37
+
+### pL20_eventSubscribe
+System.Timers.Timer t = new System.Timers.Timer(10);
+t.Elapsed += eventhandler(System.Console::WriteLine);
+return "1";
+!! REJECTED: The class 'System.Console' does not contain a public method 'WriteLine' that can be used as an event handler for delegate 'System.Void t.Elapsed(System.Object sender, System.Timers.ElapsedEventArgs e)' because the parameter types must match exactly.
+
+### pL21_tryParseDateTimeByRef
+System.DateTime dt;
+boolean ok = System.DateTime::TryParse("2024-01-02", byref dt);
+return strFmt("%1 %2", ok, dt.Year);
+=> true 2024
+
+### pL22_interlockedByRef
+int x = 5;
+System.Threading.Interlocked::Increment(byref x);
+return int2Str(x);
+=> 6
+
+### pL23_floorOfRealIsDecimal
+real r = 2.5;
+return strFmt("%1 %2", System.Math::Floor(r), System.Math::Floor(r).GetType().Name);
+=> 2.00 Decimal
+
+### pL24_mathMaxInt64Mixed
+int64 x = 5000000000;
+return strFmt("%1 %2", System.Math::Max(x, 3), System.Math::Abs(x));
+=> 5000000000 5000000000
+
+### pL25_dateTimeKindAfterUtc
+utcdatetime u = 2024-03-15T10:30:00;
+System.DateTime back = u;
+return strFmt("%1 %2", back.Kind, back.ToString("yyyy-MM-dd HH:mm"));
+=> 1 2024-03-15 10:30
+
+### pL26_jObjectIndexer [D365]
+Newtonsoft.Json.Linq.JObject o = Newtonsoft.Json.Linq.JObject::Parse('{"a":1}');
+return o["a"].ToString();
+!! REJECTED: The array indexing syntax can only be applied to X++ array types. Use the SetValue and GetValue methods on managed array types.
+
+### pL27_utcToDateTimeAndBack [D365]
+utcdatetime u = 2024-03-15T10:30:00;
+System.DateTime d = u;
+utcdatetime back = d;
+date dd = d;
+return strFmt("%1 %2", back == u, dayOfMth(dd));
+=> true 15
+
+### pL28_clrObjectEqualsNull
+System.Text.StringBuilder sb;
+System.Object o;
+return strFmt("%1 %2 %3", sb == null, o == null, sb == o);
+=> true true true
+
+### pL29_stringBuilderLengthSet
+System.Text.StringBuilder sb = new System.Text.StringBuilder("abc");
+sb.Length = 1;
+return sb.ToString();
+=> a
+
+### pL30_staticPropertySet
+System.Threading.Thread t = System.Threading.Thread::CurrentThread;
+System.Globalization.CultureInfo before = t.CurrentCulture;
+t.CurrentCulture = System.Globalization.CultureInfo::InvariantCulture;
+str name = t.CurrentCulture.Name;
+t.CurrentCulture = before;
+return strFmt("[%1] %2", name, t.CurrentCulture.Name == before.Name);
+=> [] true
+
+### pL31_memberAfterStaticProperty
+return System.Threading.Thread::CurrentThread.CurrentCulture.Name;
+!! REJECTED: Invalid token '.'.
+
+### pL32_int64LiteralBoxed
+System.Object a = 5u;
+System.Object b = 5000000000u;
+System.Object c = 5000000000;
+int64 v = 5u;
+System.Object e = v;
+return strFmt("%1 %2 %3 %4", a.GetType().Name, b.GetType().Name, c.GetType().Name, e.GetType().Name);
+=> Int32 Int64 Int64 Int64
+
+### pL33_dateToDateTimeKind [D365]
+date d = 15\03\2024;
+System.DateTime dt = d;
+utcdatetime u = DateTimeUtil::newDateTime(d, 37800);
+System.DateTime du = u;
+return strFmt("%1 %2 %3", dt.Kind, du.Kind, du.ToString("yyyy-MM-dd HH:mm"));
+=> 0 0 2024-03-15 10:30
+
+### pL34_dateTimeToUtcKeepsClock [D365]
+System.DateTime d = new System.DateTime(2024, 3, 15, 10, 30, 0);
+utcdatetime u = d;
+System.DateTime back = u;
+return strFmt("%1 %2 %3", DateTimeUtil::hour(u), back.Hour, back.Kind);
+=> 10 10 1
+
+### pL35_int64SuffixVarType
+var x = 5u;
+x = 5000000000;
+System.Object o = x;
+return strFmt("%1 %2", x, o.GetType().Name);
+=> 705032704 Int32
+
+### pL36_charParameterFromStr
+return strFmt("%1 %2", System.Char::IsLetter("A"), System.Char::IsDigit("7"));
+!! REJECTED: Method 'IsLetter(System.String)' is not found on type 'System.Char'.
+
+### pL37_int64SuffixDivision
+return strFmt("%1 %2", 5u / 2, int2Str(3000000000u div 2));
+=> 2.50 -647483648
+
+### pL38_charToStr
+System.String s = "abc";
+str c = s.get_Chars(1);
+return c;
+!! REJECTED: Cannot implicitly convert from type 'System.Char' to type 'str'.
+
+### pL39_charInStrFmt
+System.String s = "abc";
+System.Char ch = s.get_Chars(2);
+return strFmt("%1 %2", ch, s.get_Chars(0));
+=> c a
+
+### pL40_int64SuffixWraps
+int64 a = 3000000000u;
+int64 b = 3000000000;
+int64 c = 4294967301u;
+return strFmt("%1 %2 %3", a, b, c);
+=> -1294967296 3000000000 4294967301
+
+### pL41_genericMethodMessage
+System.Collections.Generic.List<int> l = new System.Collections.Generic.List<int>();
+return int2Str(System.Linq.Enumerable::Count(l));
+!! REJECTED: Method 'Count(System.Collections.Generic.List`1)' is not found on type 'System.Linq.Enumerable'.
+
+### pL42_constructorArguments
+System.DateTime d = new System.DateTime("x");
+return "1";
+!! REJECTED: Method 'Constructor(System.String)' is not found on type 'System.DateTime'.

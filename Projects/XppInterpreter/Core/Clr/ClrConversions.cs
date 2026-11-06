@@ -19,7 +19,6 @@ namespace XppInterpreter.Core.Clr
         private const int CostNullable = 1;
         private const int CostBaseClass = 2;
         private const int CostInterface = 5;
-        private const int CostStringChar = 6;
         private const int CostDate = 3;
         private const int CostUserDefined = 7;
         private const int CostNarrowingNumber = 8;
@@ -113,16 +112,6 @@ namespace XppInterpreter.Core.Clr
             if (target.IsEnum && IsNumber(from))
             {
                 return CostIntegerToEnum;
-            }
-
-            if (from == typeof(string) && target == typeof(char))
-            {
-                return value is null || ((string)value).Length == 1 ? CostStringChar : NoConversion;
-            }
-
-            if (from == typeof(char) && target == typeof(string))
-            {
-                return CostStringChar;
             }
 
             if ((IsXppDateType(from) && target == typeof(DateTime)) || (from == typeof(DateTime) && IsXppDateType(target)))
@@ -298,18 +287,6 @@ namespace XppInterpreter.Core.Clr
                 }
 
                 return TryUserDefined(value, from, target, out result);
-            }
-
-            if (target == typeof(char) && value is string text && text.Length == 1)
-            {
-                result = text[0];
-                return true;
-            }
-
-            if (target == typeof(string) && value is char character)
-            {
-                result = character.ToString();
-                return true;
             }
 
             if (target == typeof(DateTime) && IsXppDateType(from))

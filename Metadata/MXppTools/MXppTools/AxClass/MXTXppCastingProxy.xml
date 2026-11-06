@@ -646,16 +646,6 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 ]]></Source>
 			</Method>
 			<Method>
-				<Name>CreateUtcDateTime</Name>
-				<Source><![CDATA[
-    public System.Object CreateUtcDateTime(System.Int32 year, System.Int32 month, System.Int32 day, System.Int32 hour, System.Int32 minute, System.Int32 second)
-    {
-        return DateTimeUtil::newDateTime(mkDate(day, month, year), hour * 3600 + minute * 60 + second);
-    }
-
-]]></Source>
-			</Method>
-			<Method>
 				<Name>CreateDate</Name>
 				<Source><![CDATA[
     public System.Object CreateDate(System.Int32 day, System.Int32 month, System.Int32 year)

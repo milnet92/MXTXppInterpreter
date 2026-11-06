@@ -20,7 +20,6 @@ namespace ClrFixtures
         public static string OnlyInt(int value) => "int " + value;
         public static string OnlyByte(byte value) => "byte " + value;
         public static string OnlyBool(bool value) => "bool " + value;
-        public static string OnlyChar(char value) => "char " + value;
         public static string OnlyDayOfWeek(DayOfWeek value) => "day " + value;
 
         public static string StringOrObject(string value) => "string";
@@ -52,7 +51,6 @@ namespace ClrFixtures
         public static string ParamsAfter(int first, params object[] values) => first + ":" + values.Length;
         public static string ParamsOrExact(string a, string b) => "exact";
         public static string ParamsOrExact(params string[] values) => "params";
-        public static string ParamsChars(params char[] values) => new string(values);
 
         public static string NullableLong(long? value) => value.HasValue ? "value " + value : "null";
         public static string Struct(TestPoint point) => point.X + "," + point.Y;

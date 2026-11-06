@@ -222,4 +222,10 @@
   <data name="ExceptionInvalidTypeField" xml:space="preserve">
     <value>Type '{0}' does not have a field named '{1}'.</value>
   </data>
+  <data name="ExceptionArrayIndexingClrType" xml:space="preserve">
+    <value>The array indexing syntax can only be applied to X++ array types. Use the SetValue and GetValue methods on managed array types.</value>
+  </data>
+  <data name="ExceptionMethodNotFoundForArguments" xml:space="preserve">
+    <value>Method '{0}({1})' is not found on type '{2}'.</value>
+  </data>
 </root>

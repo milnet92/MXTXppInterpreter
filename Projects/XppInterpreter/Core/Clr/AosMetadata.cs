@@ -18,7 +18,10 @@ namespace XppInterpreter.Core.Clr
 
         private static AosMetadata current;
 
+        // The compiled metadata the AOS runs, and the source XML of the models when the environment has it (a development VM)
         private readonly object provider;
+        private object sourceProvider;
+        private bool sourceProviderTried;
 
         public AosMetadata(object provider)
         {
@@ -30,14 +33,21 @@ namespace XppInterpreter.Core.Clr
         /// </summary>
         public static AosMetadata Current => current ?? (current = new AosMetadata(CreateRuntimeProvider()));
 
+        /// <summary>
+        /// The source of a macro library, from the XML of the model when it is there: a library saved in Visual Studio is
+        /// read as it is, without a compile or a restart of the AOS. The compiled metadata only changes with a restart.
+        /// </summary>
         /// <param name="name">Library name</param>
         /// <returns>The text, or null when there is no library with that name</returns>
         public string ReadMacroLibrary(string name)
         {
-            object library = Call(Get(provider, "MacroDictionaries"), "Read", name);
+            object library = ReadMacroLibrary(SourceProvider, name) ?? ReadMacroLibrary(provider, name);
 
             return library == null ? null : (string)Get(library, "Source");
         }
+
+        private static object ReadMacroLibrary(object metadataProvider, string name) =>
+            metadataProvider == null ? null : Call(Get(metadataProvider, "MacroDictionaries"), "Read", name);
 
         public string[] ReadReferencedAssemblies()
         {
@@ -57,14 +67,41 @@ namespace XppInterpreter.Core.Clr
             return names.ToArray();
         }
 
-        private static object CreateRuntimeProvider()
+        private object SourceProvider
+        {
+            get
+            {
+                if (!sourceProviderTried)
+                {
+                    sourceProviderTried = true;
+
+                    try
+                    {
+                        object factory = Activator.CreateInstance(FindType("Microsoft.Dynamics.AX.Metadata.Storage.MetadataProviderFactory", StorageAssembly));
+                        sourceProvider = factory.GetType().GetMethod("CreateDiskProvider", new[] { typeof(string) }).Invoke(factory, new object[] { PackageDirectory() });
+                    }
+                    catch (Exception)
+                    {
+                        // No source on this environment: the compiled metadata is all there is
+                    }
+                }
+
+                return sourceProvider;
+            }
+        }
+
+        private static string PackageDirectory()
         {
             Type environmentFactory = FindType("Microsoft.Dynamics.ApplicationPlatform.Environment.EnvironmentFactory", EnvironmentAssembly);
             object environment = environmentFactory.GetMethod("GetApplicationEnvironment", Type.EmptyTypes).Invoke(null, null);
-            string packageDirectory = (string)Get(Get(environment, "Aos"), "PackageDirectory");
 
+            return (string)Get(Get(environment, "Aos"), "PackageDirectory");
+        }
+
+        private static object CreateRuntimeProvider()
+        {
             Type configurationType = FindType("Microsoft.Dynamics.AX.Metadata.Storage.Runtime.RuntimeProviderConfiguration", StorageAssembly);
-            object configuration = Activator.CreateInstance(configurationType, packageDirectory, true, true);
+            object configuration = Activator.CreateInstance(configurationType, PackageDirectory(), true, true);
             object factory = Activator.CreateInstance(FindType("Microsoft.Dynamics.AX.Metadata.Storage.MetadataProviderFactory", StorageAssembly));
 
             return Call(factory, "CreateRuntimeProvider", configuration);

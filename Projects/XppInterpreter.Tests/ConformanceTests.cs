@@ -50,6 +50,8 @@ namespace XppInterpreter.Tests
             ["pG48_shadowInInnerBlock"] = "a local variable with the name of another one in an outer block",
             ["pH34_macroMissingArgument"] = "a macro argument that becomes empty text leaves a valid expression here",
             ["pI38_globalFunctionPrefix"] = "Global:: with a function the class doesn't declare",
+            ["pL04_concatDateTime"] = "+ on a str and a System.DateTime: the operand types are not checked when the script is parsed",
+            ["pL31_memberAfterStaticProperty"] = "a member read directly on a static property (Type::Property.Member)",
         };
 
         private static List<ConformanceCase> LoadCases() => ReadCases("=> ", "=>");

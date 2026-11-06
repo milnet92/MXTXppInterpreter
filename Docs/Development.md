@@ -102,6 +102,7 @@ Every assembly that the X++ code names, directly or through a type it uses, has 
 The tests can't reach the editor, so after a change there check by hand:
 - Completion after a namespace, a type and a variable, and the hint of an overloaded method while typing its arguments.
 - A script with a macro library (`#macrolib.AOT` and `#TablesPath`), and one with a type from a model reference, such as `Renci.SshNet.Common.SshException`, run right after an IIS restart.
+- A macro library saved in Visual Studio is used by a script within 5 seconds, without a build or a restart: `AosMetadata` reads the model XML when the environment has it, and `MXTXppReflectionProxy` keeps the answer for 5 seconds because the editor asks on every change.
 - The debugger: a breakpoint, the inspector on a .NET object, the immediate window and stepping.
 
 ## Before pushing

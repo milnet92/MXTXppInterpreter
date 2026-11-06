@@ -16,7 +16,8 @@ namespace XppInterpreter.Tests
 
         [DataTestMethod]
         [DataRow("Number(1)", "int")]
-        [DataRow("Number(10u)", "long")]
+        [DataRow("Number(10u)", "int")]
+        [DataRow("Number(5000000000u)", "long")]
         [DataRow("Number(1.5)", "decimal")]
         [DataRow("WidenInt(1)", "long")]
         [DataRow("OnlyDouble(2)", "double 2")]
@@ -27,7 +28,6 @@ namespace XppInterpreter.Tests
         [DataRow("OnlyByte(5)", "byte 5")]
         [DataRow("OnlyBool(true)", "bool True")]
         [DataRow("OnlyInt(true)", "int 1")]
-        [DataRow("OnlyChar('a')", "char a")]
         [DataRow("OnlyDayOfWeek(2)", "day Tuesday")]
         [DataRow("OnlyDayOfWeek(System.DayOfWeek::Friday)", "day Friday")]
         [DataRow("StringOrObject('x')", "string")]
@@ -73,7 +73,6 @@ namespace XppInterpreter.Tests
         [DataRow("ParamsAfter(1, 'a', 2)", "1:2")]
         [DataRow("ParamsOrExact('a', 'b')", "exact")]
         [DataRow("ParamsOrExact('a', 'b', 'c')", "params")]
-        [DataRow("ParamsChars('a', 'b')", "ab")]
         public void ParamsParameters_AreExpanded(string call, string expected) =>
             Assert.AreEqual(expected, Call(call));
 
@@ -104,9 +103,17 @@ namespace XppInterpreter.Tests
         }
 
         [TestMethod]
-        public void NoOverload_SaysWhatExists()
+        public void NoOverload_IsAParseError_WhenTheArgumentTypesAreKnown()
         {
-            var ex = Assert.ThrowsException<MissingMethodException>(() => Call("Number('text')"));
+            string error = ParseErrors("str s = ClrFixtures.Overloads::Number('text');").Single();
+
+            Assert.AreEqual("Method 'Number(System.String)' is not found on type 'ClrFixtures.Overloads'.", error);
+        }
+
+        [TestMethod]
+        public void NoOverload_SaysWhatExists_WhenItShowsWhileRunning()
+        {
+            var ex = Assert.ThrowsException<MissingMethodException>(() => Evaluate("System.Object o = 'text'; return ClrFixtures.Overloads::Number(o);"));
             StringAssert.Contains(ex.Message, "Number");
             StringAssert.Contains(ex.Message, "String");
             StringAssert.Contains(ex.Message, "System.Int64 value");
@@ -850,13 +857,6 @@ namespace XppInterpreter.Tests
         [TestMethod]
         public void NumberToBoolean() =>
             Assert.AreEqual(true, ClrConversions.Convert(5, typeof(bool)));
-
-        [TestMethod]
-        public void StringToChar_OnlyWithOneCharacter()
-        {
-            Assert.AreEqual('a', ClrConversions.Convert("a", typeof(char)));
-            Assert.AreEqual(ClrConversions.NoConversion, ClrConversions.GetCost("ab", null, typeof(char)));
-        }
 
         [TestMethod]
         public void NumbersRank_WideningBeforeObject()
