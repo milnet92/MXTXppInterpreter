@@ -133,7 +133,8 @@ namespace XppInterpreter.Tests
 
             string expected = KnownDifferences.TryGetValue(name, out var difference) ? difference : conformanceCase.Expected;
 
-            Assert.AreEqual(expected, FakeXppHost.ToText(result));
+            // The file can't hold the trailing whitespace of a value
+            Assert.AreEqual(expected.TrimEnd(), FakeXppHost.ToText(result).TrimEnd());
         }
     }
 }

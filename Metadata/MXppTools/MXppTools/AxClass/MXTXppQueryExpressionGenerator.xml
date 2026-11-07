@@ -111,7 +111,9 @@ internal final class MXTXppQueryExpressionGenerator
             case Lexer.TType::Division: return new SysDaDivideExpression(left, right);
             case Lexer.TType::Star: return new SysDaMultiplyExpression(left, right);
             case Lexer.TType::Mod: return new SysDaModExpression(left, right);
-            case Lexer.TType::IntegerDivision: return new SysDaIntDivExpression(left, right);
+            // Compiled X++ translates div to the SQL division of the two integers. The kernel renders the platform's
+            // SysDaIntDivExpression as [badsym] and the statement fails with "Internal error number 173" (conformance pM52, pM54)
+            case Lexer.TType::IntegerDivision: return new SysDaDivideExpression(left, right);
             case Lexer.TType::In: return new SysDaInExpression(left, right);
             case Lexer.TType::Like: return new SysDaLikeExpression(left, right);
         }

@@ -90,6 +90,21 @@ Each fact was measured with the real compiler on platform 7.0.8199.55. The case 
 | `buf.Map::method()` calls a table map method, also in a `where` | `pI76` to `pI80` |
 | `orig()` and `data()` are typed as the table, not as `Common` | `pH99` |
 | `select nofetch` leaves the record empty until `next` | `pH70`, `pJ17`, `pJ18` |
+| A `join` without `where` is a cross join, and a `where` on the first table that names a table joined later compares with the value the buffer holds, not with the joined row (`T1.PAYMTERMID=?`) | `pM22`, `pM43`, `pM59` |
+| `where a \|\| b && c` is `(a \|\| b) && c`: same precedence, left to right, also in SQL | `pM06`, `pM57` |
+| `exists join` and `notexists join` leave the joined buffer empty; `outer join` leaves it empty for an unmatched row, and a condition on the joined table is part of the `ON` | `pM02` to `pM05`, `pM56`, `pM64`, `pM65` |
+| `index Name` and `index hint Name` both order by the index fields, after `PARTITION` and `DATAAREAID`; with `reverse` only the index fields, descending; an `index` on a joined table is ignored, and an explicit `order by` wins | `pM71`, `pM78` to `pM83` |
+| `div` in a `where` is the SQL division of the two integers (`NUMOFDAYS/?`) | `pM52`, `pM54` |
+| `validTimeState(asOf)` compares `VALIDFROM<=? AND VALIDTO>=?`; `validTimeState(from, to)` is `NOT (VALIDTO<? OR VALIDFROM>?)`; the dates keep their type (`date` or `utcdatetime`) | `pM33`, `pM69`, `pM84` to `pM87` |
+| Aggregates on no rows give 0; `avg` of integers is an integer, of reals a real; `maxof`/`minof` work on strings | `pM11` to `pM13`, `pM39` |
+| String comparison in SQL ignores case and trailing blanks (`'alpha' == 'Alpha'`, `'Alpha ' == 'Alpha'`); `like` is case-insensitive, `_` and `%` are literal characters, `*` and `?` the wildcards | `pM14`, `pM15`, `pM66` |
+| A field alone in a `where` is `> ''` for a string, `<> 0` for a number and `= 0` with `!`; an enum compares with its number | `pM16`, `pM17`, `pM67` |
+| A `select` of fields leaves the other fields of the buffer empty, `RecId` included on a join (`T1.CUSTGROUP,T1.RECID,T2.NUMOFDAYS,T2.RECID`) | `pM24`, `pM50`, `pM62` |
+| `update_recordset ... setting f = joined.Field`, `delete_from ... notexists join` and `insert_recordset ... group by` / `exists join` work; `RowCount()` is the affected rows, 0 when none | `pM25` to `pM28`, `pM47` to `pM49` |
+| `update()` without `forupdate` is an error; `select forupdate` then `update()` and `delete()` work | `pM29`, `pM30` |
+| A record of a table hierarchy selected into a buffer of the base table `is` the derived table the row has (`InstanceRelationType`) | `pM32` |
+| A variable in a `where` is read when the statement starts, not on every row of a `while select` | `pM31` |
+| A select expression inside a `where` is refused: `Table 'pt' is not found` | `pM44` |
 
 ## Things that end the AOS or the compiler
 
@@ -101,6 +116,7 @@ These run in the interpreter, but compiled code fails, so the cases have no valu
 | An uninitialized `Nullable` passed to a method ends the class runner | `pC03` |
 | `-a` on a `System.Double` ends the AOS process | `pK13` |
 | `retry` in a `try` with `finally`, inside a `catch`, crashes the compiler | `pK31` |
+| `mod` in a `where` clause ends with "Internal error number 173 in script", compiled and interpreted alike: the kernel has no SQL for it | `pM53` |
 
 ## Where the interpreter differs on purpose
 

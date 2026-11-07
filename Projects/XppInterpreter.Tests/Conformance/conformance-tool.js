@@ -189,13 +189,14 @@ function compare() {
     const mask = text => text.replace(/(AccountKey|SharedAccessSignature|sig)=[^;&\s]+/gi, '$1=***');
     let different = 0, same = 0, missing = 0;
 
+    // The file can't hold the trailing whitespace of a value, so neither side is compared with it
     for (const c of cases) {
-        const expected = KNOWN_DIFFERENCES[c.name] !== undefined ? KNOWN_DIFFERENCES[c.name] : c.expected;
+        const expected = (KNOWN_DIFFERENCES[c.name] !== undefined ? KNOWN_DIFFERENCES[c.name] : c.expected).trimEnd();
 
         if (!results.has(c.name)) {
             missing++;
             console.log(`MISSING ${c.name}`);
-        } else if (results.get(c.name) === expected) {
+        } else if (results.get(c.name).trimEnd() === expected) {
             same++;
         } else {
             different++;

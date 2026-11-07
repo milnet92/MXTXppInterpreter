@@ -20,6 +20,10 @@
 
 
 
+
+
+
+
 ### pA01_andOrPrecedence
 boolean t = true, f = false;
 return strFmt("%1 %2", t || f && f, f && f || t);
@@ -5014,3 +5018,1681 @@ return int2Str(System.Linq.Enumerable::Count(l));
 System.DateTime d = new System.DateTime("x");
 return "1";
 !! REJECTED: Method 'Constructor(System.String)' is not found on type 'System.DateTime'.
+
+### pM01_joinFillsBothBuffers [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+while select cg order by CustGroup where cg.CustGroup like 'ZZ?' join pt where pt.PaymTermId == cg.PaymTermId
+{
+    r += strFmt('%1:%2 ', cg.CustGroup, pt.NumOfDays);
+}
+ttsabort;
+return r;
+=> ZZA:10 ZZB:10 ZZC:15 
+
+### pM02_existsJoinLeavesBufferEmpty [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+while select cg order by CustGroup where cg.CustGroup like 'ZZ?' exists join pt where pt.PaymTermId == cg.PaymTermId
+{
+    r += strFmt('%1:%2 ', cg.CustGroup, pt.RecId == 0 ? 'empty' : 'filled');
+}
+ttsabort;
+return r;
+=> ZZA:empty ZZB:empty ZZC:empty 
+
+### pM03_notExistsJoin [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+while select cg order by CustGroup where cg.CustGroup like 'ZZ?' notexists join pt where pt.PaymTermId == cg.PaymTermId
+{
+    r += strFmt('%1:%2 ', cg.CustGroup, pt.RecId == 0 ? 'empty' : 'filled');
+}
+ttsabort;
+return r;
+=> ZZD:empty ZZE:empty 
+
+### pM04_outerJoinUnmatchedRows [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+while select cg order by CustGroup where cg.CustGroup like 'ZZ?' outer join pt where pt.PaymTermId == cg.PaymTermId
+{
+    r += strFmt('%1:%2:%3 ', cg.CustGroup, pt.NumOfDays, pt.PaymTermId);
+}
+ttsabort;
+return r;
+=> ZZA:10:ZZPT1 ZZB:10:ZZPT1 ZZC:15:ZZPT2 ZZD:0: ZZE:0: 
+
+### pM05_outerJoinConditionOnJoinedTable [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+while select cg order by CustGroup where cg.CustGroup like 'ZZ?' outer join pt where pt.PaymTermId == cg.PaymTermId && pt.NumOfDays == 10
+{
+    r += strFmt('%1:%2 ', cg.CustGroup, pt.NumOfDays);
+}
+ttsabort;
+return r;
+=> ZZA:10 ZZB:10 ZZC:0 ZZD:0 ZZE:0 
+
+### pM06_whereOrThenAndPrecedence [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+while select cg order by CustGroup where cg.CustGroup == 'ZZA' || cg.CustGroup == 'ZZB' && cg.PaymTermId == 'ZZPT2'
+{
+    r += cg.CustGroup + ' ';
+}
+r = '[' + r + ']';
+ttsabort;
+return r;
+=> []
+
+### pM07_whereOrAndParenthesized [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+while select cg order by CustGroup where cg.CustGroup == 'ZZA' || (cg.CustGroup == 'ZZB' && cg.PaymTermId == 'ZZPT2')
+{
+    r += cg.CustGroup + ' ';
+}
+while select cg order by CustGroup where (cg.CustGroup == 'ZZA' || cg.CustGroup == 'ZZB') && cg.PaymTermId == 'ZZPT2'
+{
+    r += cg.CustGroup + ' ';
+}
+r = '[' + r + ']';
+ttsabort;
+return r;
+=> [ZZA ]
+
+### pM08_orderByJoinedTableField [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+select firstonly cg where cg.CustGroup like 'ZZ?' join pt order by pt.NumOfDays desc where pt.PaymTermId == cg.PaymTermId;
+r = strFmt('%1:%2', cg.CustGroup, pt.NumOfDays);
+ttsabort;
+return r;
+=> ZZC:15
+
+### pM09_orderByTwoFieldsMixed [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+while select cg order by PaymTermId desc, CustGroup asc where cg.CustGroup like 'ZZ?'
+{
+    r += cg.CustGroup + ' ';
+}
+ttsabort;
+return r;
+=> ZZC ZZA ZZB ZZD ZZE 
+
+### pM10_groupByWithOrderBy [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+while select PaymTermId, count(RecId) from cg group by PaymTermId order by PaymTermId where cg.CustGroup like 'ZZ?'
+{
+    r += strFmt('%1:%2 ', cg.PaymTermId, cg.RecId);
+}
+ttsabort;
+return r;
+=> :1 ZZNONE:1 ZZPT1:2 ZZPT2:1 
+
+### pM11_aggregatesOnNoRows [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+select count(RecId) from pt where pt.PaymTermId == 'ZZNONE';
+r = strFmt('%1', pt.RecId);
+select sum(NumOfDays) from pt where pt.PaymTermId == 'ZZNONE';
+r += strFmt(' %1', pt.NumOfDays);
+select maxof(NumOfDays) from pt where pt.PaymTermId == 'ZZNONE';
+r += strFmt(' %1', pt.NumOfDays);
+select minof(NumOfDays) from pt where pt.PaymTermId == 'ZZNONE';
+r += strFmt(' %1', pt.NumOfDays);
+select avg(NumOfDays) from pt where pt.PaymTermId == 'ZZNONE';
+r += strFmt(' %1 %2', pt.NumOfDays, pt.RecId);
+ttsabort;
+return r;
+=> 0 0 0 0 0 0
+
+### pM12_avgSumIntAndReal [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+select avg(NumOfDays) from pt where pt.PaymTermId like 'ZZPT?';
+r = strFmt('%1', pt.NumOfDays);
+select sum(NumOfDays) from pt where pt.PaymTermId like 'ZZPT?';
+r += strFmt(' %1', pt.NumOfDays);
+select avg(LowestAmount) from ps where ps.Name like 'ZZPS?';
+r += strFmt(' %1', ps.LowestAmount);
+select sum(LowestAmount) from ps where ps.Name like 'ZZPS?';
+r += strFmt(' %1', ps.LowestAmount);
+select minof(LowestAmount) from ps where ps.Name like 'ZZPS?';
+r += strFmt(' %1', ps.LowestAmount);
+ttsabort;
+return r;
+=> 18 55 15.38 30.75 10.50
+
+### pM13_minofMaxofString [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+select maxof(Name) from cg where cg.CustGroup like 'ZZ?';
+r = cg.Name;
+select minof(Name) from cg where cg.CustGroup like 'ZZ?';
+r += ' ' + cg.Name;
+ttsabort;
+return r;
+=> Gamma Alpha
+
+### pM14_stringComparisonInSql [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+select count(RecId) from cg where cg.CustGroup like 'ZZ?' && cg.Name == 'alpha';
+r = strFmt('%1', cg.RecId);
+select count(RecId) from cg where cg.CustGroup like 'ZZ?' && cg.Name like 'ALPHA*';
+r += strFmt(' %1', cg.RecId);
+select count(RecId) from cg where cg.CustGroup like 'ZZ?' && cg.Name > 'b';
+r += strFmt(' %1', cg.RecId);
+select count(RecId) from cg where cg.CustGroup like 'ZZ?' && cg.Name < 'b';
+r += strFmt(' %1', cg.RecId);
+select count(RecId) from cg where cg.CustGroup like 'ZZ?' && cg.Name == 'Alpha ';
+r += strFmt(' %1', cg.RecId);
+ttsabort;
+return r;
+=> 1 2 3 2 0
+
+### pM15_likeLiteralCharacters [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+select count(RecId) from cg where cg.CustGroup like 'ZZ?' && cg.Name like 'Alpha_2';
+r = strFmt('%1', cg.RecId);
+select count(RecId) from cg where cg.CustGroup like 'ZZ?' && cg.Name like 'Alpha%';
+r += strFmt(' %1', cg.RecId);
+select count(RecId) from cg where cg.CustGroup like 'ZZ?' && cg.Name like 'Alpha ?';
+r += strFmt(' %1', cg.RecId);
+select count(RecId) from cg where cg.CustGroup like 'ZZ?' && cg.Name like '*a*';
+r += strFmt(' %1', cg.RecId);
+select count(RecId) from cg where cg.CustGroup like 'ZZ?' && cg.Name like 'alpha';
+r += strFmt(' %1', cg.RecId);
+ttsabort;
+return r;
+=> 0 0 1 5 1
+
+### pM16_fieldTruthinessInWhere [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+select count(RecId) from cg where cg.CustGroup like 'ZZ?' && cg.PaymTermId;
+r = strFmt('%1', cg.RecId);
+select count(RecId) from cg where cg.CustGroup like 'ZZ?' && !cg.PaymTermId;
+r += strFmt(' %1', cg.RecId);
+select count(RecId) from pt where pt.PaymTermId like 'ZZPT?' && pt.NumOfDays;
+r += strFmt(' %1', pt.RecId);
+select count(RecId) from pt where pt.PaymTermId like 'ZZPT?' && !pt.NumOfMonths;
+r += strFmt(' %1', pt.RecId);
+ttsabort;
+return r;
+=> 4 1 3 1
+
+### pM17_enumFieldInWhere [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+select count(RecId) from pt where pt.PaymTermId like 'ZZPT?' && pt.PaymMethod == NetCurrent::CurrentMth;
+r = strFmt('%1', pt.RecId);
+select count(RecId) from pt where pt.PaymTermId like 'ZZPT?' && pt.PaymMethod == 1;
+r += strFmt(' %1', pt.RecId);
+select count(RecId) from pt where pt.PaymTermId like 'ZZPT?' && pt.PaymMethod;
+r += strFmt(' %1', pt.RecId);
+select count(RecId) from pt where pt.PaymTermId like 'ZZPT?' && !pt.PaymMethod;
+r += strFmt(' %1', pt.RecId);
+ttsabort;
+return r;
+=> 1 1 1 2
+
+### pM18_arithmeticInWhere [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+int days = 12;
+select count(RecId) from pt where pt.PaymTermId like 'ZZPT?' && pt.NumOfDays * 2 > days;
+r = strFmt('%1', pt.RecId);
+select count(RecId) from pt where pt.PaymTermId like 'ZZPT?' && pt.NumOfDays > days + 10;
+r += strFmt(' %1', pt.RecId);
+ttsabort;
+return r;
+=> 3 1
+
+### pM51_functionsInWhere [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+int days = 12;
+select count(RecId) from pt where pt.PaymTermId like 'ZZPT?' && pt.NumOfDays == strLen('abcdefghij');
+r = strFmt('%1', pt.RecId);
+select count(RecId) from pt where pt.PaymTermId like 'ZZPT?' && pt.NumOfDays > max(12, 20);
+r += strFmt(' %1', pt.RecId);
+ttsabort;
+return r;
+=> 1 1
+
+### pM52_divInWhere [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+int days = 12;
+select count(RecId) from pt where pt.PaymTermId like 'ZZPT?' && pt.NumOfDays div 10 == 1;
+r = strFmt('%1', pt.RecId);
+ttsabort;
+return r;
+=> 1
+
+### pM53_modInWhere [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+int days = 12;
+select count(RecId) from pt where pt.PaymTermId like 'ZZPT?' && pt.NumOfDays mod 15 == 0;
+r = strFmt('%1', pt.RecId);
+ttsabort;
+return r;
+!! ABORTS the class runner: mod in a where clause ends with 'Internal error number 173 in script', in compiled X++ and in the interpreter alike (the kernel has no SQL for it)
+
+### pM19_fieldToFieldArithmeticInWhere [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+select count(RecId) from pt where pt.PaymTermId like 'ZZPT?' && pt.NumOfDays > pt.NumOfMonths * 10;
+r = strFmt('%1', pt.RecId);
+select count(RecId) from pt where pt.PaymTermId like 'ZZPT?' && pt.NumOfDays - pt.NumOfMonths == 14;
+r += strFmt(' %1', pt.RecId);
+ttsabort;
+return r;
+=> 2 1
+
+### pM20_whereUsesAnotherBuffer [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+select pt where pt.PaymTermId == 'ZZPT1';
+select count(RecId) from cg where cg.CustGroup like 'ZZ?' && cg.PaymTermId == pt.PaymTermId;
+r = strFmt('%1', cg.RecId);
+select pt where pt.PaymTermId == 'ZZPT2';
+select count(RecId) from cg where cg.CustGroup like 'ZZ?' && cg.PaymTermId == pt.PaymTermId;
+r += strFmt(' %1', cg.RecId);
+ttsabort;
+return r;
+=> 2 1
+
+### pM21_threeTableJoinCrossReference [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+while select cg order by CustGroup where cg.CustGroup like 'ZZ?' join pt where pt.PaymTermId == cg.PaymTermId join ps where ps.Name == pt.PaymSched && ps.LowestAmount > 0 && cg.CustGroup != 'ZZB'
+{
+    r += strFmt('%1:%2 ', cg.CustGroup, ps.Name);
+}
+ttsabort;
+return r;
+=> ZZA:ZZPS1 ZZC:ZZPS2 
+
+### pM22_joinWithoutWhere [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+PaymTerm all;
+int n, matched, total;
+while select cg where cg.CustGroup like 'ZZ?' join pt
+{
+    n++;
+    if (pt.PaymTermId == cg.PaymTermId) matched++;
+}
+select count(RecId) from all;
+total = all.RecId;
+r = n == 3 && matched == 3 ? 'relation' : (n == 5 * total ? 'cartesian' : strFmt('%1 rows %2 matched', n, matched));
+ttsabort;
+return r;
+=> cartesian
+
+### pM23_firstonlyOrderByString [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+select firstonly cg order by Name desc where cg.CustGroup like 'ZZ?';
+r = cg.Name;
+select firstonly cg order by Name where cg.CustGroup like 'ZZ?';
+r += ' ' + cg.Name;
+ttsabort;
+return r;
+=> Gamma Alpha
+
+### pM24_fieldListProjection [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+select Name from cg where cg.CustGroup == 'ZZA';
+r = strFmt('%1 %2 %3 %4', cg.RecId != 0, cg.PaymTermId == '', cg.Name, cg.CustGroup == '');
+ttsabort;
+return r;
+=> true false Alpha false
+
+### pM25_insertRecordsetGroupByCount [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+CustGroup src, check;
+insert_recordset cg (CustGroup, CustWriteOffRefRecId) select PaymTermId, count(RecId) from src group by PaymTermId where src.CustGroup like 'ZZ?' && src.PaymTermId like 'ZZPT?';
+while select check order by CustGroup where check.CustGroup like 'ZZPT?'
+{
+    r += strFmt('%1:%2 ', check.CustGroup, check.CustWriteOffRefRecId);
+}
+ttsabort;
+return r;
+=> ZZPT1:2 ZZPT2:1 
+
+### pM26_deleteFromNotExistsJoin [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+CustGroup check;
+delete_from cg where cg.CustGroup like 'ZZ?' notexists join pt where pt.PaymTermId == cg.PaymTermId;
+int64 rows = cg.RowCount();
+while select check order by CustGroup where check.CustGroup like 'ZZ?'
+{
+    r += check.CustGroup + ' ';
+}
+r = strFmt('%1| %2', rows, r);
+ttsabort;
+return r;
+=> 2| ZZA ZZB ZZC 
+
+### pM27_updateRecordsetSettingFromJoinedTable [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+CustGroup check;
+update_recordset cg setting Name = pt.Description where cg.CustGroup like 'ZZ?' join pt where pt.PaymTermId == cg.PaymTermId;
+int64 rows = cg.RowCount();
+while select check order by CustGroup where check.CustGroup like 'ZZ?'
+{
+    r += check.Name + '|';
+}
+r = strFmt('%1| %2', rows, r);
+ttsabort;
+return r;
+=> 3| d1|d1|d2|delta|Alpha 2|
+
+### pM28_rowCountWithoutRows [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+update_recordset cg setting Name = 'x' where cg.CustGroup == 'ZZNO';
+int64 a = cg.RowCount();
+delete_from cg where cg.CustGroup == 'ZZNO';
+int64 b = cg.RowCount();
+r = strFmt('%1 %2', a, b);
+ttsabort;
+return r;
+=> 0 0
+
+### pM29_forUpdateThenUpdateAndDelete [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+CustGroup upd, check;
+select forupdate upd where upd.CustGroup == 'ZZA';
+upd.Name = 'changed';
+upd.update();
+select forupdate upd where upd.CustGroup == 'ZZB';
+upd.delete();
+select check where check.CustGroup == 'ZZA';
+r = check.Name;
+select count(RecId) from check where check.CustGroup like 'ZZ?';
+r = strFmt('%1 %2', r, check.RecId);
+ttsabort;
+return r;
+=> changed 4
+
+### pM30_updateWithoutForUpdate [D365]
+CustGroup upd;
+str r;
+try
+{
+    ttsbegin;
+    select firstonly upd;
+    upd.Name = upd.Name + 'x';
+    upd.update();
+    ttsabort;
+    r = 'updated';
+}
+catch
+{
+    r = 'error';
+}
+return r;
+
+=> error
+
+### pM31_whereValueIsReadOnce [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+int days = 12;
+int n;
+while select pt where pt.PaymTermId like 'ZZPT?' && pt.NumOfDays > days
+{
+    days = 1000;
+    n++;
+}
+r = int2Str(n);
+ttsabort;
+return r;
+=> 2
+
+### pM32_polymorphicBuffer [D365]
+DirPerson dp;
+DirPartyTable dpt;
+select firstonly dp;
+select dpt where dpt.RecId == dp.RecId;
+return strFmt('%1 %2 %3', dpt is DirPerson, dpt.InstanceRelationType == tableNum(DirPerson), dp.RecId != 0);
+
+=> true true true
+
+### pM33_validTimeStateEqualsRangeWhere [D365]
+DirPersonName dpn;
+utcdatetime now = DateTimeUtil::utcNow();
+int a, b;
+select validTimeState(now) count(RecId) from dpn;
+a = dpn.RecId;
+select count(RecId) from dpn where dpn.ValidFrom <= now && dpn.ValidTo >= now;
+b = dpn.RecId;
+return strFmt('%1 %2', a == b, a > 0);
+
+=> true true
+
+### pM34_dateCompareMatchesXpp [D365]
+CustTrans ct;
+date d = 1\1\2015;
+int n1, n2;
+select count(RecId) from ct where ct.TransDate >= d;
+n1 = ct.RecId;
+while select TransDate from ct
+{
+    if (ct.TransDate >= d) n2++;
+}
+return strFmt('%1 %2', n1 == n2, n1 > 0);
+=> true true
+
+### pM35_utcDateTimeCompareMatchesXpp [D365]
+CustTrans ct;
+utcdatetime now = DateTimeUtil::utcNow();
+int n1, n2;
+select count(RecId) from ct where ct.createdDateTime < now;
+n1 = ct.RecId;
+while select createdDateTime from ct
+{
+    if (ct.createdDateTime < now) n2++;
+}
+return strFmt('%1 %2', n1 == n2, n1 > 0);
+=> true true
+
+### pM36_orInJoinCondition [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+int n;
+while select cg where cg.CustGroup like 'ZZ?' join pt where pt.PaymTermId == cg.PaymTermId || pt.PaymTermId == 'ZZPT3'
+{
+    n++;
+}
+r = int2Str(n);
+ttsabort;
+return r;
+=> 8
+
+### pM37_firstonlyOrderByRecIdDesc [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+select firstonly cg order by RecId desc where cg.CustGroup like 'ZZ?';
+r = cg.CustGroup;
+ttsabort;
+return r;
+=> ZZE
+
+### pM38_groupByAcrossJoin [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+while select PaymTermId, count(RecId) from cg group by PaymTermId order by PaymTermId where cg.CustGroup like 'ZZ?' join NumOfDays from pt group by NumOfDays where pt.PaymTermId == cg.PaymTermId
+{
+    r += strFmt('%1:%2:%3 ', cg.PaymTermId, cg.RecId, pt.NumOfDays);
+}
+ttsabort;
+return r;
+=> ZZPT1:2:10 ZZPT2:1:15 
+
+### pM39_sumRealGroupBy [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+while select Name, sum(LowestAmount) from ps group by Name order by Name where ps.Name like 'ZZPS?'
+{
+    r += strFmt('%1:%2 ', ps.Name, ps.LowestAmount);
+}
+ttsabort;
+return r;
+=> ZZPS1:10.50 ZZPS2:20.25 
+
+### pM40_aggregateWithJoin [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+select count(RecId) from cg where cg.CustGroup like 'ZZ?' join pt where pt.PaymTermId == cg.PaymTermId;
+r = strFmt('%1', cg.RecId);
+select sum(NumOfDays) from pt where pt.PaymTermId like 'ZZPT?' exists join cg where cg.PaymTermId == pt.PaymTermId;
+r += strFmt(' %1', pt.NumOfDays);
+ttsabort;
+return r;
+=> 3 25
+
+### pM41_dataAreaIdInWhere [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+select count(RecId) from cg where cg.dataAreaId == curExt() && cg.CustGroup like 'ZZ?';
+r = strFmt('%1', cg.RecId);
+ttsabort;
+return r;
+=> 5
+
+### pM42_recIdVariableInWhere [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+CustGroup check;
+select cg where cg.CustGroup == 'ZZA';
+int64 id = cg.RecId;
+select check where check.RecId == id;
+r = check.CustGroup;
+ttsabort;
+return r;
+=> ZZA
+
+### pM43_whereReferencesLaterJoinedTable [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+int n;
+while select cg where cg.CustGroup like 'ZZ?' && cg.PaymTermId == pt.PaymTermId join pt
+{
+    n++;
+}
+r = int2Str(n);
+ttsabort;
+return r;
+=> 13
+
+### pM44_selectExpressionInsideWhere [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+select count(RecId) from cg where cg.CustGroup like 'ZZ?' && cg.PaymTermId == (select firstonly pt where pt.NumOfDays == 15).PaymTermId;
+r = strFmt('%1', cg.RecId);
+ttsabort;
+return r;
+!! REJECTED: Table 'pt' is not found.
+
+### pM45_selectInsideWhileSelectSameTable [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+CustGroup other;
+while select cg order by CustGroup where cg.CustGroup like 'ZZ?'
+{
+    select firstonly other where other.CustGroup like 'ZZ?' && other.PaymTermId == cg.PaymTermId && other.CustGroup != cg.CustGroup;
+    r += strFmt('%1:%2 ', cg.CustGroup, other.CustGroup);
+}
+ttsabort;
+return r;
+=> ZZA:ZZB ZZB:ZZA ZZC: ZZD: ZZE: 
+
+### pM46_fieldAssignmentTruncation [D365]
+CustGroup cg;
+cg.Name = strRep('x', 100);
+return int2Str(strLen(cg.Name));
+
+=> 60
+
+### pM47_deleteFromRowCount [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+delete_from cg where cg.CustGroup like 'ZZ?' && cg.PaymTermId == 'ZZPT1';
+r = int642Str(cg.RowCount());
+ttsabort;
+return r;
+=> 2
+
+### pM48_updateRecordsetExistsJoin [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+CustGroup check;
+update_recordset cg setting Name = 'has term' where cg.CustGroup like 'ZZ?' exists join pt where pt.PaymTermId == cg.PaymTermId;
+int64 rows = cg.RowCount();
+while select check order by CustGroup where check.CustGroup like 'ZZ?'
+{
+    r += check.Name + '|';
+}
+r = strFmt('%1| %2', rows, r);
+ttsabort;
+return r;
+=> 3| has term|has term|has term|delta|Alpha 2|
+
+### pM49_insertRecordsetWithExistsJoin [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+CustGroup src, check;
+insert_recordset cg (CustGroup, Name) select PaymTermId, Description from pt where pt.PaymTermId like 'ZZPT?' exists join src where src.PaymTermId == pt.PaymTermId;
+while select check order by CustGroup where check.CustGroup like 'ZZPT?'
+{
+    r += strFmt('%1:%2 ', check.CustGroup, check.Name);
+}
+ttsabort;
+return r;
+=> ZZPT1:d1 ZZPT2:d2 
+
+### pM50_fieldListProjectionOnJoin [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+while select CustGroup from cg order by CustGroup where cg.CustGroup like 'ZZ?' join NumOfDays from pt where pt.PaymTermId == cg.PaymTermId
+{
+    r += strFmt('%1:%2:[%3]:[%4] ', cg.CustGroup, pt.NumOfDays, cg.Name, pt.PaymTermId);
+}
+ttsabort;
+return r;
+=> ZZA:10:[]:[] ZZB:10:[]:[] ZZC:15:[]:[] 
+
+### pM54_sqlDivInWhere [D365]
+PaymTerm pt;
+str r;
+select generateonly pt where pt.NumOfDays div 10 == 1;
+str sql = pt.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM PAYMTERM T1 WHERE (((PARTITION=<P>) AND (DATAAREAID=<C>)) AND ((NUMOFDAYS/?)=?))
+
+### pM55_sqlModInWhere [D365]
+PaymTerm pt;
+str r;
+select generateonly pt where pt.NumOfDays mod 15 == 0;
+str sql = pt.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM PAYMTERM T1 WHERE (((PARTITION=<P>) AND (DATAAREAID=<C>)) AND ((NUMOFDAYS%?)=?))
+
+### pM56_sqlOuterJoinConditionOnJoined [D365]
+CustGroup cg;
+PaymTerm pt;
+str r;
+select generateonly cg where cg.CustGroup like 'ZZ?' outer join pt where pt.PaymTermId == cg.PaymTermId && pt.NumOfDays == 10;
+str sql = cg.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM  CUSTGROUP T1 LEFT OUTER JOIN PAYMTERM T2 ON (((T2.PARTITION=<P>) AND (T2.DATAAREAID=<C>)) AND ((T1.PAYMTERMID=T2.PAYMTERMID) AND (T2.NUMOFDAYS=?))) WHERE (((T1.PARTITION=<P>) AND (T1.DATAAREAID=<C>)) AND (T1.CUSTGROUP LIKE ? ESCAPE '\' ))
+
+### pM57_sqlWherePrecedence [D365]
+CustGroup cg;
+str r;
+select generateonly cg where cg.CustGroup == 'ZZA' || cg.CustGroup == 'ZZB' && cg.PaymTermId == 'ZZPT2';
+str sql = cg.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM CUSTGROUP T1 WHERE (((PARTITION=<P>) AND (DATAAREAID=<C>)) AND (((CUSTGROUP=?) OR (CUSTGROUP=?)) AND (PAYMTERMID=?)))
+
+### pM58_sqlJoinWithoutWhere [D365]
+CustGroup cg;
+PaymTerm pt;
+str r;
+select generateonly cg where cg.CustGroup like 'ZZ?' join pt;
+str sql = cg.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM CUSTGROUP T1 CROSS JOIN PAYMTERM T2 WHERE (((T1.PARTITION=<P>) AND (T1.DATAAREAID=<C>)) AND (T1.CUSTGROUP LIKE ? ESCAPE '\' )) AND ((T2.PARTITION=<P>) AND (T2.DATAAREAID=<C>))
+
+### pM59_sqlWhereReferencesLaterJoinedTable [D365]
+CustGroup cg;
+PaymTerm pt;
+str r;
+select generateonly cg where cg.CustGroup like 'ZZ?' && cg.PaymTermId == pt.PaymTermId join pt;
+str sql = cg.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM CUSTGROUP T1 CROSS JOIN PAYMTERM T2 WHERE (((T1.PARTITION=<P>) AND (T1.DATAAREAID=<C>)) AND ((T1.CUSTGROUP LIKE ? ESCAPE '\' ) AND (T1.PAYMTERMID=?))) AND ((T2.PARTITION=<P>) AND (T2.DATAAREAID=<C>))
+
+### pM60_sqlGroupByAcrossJoin [D365]
+CustGroup cg;
+PaymTerm pt;
+str r;
+select generateonly PaymTermId, count(RecId) from cg group by PaymTermId order by PaymTermId where cg.CustGroup like 'ZZ?' join NumOfDays from pt group by NumOfDays where pt.PaymTermId == cg.PaymTermId;
+str sql = cg.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM CUSTGROUP T1 CROSS JOIN PAYMTERM T2 WHERE (((T1.PARTITION=<P>) AND (T1.DATAAREAID=<C>)) AND (T1.CUSTGROUP LIKE ? ESCAPE '\' )) AND (((T2.PARTITION=<P>) AND (T2.DATAAREAID=<C>)) AND (T2.PAYMTERMID=T1.PAYMTERMID)) GROUP BY T1.PAYMTERMID,T2.NUMOFDAYS ORDER BY T1.PAYMTERMID
+
+### pM61_sqlAggregateWithJoin [D365]
+CustGroup cg;
+PaymTerm pt;
+str r;
+select generateonly count(RecId) from cg where cg.CustGroup like 'ZZ?' join pt where pt.PaymTermId == cg.PaymTermId;
+str sql = cg.getSQLStatement();
+r = strReplace(strReplace(sql, int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=> SELECT COUNT(T1.RECID) FROM CUSTGROUP T1 CROSS JOIN PAYMTERM T2 WHERE (((T1.PARTITION=<P>) AND (T1.DATAAREAID=<C>)) AND (T1.CUSTGROUP LIKE ? ESCAPE '\' )) AND (((T2.PARTITION=<P>) AND (T2.DATAAREAID=<C>)) AND (T2.PAYMTERMID=T1.PAYMTERMID))
+
+### pM62_sqlFieldListOnJoin [D365]
+CustGroup cg;
+PaymTerm pt;
+str r;
+select generateonly CustGroup from cg order by CustGroup where cg.CustGroup like 'ZZ?' join NumOfDays from pt where pt.PaymTermId == cg.PaymTermId;
+str sql = cg.getSQLStatement();
+r = strReplace(strReplace(sql, int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=> SELECT T1.CUSTGROUP,T1.RECID,T2.NUMOFDAYS,T2.RECID FROM CUSTGROUP T1 CROSS JOIN PAYMTERM T2 WHERE (((T1.PARTITION=<P>) AND (T1.DATAAREAID=<C>)) AND (T1.CUSTGROUP LIKE ? ESCAPE '\' )) AND (((T2.PARTITION=<P>) AND (T2.DATAAREAID=<C>)) AND (T2.PAYMTERMID=T1.PAYMTERMID)) ORDER BY T1.CUSTGROUP
+
+### pM63_sqlOrderByJoinedField [D365]
+CustGroup cg;
+PaymTerm pt;
+str r;
+select generateonly firstonly cg where cg.CustGroup like 'ZZ?' join pt order by pt.NumOfDays desc where pt.PaymTermId == cg.PaymTermId;
+str sql = cg.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM CUSTGROUP T1 CROSS JOIN PAYMTERM T2 WHERE (((T1.PARTITION=<P>) AND (T1.DATAAREAID=<C>)) AND (T1.CUSTGROUP LIKE ? ESCAPE '\' )) AND (((T2.PARTITION=<P>) AND (T2.DATAAREAID=<C>)) AND (T2.PAYMTERMID=T1.PAYMTERMID)) ORDER BY T2.NUMOFDAYS DESC
+
+### pM64_sqlExistsJoin [D365]
+CustGroup cg;
+PaymTerm pt;
+str r;
+select generateonly cg order by CustGroup where cg.CustGroup like 'ZZ?' exists join pt where pt.PaymTermId == cg.PaymTermId;
+str sql = cg.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM CUSTGROUP T1 WHERE (((T1.PARTITION=<P>) AND (T1.DATAAREAID=<C>)) AND (T1.CUSTGROUP LIKE ? ESCAPE '\' )) AND EXISTS (SELECT 'x' FROM PAYMTERM T2 WHERE (((T2.PARTITION=<P>) AND (T2.DATAAREAID=<C>)) AND (T2.PAYMTERMID=T1.PAYMTERMID))) ORDER BY T1.CUSTGROUP
+
+### pM65_sqlNotExistsJoin [D365]
+CustGroup cg;
+PaymTerm pt;
+str r;
+select generateonly cg where cg.CustGroup like 'ZZ?' notexists join pt where pt.PaymTermId == cg.PaymTermId;
+str sql = cg.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM CUSTGROUP T1 WHERE (((T1.PARTITION=<P>) AND (T1.DATAAREAID=<C>)) AND (T1.CUSTGROUP LIKE ? ESCAPE '\' )) AND NOT (EXISTS (SELECT 'x' FROM PAYMTERM T2 WHERE (((T2.PARTITION=<P>) AND (T2.DATAAREAID=<C>)) AND (T2.PAYMTERMID=T1.PAYMTERMID))))
+
+### pM66_sqlLikeLiteralCharacters [D365]
+CustGroup cg;
+str r;
+select generateonly cg where cg.Name like 'Alpha_2' || cg.Name like 'Alpha%' || cg.Name like 'Alpha ?' || cg.Name like '*a*';
+str sql = cg.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM CUSTGROUP T1 WHERE (((PARTITION=<P>) AND (DATAAREAID=<C>)) AND ((((NAME LIKE ? ESCAPE '\' ) OR (NAME LIKE ? ESCAPE '\' )) OR (NAME LIKE ? ESCAPE '\' )) OR (NAME LIKE ? ESCAPE '\' )))
+
+### pM67_sqlTruthiness [D365]
+CustGroup cg;
+PaymTerm pt;
+str r;
+select generateonly cg where cg.PaymTermId && !cg.Name && cg.DefaultDimension && !cg.PriceIncludeSalesTax;
+str sql = cg.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+r = strRem(r, '()');
+return r;
+=>  FROM CUSTGROUP T1 WHERE PARTITION=<P> AND DATAAREAID=<C> AND PAYMTERMID>? AND NAME=? AND DEFAULTDIMENSION<>? AND PRICEINCLUDESALESTAX=?
+
+### pM68_sqlEnumAndFieldArithmetic [D365]
+PaymTerm pt;
+str r;
+select generateonly pt where pt.PaymMethod == NetCurrent::CurrentMth && pt.NumOfDays > pt.NumOfMonths * 10 && pt.NumOfDays - pt.NumOfMonths == 14;
+str sql = pt.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM PAYMTERM T1 WHERE (((PARTITION=<P>) AND (DATAAREAID=<C>)) AND (((PAYMMETHOD=?) AND (NUMOFDAYS>(NUMOFMONTHS*?))) AND ((NUMOFDAYS-NUMOFMONTHS)=?)))
+
+### pM69_sqlValidTimeState [D365]
+DirPersonName dpn;
+utcdatetime now = 2024-01-02T03:04:05;
+str r;
+select generateonly validTimeState(now) count(RecId) from dpn;
+str sql = dpn.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM DIRPERSONNAME T1 WHERE ((PARTITION=<P>) AND ((VALIDFROM<=?) AND (VALIDTO>=?)))
+
+### pM70_sqlCrossCompanyFirstOnly10 [D365]
+CustGroup cg;
+str r;
+select generateonly firstonly10 crosscompany cg order by Name desc;
+str sql = cg.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM CUSTGROUP T1 WHERE (PARTITION=<P>) ORDER BY T1.NAME DESC
+
+### pM71_sqlForUpdateAndIndexHint [D365]
+CustGroup cg;
+str r;
+select generateonly forupdate cg index hint GroupIdx where cg.CustGroup == 'ZZA';
+str sql = cg.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM CUSTGROUP T1 WHERE (((PARTITION=<P>) AND (DATAAREAID=<C>)) AND (CUSTGROUP=?)) ORDER BY T1.PARTITION,T1.DATAAREAID,T1.CUSTGROUP
+
+### pM72_sqlProjectionSingleField [D365]
+CustGroup cg;
+str r;
+select generateonly Name from cg where cg.CustGroup == 'ZZA';
+str sql = cg.getSQLStatement();
+r = strReplace(strReplace(sql, int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=> SELECT T1.BANKCUSTPAYMIDTABLE,T1.CLEARINGPERIOD,T1.CUSTGROUP,T1.DEFAULTDIMENSION,T1.NAME,T1.PAYMTERMID,T1.PRICEINCLUDESALESTAX,T1.TAXGROUPID,T1.TAXPERIODPAYMENTCODE_PL,T1.CUSTWRITEOFFREFRECID,T1.CUSTACCOUNTNUMSEQ,T1.ACCOUNTINGCURRENCYEXCHANGERATETYPE,T1.REPORTINGCURRENCYEXCHANGERATETYPE,T1.ISPUBLICSECTOR_IT,T1.AATESTENTITY,T1.RECVERSION,T1.PARTITION,T1.SYSROWVERSION,T1.RECID FROM CUSTGROUP T1 WHERE (((PARTITION=<P>) AND (DATAAREAID=<C>)) AND (CUSTGROUP=?))
+
+### pM73_sqlOrInJoinCondition [D365]
+CustGroup cg;
+PaymTerm pt;
+str r;
+select generateonly cg where cg.CustGroup like 'ZZ?' join pt where pt.PaymTermId == cg.PaymTermId || pt.PaymTermId == 'ZZPT3';
+str sql = cg.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM CUSTGROUP T1 CROSS JOIN PAYMTERM T2 WHERE (((T1.PARTITION=<P>) AND (T1.DATAAREAID=<C>)) AND (T1.CUSTGROUP LIKE ? ESCAPE '\' )) AND (((T2.PARTITION=<P>) AND (T2.DATAAREAID=<C>)) AND ((T2.PAYMTERMID=T1.PAYMTERMID) OR (T2.PAYMTERMID=?)))
+
+### pM74_sqlReverseAndFunctionValue [D365]
+PaymTerm pt;
+str r;
+select generateonly reverse pt where pt.NumOfDays > max(12, 20) && pt.Description == strUpr('d1');
+str sql = pt.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM PAYMTERM T1 WHERE (((PARTITION=<P>) AND (DATAAREAID=<C>)) AND ((NUMOFDAYS>?) AND (DESCRIPTION=?))) ORDER BY T1.PAYMTERMID DESC
+
+### pM75_sqlThreeTableJoin [D365]
+CustGroup cg;
+PaymTerm pt;
+PaymSched ps;
+str r;
+select generateonly cg where cg.CustGroup like 'ZZ?' join pt where pt.PaymTermId == cg.PaymTermId join ps where ps.Name == pt.PaymSched && ps.LowestAmount > 0 && cg.CustGroup != 'ZZB';
+str sql = cg.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM CUSTGROUP T1 CROSS JOIN PAYMTERM T2 CROSS JOIN PAYMSCHED T3 WHERE (((T1.PARTITION=<P>) AND (T1.DATAAREAID=<C>)) AND (T1.CUSTGROUP LIKE ? ESCAPE '\' )) AND (((T2.PARTITION=<P>) AND (T2.DATAAREAID=<C>)) AND (T2.PAYMTERMID=T1.PAYMTERMID)) AND (((T3.PARTITION=<P>) AND (T3.DATAAREAID=<C>)) AND (((T3.NAME=T2.PAYMSCHED) AND (T3.LOWESTAMOUNT>?)) AND (T1.CUSTGROUP<>?)))
+
+### pM76_sqlNestedParenthesesAndNot [D365]
+CustGroup cg;
+str r;
+select generateonly cg where !(cg.CustGroup == 'ZZA' || (cg.Name != 'x' && !(cg.PaymTermId == '')));
+str sql = cg.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM CUSTGROUP T1 WHERE (((PARTITION=<P>) AND (DATAAREAID=<C>)) AND  NOT (((CUSTGROUP=?) OR ((NAME<>?) AND  NOT ((PAYMTERMID=?))))))
+
+### pM77_sqlDateAndUtcCompare [D365]
+CustTrans ct;
+date d = 1\1\2015;
+utcdatetime u = 2024-01-02T03:04:05;
+str r;
+select generateonly ct where ct.TransDate >= d && ct.createdDateTime < u && ct.TransDate != dateNull();
+str sql = ct.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM CUSTTRANS T1 WHERE (((PARTITION=<P>) AND (DATAAREAID=<C>)) AND (((TRANSDATE>=?) AND (CREATEDDATETIME<?)) AND (TRANSDATE<>?)))
+
+### pM78_indexOrdersRows [D365]
+PaymSched ps;
+PaymTerm pt;
+CustGroup cg;
+str r;
+ttsbegin;
+ps.Name = 'ZZPS1'; ps.LowestAmount = 10.5; ps.insert();
+ps.clear(); ps.Name = 'ZZPS2'; ps.LowestAmount = 20.25; ps.insert();
+pt.PaymTermId = 'ZZPT1'; pt.Description = 'd1'; pt.NumOfDays = 10; pt.NumOfMonths = 2; pt.PaymSched = 'ZZPS1'; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT2'; pt.Description = 'd2'; pt.NumOfDays = 15; pt.NumOfMonths = 1; pt.PaymSched = 'ZZPS2'; pt.PaymMethod = NetCurrent::CurrentMth; pt.insert();
+pt.clear(); pt.PaymTermId = 'ZZPT3'; pt.Description = 'd3'; pt.NumOfDays = 30; pt.insert();
+cg.CustGroup = 'ZZA'; cg.Name = 'Alpha'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZB'; cg.Name = 'beta'; cg.PaymTermId = 'ZZPT1'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZC'; cg.Name = 'Gamma'; cg.PaymTermId = 'ZZPT2'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZD'; cg.Name = 'delta'; cg.PaymTermId = 'ZZNONE'; cg.insert();
+cg.clear(); cg.CustGroup = 'ZZE'; cg.Name = 'Alpha 2'; cg.insert();
+ps.clear(); pt.clear(); cg.clear();
+while select cg index GroupIdx where cg.CustGroup like 'ZZ?'
+{
+    r += cg.CustGroup + ' ';
+}
+r += '| ';
+while select cg index hint GroupIdx where cg.CustGroup like 'ZZ?'
+{
+    r += cg.CustGroup + ' ';
+}
+r += '| ';
+while select reverse cg index GroupIdx where cg.CustGroup like 'ZZ?'
+{
+    r += cg.CustGroup + ' ';
+}
+ttsabort;
+return r;
+=> ZZA ZZB ZZC ZZD ZZE | ZZA ZZB ZZC ZZD ZZE | ZZE ZZD ZZC ZZB ZZA 
+
+### pM79_sqlIndexPlain [D365]
+CustGroup cg;
+str r;
+select generateonly cg index GroupIdx where cg.CustGroup == 'ZZA';
+str sql = cg.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM CUSTGROUP T1 WHERE (((PARTITION=<P>) AND (DATAAREAID=<C>)) AND (CUSTGROUP=?)) ORDER BY T1.PARTITION,T1.DATAAREAID,T1.CUSTGROUP
+
+### pM80_sqlIndexWithReverseAndJoin [D365]
+CustGroup cg;
+PaymTerm pt;
+str r;
+select generateonly reverse cg index GroupIdx where cg.CustGroup like 'ZZ?' join pt where pt.PaymTermId == cg.PaymTermId;
+str sql = cg.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM CUSTGROUP T1 CROSS JOIN PAYMTERM T2 WHERE (((T1.PARTITION=<P>) AND (T1.DATAAREAID=<C>)) AND (T1.CUSTGROUP LIKE ? ESCAPE '\' )) AND (((T2.PARTITION=<P>) AND (T2.DATAAREAID=<C>)) AND (T2.PAYMTERMID=T1.PAYMTERMID)) ORDER BY T1.CUSTGROUP DESC
+
+### pM81_sqlIndexWithJoin [D365]
+CustGroup cg;
+PaymTerm pt;
+str r;
+select generateonly cg index GroupIdx where cg.CustGroup like 'ZZ?' join pt where pt.PaymTermId == cg.PaymTermId;
+str sql = cg.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM CUSTGROUP T1 CROSS JOIN PAYMTERM T2 WHERE (((T1.PARTITION=<P>) AND (T1.DATAAREAID=<C>)) AND (T1.CUSTGROUP LIKE ? ESCAPE '\' )) AND (((T2.PARTITION=<P>) AND (T2.DATAAREAID=<C>)) AND (T2.PAYMTERMID=T1.PAYMTERMID)) ORDER BY T1.PARTITION,T1.DATAAREAID,T1.CUSTGROUP
+
+### pM82_sqlIndexWithReverse [D365]
+CustGroup cg;
+str r;
+select generateonly reverse cg index GroupIdx where cg.CustGroup == 'ZZA';
+str sql = cg.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM CUSTGROUP T1 WHERE (((PARTITION=<P>) AND (DATAAREAID=<C>)) AND (CUSTGROUP=?)) ORDER BY T1.CUSTGROUP DESC
+
+### pM83_sqlIndexOnJoinedTable [D365]
+CustGroup cg;
+PaymTerm pt;
+str r;
+select generateonly cg where cg.CustGroup like 'ZZ?' join pt index TermIdx where pt.PaymTermId == cg.PaymTermId;
+str sql = cg.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM CUSTGROUP T1 CROSS JOIN PAYMTERM T2 WHERE (((T1.PARTITION=<P>) AND (T1.DATAAREAID=<C>)) AND (T1.CUSTGROUP LIKE ? ESCAPE '\' )) AND (((T2.PARTITION=<P>) AND (T2.DATAAREAID=<C>)) AND (T2.PAYMTERMID=T1.PAYMTERMID))
+
+### pM84_sqlValidTimeStateDateRange [D365]
+CustInterestVersion civ;
+date d1 = 1\1\2024, d2 = 31\12\2024;
+str r;
+select generateonly validTimeState(d1, d2) count(RecId) from civ;
+str sql = civ.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM CUSTINTERESTVERSION T1 WHERE (((PARTITION=<P>) AND (DATAAREAID=<C>)) AND  NOT (((VALIDTO<?) OR (VALIDFROM>?))))
+
+### pM85_sqlValidTimeStateAsOfDate [D365]
+CustInterestVersion civ;
+date d1 = 1\1\2024;
+str r;
+select generateonly validTimeState(d1) count(RecId) from civ;
+str sql = civ.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM CUSTINTERESTVERSION T1 WHERE (((PARTITION=<P>) AND (DATAAREAID=<C>)) AND ((VALIDFROM<=?) AND (VALIDTO>=?)))
+
+### pM86_sqlValidTimeStateDateTimeRange [D365]
+DirPersonName dpn;
+utcdatetime u1 = 2024-01-02T03:04:05, u2 = 2024-02-03T04:05:06;
+str r;
+select generateonly validTimeState(u1, u2) count(RecId) from dpn;
+str sql = dpn.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM DIRPERSONNAME T1 WHERE ((PARTITION=<P>) AND  NOT (((VALIDTO<?) OR (VALIDFROM>?))))
+
+### pM87_validTimeStateDateCounts [D365]
+CustInterestVersion civ;
+date d1 = 1\1\2020, d2 = 31\12\2030;
+int a, b, c, e;
+select validTimeState(d1) count(RecId) from civ;
+a = civ.RecId;
+select count(RecId) from civ where civ.ValidFrom <= d1 && civ.ValidTo >= d1;
+b = civ.RecId;
+select validTimeState(d1, d2) count(RecId) from civ;
+c = civ.RecId;
+select count(RecId) from civ where civ.ValidFrom <= d2 && civ.ValidTo >= d1;
+e = civ.RecId;
+return strFmt('%1 %2', a == b, c == e);
+=> true true

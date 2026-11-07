@@ -51,13 +51,20 @@ namespace XppInterpreter.Parser
                    token == Word.GenerateOnly;
         }
 
+        // validTimeState(asOf) or validTimeState(from, to)
         ValidTimeState ValidTimeState()
         {
             Match(TType.ValidTimeState);
             Match(TType.LeftParenthesis);
             var fromDateExpression = Expression();
-            Match(TType.Comma);
-            var toDateExpression = Expression();
+            var toDateExpression = fromDateExpression;
+
+            if (currentToken.TokenType == TType.Comma)
+            {
+                Match(TType.Comma);
+                toDateExpression = Expression();
+            }
+
             Match(TType.RightParenthesis);
 
             return new ValidTimeState(fromDateExpression, toDateExpression);

@@ -61,7 +61,9 @@ return int2Str(b);
 - `[D365]` after the name marks a snippet that needs real D365 types. Only the AOS run covers it, and the C# tests skip it.
 - The last line is the result: `=> value`, or a note: `!! REJECTED: <compiler message>`, `!! CRASHES ...` or `!! ABORTS ...`.
 - Never write an expected value by hand: write `=> ?` and let the compiler fill it in.
-- Data differs between environments, so a case that reads tables compares two queries, or counts, rather than printing a value.
+- Data differs between environments, so a case that reads tables compares two queries, or counts, rather than printing a value. The `pM` cases insert their own rows in a transaction that ends with `ttsabort`, so they print values.
+- **The SQL a statement produces** is the sharpest comparison for data statements: `select generateonly ...` and `buffer.getSQLStatement()`, with the partition and company replaced (`pM54` onwards). Both sides generate their SQL through the same kernel, so a different text is a different translation, even when the rows happen to agree.
+- A statement that ends the class runner with an internal error (`pM53`) stops the run: mark it `!! ABORTS` and start again.
 
 To check a new behaviour, add the case and run it on an AOS:
 

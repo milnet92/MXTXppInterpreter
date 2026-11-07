@@ -370,9 +370,22 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
                 }
             }
 
-            // Validate extends
-            TableId  sourceTableId = tableName2Id(_value.GetType().Name);
-            TableId  targetTableId = tablename2id(_typeName);
+            // Validate extends. A record of a table hierarchy selected into a buffer of a base table is the derived type
+            // the row has, as the kernel decides it in compiled X++: by InstanceRelationType, not by the type of the buffer (pM32)
+            Common record = _value;
+            TableId sourceTableId = record.TableId;
+            TableId targetTableId = tablename2id(_typeName);
+            FieldId instanceRelationTypeId = fieldName2Id(sourceTableId, 'InstanceRelationType');
+
+            if (instanceRelationTypeId)
+            {
+                TableId instanceTableId = record.(instanceRelationTypeId);
+
+                if (instanceTableId)
+                {
+                    sourceTableId = instanceTableId;
+                }
+            }
             
             if (sourceTableId == targetTableId)
             {
