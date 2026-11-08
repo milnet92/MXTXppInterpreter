@@ -28,6 +28,14 @@ The variable inspector will allow you to take a look to the variables that are c
 You can save X++ scripts into the built-in repository to later execute them.
 ![repo](Assets/script_repo.png)
 
+### Running a script from an agent
+The form tools of the Dynamics 365 ERP MCP server can't type into the editor, so a separate form, **Run a script from an agent** (`MXTAgentMCPExecute`, also under Links in the workspace), takes the script as a plain field:
+1. `form_open_menu_item` with `MXTAgentMCPExecute`
+2. `form_set_control_values` with `Script` and the source, or with `ScriptId` and the ID of a saved script, which then runs with its dependencies
+3. `form_click_control` with `ExecuteButton`. The messages of the reply hold the infolog, or `Line n, position m: ...` for each parse error.
+
+Execute empties both fields before it runs, so a second click without a new script runs nothing, and it refuses when both are set. The form has the security check and the execution log of the editor, and leaves the editor as it is.
+
 # Use cases
 * Execute, modify and save X++ scripts
 * Experiment with unknown or new functionality

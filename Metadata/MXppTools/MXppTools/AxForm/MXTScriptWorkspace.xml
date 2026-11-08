@@ -291,6 +291,16 @@ public class MXTScriptWorkspace extends FormRun
 							</AxFormControl>
 							<AxFormControl xmlns=""
 								i:type="AxFormMenuFunctionButtonControl">
+								<Name>MXTAgentMCPExecute</Name>
+								<Type>MenuFunctionButton</Type>
+								<FormControlExtension
+									i:nil="true" />
+								<ButtonDisplay>TextOnly</ButtonDisplay>
+								<MenuItemName>MXTAgentMCPExecute</MenuItemName>
+								<Style>Link</Style>
+							</AxFormControl>
+							<AxFormControl xmlns=""
+								i:type="AxFormMenuFunctionButtonControl">
 								<Name>MXTOpenGithubRepo</Name>
 								<Type>MenuFunctionButton</Type>
 								<FormControlExtension

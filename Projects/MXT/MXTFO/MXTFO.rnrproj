@@ -294,6 +294,11 @@
       <Name>MXTXppInterpreterExecutionPhase</Name>
       <Link>Base Enums\MXTXppInterpreterExecutionPhase</Link>
     </Content>
+    <Content Include="AxForm\MXTAgentMCPExecute">
+      <SubType>Content</SubType>
+      <Name>MXTAgentMCPExecute</Name>
+      <Link>Forms\MXTAgentMCPExecute</Link>
+    </Content>
     <Content Include="AxForm\MXTExecuteFormDialog">
       <SubType>Content</SubType>
       <Name>MXTExecuteFormDialog</Name>
@@ -363,6 +368,11 @@
       <SubType>Content</SubType>
       <Name>MXTImportMXTFile</Name>
       <Link>Action Menu Items\MXTImportMXTFile</Link>
+    </Content>
+    <Content Include="AxMenuItemDisplay\MXTAgentMCPExecute">
+      <SubType>Content</SubType>
+      <Name>MXTAgentMCPExecute</Name>
+      <Link>Display Menu Items\MXTAgentMCPExecute</Link>
     </Content>
     <Content Include="AxMenuItemDisplay\MXTExecuteFormDialog">
       <SubType>Content</SubType>

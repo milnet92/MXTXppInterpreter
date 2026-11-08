@@ -101,7 +101,8 @@ $Archive = Join-Path $WorkFolder "base.tar"
 git -C $RepoPath archive --output="$Archive" $BaseRef Metadata/MXppTools
 if ($LASTEXITCODE -ne 0) { throw "git archive failed for $BaseRef" }
 
-tar -xf $Archive -C $WorkFolder
+# The tar of Windows: a Git Bash on the path brings a GNU tar that reads C:\ as the name of a remote host
+& (Join-Path $env:SystemRoot "System32\tar.exe") -xf $Archive -C $WorkFolder
 if ($LASTEXITCODE -ne 0) { throw "tar failed" }
 
 $BaseMetadata = Join-Path $WorkFolder "Metadata"
