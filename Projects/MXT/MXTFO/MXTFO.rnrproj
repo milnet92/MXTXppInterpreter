@@ -309,6 +309,11 @@
       <Name>MXTAgentMCPExecute</Name>
       <Link>Forms\MXTAgentMCPExecute</Link>
     </Content>
+    <Content Include="AxForm\MXTDataCorrectionLog">
+      <SubType>Content</SubType>
+      <Name>MXTDataCorrectionLog</Name>
+      <Link>Forms\MXTDataCorrectionLog</Link>
+    </Content>
     <Content Include="AxForm\MXTExecuteFormDialog">
       <SubType>Content</SubType>
       <Name>MXTExecuteFormDialog</Name>
@@ -383,6 +388,11 @@
       <SubType>Content</SubType>
       <Name>MXTAgentMCPExecute</Name>
       <Link>Display Menu Items\MXTAgentMCPExecute</Link>
+    </Content>
+    <Content Include="AxMenuItemDisplay\MXTDataCorrectionLog">
+      <SubType>Content</SubType>
+      <Name>MXTDataCorrectionLog</Name>
+      <Link>Display Menu Items\MXTDataCorrectionLog</Link>
     </Content>
     <Content Include="AxMenuItemDisplay\MXTExecuteFormDialog">
       <SubType>Content</SubType>
@@ -544,6 +554,11 @@
       <Name>MXTXppInterpreterVariablesInspectorJS</Name>
       <Link>Resources\MXTXppInterpreterVariablesInspectorJS</Link>
     </Content>
+    <Content Include="AxSecurityPrivilege\MXTDataCorrectionLogMaintain">
+      <SubType>Content</SubType>
+      <Name>MXTDataCorrectionLogMaintain</Name>
+      <Link>Security Privileges\MXTDataCorrectionLogMaintain</Link>
+    </Content>
     <Content Include="AxSecurityPrivilege\MXTXppInterpreterScriptExecutionLogMaintain">
       <SubType>Content</SubType>
       <Name>MXTXppInterpreterScriptExecutionLogMaintain</Name>
@@ -553,6 +568,11 @@
       <SubType>Content</SubType>
       <Name>MXTXppInterpreterRole</Name>
       <Link>Security Roles\MXTXppInterpreterRole</Link>
+    </Content>
+    <Content Include="AxTable\MXTDataCorrectionLog">
+      <SubType>Content</SubType>
+      <Name>MXTDataCorrectionLog</Name>
+      <Link>Tables\MXTDataCorrectionLog</Link>
     </Content>
     <Content Include="AxTable\MXTEditorParameters">
       <SubType>Content</SubType>

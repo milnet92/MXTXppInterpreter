@@ -113,6 +113,7 @@ They run the real lexer, parser, bytecode generator and interpreter against a fa
 `Conformance\conformance.txt` holds X++ snippets with the value the **real X++ compiler** gave for each one. It is the specification: when the compiler and the documentation disagree, the compiler wins. The snippets that need real D365 types are marked `[D365]` and run only on an environment, with `Scripts\RunConformance.ps1`.
 
 ## More
+* [Docs/DataCorrectionLog.md](Docs/DataCorrectionLog.md): save records before a data correction, and restore them later with their RecId
 * [Docs/Development.md](Docs/Development.md): setting up a VM, the conformance workflow and the build dependency check
 * [Docs/XppSemantics.md](Docs/XppSemantics.md): what the X++ compiler really does, with the case that shows each fact
 * [Docs/Backlog.md](Docs/Backlog.md): open work and known gaps
