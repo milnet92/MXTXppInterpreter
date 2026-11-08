@@ -659,6 +659,26 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 ]]></Source>
 			</Method>
 			<Method>
+				<Name>ContainerPack</Name>
+				<Source><![CDATA[
+    public System.Object ContainerPack(System.Object value)
+    {
+        return Microsoft.Dynamics.Ax.Xpp.PredefinedFunctions::ContainerPack(value);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>ContainerUnpack</Name>
+				<Source><![CDATA[
+    public System.Object ContainerUnpack(System.Object value)
+    {
+        return Microsoft.Dynamics.Ax.Xpp.PredefinedFunctions::ContainerUnpack(value);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>CreateDate</Name>
 				<Source><![CDATA[
     public System.Object CreateDate(System.Int32 day, System.Int32 month, System.Int32 year)

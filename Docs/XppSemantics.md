@@ -89,6 +89,7 @@ Each fact was measured with the real compiler on platform 7.0.8199.55. The case 
 | `buf.(fieldId)` works, also in a `where`, and so does `!buf.(fieldId)` | `pI84` to `pI86`, `pJ20`, `pK50`, `pK51` |
 | `buf.Map::method()` calls a table map method, also in a `where` | `pI76` to `pI80` |
 | `orig()` and `data()` are typed as the table, not as `Common` | `pH99` |
+| A record in a container is packed when it goes in (`ContainerPack`) and unpacked when it is read, so the container keeps a copy, and it can be saved to a container field; `container += record` uses a separate overload | `pM88` to `pM95`, `Scripts\CheckContainerIL.ps1` |
 | `select nofetch` leaves the record empty until `next` | `pH70`, `pJ17`, `pJ18` |
 | A `join` without `where` is a cross join, and a `where` on the first table that names a table joined later compares with the value the buffer holds, not with the joined row (`T1.PAYMTERMID=?`) | `pM22`, `pM43`, `pM59` |
 | `where a \|\| b && c` is `(a \|\| b) && c`: same precedence, left to right, also in SQL | `pM06`, `pM57` |

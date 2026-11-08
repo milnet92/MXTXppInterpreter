@@ -24,6 +24,7 @@
 
 
 
+
 ### pA01_andOrPrecedence
 boolean t = true, f = false;
 return strFmt("%1 %2", t || f && f, f && f || t);
@@ -6696,3 +6697,72 @@ select count(RecId) from civ where civ.ValidFrom <= d2 && civ.ValidTo >= d1;
 e = civ.RecId;
 return strFmt('%1 %2', a == b, c == e);
 => true true
+
+### pM88_containerKeepsACopyOfTheRecord [D365]
+CustGroup g, g2;
+container c;
+g.CustGroup = 'A';
+c = [g];
+g.CustGroup = 'B';
+g2 = conPeek(c, 1);
+return g2.CustGroup;
+=> A
+
+### pM89_recordFromMultipleAssignment [D365]
+CustGroup g, g2;
+int i;
+g.CustGroup = 'A';
+[g2, i] = [g, 5];
+return strFmt('%1 %2', g2.CustGroup, i);
+=> A 5
+
+### pM90_recordInContainerField [D365]
+SysLastValue v;
+CustGroup g, g2;
+g.CustGroup = 'A';
+v.Value = [g];
+g2 = conPeek(v.Value, 1);
+return strFmt('%1 %2', conLen(v.Value), g2.CustGroup);
+=> 1 A
+
+### pM91_recordInContainerToMethod [D365]
+CustGroup g, g2;
+g.CustGroup = 'A';
+g2 = con2Buf([g]);
+return g2.CustGroup;
+=> A
+
+### pM92_recordAddedToContainer [D365]
+CustGroup g, g2;
+container c;
+g.CustGroup = 'A';
+c += g;
+g.CustGroup = 'B';
+g2 = conPeek(c, 1);
+return g2.CustGroup;
+=> A
+
+### pM93_recordInsertedInContainer [D365]
+CustGroup g, g2;
+container c = [1];
+g.CustGroup = 'A';
+c = conIns(c, 1, g);
+g2 = conPeek(c, 1);
+return strFmt('%1 %2', conLen(c), g2.CustGroup);
+=> 2 A
+
+### pM94_recordInNestedContainer [D365]
+CustGroup g, g2;
+container c, inner;
+g.CustGroup = 'A';
+c = [[g], 1];
+inner = conPeek(c, 1);
+g2 = conPeek(inner, 1);
+return g2.CustGroup;
+=> A
+
+### pM95_typeOfRecordInContainer [D365]
+CustGroup g;
+container c = [g, 1];
+return strFmt('%1 %2', typeOf(conPeek(c, 1)), typeOf(conPeek(c, 2)));
+=> Record Integer

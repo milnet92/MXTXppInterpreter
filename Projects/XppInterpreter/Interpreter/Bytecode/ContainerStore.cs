@@ -34,7 +34,7 @@ namespace XppInterpreter.Interpreter.Bytecode
                 return null;
             }
 
-            return container[ContainerIndex - 1];
+            return context.Proxy.Casting.ContainerUnpack(container[ContainerIndex - 1]);
         }
     }
 }

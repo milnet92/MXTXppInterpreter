@@ -264,6 +264,31 @@ namespace XppInterpreter.Tests
         }
     }
 
+    // What the elements become is the kernel's business: Scripts\CheckContainerIL.ps1 compares these calls with the compiler
+    [TestClass]
+    public class ContainerPackingTests
+    {
+        [TestMethod]
+        public void Literal_PacksEveryElement()
+        {
+            var host = new FakeXppHost();
+
+            Evaluate("container c = [1, 'a'];\nreturn 1;", host);
+
+            Assert.AreEqual(2, host.ContainerPacks);
+        }
+
+        [TestMethod]
+        public void MultipleAssignment_UnpacksEveryElement()
+        {
+            var host = new FakeXppHost();
+
+            Evaluate("int a; str b;\n[a, b] = [1, 'x'];\nreturn a;", host);
+
+            Assert.AreEqual(2, host.ContainerUnpacks);
+        }
+    }
+
     [TestClass]
     public class ExpressionChainTests
     {

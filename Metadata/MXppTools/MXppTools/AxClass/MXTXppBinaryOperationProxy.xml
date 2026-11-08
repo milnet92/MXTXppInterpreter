@@ -25,6 +25,16 @@ internal final class MXTXppBinaryOperationProxy implements XppInterpreter.Interp
 	public System.Object Add(System.Object left, System.Object right)
     {
         anytype l = left, r = right;
+
+        // The compiler picks the overload for a record by its static type, and the one for anytype refuses it (pM92)
+        if (typeOf(l) == Types::Container && MXTXppTypes::CommonType.IsInstanceOfType(right))
+        {
+            container items = l;
+            Common record = right;
+            items += record;
+            return items;
+        }
+
         return l + r;
     }
 

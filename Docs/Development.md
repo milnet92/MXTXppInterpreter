@@ -91,6 +91,12 @@ After `Compare`, every case has to match, except the ones listed in `Conformance
 
 Write the C# test for a fix as well, in the file of its area, and give the expected value from the conformance case. The editor, the debugger and the AOS-only paths can only be tried on the AOS.
 
+### Reading the IL
+
+When the result of a case doesn't explain why the interpreter differs, compile the statement and read what the compiler made of it. `ildasm` on the model's `.netmodule` shows the kernel calls: the X++ body is the method whose name starts with a backtick, because the method with the plain name only handles Chain of Command.
+
+`Scripts\CheckContainerIL.ps1 -Model <model>` does this for the statements that put a value in a container or read one back. It compiles them in a temporary class, disassembles them, compares the calls with a list, and checks that the interpreter makes the same calls. It exits with 1 when something differs. Add a statement to its list when the interpreter starts to follow another piece of generated code.
+
 ## Build dependencies
 
 Every assembly that the X++ code names, directly or through a type it uses, has to exist where the model is compiled. A build server has fewer assemblies than a development VM: the SQL trace feature once broke builds with `Microsoft.Dynamics.AX.Services.Tracing.*`.

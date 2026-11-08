@@ -35,6 +35,8 @@ namespace XppInterpreter.Tests.Infrastructure
         public int CompanyHandlersOpened { get; private set; }
         public int CompanyHandlersOpen { get; private set; }
         public int UncheckedHandlersOpen { get; private set; }
+        public int ContainerPacks { get; private set; }
+        public int ContainerUnpacks { get; private set; }
 
         private static readonly Dictionary<string, Type> BuiltInTypes = new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase)
         {
@@ -377,6 +379,18 @@ namespace XppInterpreter.Tests.Infrastructure
         public object CreateDate(int day, int month, int year) => new FakeDate(day, month, year);
         public bool IsStringEDT(string typeName) => false;
         public string TruncateEDTString(string value, string typeName) => value;
+
+        public object ContainerPack(object value)
+        {
+            ContainerPacks++;
+            return value;
+        }
+
+        public object ContainerUnpack(object value)
+        {
+            ContainerUnpacks++;
+            return value;
+        }
         #endregion
 
         #region Binary and unary operations
