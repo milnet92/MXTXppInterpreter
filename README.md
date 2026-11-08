@@ -32,9 +32,11 @@ You can save X++ scripts into the built-in repository to later execute them.
 The form tools of the Dynamics 365 ERP MCP server can't type into the editor, so a separate form, **Run a script from an agent** (`MXTAgentMCPExecute`, also under Links in the workspace), takes the script as a plain field:
 1. `form_open_menu_item` with `MXTAgentMCPExecute`
 2. `form_set_control_values` with `Script` and the source, or with `ScriptId` and the ID of a saved script, which then runs with its dependencies
-3. `form_click_control` with `ExecuteButton`. The messages of the reply hold the infolog, or `Line n, position m: ...` for each parse error.
+3. `form_click_control` with `ExecuteButton`. The reply holds the infolog in its messages, and the form state holds two read-only fields:
+   * `Status`: *Not run* when the script didn't start (nothing set, a parse error, an unknown ID), *Succeeded* when it ran to its end, *Failed* when an exception stopped it. The messages say why.
+   * `Result`: the value of the `return` statement that ended the script, so `return strFmt('%1;%2', a, b);` or a JSON string gives the agent data without parsing the infolog. A container shows as `[1, a, [2, b]]`, an object by its `ToString()`.
 
-Execute empties both fields before it runs, so a second click without a new script runs nothing, and it refuses when both are set. The form has the security check and the execution log of the editor, and leaves the editor as it is.
+Execute empties both input fields before it runs, so a second click without a new script runs nothing, and it refuses when both are set. The form has the security check and the execution log of the editor, and leaves the editor as it is.
 
 # Use cases
 * Execute, modify and save X++ scripts

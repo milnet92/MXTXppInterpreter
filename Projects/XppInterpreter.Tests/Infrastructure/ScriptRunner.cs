@@ -26,15 +26,23 @@ namespace XppInterpreter.Tests.Infrastructure
         {
             host = host ?? new FakeXppHost();
 
+            Interpret(source, options, host);
+
+            return host;
+        }
+
+        /// <summary>Runs the script as MXTXppInterpreterExecutor::execute does, and returns the result of the interpreter.</summary>
+        public static InterpreterResult Interpret(string source, XppInterpreterOptions options = null, FakeXppHost host = null)
+        {
+            host = host ?? new FakeXppHost();
+
             var result = Parse(source, host);
 
             Assert.IsTrue(
                 result.IsCorrect,
                 "The script should parse, but got: " + string.Join("; ", result.Errors.Select(e => e.Message)));
 
-            new Interpreter.XppInterpreter(host.Proxy, options).Interpret((Program)result.AST);
-
-            return host;
+            return new Interpreter.XppInterpreter(host.Proxy, options).Interpret((Program)result.AST);
         }
 
         /// <summary>Runs the script and returns what its top level return statement gives.</summary>

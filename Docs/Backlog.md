@@ -32,4 +32,4 @@ What is known to be missing or unverified, as of 2026-11-06. Add to it when you 
 
 - Measure the conformance file on the next platform version, and keep the differences as cases.
 - A C# test fixture for the editor hints with macros, once the column map exists.
-- **An API for agents.** The form `MXTAgentMCPExecute` serves the form tools of the ERP MCP server. A service that takes the source and returns `{ parseErrors, infolog, returnValue }` as JSON would serve any HTTP client, and an OData action on a data entity would make it a tool of the ERP MCP server. Issue 1 of the TrudAX fork compares these options.
+- **An API for agents.** The form `MXTAgentMCPExecute` serves the form tools of the ERP MCP server, with the status and the return value of the script in two fields: `MXTXppInterpreterExecutor::execute` returns them in a `MXTXppInterpreterExecutionResult`. A service that takes the source and returns `{ parseErrors, infolog, returnValue }` as JSON would serve any HTTP client, and an OData action on a data entity would make it a tool of the ERP MCP server. Issue 1 of the TrudAX fork compares these options.

@@ -474,4 +474,40 @@ namespace XppInterpreter.Tests
             Assert.AreEqual(0, host.TtsAbortCount);
         }
     }
+
+    /// <summary>
+    /// MXTXppInterpreterExecutor::execute gives the return value of a script to its caller, such as the agent form.
+    /// </summary>
+    [TestClass]
+    public class ReturnValueTests
+    {
+        [TestMethod]
+        public void Result_HoldsTheReturnOfTheScript() =>
+            Assert.AreEqual(5, Interpret("int a = 2; return a + 3;").ReturnValue);
+
+        [TestMethod]
+        public void Result_WithoutAReturn_IsNull() =>
+            Assert.IsNull(Interpret("info('x');").ReturnValue);
+
+        [TestMethod]
+        public void Result_IgnoresTheReturnOfAFunction() =>
+            Assert.IsNull(Interpret("int f() { return 1; } f();").ReturnValue);
+
+        [TestMethod]
+        public void Result_KeepsAReturnInALoop() =>
+            Assert.AreEqual(3, Interpret("int i; while (i < 5) { i++; if (i == 3) { return i; } } return 0;").ReturnValue);
+
+        [TestMethod]
+        public void Result_KeepsAReturnThatLeavesATry() =>
+            Assert.AreEqual("a", Interpret("try { return 'a'; } finally { info('f'); }").ReturnValue);
+
+        [TestMethod]
+        public void Result_KeepsTheReturn_WhenTheTransactionIsAborted()
+        {
+            var host = new FakeXppHost();
+
+            Assert.AreEqual("b", Interpret("return 'b';", new XppInterpreterOptions { EmitGlobalTtsAbort = true }, host).ReturnValue);
+            Assert.AreEqual(1, host.TtsAbortCount);
+        }
+    }
 }

@@ -149,6 +149,11 @@
       <Name>MXTXppInterpreterDebugSession</Name>
       <Link>Classes\MXTXppInterpreterDebugSession</Link>
     </Content>
+    <Content Include="AxClass\MXTXppInterpreterExecutionResult">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterExecutionResult</Name>
+      <Link>Classes\MXTXppInterpreterExecutionResult</Link>
+    </Content>
     <Content Include="AxClass\MXTXppInterpreterExecutor">
       <SubType>Content</SubType>
       <Name>MXTXppInterpreterExecutor</Name>
@@ -288,6 +293,11 @@
       <SubType>Content</SubType>
       <Name>MXTXppInterpreterEditorLanguage</Name>
       <Link>Base Enums\MXTXppInterpreterEditorLanguage</Link>
+    </Content>
+    <Content Include="AxEnum\MXTXppInterpreterExecutionStatus">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterExecutionStatus</Name>
+      <Link>Base Enums\MXTXppInterpreterExecutionStatus</Link>
     </Content>
     <Content Include="AxEnum\MXTXppInterpreterExecutionPhase">
       <SubType>Content</SubType>

@@ -23,6 +23,7 @@ public class MXTAgentMCPExecute extends FormRun
     /// <summary>
     /// Both fields are emptied first, so a click without a new script can't run an old one. The security check and the
     /// execution log are the ones of the script editor: both run through MXTXppInterpreterExecutor::execute.
+    /// Status says whether the script ran to its end, and Result holds what it returned.
     /// </summary>
     public void runScript()
     {
@@ -31,6 +32,8 @@ public class MXTAgentMCPExecute extends FormRun
 
         Script.text('');
         ScriptId.value(0);
+        Status.selection(MXTXppInterpreterExecutionStatus::NotRun);
+        Result.text('');
 
         MXTXppInterpreterScriptExecutionLog::checkSecurityRights();
 
@@ -46,40 +49,54 @@ public class MXTAgentMCPExecute extends FormRun
             return;
         }
 
-        XppInterpreter.Interpreter.XppInterpreterDependencyCollection dependencies;
+        MXTXppInterpreterScript savedScript;
 
-        // A saved script runs as Execute now of the workspace does: with its dependencies
         if (savedScriptId)
         {
-            MXTXppInterpreterScript savedScript = MXTXppInterpreterScript::find(savedScriptId);
+            savedScript = MXTXppInterpreterScript::find(savedScriptId);
 
             if (!savedScript)
             {
                 error(strFmt("@MXT:AgentScriptNotFound", savedScriptId));
                 return;
             }
-
-            source = savedScript.SourceCode;
-            dependencies = MXTXppScriptDependencyManager::parseDependencies(savedScriptId);
         }
 
-        // The executor runs nothing when the script doesn't parse, so the caller gets the errors here
-        XppInterpreter.Parser.ParseResult result = MXTXppInterpreterExecutor::parse(source);
+        MXTXppInterpreterExecutionResult executionResult;
+        System.Exception ex;
 
-        if (!result.IsCorrect)
+        try
         {
-            System.Collections.IEnumerator errors = result.Errors.GetEnumerator();
-
-            while (errors.MoveNext())
-            {
-                XppInterpreter.Parser.ParseError parseError = errors.Current;
-                error(strFmt("@MXT:ParseErrorAt", parseError.Line + 1, parseError.Position, parseError.Message));
-            }
-
+            // A saved script runs as Execute now of the workspace does: with its dependencies
+            executionResult = savedScript
+                ? MXTXppInterpreterExecutor::executeScript(savedScript, MXTXppInterpreterParameters::find())
+                : MXTXppInterpreterExecutor::execute(source);
+        }
+        catch (Exception::Error)
+        {
+            Status.selection(MXTXppInterpreterExecutionStatus::Failed);
+            return;
+        }
+        catch (ex)
+        {
+            // As in the script editor: only an X++ error is in the infolog already
+            error(ex.ToString());
+            Status.selection(MXTXppInterpreterExecutionStatus::Failed);
             return;
         }
 
-        MXTXppInterpreterExecutor::execute(source, null, MXTXppInterpreterParameters::find(), dependencies);
+        ListEnumerator parseErrors = executionResult.parseErrors().getEnumerator();
+
+        while (parseErrors.moveNext())
+        {
+            error(parseErrors.current());
+        }
+
+        if (executionResult.hasRun())
+        {
+            Status.selection(MXTXppInterpreterExecutionStatus::Succeeded);
+            Result.text(executionResult.returnValueText());
+        }
     }
 
 ]]></Source>
@@ -146,6 +163,33 @@ public class MXTAgentMCPExecute extends FormRun
 				<FormControlExtension
 					i:nil="true" />
 				<Text>@MXT:Execute</Text>
+			</AxFormControl>
+			<AxFormControl xmlns=""
+				i:type="AxFormComboBoxControl">
+				<Name>Status</Name>
+				<AllowEdit>No</AllowEdit>
+				<AutoDeclaration>Yes</AutoDeclaration>
+				<HelpText>@MXT:AgentStatusHelp</HelpText>
+				<Type>ComboBox</Type>
+				<FormControlExtension
+					i:nil="true" />
+				<EnumType>MXTXppInterpreterExecutionStatus</EnumType>
+				<Label>@MXT:ExecutionStatus</Label>
+				<Items />
+			</AxFormControl>
+			<AxFormControl xmlns=""
+				i:type="AxFormStringControl">
+				<Name>Result</Name>
+				<AllowEdit>No</AllowEdit>
+				<AutoDeclaration>Yes</AutoDeclaration>
+				<HelpText>@MXT:AgentResultHelp</HelpText>
+				<HeightMode>SizeToAvailable</HeightMode>
+				<Type>String</Type>
+				<WidthMode>SizeToAvailable</WidthMode>
+				<FormControlExtension
+					i:nil="true" />
+				<Label>@MXT:ExecutionResult</Label>
+				<MultiLine>Yes</MultiLine>
 			</AxFormControl>
 		</Controls>
 	</Design>

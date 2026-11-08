@@ -159,7 +159,7 @@ namespace XppInterpreter.Interpreter
                 }
             }
 
-            return InterpreterResult.Finished;
+            return InterpreterResult.FinishedWith(c.ReturnValue);
         }
 
         private Debug.Breakpoint TryBreakpointHit(IDebuggeable debuggeable)
