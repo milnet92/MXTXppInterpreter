@@ -92,6 +92,96 @@ MXTDataCorrectionLog::restoreRecId(custGroup, log.RefRecId);
 
 `restoreRecId` updates `RECID` in SQL, in the transaction of the caller, and reads the record again. It stops with an error if the old RecId already exists in that table, in any company, and needs the same rights as running a script.
 
+## Copy values back from a restored database
+
+After a point-in-time restore to another environment, a script can read the old values from that database and write them to the live table. A record has the same RecId in both, so the RecId connects them.
+
+```
+using System.Data.SqlClient;
+
+str connectionString = 'Data Source=localhost;Initial Catalog=AxDB;Integrated Security=True';
+str sql = "SELECT RECID, DESIGNNAME, VALUE FROM SYSLASTVALUE WHERE USERID = 'Admin'";
+SysLastValue current;
+int updated;
+
+using (var connection = new SqlConnection(connectionString))
+{
+    connection.Open();
+
+    var command = connection.CreateCommand();
+    command.CommandText = sql;
+    var reader = command.ExecuteReader();
+
+    ttsbegin;
+
+    while (reader.Read())
+    {
+        RecId recId = reader.GetInt64(0);
+        str restoredName = reader.GetString(1);
+        container restoredValue = conNull();
+
+        if (!reader.IsDBNull(2))
+        {
+            System.Byte[] bytes = reader.GetValue(2);
+            restoredValue = base64str2con(System.Convert::ToBase64String(bytes));
+        }
+
+        select forupdate current
+            where current.RecId == recId;
+
+        if (current.RecId && (current.DesignName != restoredName || current.Value != restoredValue))
+        {
+            MXTDataCorrectionLog::logRecord(current, 'Ticket 1234');
+
+            current.DesignName = restoredName;
+            current.Value = restoredValue;
+            current.update();
+            updated++;
+        }
+    }
+
+    ttscommit;
+}
+
+info(strFmt('%1 records updated', updated));
+```
+
+As written it reads the local database, so it finds nothing to change. For a restored database, use its connection string: `Server=<server>;Database=<database>;User Id=<user>;Password=<password>;Encrypt=True`.
+
+**A container field** is a `varbinary` column, in the format of `Global::base64str2con`, so its bytes convert in one line. For a table with a container field `ValueCon`, selected as the third column of the query, the code inside the loop is:
+
+```
+container restoredCon = conNull();
+
+if (!reader.IsDBNull(2))
+{
+    System.Byte[] bytes = reader.GetValue(2);
+    restoredCon = base64str2con(System.Convert::ToBase64String(bytes));
+}
+
+select forupdate current
+    where current.RecId == recId;
+
+current.ValueCon = restoredCon;
+current.update();
+```
+
+An empty container is `NULL` in SQL, so test `IsDBNull` first. A memo column can be `NULL` too. Nested containers and records come back as they were saved, and `conPeek` reads a record from it.
+
+| Column | Read it with |
+|---|---|
+| `str`, memo | `GetString` |
+| `int`, enum | `GetInt32` |
+| `int64`, RecId | `GetInt64` |
+| `real` | `GetDecimal` |
+| `date`, `utcdatetime` | `GetDateTime` |
+| `guid` | `GetGuid` |
+| `container` | `GetValue`, then `base64str2con` |
+
+- **Column names** are the field names in capitals. Add `DATAAREAID = 'usmf'` for a company table, and run the script in that company, because `select forupdate` only sees the current one.
+- **Network:** the AOS has to reach that SQL server, so its firewall must allow it.
+- **Passwords:** the source of every script is saved in the execution log, including a password written in it. Use a temporary login, and don't save the script in the repository with the password.
+
 ## Viewing and cleaning the log
 
 The form is in the **Links** section of the workspace, under **Data correction log**, and shows every row except `RecData`. Its **Clean** button asks how many days to keep and deletes the older rows. To give access to someone who isn't a system administrator, assign the privilege `MXTDataCorrectionLogMaintain`.
