@@ -4,7 +4,7 @@ What is known to be missing or unverified, as of 2026-11-06. Add to it when you 
 
 ## Before the .NET support is released
 
-- **Build with Microsoft's NuGet packages.** The build action of the repository (`.github/workflows/build.yml`, version 10.0.39) has not run on this code yet. It is the check that the X++ added, such as `SysDaNotExpression` and `SysDaMinusExpression`, exists on that version. A fork needs its workflows enabled once on its Actions page before they run.
+- **Build with Microsoft's NuGet packages.** The build action (`.github/workflows/build.yml`) compiles the model on the oldest version the tool supports, **10.0.48**, with the platform assemblies of that version. A run on 10.0.39 (platform 7.0.7198) failed on `SysDaNotExpression`, which that platform doesn't have: Microsoft supports the two latest versions, so 10.0.39 is not a target. A fork needs its workflows enabled once on its Actions page before they run.
 - **Other platform versions.** The conformance run was done on 7.0.8199.55 only.
 - **Batch.** Scripts that run in batch were not tested with .NET calls.
 - **Writing to external systems.** The Azure acceptance test only read: a share and its folders, file lists and downloads.
@@ -31,5 +31,5 @@ What is known to be missing or unverified, as of 2026-11-06. Add to it when you 
 
 ## Ideas
 
-- Measure the conformance file on the next platform version, and on 10.0.39, and keep the differences as cases.
+- Measure the conformance file on the next platform version, and keep the differences as cases.
 - A C# test fixture for the editor hints with macros, once the column map exists.
