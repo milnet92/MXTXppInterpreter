@@ -92,6 +92,30 @@ MXTDataCorrectionLog::restoreRecId(custGroup, log.RefRecId);
 
 `restoreRecId` updates `RECID` in SQL, in the transaction of the caller, and reads the record again. It stops with an error if the old RecId already exists in that table, in any company, and needs the same rights as running a script.
 
+## Try a correction first
+
+A switch at the end of the transaction lets you run a script once, read its messages, and save nothing:
+
+```
+boolean dryRun = true;
+
+ttsbegin;
+
+// the correction
+
+if (dryRun)
+{
+    ttsabort;
+    warning('Dry run: nothing was saved');
+}
+else
+{
+    ttscommit;
+}
+```
+
+Messages and counters stay after the `ttsabort`, and the rows of the log go back with the changes. Only the database goes back, so a call to another system stays done. Set `dryRun` to `false` for the real run.
+
 ## Copy values back from a restored database
 
 After a point-in-time restore to another environment, a script can read the old values from that database and write them to the live table. A record has the same RecId in both, so the RecId connects them.
@@ -179,8 +203,91 @@ An empty container is `NULL` in SQL, so test `IsDBNull` first. A memo column can
 | `container` | `GetValue`, then `base64str2con` |
 
 - **Column names** are the field names in capitals. Add `DATAAREAID = 'usmf'` for a company table, and run the script in that company, because `select forupdate` only sees the current one.
-- **Network:** the AOS has to reach that SQL server, so its firewall must allow it.
+- **Network:** the AOS has to reach that SQL server, so its firewall must allow the address of the AOS.
 - **Passwords:** the source of every script is saved in the execution log, including a password written in it. Use a temporary login, and don't save the script in the repository with the password.
+
+To find the address to allow, run this on the environment that does the correction:
+
+```
+System.Net.WebClient client = new System.Net.WebClient();
+str address = client.DownloadString('https://api.ipify.org');
+info(strFmt('Public address of this AOS: %1', address));
+```
+
+It asks a public service which address the request came from, for the AOS that runs your session, so an environment with several AOS servers can need more than one rule. A SQL server in the same network sees a private address instead.
+
+## Load corrections from an Excel file
+
+A script can ask for an Excel file, find the record of each row by a key, and update it. This sample uses the class `DEVFileReaderExcel` of the `DEVCommon` model in [XppTools](https://github.com/TrudAX/XppTools), so that model has to be installed. The first row of the sheet holds the column names:
+
+| CustGroup | Name |
+|---|---|
+| 10 | Wholesale customers |
+| 20 | Retail customers |
+
+```
+FileUploadTemporaryStorageResult upload = File::GetFileFromUser();
+
+if (!upload || !upload.getUploadStatus())
+{
+    throw error('No file was uploaded');
+}
+
+DEVFileReaderExcel reader = new DEVFileReaderExcel();
+reader.openFile(upload.openResult());
+reader.readHeaderRow();
+upload.deleteResult();
+
+CustGroup custGroup;
+int updated, notFound;
+
+ttsbegin;
+
+while (reader.readNextRow())
+{
+    str groupId = reader.getStringByName('CustGroup');
+    str newName = reader.getStringByName('Name');
+
+    select forupdate custGroup
+        where custGroup.CustGroup == groupId;
+
+    if (!custGroup)
+    {
+        warning(strFmt('Row %1: customer group %2 not found', reader.getCurRow(), groupId));
+        notFound++;
+    }
+    else if (custGroup.Name != newName)
+    {
+        MXTDataCorrectionLog::logRecord(custGroup, 'Ticket 1234');
+
+        custGroup.Name = newName;
+        custGroup.update();
+        updated++;
+    }
+}
+
+ttscommit;
+
+info(strFmt('%1 records updated, %2 not found', updated, notFound));
+```
+
+The dialog uploads the file as soon as it is selected, and `Cancel` ends the script with the error. `openFile` reads the whole sheet into memory, so the temporary file can be deleted straight away. To undo the corrections, use the log name as in [Undo an update](#undo-an-update).
+
+| Column | Read it with |
+|---|---|
+| `str`, memo | `getStringByName` |
+| `int`, `int64` | `getIntByName` |
+| `real` | `getRealByName` |
+| `date` | `getDateByName` |
+| `utcdatetime` | `getDateTimeByName` |
+| enum | `getEnumByName('Status', enumNum(CustVendorBlocked))` |
+
+- **One transaction:** an error, such as a column name that is not in the file, stops the script and nothing is saved. A key that isn't found is only a warning, so the other rows are saved.
+- **Number keys:** `getStringByName` also reads a key that Excel stores as a number, as `10` and not `10.00`.
+- **Empty cells** come back as an empty string, so this sample would clear `Name`. Add a check when an empty cell means "leave it as it is".
+- **The end of the data** is the first row with nothing in its first three columns, so a blank row in the middle ends the file.
+- **Company:** `select forupdate` only sees the current company, so run the script in the company of the data.
+- **It needs a browser:** the file dialog waits for someone to select a file.
 
 ## Viewing and cleaning the log
 
