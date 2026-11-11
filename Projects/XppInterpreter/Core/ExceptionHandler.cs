@@ -93,7 +93,7 @@ namespace XppInterpreter.Core
 
                         if (catchReference.VariableName != null)
                         {
-                            context.ScopeHandler.CurrentScope.SetVar(catchReference.VariableName, exception, context.Proxy.Casting);
+                            context.ScopeHandler.CurrentScope.SetVar(catchReference.VariableName, exception, context.Proxy);
                         }
 
                         // Move to catch block

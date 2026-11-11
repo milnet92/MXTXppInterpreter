@@ -110,7 +110,7 @@
                 var funcParameter = _ref.Declaration.Parameters[numParam];
                 System.Type declarationType = _ref.Declaration.Parameters[numParam].DeclarationClrType;
 
-                newContext.ScopeHandler.CurrentScope.SetVar(funcParameter.Name, arguments[numParam], _context.Proxy.Casting, true, declarationType);
+                newContext.ScopeHandler.CurrentScope.SetVar(funcParameter.Name, arguments[numParam], _context.Proxy, true, declarationType);
             }
 
             XppInterpreter interpreter = new XppInterpreter(_context.Proxy, _context.Interpreter.Options);

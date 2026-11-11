@@ -68,7 +68,7 @@ namespace XppInterpreter.Interpreter.Bytecode
                     var array = context.Proxy.Reflection.GetInstanceProperty(caller, Name);
                     context.Proxy.Casting.SetArrayIndexValue(array, index, value);
                 }
-                else if (caller is null || !context.Proxy.Reflection.IsXppType(caller.GetType()))
+                else if (caller is null || !context.Proxy.IsXppType(caller.GetType()))
                 {
                     Core.Clr.ClrBinder.SetMember(caller, Name, value);
                 }
@@ -92,29 +92,31 @@ namespace XppInterpreter.Interpreter.Bytecode
 
                     if (declaration)
                     {
-                        if (value is null && context.Proxy.Reflection.IsCommonType(ClrType))
+                        if (value is null && context.Proxy.IsCommonType(ClrType))
                         {
                             var defaultValue = context.Proxy.Casting.GetDefaultValueForType(TypeName);
-                            context.ScopeHandler.CurrentScope.SetVar(Name, defaultValue, context.Proxy.Casting, Top, ClrType, TypeName, StringLength);
+                            context.ScopeHandler.CurrentScope.SetVar(Name, defaultValue, context.Proxy, Top, ClrType, TypeName, StringLength);
                         }
                         else
                         {
-                            context.ScopeHandler.CurrentScope.SetVar(Name, value, context.Proxy.Casting, Top, ClrType, TypeName, StringLength);
+                            context.ScopeHandler.CurrentScope.SetVar(Name, value, context.Proxy, Top, ClrType, TypeName, StringLength);
                         }
                     }
                     else
                     {
-                        var currentValue = context.ScopeHandler.CurrentScope.GetVar(Name);
-                        var type = currentValue?.GetType();
+                        // Null assigned to a record clears it. Only then the current value matters.
+                        if (value is null)
+                        {
+                            var currentValue = context.ScopeHandler.CurrentScope.GetVar(Name);
 
-                        if (value is null && context.Proxy.Reflection.IsCommonType(type))
-                        {
-                            context.Proxy.Reflection.ClearCommon(currentValue);
+                            if (context.Proxy.IsCommonType(currentValue?.GetType()))
+                            {
+                                context.Proxy.Reflection.ClearCommon(currentValue);
+                                return;
+                            }
                         }
-                        else
-                        {
-                            context.ScopeHandler.CurrentScope.SetVar(Name, value, context.Proxy.Casting);
-                        }
+
+                        context.ScopeHandler.CurrentScope.SetVar(Name, value, context.Proxy);
                     }
                 }
             }

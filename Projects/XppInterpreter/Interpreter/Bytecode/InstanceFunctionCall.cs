@@ -9,7 +9,7 @@
             // The caller is evaluated before the arguments, so it is below them
             var instance = context.Stack.Pop();
 
-            if (instance is null || !context.Proxy.Reflection.IsXppType(instance.GetType()))
+            if (instance is null || !context.Proxy.IsXppType(instance.GetType()))
             {
                 return Core.Clr.ClrBinder.InvokeInstance(instance, Name, arguments, ArgumentTypes);
             }

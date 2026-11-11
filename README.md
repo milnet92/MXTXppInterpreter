@@ -116,6 +116,7 @@ They run the real lexer, parser, bytecode generator and interpreter against a fa
 * [Docs/DataCorrectionLog.md](Docs/DataCorrectionLog.md): save records before a data correction, and restore them later with their RecId
 * [Docs/Development.md](Docs/Development.md): setting up a VM, the conformance workflow and the build dependency check
 * [Docs/XppSemantics.md](Docs/XppSemantics.md): what the X++ compiler really does, with the case that shows each fact
+* [Docs/Performance.md](Docs/Performance.md): what a script costs next to compiled X++, and how to measure it
 * [Docs/Backlog.md](Docs/Backlog.md): open work and known gaps
 
 # Build Action

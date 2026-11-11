@@ -12,8 +12,8 @@ How to set up an environment, change the interpreter and prove a change against 
 | `Projects/XppInterpreter/Core` | Scopes, exception handlers and transaction rules (`ExceptionHandler.cs`) |
 | `Projects/XppInterpreter/Core/Clr` | .NET calls: type resolution, overloads, conversions, the AOS metadata |
 | `Metadata/MXppTools` | The X++ model: the proxies the interpreter calls (`MXTXpp*Proxy`), forms and the editor resources |
-| `Projects/XppInterpreter.Tests` | C# tests, and the conformance file with its tool |
-| `Scripts` | Build, conformance and reference scripts |
+| `Projects/XppInterpreter.Tests` | C# tests, the conformance file and the benchmark, each with its tool |
+| `Scripts` | Build, conformance, benchmark and reference scripts |
 
 The interpreter never calls D365 directly. Everything goes through the proxy interfaces in `Interpreter/Proxy`, which the X++ classes implement on an AOS and `Tests/Infrastructure/FakeXppHost.cs` implements in the tests.
 
@@ -96,6 +96,10 @@ Write the C# test for a fix as well, in the file of its area, and give the expec
 When the result of a case doesn't explain why the interpreter differs, compile the statement and read what the compiler made of it. `ildasm` on the model's `.netmodule` shows the kernel calls: the X++ body is the method whose name starts with a backtick, because the method with the plain name only handles Chain of Command.
 
 `Scripts\CheckContainerIL.ps1 -Model <model>` does this for the statements that put a value in a container or read one back. It compiles them in a temporary class, disassembles them, compares the calls with a list, and checks that the interpreter makes the same calls. It exits with 1 when something differs. Add a statement to its list when the interpreter starts to follow another piece of generated code.
+
+## Measuring speed
+
+A change in the instructions, the scopes or the proxies can make every operation of a script slower without failing a test. `Scripts\RunBenchmark.ps1` times the snippets of `Projects/XppInterpreter.Tests/Benchmark/benchmark.txt` compiled and interpreted on an AOS, and compares two runs: keep one before the change with `-Mode Report -Save before`, and compare after it with `-CompareWith before`. [Performance.md](Performance.md) has the workflow, what each operation costs and the rules that keep it that way.
 
 ## Build dependencies
 

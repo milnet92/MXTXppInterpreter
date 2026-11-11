@@ -42,29 +42,25 @@ namespace XppInterpreter.Core
 
         public object GetVar(string varName)
         {
-            if (VariableCollection.Exists(varName))
+            for (Scope current = this; current != null; current = current.Parent)
             {
-                return VariableCollection[varName].Value;
-            }
-            else if (Parent != null)
-            {
-                return Parent.GetVar(varName);
+                if (current.VariableCollection.TryGet(varName, out VariableEntry entry))
+                {
+                    return entry.Value;
+                }
             }
 
             throw new Exception($"Variable {varName} was not declared.");
         }
 
-        public void SetVar(string varName, object varValue, Interpreter.Proxy.IXppCastingProxy castingProxy, bool forceOnTop = false, Type declarationType = null, string typeName = null, int stringLength = 0)
+        /// <param name="proxy">Null when the debugger changes a value, which was already converted</param>
+        public void SetVar(string varName, object varValue, XppProxy proxy, bool forceOnTop = false, Type declarationType = null, string typeName = null, int stringLength = 0)
         {
             for (Scope current = this; current != null; current = current.Parent)
             {
-                bool exists = current.VariableCollection.Exists(varName);
-
-                if (exists)
+                if (current.VariableCollection.TryGet(varName, out VariableEntry entry))
                 {
-                    var entry = current.VariableCollection[varName];
-
-                    entry.SetValue(ConvertToType(varValue, entry.DeclarationType, entry.TypeName, entry.StringLength, castingProxy));
+                    entry.SetValue(ConvertToType(varValue, entry.DeclarationType, entry.TypeName, entry.StringLength, proxy));
                     return;
                 }
 
@@ -75,7 +71,7 @@ namespace XppInterpreter.Core
                         break;
                     }
 
-                    object value = ConvertToType(varValue, declarationType, typeName, stringLength, castingProxy);
+                    object value = ConvertToType(varValue, declarationType, typeName, stringLength, proxy);
 
                     current.VariableCollection.Add(new VariableEntry(varName, declarationType, value, typeName) { StringLength = stringLength });
                     return;
@@ -88,10 +84,9 @@ namespace XppInterpreter.Core
         /// <summary>
         /// A variable keeps its declared type: the value is converted to it, as the X++ compiler does on every assignment.
         /// </summary>
-        private static object ConvertToType(object value, Type declarationType, string typeName, int stringLength, Interpreter.Proxy.IXppCastingProxy castingProxy)
+        private static object ConvertToType(object value, Type declarationType, string typeName, int stringLength, XppProxy proxy)
         {
-            // The debugger changes values that were already converted
-            if (castingProxy is null) return value;
+            if (proxy is null) return value;
 
             object converted = Clr.ClrValues.CopyIfStruct(value);
 
@@ -110,12 +105,12 @@ namespace XppInterpreter.Core
             }
             else if (declarationType != null && value.GetType() != declarationType)
             {
-                converted = ConvertToDeclaredType(converted, declarationType, castingProxy);
+                converted = ConvertToDeclaredType(converted, declarationType, proxy.Casting);
             }
 
-            if (converted is string edtValue && !string.IsNullOrEmpty(typeName) && castingProxy.IsStringEDT(typeName))
+            if (converted is string edtValue && proxy.IsStringEdt(typeName))
             {
-                converted = castingProxy.TruncateEDTString(edtValue, typeName);
+                converted = proxy.Casting.TruncateEDTString(edtValue, typeName);
             }
 
             if (stringLength > 0 && converted is string text && text.Length > stringLength)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
 
@@ -34,43 +35,46 @@ namespace XppInterpreter.Core
             return Activator.CreateInstance(makeType, arg1, arg2);
         }
 
-        // Every global function call of a script looks its method up by name: the methods of a type don't change while the process runs
-        private static readonly System.Collections.Concurrent.ConcurrentDictionary<Tuple<Type, string>, MethodInfo> MethodsByName =
-            new System.Collections.Concurrent.ConcurrentDictionary<Tuple<Type, string>, MethodInfo>();
+        // A script looks a member up by name on every call and on every read. The members of a type don't change while the
+        // process runs, and a table has hundreds of them: these keep the answer, also when the type has no such member.
+        // Names are compared without case and without culture: with a Turkish culture, "i" and "I" are different letters.
+        private static readonly ConcurrentDictionary<MemberKey, MethodInfo> MethodsByName = new ConcurrentDictionary<MemberKey, MethodInfo>();
+        private static readonly ConcurrentDictionary<MemberKey, PropertyInfo> PropertiesByName = new ConcurrentDictionary<MemberKey, PropertyInfo>();
+        private static readonly ConcurrentDictionary<MemberKey, FieldInfo> FieldsByName = new ConcurrentDictionary<MemberKey, FieldInfo>();
+        private static readonly ConcurrentDictionary<MemberKey, bool> DelegateFields = new ConcurrentDictionary<MemberKey, bool>();
+        private static readonly ConcurrentDictionary<MemberKey, int> VariableArgumentPositions = new ConcurrentDictionary<MemberKey, int>();
+
+        private const int NoVariableArguments = -1;
+
+        private static bool IsNamed(MemberInfo member, string name) => string.Equals(member.Name, name, StringComparison.OrdinalIgnoreCase);
 
         private static MethodInfo FindMethod(Type type, string methodName) =>
-            type is null ? null : MethodsByName.GetOrAdd(Tuple.Create(type, methodName.ToLowerInvariant()),
-                key => key.Item1.GetMethods().FirstOrDefault(m => m.Name.ToLowerInvariant() == key.Item2));
+            type is null || methodName is null ? null : MethodsByName.GetOrAdd(new MemberKey(type, methodName),
+                key => key.Type.GetMethods().FirstOrDefault(m => IsNamed(m, key.Name)));
 
         public static bool TypeHasMethod(Type type, string methodName) => FindMethod(type, methodName) != null;
 
-        public static bool TypeHasProperty(Type type, string propertyName, bool includeNonPublic = false)
-        {
-            if (type is null) return false;
-            return type.GetProperties(GetBindingFlags(includeNonPublic)).Any(p => p.Name?.ToLower() == propertyName.ToLower());
-        }
+        public static bool TypeHasProperty(Type type, string propertyName, bool includeNonPublic = false) =>
+            GetProperty(type, propertyName, includeNonPublic) != null;
 
-        public static bool TypeHasField(Type type, string fieldName, bool includeNonPublic)
-        {
-            if (type is null) return false;
-            return type.GetFields(GetBindingFlags(includeNonPublic)).Any(f => f.Name?.ToLower() == fieldName.ToLower());
-        }
+        public static bool TypeHasField(Type type, string fieldName, bool includeNonPublic) =>
+            GetField(type, fieldName, includeNonPublic) != null;
 
         public static string GetMethodInvariantName(Type type, string methodName) => FindMethod(type, methodName)?.Name;
 
-        public static PropertyInfo GetProperty(Type type, string propertyName, bool includeNonPublic = false)
-        {
-            return TypeHasProperty(type, propertyName, includeNonPublic)
-                ? type.GetProperties(GetBindingFlags(includeNonPublic)).FirstOrDefault(p => p.Name.ToLowerInvariant() == propertyName.ToLowerInvariant())
-                : null;
-        }
+        public static PropertyInfo GetProperty(Type type, string propertyName, bool includeNonPublic = false) =>
+            type is null || propertyName is null ? null : PropertiesByName.GetOrAdd(new MemberKey(type, propertyName, includeNonPublic),
+                key => key.Type.GetProperties(GetBindingFlags(key.Flag)).FirstOrDefault(p => IsNamed(p, key.Name)));
 
-        public static FieldInfo GetField(Type type, string fieldName, bool includeNonPublic = false)
-        {
-            return TypeHasField(type, fieldName, includeNonPublic)
-                ? type.GetFields(GetBindingFlags(includeNonPublic)).FirstOrDefault(f => f.Name.ToLowerInvariant() == fieldName.ToLowerInvariant())
-                : null;
-        }
+        public static FieldInfo GetField(Type type, string fieldName, bool includeNonPublic = false) =>
+            type is null || fieldName is null ? null : FieldsByName.GetOrAdd(new MemberKey(type, fieldName, includeNonPublic),
+                key => key.Type.GetFields(GetBindingFlags(key.Flag)).FirstOrDefault(f => IsNamed(f, key.Name)));
+
+        /// <summary>
+        /// Tells if the member is a delegate of an X++ class, which a script subscribes to instead of reading it.
+        /// </summary>
+        public static bool IsDelegateField(Type type, string fieldName) =>
+            DelegateFields.GetOrAdd(new MemberKey(type, fieldName), key => IsDelegateType(GetField(key.Type, key.Name)?.FieldType));
 
         private static BindingFlags GetBindingFlags(bool includeNonPublic)
         {
@@ -150,32 +154,44 @@ namespace XppInterpreter.Core
         /// </summary>
         public static object[] PackVariableArguments(Type type, string methodName, object[] arguments)
         {
-            var methods = type.GetMethods().Where(m => string.Equals(m.Name, methodName, StringComparison.OrdinalIgnoreCase)).ToArray();
+            int fixedCount = VariableArgumentPositions.GetOrAdd(new MemberKey(type, methodName), key => FindVariableArguments(key.Type, key.Name));
 
-            if (methods.Length != 1)
+            if (fixedCount == NoVariableArguments || arguments.Length < fixedCount)
             {
                 return arguments;
             }
 
-            var parameters = methods[0].GetParameters();
-            int fixedCount = parameters.Length - 1;
-
-            if (parameters.Length == 0 || parameters[fixedCount].ParameterType != typeof(object[]) || arguments.Length < fixedCount)
+            if (arguments.Length == fixedCount + 1 && (arguments[fixedCount] is null || arguments[fixedCount] is object[]))
             {
                 return arguments;
             }
 
-            if (arguments.Length == parameters.Length && (arguments[fixedCount] is null || arguments[fixedCount] is object[]))
-            {
-                return arguments;
-            }
-
-            object[] packed = new object[parameters.Length];
+            object[] packed = new object[fixedCount + 1];
 
             Array.Copy(arguments, packed, fixedCount);
             packed[fixedCount] = arguments.Skip(fixedCount).ToArray();
 
             return packed;
+        }
+
+        /// <returns>The position of the parameter that takes the variable arguments, when the type has one method with that name and it ends with one</returns>
+        private static int FindVariableArguments(Type type, string methodName)
+        {
+            var methods = type.GetMethods().Where(m => IsNamed(m, methodName)).ToArray();
+
+            if (methods.Length != 1)
+            {
+                return NoVariableArguments;
+            }
+
+            var parameters = methods[0].GetParameters();
+
+            if (parameters.Length == 0 || parameters[parameters.Length - 1].ParameterType != typeof(object[]))
+            {
+                return NoVariableArguments;
+            }
+
+            return parameters.Length - 1;
         }
 
         public static bool IsDelegateType(Type type)

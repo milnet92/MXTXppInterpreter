@@ -6,6 +6,9 @@
 
         public System.Type ClrType { get; set; }
 
+        // An enum literal is the same value every time it runs: a condition inside a loop asked for it on each iteration
+        private object _enumValue;
+
         public StaticLoad(string name, string callerName, bool isArray) : base(name, isArray)
         {
             CallerName = callerName;
@@ -18,9 +21,16 @@
                 return Core.Clr.ClrBinder.GetStaticMember(ClrType, Name);
             }
 
-            if (context.Proxy.Reflection.IsEnum(CallerName))
+            if (_enumValue != null)
             {
-                return context.Proxy.Reflection.GetEnumValue(CallerName, Name);
+                return _enumValue;
+            }
+
+            if (context.Proxy.IsEnum(CallerName))
+            {
+                _enumValue = context.Proxy.Reflection.GetEnumValue(CallerName, Name);
+
+                return _enumValue;
             }
             else
             {

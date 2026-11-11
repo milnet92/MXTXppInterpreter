@@ -448,9 +448,8 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 				<Source><![CDATA[
     private void setCommonFieldValue(Common _common, str _fieldName, anytype _value)
     {
-        SysDictField dictField = SysDictField::newName(tableId2Name(_common.TableId), _fieldName);
-
-        _common.(dictField.id()) = _value;
+        // The id SysDictField::newName finds, without creating the object for every assignment
+        _common.(fieldName2Id(_common.TableId, _fieldName)) = _value;
     }
 
 ]]></Source>

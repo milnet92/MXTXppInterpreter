@@ -25,7 +25,7 @@ namespace XppInterpreter.Core.Clr
                 return false;
             }
 
-            return !proxy.Reflection.IsXppType(type) && !ClrConversions.IsXppDateType(type);
+            return !proxy.IsXppType(type) && !ClrConversions.IsXppDateType(type);
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace XppInterpreter.Core.Clr
                 case ulong number: return unchecked((long)number);
                 case float number: return (decimal)number;
                 case double number: return (decimal)number;
-                case Enum enumeration when !proxy.Reflection.IsXppType(enumeration.GetType()):
+                case Enum enumeration when !proxy.IsXppType(enumeration.GetType()):
                     return Convert.ToInt32(enumeration);
                 default: return value;
             }
@@ -212,7 +212,7 @@ namespace XppInterpreter.Core.Clr
         {
             result = null;
 
-            if (!(left is Enum) || left.GetType() != right?.GetType() || proxy.Reflection.IsXppType(left.GetType()))
+            if (!(left is Enum) || left.GetType() != right?.GetType() || proxy.IsXppType(left.GetType()))
             {
                 return false;
             }

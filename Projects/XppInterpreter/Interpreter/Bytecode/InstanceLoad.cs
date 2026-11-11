@@ -10,15 +10,12 @@ namespace XppInterpreter.Interpreter.Bytecode
         {
             object caller = context.Stack.Pop();
 
-            if (caller is null || !context.Proxy.Reflection.IsXppType(caller.GetType()))
+            if (caller is null || !context.Proxy.IsXppType(caller.GetType()))
             {
                 return Core.Clr.ClrBinder.GetMember(caller, Name);
             }
 
-            // Check if it's a delegate
-            var field = ReflectionHelper.GetField(caller.GetType(), Name);
-
-            if (field != null && ReflectionHelper.IsDelegateType(field.FieldType))
+            if (ReflectionHelper.IsDelegateField(caller.GetType(), Name))
             {
                 return new EventSubscriptionHandle(caller, Name);
             }

@@ -75,14 +75,14 @@ namespace XppInterpreter.Interpreter.Bytecode
 
                     System.Diagnostics.Debug.Assert(declarationType != null); // We MUST have a declaration type
 
-                    if (arguments[numParam] is null && context.Proxy.Reflection.IsCommonType(declarationType))
+                    if (arguments[numParam] is null && context.Proxy.IsCommonType(declarationType))
                     {
                         object defaultValue = context.Proxy.Casting.GetDefaultValueForType(funcParameter.DeclarationType.Lexeme);
-                        newContext.ScopeHandler.CurrentScope.SetVar(funcParameter.Name, defaultValue, context.Proxy.Casting, true, declarationType);
+                        newContext.ScopeHandler.CurrentScope.SetVar(funcParameter.Name, defaultValue, context.Proxy, true, declarationType);
                     }
                     else
                     {
-                        newContext.ScopeHandler.CurrentScope.SetVar(funcParameter.Name, arguments[numParam], context.Proxy.Casting, true, declarationType);
+                        newContext.ScopeHandler.CurrentScope.SetVar(funcParameter.Name, arguments[numParam], context.Proxy, true, declarationType);
                     }
                 }
 

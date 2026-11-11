@@ -16,7 +16,14 @@ namespace XppInterpreter.Core.Clr
         private const BindingFlags StaticMembers = BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy;
         private const BindingFlags InstanceMembers = BindingFlags.Public | BindingFlags.Instance;
 
-        private static readonly ConcurrentDictionary<Tuple<Type, string, bool>, MethodBase[]> Methods = new ConcurrentDictionary<Tuple<Type, string, bool>, MethodBase[]>();
+        // What a type has doesn't change while the process runs, and a loop asks for the same member on every iteration
+        private static readonly ConcurrentDictionary<MemberKey, MethodBase[]> Methods = new ConcurrentDictionary<MemberKey, MethodBase[]>();
+        private static readonly ConcurrentDictionary<Type, MethodBase[]> Constructors = new ConcurrentDictionary<Type, MethodBase[]>();
+        private static readonly ConcurrentDictionary<MemberKey, MemberInfo> Members = new ConcurrentDictionary<MemberKey, MemberInfo>();
+        private static readonly ConcurrentDictionary<MethodBase, ParameterList> ParameterLists = new ConcurrentDictionary<MethodBase, ParameterList>();
+
+        // The overload a call takes depends only on the types of its arguments
+        private static readonly ConcurrentDictionary<CallShape, Binding> Bindings = new ConcurrentDictionary<CallShape, Binding>();
 
         #region Calls
         /// <param name="arguments">The arguments. The values of the byref parameters are written back here.</param>
@@ -60,11 +67,18 @@ namespace XppInterpreter.Core.Clr
 
         private static object Invoke(MethodBase[] candidates, object instance, Type type, string name, object[] arguments, Type[] argumentTypes)
         {
-            var binding = SelectOverload(candidates, arguments.Length, (i, target) => ClrConversions.GetCost(arguments[i], argumentTypes?[i], target));
+            var shape = new CallShape(candidates, arguments, argumentTypes);
 
-            if (binding is null)
+            if (!Bindings.TryGetValue(shape, out Binding binding))
             {
-                throw new MissingMethodException(DescribeMissingOverload(candidates, type, name, arguments));
+                binding = SelectOverload(candidates, arguments.Length, (i, target) => ClrConversions.GetCost(arguments[i], argumentTypes?[i], target));
+
+                if (binding is null)
+                {
+                    throw new MissingMethodException(DescribeMissingOverload(candidates, type, name, arguments));
+                }
+
+                Bindings[shape] = binding;
             }
 
             object[] invokeArguments = binding.BuildArguments(arguments);
@@ -90,6 +104,86 @@ namespace XppInterpreter.Core.Clr
         #endregion
 
         #region Overload resolution
+        /// <summary>
+        /// What chooses the overload of a call: the methods with that name, and for each argument the type of its value,
+        /// or the declared type of the argument when the value is null. <see cref="ClrConversions.GetCost(object, Type, Type)"/> looks at nothing else.
+        /// </summary>
+        private sealed class CallShape : IEquatable<CallShape>
+        {
+            private readonly MethodBase[] _candidates;
+            private readonly Type[] _valueTypes;
+            private readonly Type[] _declaredTypesOfNulls;
+            private readonly int _hashCode;
+
+            public CallShape(MethodBase[] candidates, object[] arguments, Type[] declaredTypes)
+            {
+                _candidates = candidates;
+                _valueTypes = new Type[arguments.Length];
+                _declaredTypesOfNulls = new Type[arguments.Length];
+
+                int hashCode = System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(candidates);
+
+                for (int i = 0; i < arguments.Length; i++)
+                {
+                    Type type = arguments[i]?.GetType();
+
+                    if (type is null)
+                    {
+                        _declaredTypesOfNulls[i] = declaredTypes?[i];
+                        type = _declaredTypesOfNulls[i];
+                        hashCode = hashCode * 31 + 1;
+                    }
+                    else
+                    {
+                        _valueTypes[i] = type;
+                    }
+
+                    hashCode = hashCode * 31 + (type?.GetHashCode() ?? 0);
+                }
+
+                _hashCode = hashCode;
+            }
+
+            public bool Equals(CallShape other)
+            {
+                if (other is null || !ReferenceEquals(_candidates, other._candidates) || _valueTypes.Length != other._valueTypes.Length)
+                {
+                    return false;
+                }
+
+                for (int i = 0; i < _valueTypes.Length; i++)
+                {
+                    if (_valueTypes[i] != other._valueTypes[i] || _declaredTypesOfNulls[i] != other._declaredTypesOfNulls[i])
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            public override bool Equals(object obj) => Equals(obj as CallShape);
+
+            public override int GetHashCode() => _hashCode;
+        }
+
+        /// <summary>
+        /// The parameters of a method. Reflection builds a new array for every question, and looks the attribute up again.
+        /// </summary>
+        private sealed class ParameterList
+        {
+            public readonly ParameterInfo[] Parameters;
+            public readonly bool EndsWithParameterArray;
+
+            public ParameterList(MethodBase method)
+            {
+                Parameters = method.GetParameters();
+                EndsWithParameterArray = Parameters.Length > 0 && Parameters[Parameters.Length - 1].IsDefined(typeof(ParamArrayAttribute), false);
+            }
+        }
+
+        private static ParameterList ParametersOf(MethodBase method) => ParameterLists.GetOrAdd(method, m => new ParameterList(m));
+
         private sealed class Binding
         {
             public MethodBase Method;
@@ -161,10 +255,10 @@ namespace XppInterpreter.Core.Clr
 
             foreach (var candidate in candidates)
             {
-                var parameters = candidate.GetParameters();
+                var signature = ParametersOf(candidate);
 
-                var binding = BindNormalForm(candidate, parameters, argumentCount, costOf)
-                    ?? BindExpandedForm(candidate, parameters, argumentCount, costOf);
+                var binding = BindNormalForm(candidate, signature.Parameters, argumentCount, costOf)
+                    ?? BindExpandedForm(candidate, signature, argumentCount, costOf);
 
                 if (binding != null && (best is null || binding.Cost < best.Cost))
                 {
@@ -216,9 +310,11 @@ namespace XppInterpreter.Core.Clr
             return new Binding { Method = method, Parameters = parameters, Cost = cost };
         }
 
-        private static Binding BindExpandedForm(MethodBase method, ParameterInfo[] parameters, int argumentCount, Func<int, Type, int> costOf)
+        private static Binding BindExpandedForm(MethodBase method, ParameterList signature, int argumentCount, Func<int, Type, int> costOf)
         {
-            if (parameters.Length == 0 || !parameters.Last().IsDefined(typeof(ParamArrayAttribute), false) || argumentCount < parameters.Length - 1)
+            ParameterInfo[] parameters = signature.Parameters;
+
+            if (!signature.EndsWithParameterArray || argumentCount < parameters.Length - 1)
             {
                 return null;
             }
@@ -337,30 +433,31 @@ namespace XppInterpreter.Core.Clr
             throw new MissingMemberException($"Type '{type.FullName}' does not have a field or a property called '{name}'.");
         }
 
-        private static MemberInfo FindMember(Type type, string name, bool isStatic)
-        {
-            BindingFlags flags = isStatic ? StaticMembers : InstanceMembers;
-
-            foreach (var current in TypeAndInterfaces(type, isStatic))
+        private static MemberInfo FindMember(Type type, string name, bool isStatic) =>
+            Members.GetOrAdd(new MemberKey(type, name, isStatic), key =>
             {
-                var property = current.GetProperties(flags).FirstOrDefault(p =>
-                    p.GetIndexParameters().Length == 0 && string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
+                BindingFlags flags = key.Flag ? StaticMembers : InstanceMembers;
 
-                if (property != null)
+                foreach (var current in TypeAndInterfaces(key.Type, key.Flag))
                 {
-                    return property;
+                    var property = current.GetProperties(flags).FirstOrDefault(p =>
+                        p.GetIndexParameters().Length == 0 && string.Equals(p.Name, key.Name, StringComparison.OrdinalIgnoreCase));
+
+                    if (property != null)
+                    {
+                        return property;
+                    }
+
+                    var field = current.GetFields(flags).FirstOrDefault(f => string.Equals(f.Name, key.Name, StringComparison.OrdinalIgnoreCase));
+
+                    if (field != null)
+                    {
+                        return field;
+                    }
                 }
 
-                var field = current.GetFields(flags).FirstOrDefault(f => string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase));
-
-                if (field != null)
-                {
-                    return field;
-                }
-            }
-
-            return null;
-        }
+                return null;
+            });
 
         /// <summary>
         /// The object of a private class is only reachable through its interfaces: the enumerator of an iterator, for example.
@@ -387,18 +484,18 @@ namespace XppInterpreter.Core.Clr
 
         private static MethodBase[] GetMethods(Type type, string name, bool isStatic)
         {
-            return Methods.GetOrAdd(Tuple.Create(type, name.ToLowerInvariant(), isStatic), key =>
+            return Methods.GetOrAdd(new MemberKey(type, name, isStatic), key =>
             {
-                BindingFlags flags = isStatic ? StaticMembers : InstanceMembers;
+                BindingFlags flags = key.Flag ? StaticMembers : InstanceMembers;
                 var signatures = new HashSet<string>();
                 var methods = new List<MethodBase>();
 
-                foreach (var current in TypeAndInterfaces(type, isStatic))
+                foreach (var current in TypeAndInterfaces(key.Type, key.Flag))
                 {
                     foreach (var method in current.GetMethods(flags))
                     {
                         if (CanBeCalled(method)
-                            && string.Equals(method.Name, name, StringComparison.OrdinalIgnoreCase)
+                            && string.Equals(method.Name, key.Name, StringComparison.OrdinalIgnoreCase)
                             && signatures.Add(SignatureKey(method)))
                         {
                             methods.Add(method);
@@ -411,7 +508,7 @@ namespace XppInterpreter.Core.Clr
         }
 
         private static MethodBase[] GetConstructors(Type type) =>
-            type.GetConstructors(InstanceMembers).Where(CanBeCalled).Cast<MethodBase>().ToArray();
+            Constructors.GetOrAdd(type, t => t.GetConstructors(InstanceMembers).Where(CanBeCalled).Cast<MethodBase>().ToArray());
 
         // Generic methods and pointers can't be used from X++
         private static bool CanBeCalled(MethodBase method) =>

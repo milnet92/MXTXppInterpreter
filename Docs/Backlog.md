@@ -1,6 +1,6 @@
 # Open work
 
-What is known to be missing or unverified, as of 2026-11-06. Add to it when you find something, and remove what you finish.
+What is known to be missing or unverified, as of 2026-11-11. Add to it when you find something, and remove what you finish.
 
 ## Before the .NET support is released
 
@@ -28,6 +28,25 @@ What is known to be missing or unverified, as of 2026-11-06. Add to it when you 
 - **Late binding of the metadata.** `AosMetadata` finds `Microsoft.Dynamics.AX.Metadata.Storage` and `Microsoft.Dynamics.ApplicationPlatform.Environment` by name, so a change in those APIs shows at run time, as a macro library reported as missing or a warning about references, instead of when the model is compiled.
 - **Inference of `+a` and `~a`.** `var x = +a;` has no inferred type, because `XppTypeInferer.VisitUnaryOperation` only handles `-` and `!`.
 - **Transactions with the rollback option.** With `EmitGlobalTtsAbort`, a catch inside the script commits the inner levels down to the global transaction instead of aborting them, so the data stays visible until the script ends. Not measured on the compiler: write a case before changing it.
+
+## Speed
+
+What [Performance.md](Performance.md) leaves. Measure each one with `Scripts\RunBenchmark.ps1` before and after.
+
+- **Variables by name.** Every read and write looks the name up in a dictionary, scope by scope: 0.3 to 0.5 µs. The bytecode generator knows every variable, so it could give each one a slot.
+- **Operators through the proxies.** `<` makes two calls to X++ (`Greater` and `AreEqual`), `mod` takes 1.4 µs. Comparing two values of the same simple type in C# needs a conformance case for each type first.
+- **The editor.** A script that runs from the editor always has the debugger attached, so every statement looks for a breakpoint with a LINQ query, also when there is none. The benchmark doesn't measure this path: it runs `evaluate`.
+- **A `select` inside a loop** takes 55 µs against 10 µs compiled. The SysDa objects are built again, and every value of the `where` is compiled and interpreted as a small program (`QueryGenerationHelper.ComputeExpression`).
+- **A global function** takes 2 µs: `CallGlobalOrPredefinedFunction` looks the name up three times.
+- **A field read by name.** `MXTXppReflectionProxy.GetInstanceProperty` calls `getFieldValue(name)`, which takes 1.5 µs on `CustTable` and more on a bigger table; `record.(fieldId)` takes 0.6 µs. Prove first that both return the same .NET type for every kind of field.
+
+## To probe against the compiler
+
+Found by reading the code, not measured. Each one needs a conformance case before anything changes.
+
+- **`buffer = null` on a table that extends another one.** `MXTXppReflectionProxy.IsCommonType` compares the base type with `Common`, which is false for a derived table such as `DirPerson`, so `Store` would set the variable to null instead of clearing the record.
+- **No case covers:** a view or a data entity in a `select`, TempDB and InMemory tables (`setTmp`, `linkPhysicalTableInstance`), an extensible enum, an X++ delegate with a local function as handler, and `prmIsDefault` for an optional parameter the script leaves out.
+- **The variable editor of the debugger** parses a number with the culture of the user (`VariableEntryEditor`): with a decimal comma, `1.5` is read wrong.
 
 ## Ideas
 

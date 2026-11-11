@@ -210,11 +210,14 @@ namespace XppInterpreter.Core.Clr
         /// The X++ date and utcdatetime: structs around a <see cref="DateTime"/>.
         /// </summary>
         public static bool IsXppDateType(Type type) =>
-            type.IsValueType
-            && Nullable.GetUnderlyingType(type) is null
-            && type != typeof(DateTime)
-            && type.GetProperty("Value")?.PropertyType == typeof(DateTime)
-            && type.GetConstructor(new[] { typeof(DateTime) }) != null;
+            type.IsValueType && XppDateTypes.GetOrAdd(type, t =>
+                Nullable.GetUnderlyingType(t) is null
+                && t != typeof(DateTime)
+                && t.GetProperty("Value")?.PropertyType == typeof(DateTime)
+                && t.GetConstructor(new[] { typeof(DateTime) }) != null);
+
+        // Asked for every comparison of a date, and the answer comes from reflection
+        private static readonly ConcurrentDictionary<Type, bool> XppDateTypes = new ConcurrentDictionary<Type, bool>();
 
         /// <summary>
         /// Tells if the X++ compiler would accept an assignment between the types, when both are known when the script is parsed.

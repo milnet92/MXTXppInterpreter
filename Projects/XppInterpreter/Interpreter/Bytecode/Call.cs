@@ -52,7 +52,7 @@ namespace XppInterpreter.Interpreter.Bytecode
                 {
                     foreach (var byRefArgument in ByRefArguments)
                     {
-                        context.ScopeHandler.CurrentScope.SetVar(byRefArgument.Value, arguments[byRefArgument.Key], context.Proxy.Casting);
+                        context.ScopeHandler.CurrentScope.SetVar(byRefArgument.Value, arguments[byRefArgument.Key], context.Proxy);
                     }
                 }
             }

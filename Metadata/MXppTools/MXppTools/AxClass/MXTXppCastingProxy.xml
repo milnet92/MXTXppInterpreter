@@ -12,6 +12,7 @@ using Microsoft.Dynamics.Ax;
 /// </summary>
 internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Proxy.IXppCastingProxy
 {
+    private static System.Collections.Hashtable xppTypesByName;
 }
 ]]></Declaration>
 		<Methods>
@@ -24,6 +25,30 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
     /// <param name = "_name">Type name</param>
     /// <returns>Types type</returns>
     public static Types getXppTypeByTypeName(str _name)
+    {
+        // Asked for every declaration a script runs, and for a name that is not an enum it takes up to four lookups
+        // in the data dictionary; what a name is doesn't change while the AOS runs
+        if (!xppTypesByName)
+        {
+            xppTypesByName = System.Collections.Hashtable::Synchronized(new System.Collections.Hashtable(System.StringComparer::OrdinalIgnoreCase));
+        }
+
+        if (!xppTypesByName.ContainsKey(_name))
+        {
+            xppTypesByName.set_Item(_name, enum2int(MXTXppCastingProxy::findXppTypeByTypeName(_name)));
+        }
+
+        int type = System.Convert::ToInt32(xppTypesByName.get_Item(_name));
+
+        return type;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>findXppTypeByTypeName</Name>
+				<Source><![CDATA[
+    private static Types findXppTypeByTypeName(str _name)
     {
         // Base Enums
         if (SysDictEnum::newName(_name) != null)

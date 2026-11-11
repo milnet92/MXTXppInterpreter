@@ -38,6 +38,12 @@ namespace XppInterpreter.Tests.Infrastructure
         public int ContainerPacks { get; private set; }
         public int ContainerUnpacks { get; private set; }
 
+        // How many times the metadata was asked. On an AOS each one is a lookup in the data dictionary.
+        public int IsXppTypeCalls { get; private set; }
+        public int IsEnumCalls { get; private set; }
+        public int EnumValueCalls { get; private set; }
+        public int IsStringEdtCalls { get; private set; }
+
         private static readonly Dictionary<string, Type> BuiltInTypes = new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase)
         {
             ["str"] = typeof(string),
@@ -203,11 +209,23 @@ namespace XppInterpreter.Tests.Infrastructure
             throw new Exception($"Function '{functionName}' was not found.");
         }
 
-        public bool IsEnum(string name) => GetSystemTypeFromTypeName(name)?.IsEnum ?? false;
+        public bool IsEnum(string name)
+        {
+            IsEnumCalls++;
+
+            return GetSystemTypeFromTypeName(name)?.IsEnum ?? false;
+        }
+
         public bool IsCommon(object instance) => instance is FakeCommon;
         public bool IsCommonType(Type type) => type != null && typeof(FakeCommon).IsAssignableFrom(type);
         public void ClearCommon(object common) => ((FakeCommon)common).Clear();
-        public object GetEnumValue(string enumType, string enumValue) => Enum.Parse(GetType(enumType), enumValue, true);
+        public object GetEnumValue(string enumType, string enumValue)
+        {
+            EnumValueCalls++;
+
+            return Enum.Parse(GetType(enumType), enumValue, true);
+        }
+
         public string[] GetAllEnumValues(string enumType) => Enum.GetNames(GetType(enumType));
         public string GetMethodSyntax(string typeName, string methodName) => string.Empty;
         public string LabelIdToValue(string labelId, string languageId) => labelId == "@SYS1" ? "Time transactions" : labelId;
@@ -249,12 +267,16 @@ namespace XppInterpreter.Tests.Infrastructure
         public Type GetDateType() => typeof(FakeDate);
         public Type GetUtcDateTimeType() => typeof(FakeUtcDateTime);
 
-        public bool IsXppType(Type type) =>
-            typeof(FakeXppObject).IsAssignableFrom(type)
-            || typeof(FakeCommon).IsAssignableFrom(type)
-            || type == typeof(TestXppEnum)
-            || type == typeof(FakeExceptionEnum)
-            || type == typeof(FakeXppArray);
+        public bool IsXppType(Type type)
+        {
+            IsXppTypeCalls++;
+
+            return typeof(FakeXppObject).IsAssignableFrom(type)
+                || typeof(FakeCommon).IsAssignableFrom(type)
+                || type == typeof(TestXppEnum)
+                || type == typeof(FakeExceptionEnum)
+                || type == typeof(FakeXppArray);
+        }
 
         public string[] GetReferencedAssemblies() => ReferencedAssemblies;
 
@@ -377,7 +399,13 @@ namespace XppInterpreter.Tests.Infrastructure
 
         public Type GetArrayType(Type type) => typeof(FakeXppArray);
         public object CreateDate(int day, int month, int year) => new FakeDate(day, month, year);
-        public bool IsStringEDT(string typeName) => false;
+        public bool IsStringEDT(string typeName)
+        {
+            IsStringEdtCalls++;
+
+            return false;
+        }
+
         public string TruncateEDTString(string value, string typeName) => value;
 
         public object ContainerPack(object value)
