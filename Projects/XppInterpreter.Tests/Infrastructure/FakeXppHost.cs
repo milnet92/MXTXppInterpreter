@@ -44,6 +44,9 @@ namespace XppInterpreter.Tests.Infrastructure
         public int EnumValueCalls { get; private set; }
         public int IsStringEdtCalls { get; private set; }
 
+        // How many numbers went to the proxy to be added, subtracted, multiplied or compared
+        public int NumberOperationCalls { get; private set; }
+
         private static readonly Dictionary<string, Type> BuiltInTypes = new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase)
         {
             ["str"] = typeof(string),
@@ -425,8 +428,10 @@ namespace XppInterpreter.Tests.Infrastructure
         private static bool IsReal(object o) => o is decimal || o is double || o is float;
         private static decimal Dec(object o) => o is Enum ? Convert.ToInt32(o) : Convert.ToDecimal(o, CultureInfo.InvariantCulture);
 
-        private static object Numeric(object l, object r, Func<decimal, decimal, decimal> op)
+        private object Numeric(object l, object r, Func<decimal, decimal, decimal> op)
         {
+            NumberOperationCalls++;
+
             decimal result = op(Dec(l), Dec(r));
 
             if (IsReal(l) || IsReal(r)) return result;
@@ -460,6 +465,9 @@ namespace XppInterpreter.Tests.Infrastructure
         public bool Greater(object left, object right)
         {
             if (left is string l && right is string r) return string.Compare(l, r, StringComparison.OrdinalIgnoreCase) > 0;
+
+            NumberOperationCalls++;
+
             return Dec(left) > Dec(right);
         }
 
@@ -474,7 +482,13 @@ namespace XppInterpreter.Tests.Infrastructure
         {
             if (left is null || right is null) return ReferenceEquals(left, right);
             if (left is string l && right is string r) return string.Equals(l, r, StringComparison.OrdinalIgnoreCase);
-            if (IsNumber(left) && IsNumber(right)) return Dec(left) == Dec(right);
+            if (IsNumber(left) && IsNumber(right))
+            {
+                NumberOperationCalls++;
+
+                return Dec(left) == Dec(right);
+            }
+
             return left.Equals(right);
         }
 

@@ -6,25 +6,6 @@
 //           => expected        the returned value
 //           !! note            the real compiler refused it, or it kills the AOS: no value to compare
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ### pA01_andOrPrecedence
 boolean t = true, f = false;
 return strFmt("%1 %2", t || f && f, f && f || t);
@@ -6766,3 +6747,408 @@ CustGroup g;
 container c = [g, 1];
 return strFmt('%1 %2', typeOf(conPeek(c, 1)), typeOf(conPeek(c, 2)));
 => Record Integer
+
+### pN01_derivedTableNullAssign [D365]
+DirPerson p;
+select firstonly p;
+boolean found = p.RecId != 0;
+p = null;
+return strFmt('%1 %2', found, p.RecId);
+=> true 0
+
+### pN02_tableNullAssign [D365]
+CustGroup g;
+g.CustGroup = 'x';
+g = null;
+return strFmt('[%1]', g.CustGroup);
+=> []
+
+### pN03_derivedTableFieldsOfBase [D365]
+DirPerson p;
+DirPartyTable t;
+select firstonly p;
+select firstonly t where t.RecId == p.RecId;
+return strFmt('%1 %2 %3 %4', p.Name == t.Name, p.recid == t.RECID, p.PartyNumber == t.PartyNumber, p.RecId != 0);
+=> true true true true
+
+### pN04_derivedTableFieldWrite [D365]
+DirPerson p;
+p.Name = 'abc';
+p.Hobbies = 'chess';
+p.NameAlias = 'al';
+p.BirthYear = 1990;
+return strFmt('%1|%2|%3|%4', p.name, p.HOBBIES, p.NameAlias, p.birthyear);
+=> abc|chess|al|1990
+
+### pN05_derivedTablePassedAsBase [D365]
+str partyName(DirPartyTable _party)
+{
+    return _party.Name;
+}
+DirPerson p;
+p.Name = 'n1';
+return partyName(p);
+=> n1
+
+### pN06_derivedTableAsCommon [D365]
+DirPerson p;
+Common c;
+p.Name = 'n2';
+c = p;
+DirPartyTable t = c as DirPartyTable;
+return strFmt('%1 %2 %3', c.TableId == tableNum(DirPerson), t.Name, c is DirPerson);
+=> true n2 true
+
+### pN07_derivedTableNullArgument [D365]
+str check(DirPerson _person)
+{
+    return _person.RecId ? 'row' : 'empty';
+}
+return check(null);
+=> empty
+
+### pN08_derivedTableMethods [D365]
+DirPerson p;
+p.Name = 'n3';
+DirPerson copy = p.data();
+p.clear();
+return strFmt('%1 %2 [%3] %4', p.isTmp(), p.TableId == tableNum(DirPerson), p.Name, copy.Name);
+=> false true [] n3
+
+### pN10_tempDbInsertAndLink [D365]
+TmpRecIdFilter a, b, c;
+a.RefRecId = 1;
+a.insert();
+a.RefRecId = 2;
+a.insert();
+b.linkPhysicalTableInstance(a);
+select count(RecId) from b;
+int64 linked = b.RecId;
+select count(RecId) from c;
+return strFmt('%1 %2 %3', linked, c.RecId, a.isTempDb());
+=> 2 0 true
+
+### pN11_tempDbWhileSelectAndDelete [D365]
+TmpRecIdFilter a;
+str s;
+int i;
+for (i = 3; i >= 1; i--)
+{
+    a.RefRecId = i;
+    a.insert();
+}
+while select a order by RefRecId
+{
+    s += int642Str(a.RefRecId);
+}
+delete_from a where a.RefRecId == 2;
+select count(RecId) from a;
+return strFmt('%1 %2', s, a.RecId);
+=> 123 2
+
+### pN12_inMemoryIsolatedFromTable [D365]
+CustGroup tmp, stored;
+tmp.setTmp();
+tmp.CustGroup = 'ZZ9';
+tmp.doInsert();
+select count(RecId) from stored where stored.CustGroup == 'ZZ9';
+int64 inTable = stored.RecId;
+select count(RecId) from tmp;
+return strFmt('%1 %2', inTable, tmp.RecId);
+=> 0 1
+
+### pN13_inMemoryUpdate [D365]
+CustGroup tmp;
+str names;
+tmp.setTmp();
+tmp.CustGroup = 'ZZ1';
+tmp.Name = 'a';
+tmp.doInsert();
+tmp.CustGroup = 'ZZ2';
+tmp.Name = 'b';
+tmp.doInsert();
+ttsbegin;
+select forupdate tmp where tmp.CustGroup == 'ZZ1';
+tmp.Name = 'c';
+tmp.doUpdate();
+ttscommit;
+while select tmp order by CustGroup
+{
+    names += tmp.Name;
+}
+return names;
+=> cb
+
+### pN15_selectFromView [D365]
+DirPartyView v;
+DirPartyTable t;
+select firstonly Party from v;
+select firstonly t where t.RecId == v.Party;
+return strFmt('%1', t.RecId == v.Party);
+=> true
+
+### pN16_sqlSelectFromView [D365]
+DirPartyView v;
+str r;
+select generateonly firstonly Party, Accountnum from v where v.Accountnum == 'x' && v.DataArea == 'usmf';
+str sql = v.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM DIRPARTYVIEW T1 WHERE ((PARTITION=<P>) AND ((ACCOUNTNUM=?) AND (DATAAREA=?)))
+
+### pN17_selectFromEntity [D365]
+CustCustomerGroupEntity e;
+CustGroup g;
+select firstonly g;
+select firstonly e where e.CustomerGroupId == g.CustGroup;
+return strFmt('%1 %2', e.CustomerGroupId == g.CustGroup, e.Description == g.Name);
+=> true true
+
+### pN18_countFromEntity [D365]
+CustCustomerGroupEntity e;
+CustGroup g;
+select count(RecId) from g;
+int64 n = g.RecId;
+select count(RecId) from e;
+return strFmt('%1', e.RecId == n);
+=> true
+
+### pN20_extensibleEnumValues [D365]
+SalesStatus s = SalesStatus::Invoiced;
+int n = s;
+return strFmt('%1 %2 %3 %4 %5', s, n, enum2int(SalesStatus::Delivered), enum2Str(SalesStatus::Backorder), s == SalesStatus::Invoiced);
+=> Invoiced 3 2 Open order true
+
+### pN21_extensibleEnumFromIntAndSwitch [D365]
+SalesStatus s = 2;
+str r;
+switch (s)
+{
+    case SalesStatus::Backorder:
+        r = 'back';
+        break;
+    case SalesStatus::Delivered:
+        r = 'delivered';
+        break;
+    default:
+        r = 'other';
+}
+return strFmt('%1 %2', r, symbol2Enum(enumNum(SalesStatus), 'Invoiced'));
+=> delivered 3
+
+### pN22_extensibleEnumInContainerAndField [D365]
+SalesTable st;
+st.SalesStatus = SalesStatus::Delivered;
+container c = [st.SalesStatus, SalesStatus::Canceled];
+SalesStatus back = conPeek(c, 2);
+return strFmt('%1 %2 %3', st.SalesStatus, back, conPeek(c, 1) == SalesStatus::Delivered);
+=> Delivered Canceled true
+
+### pN23_extensibleEnumInWhere [D365]
+SalesTable st;
+SalesStatus s = SalesStatus::Invoiced;
+str r;
+select generateonly st where st.SalesStatus == s || st.SalesStatus == SalesStatus::Canceled;
+str sql = st.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' WHERE ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  WHERE (((PARTITION=<P>) AND (DATAAREAID=<C>)) AND ((SALESSTATUS=?) OR (SALESSTATUS=?)))
+
+### pN24_extensibleEnumOrdering [D365]
+SalesStatus s = SalesStatus::Delivered;
+return strFmt('%1', s > SalesStatus::Backorder);
+!! REJECTED: Cannot use extensible enumerated type 'Extensible Enumeration(SalesStatus)' in non-equality comparison.
+
+### pN30_optionalParametersOmitted [D365]
+return strFmt('%1|%2|%3', DEVXppProbe::opt(), DEVXppProbe::opt(5), DEVXppProbe::opt(7, 'x'));
+=> Yes 5 Yes b|No 5 Yes b|No 7 No x
+
+### pN31_parmMethodKeepsValue [D365]
+DEVXppProbe p = new DEVXppProbe();
+p.parmValue(7);
+int a = p.parmValue();
+p.parmValue(0);
+return strFmt('%1 %2', a, p.parmValue());
+=> 7 0
+
+### pN40_intArithmeticWraps
+int a = 2147483647;
+int b = a + 1;
+int c = a * 2;
+int d = -2147483647 - 2;
+return strFmt('%1 %2 %3', b, c, d);
+=> -2147483648 -2 2147483647
+
+### pN41_int64ArithmeticWraps
+int64 a = 9223372036854775807;
+int64 b = a + 1;
+int64 c = a * 2;
+return strFmt('%1 %2', b, c);
+=> -9223372036854775808 -2
+
+### pN42_intNegateMinimum
+int a = -2147483647 - 1;
+int b = -a;
+return strFmt('%1 %2', a, b);
+=> -2147483648 -2147483648
+
+### pN43_mixedIntInt64
+int a = 2147483647;
+int64 b = 1;
+int64 c = a + b;
+return strFmt('%1 %2 %3 %4', c, a == b, a > b, b < a);
+=> 2147483648 false true true
+
+### pN44_realComparisons
+real a = 0.1;
+real b = 0.2;
+real c = a + b;
+return strFmt('%1 %2 %3 %4', c == 0.3, c > a, a <= 0.1, a != b);
+=> true true true true
+
+### pN45_intOverflowInAnytype
+anytype a = 2147483647;
+anytype b = 1;
+anytype c = a + b;
+return strFmt('%1', c);
+=> -2147483648
+
+### pN46_intOverflowInExpression
+int a = 2147483647;
+return strFmt('%1 %2 %3', a + 1, a * 2, a - (-1));
+=> -2147483648 -2 -2147483648
+
+### pN47_intComparisons
+int a = 3;
+int b = 5;
+return strFmt('%1 %2 %3 %4 %5 %6', a < b, a <= b, a > b, a >= b, a == b, a != b);
+=> true true false false false true
+
+### pN48_booleanComparisons
+boolean t = true;
+boolean f = false;
+return strFmt('%1 %2 %3', t == true, t != f, f == false);
+=> true true true
+
+### pN49_int64Comparisons
+int64 a = 5000000000;
+int64 b = 5000000001;
+return strFmt('%1 %2 %3 %4 %5 %6', a < b, a <= b, a > b, a >= b, a == b, a != b);
+=> true true false false false true
+
+### pN50_realArithmetic
+real a = 1.5;
+real b = 0.25;
+return strFmt('%1 %2 %3', a + b, a - b, a * b);
+=> 1.75 1.25 0.38
+
+### pN09_sqlDerivedTable [D365]
+DirPerson p;
+str r;
+select generateonly firstonly Name, Hobbies from p where p.Name == 'x' && p.Hobbies == 'y';
+str sql = p.getSQLStatement();
+r = strReplace(strReplace(subStr(sql, strScan(sql, ' FROM ', 1, strLen(sql)), strLen(sql)), int642Str(getCurrentPartitionRecId()), '<P>'), 'N\'' + curExt() + '\'', '<C>');
+return r;
+=>  FROM DIRPARTYTABLE T1 WHERE (((T1.PARTITION=<P>) AND ((T1.NAME=?) AND (T1.HOBBIES=?))) AND (T1.INSTANCERELATIONTYPE IN (13271) ))
+
+### pN51_intDivisionByZero [D365]
+int a = 0;
+int b;
+str r;
+try
+{
+    b = 5 div a;
+    r = 'no error';
+}
+catch (Exception::Numeric)
+{
+    r = 'numeric';
+}
+catch (Exception::Error)
+{
+    r = 'error';
+}
+catch (Exception::CLRError)
+{
+    r = 'clr';
+}
+catch
+{
+    r = 'other';
+}
+return r;
+=> clr
+
+### pN52_realDivisionByZero [D365]
+real a = 0;
+real b;
+str r;
+try
+{
+    b = 5 / a;
+    r = 'no error';
+}
+catch (Exception::Numeric)
+{
+    r = 'numeric';
+}
+catch (Exception::Error)
+{
+    r = 'error';
+}
+catch (Exception::CLRError)
+{
+    r = 'clr';
+}
+catch
+{
+    r = 'other';
+}
+return r;
+=> clr
+
+### pN53_modByZero [D365]
+int a = 0;
+int b;
+str r;
+try
+{
+    b = 5 mod a;
+    r = 'no error';
+}
+catch (Exception::Numeric)
+{
+    r = 'numeric';
+}
+catch (Exception::Error)
+{
+    r = 'error';
+}
+catch (Exception::CLRError)
+{
+    r = 'clr';
+}
+catch
+{
+    r = 'other';
+}
+return r;
+=> clr
+
+### pN54_shiftEdges [D365]
+int one = 1;
+int a = one << 31;
+int b = one << 32;
+int c = -8 >> 1;
+int64 d = 1;
+d = d << 40;
+return strFmt('%1 %2 %3 %4', a, b, c, d);
+=> -2147483648 1 -4 1099511627776
+
+### pN55_stringEqualityEdges [D365]
+str a = 'abc';
+str b = 'ABC';
+str c = 'a ';
+str d = 'a';
+return strFmt('%1 %2 %3 %4 %5', a == b, c == d, d < 'B', 'Z' < d, a != b);
+=> true false true false false

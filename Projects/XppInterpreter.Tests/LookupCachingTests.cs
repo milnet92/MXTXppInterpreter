@@ -165,7 +165,7 @@ namespace XppInterpreter.Tests
         /// <summary>A delegate of an X++ class is a public field of the compiled class.</summary>
         private sealed class WithDelegate
         {
-            public Action Changed;
+            public Action Changed = () => { };
             public int Size = 1;
 
             public void Raise() => Changed?.Invoke();

@@ -14,10 +14,22 @@ namespace XppInterpreter.Interpreter
         private int _pc = 0;
         public int Counter => _pc;
         public Stack<object> Stack => ScopeHandler.CurrentScope.Stack;
-        public Dictionary<Parser.Data.Query, ISearchInstance> Queries = new Dictionary<Parser.Data.Query, ISearchInstance>();
-        public Stack<IDisposable> Disposables = new Stack<IDisposable>();
 
-        internal readonly System.Runtime.CompilerServices.ConditionalWeakTable<object, ISearchInstance> PendingFetches = new System.Runtime.CompilerServices.ConditionalWeakTable<object, ISearchInstance>();
+        // Created when they are first used. Every call of a local function, and every value of a where clause that needs
+        // a program, runs in a context of its own, and most of them never select, dispose or leave through a finally block.
+        private Dictionary<Parser.Data.Query, ISearchInstance> _queries;
+        private Stack<IDisposable> _disposables;
+        private System.Runtime.CompilerServices.ConditionalWeakTable<object, ISearchInstance> _pendingFetches;
+        private Stack<FinallyBlock> _finallyBlocks;
+
+        public Dictionary<Parser.Data.Query, ISearchInstance> Queries => _queries ?? (_queries = new Dictionary<Parser.Data.Query, ISearchInstance>());
+        public Stack<IDisposable> Disposables => _disposables ?? (_disposables = new Stack<IDisposable>());
+
+        internal System.Runtime.CompilerServices.ConditionalWeakTable<object, ISearchInstance> PendingFetches =>
+            _pendingFetches ?? (_pendingFetches = new System.Runtime.CompilerServices.ConditionalWeakTable<object, ISearchInstance>());
+
+        internal Stack<FinallyBlock> FinallyBlocks => _finallyBlocks ?? (_finallyBlocks = new Stack<FinallyBlock>());
+
         public readonly ScopeHandler ScopeHandler;
         public readonly XppProxy Proxy;
         public readonly ByteCode ByteCode;
@@ -25,7 +37,6 @@ namespace XppInterpreter.Interpreter
         public bool Returned;
         public object ReturnValue;
         internal PendingExit PendingExit;
-        internal readonly Stack<FinallyBlock> FinallyBlocks = new Stack<FinallyBlock>();
         internal int NativeRetryCount = -1;
         public RuntimeContext InnerContext;
         public XppInterpreter Interpreter;
@@ -114,19 +125,37 @@ namespace XppInterpreter.Interpreter
         /// </summary>
         internal void AbandonFinallyBlocks(int handlerCount)
         {
-            while (FinallyBlocks.Count > 0 && FinallyBlocks.Peek().HandlerCount >= handlerCount)
+            while (_finallyBlocks != null && _finallyBlocks.Count > 0 && _finallyBlocks.Peek().HandlerCount >= handlerCount)
             {
-                FinallyBlocks.Pop();
+                _finallyBlocks.Pop();
             }
         }
 
-        public void EndScopeRange(int start, int end)
+        /// <param name="start">The first instruction of the range</param>
+        /// <param name="count">How many instructions it has</param>
+        public void EndScopeRange(int start, int count)
         {
-            var rangeToCheck = ByteCode.Instructions.GetRange(start, end);
+            var instructions = ByteCode.Instructions;
 
-            // Count the number of scope instructions
-            int beginScopeCount = rangeToCheck.Count(instruction => instruction is BeginScope);
-            int endScopeCount = rangeToCheck.Count(instruction => instruction is EndScope);
+            if (start < 0 || count < 0 || start + count > instructions.Count)
+            {
+                throw new ArgumentException("The range is outside the instructions of the program.");
+            }
+
+            // Count the number of scope instructions. Every break and continue comes here, so without a copy of the range.
+            int beginScopeCount = 0, endScopeCount = 0;
+
+            for (int i = start; i < start + count; i++)
+            {
+                if (instructions[i] is BeginScope)
+                {
+                    beginScopeCount++;
+                }
+                else if (instructions[i] is EndScope)
+                {
+                    endScopeCount++;
+                }
+            }
 
             // The number of scopes to close is the number of orphane begin scope instructions
             ScopeHandler.EndScope(Math.Abs(endScopeCount - beginScopeCount));

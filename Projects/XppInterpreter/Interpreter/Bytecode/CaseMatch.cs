@@ -14,7 +14,7 @@ namespace XppInterpreter.Interpreter.Bytecode
             var right = context.Stack.Pop();
             var left = context.Stack.Peek();
 
-            if (context.Proxy.Binary.AreEqual(left, right))
+            if (Core.SimpleOperands.TryAreEqual(left, right, out bool equal) ? equal : context.Proxy.Binary.AreEqual(left, right))
             {
                 base.Execute(context);
             }

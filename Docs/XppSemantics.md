@@ -18,6 +18,11 @@ Each fact was measured with the real compiler on platform 7.0.8199.55. The case 
 | `date - date` is an int, and a date plus an int is a date | `pI02`, `pI03` |
 | An utcdatetime literal is written `2020-01-02T03:04:05` | `pF18` |
 | A real assigned to an int is truncated | `pA21` |
+| An int or an int64 that overflows wraps around, also inside an expression and in an `anytype`; an int with an int64 gives an int64 | `pN40` to `pN46` |
+| Division by zero, with `/`, `div` and `mod`, is a CLR error: `catch (Exception::CLRError)` gets it, `Exception::Error` and `Exception::Numeric` don't | `pN51` to `pN53` |
+| The count of a shift wraps at the size of the value: `1 << 32` is 1, and `1 << 31` is the smallest int | `pN54` |
+| Strings compare without case, but a trailing blank counts: `'abc' == 'ABC'`, and `'a '` is not `'a'` | `pN55` |
+| An extensible enum compares only with `==` and `!=`: `>` is refused. `enum2Str` gives its label, and its number is the one of the value | `pN20` to `pN24` |
 | The `u` suffix is an unsigned 32-bit literal, not an int64: `5u` is an int, `3000000000u` is the negative int with the same bits, `4294967301u` is an int64 | `pL32`, `pL35`, `pL37`, `pL40` |
 
 ## Declarations
@@ -31,6 +36,7 @@ Each fact was measured with the real compiler on platform 7.0.8199.55. The case 
 | `appl`, `infolog` and `classFactory` exist without a declaration and can't be shadowed | `pI15` to `pI17` |
 | A local function can't be called before its declaration | `pI33` |
 | `default` must be the last part of a `switch` | `pK48` |
+| `prmIsDefault` is true for a parameter the caller leaves out, and false when it is passed, also with the default value; `strFmt` prints it as Yes or No | `pN30`, `pN31` |
 
 ## Strings, labels and macros
 
@@ -90,6 +96,10 @@ Each fact was measured with the real compiler on platform 7.0.8199.55. The case 
 | `buf.Map::method()` calls a table map method, also in a `where` | `pI76` to `pI80` |
 | `orig()` and `data()` are typed as the table, not as `Common` | `pH99` |
 | A record in a container is packed when it goes in (`ContainerPack`) and unpacked when it is read, so the container keeps a copy, and it can be saved to a container field; `container += record` uses a separate overload | `pM88` to `pM95`, `Scripts\CheckContainerIL.ps1` |
+| `buffer = null` clears the record, and a null passed for a table parameter is an empty record | `pN01`, `pN02`, `pN07` |
+| A table that extends another one (`DirPerson`) has the fields of its base table, in any case of the name, goes where the base table is expected, and its SQL reads the base table with `INSTANCERELATIONTYPE IN (...)` | `pN03` to `pN09` |
+| A TempDB buffer shares its rows with `linkPhysicalTableInstance`; a `setTmp` buffer is apart from the table and takes `forupdate`, `doUpdate` and `order by` | `pN10` to `pN13` |
+| A view and a data entity are selected like a table | `pN15` to `pN18` |
 | `select nofetch` leaves the record empty until `next` | `pH70`, `pJ17`, `pJ18` |
 | A `join` without `where` is a cross join, and a `where` on the first table that names a table joined later compares with the value the buffer holds, not with the joined row (`T1.PAYMTERMID=?`) | `pM22`, `pM43`, `pM59` |
 | `where a \|\| b && c` is `(a \|\| b) && c`: same precedence, left to right, also in SQL | `pM06`, `pM57` |

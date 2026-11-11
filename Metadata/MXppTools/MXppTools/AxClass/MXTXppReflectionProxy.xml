@@ -325,7 +325,10 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
     {
         if (_type == null) return false;
 
-        return _type.BaseType == Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType("Common");
+        // Not only the tables that derive from Common directly: a table that extends another one (DirPerson) is a record
+        // too. Without it, null assigned to such a buffer left the variable null, and its fields were found only when
+        // written with the case of the class property (conformance pN01 to pN07)
+        return _type.IsSubclassOf(MXTXppTypes::CommonType);
     }
 
 ]]></Source>

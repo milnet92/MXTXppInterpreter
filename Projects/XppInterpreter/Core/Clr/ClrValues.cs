@@ -36,6 +36,7 @@ namespace XppInterpreter.Core.Clr
         {
             if (value is null) return false;
             if (value is bool flag) return flag;
+            if (SimpleOperands.TryToBoolean(value, out bool isNotZero)) return isNotZero;
             if (IsClrObject(value, proxy)) return true;
 
             return proxy.Casting.ToBoolean(ToXppOperand(value, proxy));

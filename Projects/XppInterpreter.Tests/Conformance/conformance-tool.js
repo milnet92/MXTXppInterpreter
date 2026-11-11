@@ -95,6 +95,8 @@ function helpers() {
     methods += method('readBuilder', `    public static str readBuilder(System.Text.StringBuilder _builder)\n    {\n        return _builder.ToString();\n    }`);
     methods += method('makeArray', `    public static System.String[] makeArray()\n    {\n        System.String[] ret = new System.String[2]();\n        ret.SetValue('y', 1);\n        return ret;\n    }`);
     methods += method('nullBuilder', `    public static System.Text.StringBuilder nullBuilder()\n    {\n        return null;\n    }`);
+    methods += method('opt', `    public static str opt(int _number = 5, str _text = 'b')\n    {\n        return strFmt('%1 %2 %3 %4', prmIsDefault(_number), _number, prmIsDefault(_text), _text);\n    }`);
+    methods += method('parmValue', `    public int parmValue(int _value = instanceValue)\n    {\n        if (!prmIsDefault(_value))\n        {\n            instanceValue = _value;\n        }\n\n        return instanceValue;\n    }`);
 
     return methods;
 }
@@ -107,6 +109,7 @@ public class DEVXppProbe
     public static int counter;
     public static int staticValue;
     public static System.Text.StringBuilder builder;
+    int instanceValue;
 }`;
 
 // Calls every static method of a class and writes the results as it goes: a snippet can kill the AOS
@@ -210,7 +213,8 @@ function compare() {
 function update() {
     const results = readResults(COMPILED_RESULTS);
     const text = fs.readFileSync(GOLDEN, 'utf8').replace(/\r/g, '');
-    const header = text.slice(0, text.indexOf('\n### ') + 1);
+    // Without the blank lines before the first case: every case below starts with one, and they piled up with each update
+    const header = text.slice(0, text.indexOf('\n### ') + 1).trimEnd() + '\n';
 
     let out = header;
 

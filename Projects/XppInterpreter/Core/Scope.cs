@@ -10,7 +10,9 @@ namespace XppInterpreter.Core
     public class Scope
     {
         internal readonly VariableCollection VariableCollection = new VariableCollection();
-        internal readonly List<object> disposables = new List<object>();
+
+        // Only a scope that calls setPrefix has one: every block is a scope, so the list is created when it is needed
+        internal List<object> disposables;
 
         public readonly Stack<object> Stack = new Stack<object>();
         public Scope Parent { get; set; }
@@ -27,13 +29,16 @@ namespace XppInterpreter.Core
 
         public Scope End()
         {
-            foreach (var obj in disposables)
+            if (disposables != null)
             {
-                IDisposable disposable = obj as IDisposable;
-
-                if (disposable != null)
+                foreach (var obj in disposables)
                 {
-                    disposable.Dispose();
+                    IDisposable disposable = obj as IDisposable;
+
+                    if (disposable != null)
+                    {
+                        disposable.Dispose();
+                    }
                 }
             }
 

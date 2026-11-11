@@ -28,7 +28,8 @@ namespace XppInterpreter.Interpreter.Bytecode
 
             object result = null;
 
-            if (Core.Clr.ClrValues.TryEvaluate(TokenType, left, right, context.Proxy, out result))
+            if (Core.SimpleOperands.TryEvaluate(TokenType, left, right, out result)
+                || Core.Clr.ClrValues.TryEvaluate(TokenType, left, right, context.Proxy, out result))
             {
                 context.Stack.Push(result);
                 return;

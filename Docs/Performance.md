@@ -59,12 +59,31 @@ Every one of these ran again for each operation, and now runs once:
 | Call a .NET method | Chose the overload again among all the methods with that name | 9 µs |
 | Read or write a variable | Compared the name with a culture | 0.3 to 0.5 µs |
 
+## The second round: operators and the loop itself
+
+After the lookups, the same day: what a script costs when it touches no data. "Before" is commit 67a5e8a.
+
+| Case | Compiled | Before | After |
+|---|---|---|---|
+| `b01_emptyLoop`: 50,000 iterations of a `for` | 0.03 | 63 | 34 |
+| `b02_intAdd`: 50,000 times `n += i` | 0.03 | 90 | 54 |
+| `b08_enumLiteral`: 50,000 times `if (v == NoYes::Yes)` | 0.04 | 133 | 69 |
+| `b15_ternary`: 50,000 times `n += (i > 5) ? 1 : 2` | 0.07 | 113 | 63 |
+| `b14_localFunction`: 20,000 calls of a local function | 0.07 | 56 | 37 |
+| `b29_clrStaticCall`: 20,000 times `System.Math::Abs(-1)` | 0.04 | 53 | 35 |
+
+- **Operators.** `<` was two calls to X++ (`Greater` and `AreEqual`) and `+` was one. `SimpleOperands` computes integers, comparisons of numbers, booleans and values of one enum in C#, and a `switch` tests its cases the same way.
+- **Local functions.** Every call runs in a context of its own, which now creates its collections when they are first used.
+- **`break` and `continue`** count the scopes they leave without copying the instructions between.
+- **The data cases didn't move:** `b49_typicalScript` stays at 505 ms, next to 367 ms compiled. What is left there is the database.
+
 ## Rules that keep it fast
 
 - **Ask the metadata once.** What a type or a member is doesn't change while the process runs. `XppProxy` keeps what the X++ proxies answer about a type (`IsXppType`, `IsCommonType`, `IsEnum`, `IsStringEdt`); `ReflectionHelper` and `ClrBinder` keep members by `MemberKey`, also the answer that a type has no such member; `MXTXppCastingProxy::getXppTypeByTypeName` keeps the kind of a type name.
 - **Never scan the members of a type for each operation.** A table class has hundreds of fields and more than a thousand methods.
 - **A value that can't change is kept by the instruction**, as `StaticLoad` does with an enum literal. A static field is not such a value.
 - **The overload of a .NET call** depends only on the types of the arguments, or on the declared type for a null (`ClrConversions.GetCost`). `ClrBinder` keeps it under exactly that, so a change that makes the cost depend on a value has to change the key.
+- **An operator is computed in C# only where the result of the compiler is certain.** `SimpleOperands` holds those, and the conformance cases `pN40` to `pN50` hold their edges: integers wrap around, also in an `anytype`. What can fail or has rules of its own stays with the X++ proxies: division by zero has to remain the CLR error it is in compiled code, and strings compare without case.
 - **Names are compared with `OrdinalIgnoreCase`**, never with `ToLower()`: with a Turkish culture `"I".ToLower()` is not `"i"`, and a member written in another case was not found.
 
 ## What the platform charges, compiled or not
@@ -74,4 +93,4 @@ Every one of these ran again for each operation, and now runs once:
 
 ## What is left
 
-A loop still costs about 1.2 µs for each iteration, and an operator about 0.5 µs, because variables are found by name and operators go through the X++ proxies. A `select` inside a loop costs 55 µs against 10 µs compiled. These are in [Backlog.md](Backlog.md).
+A loop costs about 0.7 µs for each iteration, some 60 ns for each instruction of the Debug build. A `select` inside a loop costs 54 µs against 10 µs compiled, of which 15 to 20 µs are SysDa itself. Sums of reals, strings and division still go through the X++ proxies. These are in [Backlog.md](Backlog.md), with what was measured for each.
