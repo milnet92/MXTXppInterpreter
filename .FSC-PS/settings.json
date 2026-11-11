@@ -1,7 +1,7 @@
 {
     "type":"FSCM",
     "packageName": "MXTXppInterpreter",
-    "buildVersion": "10.0.39",
+    "buildVersion": "10.0.48",
     "ciBranches": "main,release",
     "useLocalNuGetStorage":true,
     "deploymentScheduler":false
