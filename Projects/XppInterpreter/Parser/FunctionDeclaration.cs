@@ -11,6 +11,10 @@ namespace XppInterpreter.Parser
         public string Name { get; }
         public List<FunctionDeclarationParameter> Parameters { get; }
         public Block Block { get; }
+        /// <summary>
+        /// Set when the return type is a .NET type. An X++ type is found by its name.
+        /// </summary>
+        public System.Type ReturnClrType { get; internal set; }
 
         public FunctionDeclaration(string name, Token returnType, List<FunctionDeclarationParameter> parameters, Block block, SourceCodeBinding sourceCodeBinding) : base(sourceCodeBinding, null)
         {

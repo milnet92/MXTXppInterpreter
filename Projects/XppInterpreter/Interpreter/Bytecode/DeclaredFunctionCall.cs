@@ -33,7 +33,11 @@ namespace XppInterpreter.Interpreter.Bytecode
         {
             try
             {
-                LastResult = Interpret(context);
+                InterpreterResult result = Interpret(context);
+
+                // Only a breakpoint is read from it. Without one, the instruction keeps nothing of the call:
+                // a compiled script runs on several threads at once
+                LastResult = result.HasFinished ? InterpreterResult.Finished : result;
             }
             finally
             {
@@ -68,23 +72,7 @@ namespace XppInterpreter.Interpreter.Bytecode
                 newContext = new RuntimeContext(context.Proxy, newByteCode, new Core.ScopeHandler(context.Proxy, context.ScopeHandler.ClosureScope));
 
                 // Assign callee parameter to function definition parameter's scope
-                for (int numParam = 0; numParam < NArgs; numParam++)
-                {
-                    var funcParameter = _ref.Declaration.Parameters[numParam];
-                    System.Type declarationType = _ref.Declaration.Parameters[numParam].DeclarationClrType;
-
-                    System.Diagnostics.Debug.Assert(declarationType != null); // We MUST have a declaration type
-
-                    if (arguments[numParam] is null && context.Proxy.IsCommonType(declarationType))
-                    {
-                        object defaultValue = context.Proxy.Casting.GetDefaultValueForType(funcParameter.DeclarationType.Lexeme);
-                        newContext.ScopeHandler.CurrentScope.SetVar(funcParameter.Name, defaultValue, context.Proxy, true, declarationType);
-                    }
-                    else
-                    {
-                        newContext.ScopeHandler.CurrentScope.SetVar(funcParameter.Name, arguments[numParam], context.Proxy, true, declarationType);
-                    }
-                }
+                _ref.BindArguments(newContext.ScopeHandler.CurrentScope, arguments, context.Proxy);
 
                 interpreter = new XppInterpreter(context.Proxy, context.Interpreter.Options)
                 {

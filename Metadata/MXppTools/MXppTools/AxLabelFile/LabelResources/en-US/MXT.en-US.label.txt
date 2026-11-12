@@ -102,3 +102,6 @@ ExecutionFailed=Failed
 ExecutionResult=Result
 AgentStatusHelp=Not run: the script didn't start. Succeeded: it ran to its end. Failed: an exception stopped it. The messages of Execute say why.
 AgentResultHelp=The value of the return statement that ended the script.
+ScriptNotValid=The script has errors, so its functions can't be called.
+ScriptFunctionNotFound=The script has no function '%1'.
+ScriptFunctionArguments=The function '%1' of the script can't be called with %2 arguments.

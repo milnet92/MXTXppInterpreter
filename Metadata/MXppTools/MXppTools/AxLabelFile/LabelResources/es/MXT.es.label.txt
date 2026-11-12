@@ -102,3 +102,6 @@ ExecutionFailed=Fallido
 ExecutionResult=Resultado
 AgentStatusHelp=No ejecutado: el script no se inició. Correcto: se ejecutó hasta el final. Fallido: una excepción lo detuvo. Los mensajes de Ejecutar indican el motivo.
 AgentResultHelp=El valor de la instrucción return que terminó el script.
+ScriptNotValid=El script tiene errores, por lo que no se pueden llamar sus funciones.
+ScriptFunctionNotFound=El script no tiene la función '%1'.
+ScriptFunctionArguments=La función '%1' del script no se puede llamar con %2 argumentos.

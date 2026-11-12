@@ -1,6 +1,6 @@
 # Open work
 
-What is known to be missing or unverified, as of 2026-11-11. Add to it when you find something, and remove what you finish.
+What is known to be missing or unverified, as of 2026-11-12. Add to it when you find something, and remove what you finish.
 
 ## Before the .NET support is released
 
@@ -28,6 +28,16 @@ What is known to be missing or unverified, as of 2026-11-11. Add to it when you 
 - **Late binding of the metadata.** `AosMetadata` finds `Microsoft.Dynamics.AX.Metadata.Storage` and `Microsoft.Dynamics.ApplicationPlatform.Environment` by name, so a change in those APIs shows at run time, as a macro library reported as missing or a warning about references, instead of when the model is compiled.
 - **Inference of `+a` and `~a`.** `var x = +a;` has no inferred type, because `XppTypeInferer.VisitUnaryOperation` only handles `-` and `!`.
 - **Transactions with the rollback option.** With `EmitGlobalTtsAbort`, a catch inside the script commits the inner levels down to the global transaction instead of aborting them, so the data stays visible until the script ends. Not measured on the compiler: write a case before changing it.
+
+## Calling a script from X++
+
+What [CallingScripts.md](CallingScripts.md) leaves.
+
+- **Batch.** `MXTXppScript` was called from an interactive session and from sessions started with `runAsync`, not from a batch task.
+- **A variable of the script in a function.** The statements outside the functions don't run in a call, so a function that reads such a variable fails at run time with the .NET error `Variable total was not declared.` The parser sees the declaration and reports nothing. `CompiledScript` would have to find those reads when it compiles the text.
+- **A wrong argument** is found by the conversion: a record of another table is an `InvalidCastException`, and a `str` for an `int` parameter becomes 0. Both reach the caller as they are, without the name of the function or the parameter.
+- **A cache for the AOS.** The compiled scripts are kept for each session, because the X++ proxies are (`XppSessionStaticVariableHelper` holds every static field of an X++ class). The syntax tree and the instructions don't hold a proxy, and `CompiledScriptTests` calls one function from several threads, so they could be shared. Check first what the parser reads for the session: the value of a label, the company.
+- **A small function is 4 times slower than compiled.** `_record.orig().Name != _record.Name` takes 30 µs in a function against 7 µs compiled: a call of `orig`, two field reads and a comparison of strings. Which of them costs was not measured.
 
 ## Speed
 

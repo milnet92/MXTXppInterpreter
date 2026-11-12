@@ -2010,7 +2010,10 @@ namespace XppInterpreter.Parser
                 type,
                 parameters,
                 block,
-                SourceCodeBinding(start, lastScanResult));
+                SourceCodeBinding(start, lastScanResult))
+            {
+                ReturnClrType = parsedType.ClrType
+            };
 
             _parseContext.CurrentScope.FunctionDeclarations.Add(ret);
 

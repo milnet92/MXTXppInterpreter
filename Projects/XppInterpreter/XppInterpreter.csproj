@@ -157,7 +157,10 @@
     <Compile Include="Interpreter\Query\IQueryGenerator.cs" />
     <Compile Include="Interpreter\Query\ISearchInstance.cs" />
     <Compile Include="Interpreter\Query\QueryGenerationHelper.cs" />
+    <Compile Include="Interpreter\CompiledScript.cs" />
+    <Compile Include="Interpreter\CompiledScriptCache.cs" />
     <Compile Include="Interpreter\RuntimeContext.cs" />
+    <Compile Include="Interpreter\ScriptFunction.cs" />
     <Compile Include="Interpreter\Proxy\IIntrinsicFunctionProvider.cs" />
     <Compile Include="Interpreter\Proxy\IXppBinaryOperationProxy.cs" />
     <Compile Include="Interpreter\Proxy\IXppCastingProxy.cs" />

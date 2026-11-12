@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppScript</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+/// <summary>
+/// A script whose functions X++ code calls by name, with arguments and a return value.
+/// A call runs in the transaction and with the rights of the caller: the role, the log and the parameters of the
+/// interpreter don't apply. Whoever can change the text decides what runs, so the table that holds it needs its own security.
+/// </summary>
+public final class MXTXppScript
+{
+    private static XppInterpreter.Interpreter.CompiledScriptCache scripts;
+
+    private XppInterpreter.Interpreter.CompiledScript script;
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>TypeNew</Name>
+				<Source><![CDATA[
+    static void TypeNew()
+    {
+        scripts = new XppInterpreter.Interpreter.CompiledScriptCache(MXTXppInterpreterExecutor::sharedProxy());
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>new</Name>
+				<Source><![CDATA[
+    protected void new()
+    {
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>newFromSource</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// The text is parsed the first time the session uses it, and found by its text after that: X++ keeps a static field for each session.
+    /// A text with errors gives a script too: isValid, parseErrors and validate say what is wrong.
+    /// </summary>
+    public static MXTXppScript newFromSource(str _source)
+    {
+        MXTXppScript ret = new MXTXppScript();
+
+        ret.initFromSource(_source);
+
+        return ret;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>initFromSource</Name>
+				<Source><![CDATA[
+    private void initFromSource(str _source)
+    {
+        script = scripts.Get(_source);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>isValid</Name>
+				<Source><![CDATA[
+    public boolean isValid()
+    {
+        return script.IsCorrect;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parseErrors</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// The errors of the text, as "Line n, position m: message"
+    /// </summary>
+    public List parseErrors()
+    {
+        return MXTXppInterpreterExecutionResult::construct(script.ParseResult).parseErrors();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>hasFunction</Name>
+				<Source><![CDATA[
+    public boolean hasFunction(str _function)
+    {
+        return script.FindFunction(_function) != null;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validate</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// For the validateWrite of the table that holds the text: reports its errors as checkFailed does
+    /// </summary>
+    /// <param name = "_function">A function that the script must have</param>
+    public boolean validate(str _function = '')
+    {
+        boolean        ret = true;
+        ListEnumerator errors = this.parseErrors().getEnumerator();
+
+        while (errors.moveNext())
+        {
+            ret = checkFailed(errors.current());
+        }
+
+        if (ret && _function && !this.hasFunction(_function))
+        {
+            ret = checkFailed(strFmt("@MXT:ScriptFunctionNotFound", _function));
+        }
+
+        return ret;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>call</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Runs a function of the script in the transaction of the caller. A record or an object that is passed is the one
+    /// of the caller, so the function changes it for the caller. The statements outside the functions don't run,
+    /// and an exception of the function reaches the caller.
+    /// </summary>
+    /// <returns>What the function returns, converted to its return type</returns>
+    public anytype call(
+        str     _function,
+        anytype _argument1 = '',
+        anytype _argument2 = '',
+        anytype _argument3 = '',
+        anytype _argument4 = '',
+        anytype _argument5 = '',
+        anytype _argument6 = '',
+        anytype _argument7 = '',
+        anytype _argument8 = '')
+    {
+        int argumentCount = 8;
+
+        if (prmIsDefault(_argument1))
+        {
+            argumentCount = 0;
+        }
+        else if (prmIsDefault(_argument2))
+        {
+            argumentCount = 1;
+        }
+        else if (prmIsDefault(_argument3))
+        {
+            argumentCount = 2;
+        }
+        else if (prmIsDefault(_argument4))
+        {
+            argumentCount = 3;
+        }
+        else if (prmIsDefault(_argument5))
+        {
+            argumentCount = 4;
+        }
+        else if (prmIsDefault(_argument6))
+        {
+            argumentCount = 5;
+        }
+        else if (prmIsDefault(_argument7))
+        {
+            argumentCount = 6;
+        }
+        else if (prmIsDefault(_argument8))
+        {
+            argumentCount = 7;
+        }
+
+        XppInterpreter.Interpreter.ScriptFunction function = this.findFunction(_function, argumentCount);
+        System.Object[] arguments = new System.Object[argumentCount]();
+
+        if (argumentCount >= 1)
+        {
+            arguments.SetValue(_argument1, 0);
+        }
+        if (argumentCount >= 2)
+        {
+            arguments.SetValue(_argument2, 1);
+        }
+        if (argumentCount >= 3)
+        {
+            arguments.SetValue(_argument3, 2);
+        }
+        if (argumentCount >= 4)
+        {
+            arguments.SetValue(_argument4, 3);
+        }
+        if (argumentCount >= 5)
+        {
+            arguments.SetValue(_argument5, 4);
+        }
+        if (argumentCount >= 6)
+        {
+            arguments.SetValue(_argument6, 5);
+        }
+        if (argumentCount >= 7)
+        {
+            arguments.SetValue(_argument7, 6);
+        }
+        if (argumentCount >= 8)
+        {
+            arguments.SetValue(_argument8, 7);
+        }
+
+        return function.Call(arguments);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>findFunction</Name>
+				<Source><![CDATA[
+    private XppInterpreter.Interpreter.ScriptFunction findFunction(str _function, int _argumentCount)
+    {
+        if (!script.IsCorrect)
+        {
+            ListEnumerator errors = this.parseErrors().getEnumerator();
+
+            while (errors.moveNext())
+            {
+                error(errors.current());
+            }
+
+            throw error("@MXT:ScriptNotValid");
+        }
+
+        XppInterpreter.Interpreter.ScriptFunction function = script.FindFunction(_function);
+
+        if (function == null)
+        {
+            throw error(strFmt("@MXT:ScriptFunctionNotFound", _function));
+        }
+
+        if (!function.Accepts(_argumentCount))
+        {
+            throw error(strFmt("@MXT:ScriptFunctionArguments", _function, _argumentCount));
+        }
+
+        return function;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

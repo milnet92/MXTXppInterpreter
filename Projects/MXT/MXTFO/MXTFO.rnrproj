@@ -149,6 +149,11 @@
       <Name>MXTXppInterpreterDebugSession</Name>
       <Link>Classes\MXTXppInterpreterDebugSession</Link>
     </Content>
+    <Content Include="AxClass\MXTXppScript">
+      <SubType>Content</SubType>
+      <Name>MXTXppScript</Name>
+      <Link>Classes\MXTXppScript</Link>
+    </Content>
     <Content Include="AxClass\MXTXppInterpreterExecutionResult">
       <SubType>Content</SubType>
       <Name>MXTXppInterpreterExecutionResult</Name>

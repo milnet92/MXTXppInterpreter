@@ -87,6 +87,12 @@ namespace XppInterpreter.Core
         }
 
         /// <summary>
+        /// What an assignment to a variable of that type would store
+        /// </summary>
+        internal static object ConvertValue(object value, Type declarationType, XppProxy proxy) =>
+            ConvertToType(value, declarationType, null, 0, proxy);
+
+        /// <summary>
         /// A variable keeps its declared type: the value is converted to it, as the X++ compiler does on every assignment.
         /// </summary>
         private static object ConvertToType(object value, Type declarationType, string typeName, int stringLength, XppProxy proxy)

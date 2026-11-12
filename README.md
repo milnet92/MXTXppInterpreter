@@ -43,6 +43,7 @@ Execute empties both input fields before it runs, so a second click without a ne
 * Experiment with unknown or new functionality
 * Test pieces of your code
 * Get metadata information quickly (class and table ids, label texts, enum values...)
+* Keep a piece of logic as a script in a setup table, and call its functions from compiled X++ with `MXTXppScript`
 
 ## Security
 For development environments no additional security is needed. On any other system a user needs the **System administrator** role and the **MXT Script executor** role (`MXTXppInterpreterScriptExecutionLog::checkSecurityRights`).
@@ -114,6 +115,7 @@ They run the real lexer, parser, bytecode generator and interpreter against a fa
 
 ## More
 * [Docs/DataCorrectionLog.md](Docs/DataCorrectionLog.md): save records before a data correction, and restore them later with their RecId
+* [Docs/CallingScripts.md](Docs/CallingScripts.md): call a function of a script from X++, with arguments and a return value
 * [Docs/Development.md](Docs/Development.md): setting up a VM, the conformance workflow and the build dependency check
 * [Docs/XppSemantics.md](Docs/XppSemantics.md): what the X++ compiler really does, with the case that shows each fact
 * [Docs/Performance.md](Docs/Performance.md): what a script costs next to compiled X++, and how to measure it

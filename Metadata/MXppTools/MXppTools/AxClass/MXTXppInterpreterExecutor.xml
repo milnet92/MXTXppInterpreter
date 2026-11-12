@@ -35,6 +35,19 @@ internal final class MXTXppInterpreterExecutor
 ]]></Source>
 			</Method>
 			<Method>
+				<Name>sharedProxy</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// The X++ side of the interpreter, for the other classes of the model that run code
+    /// </summary>
+    internal static XppInterpreter.Interpreter.Proxy.XppProxy sharedProxy()
+    {
+        return proxy;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
 				<Name>base64Encode</Name>
 				<Source><![CDATA[
     /// <summary>
