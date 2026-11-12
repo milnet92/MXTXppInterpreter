@@ -79,7 +79,7 @@ After the lookups, the same day: what a script costs when it touches no data. "B
 
 ## Rules that keep it fast
 
-- **Ask the metadata once.** What a type or a member is doesn't change while the process runs. `XppProxy` keeps what the X++ proxies answer about a type (`IsXppType`, `IsCommonType`, `IsEnum`, `IsStringEdt`); `ReflectionHelper` and `ClrBinder` keep members by `MemberKey`, also the answer that a type has no such member; `MXTXppCastingProxy::getXppTypeByTypeName` keeps the kind of a type name.
+- **Ask the metadata once.** What a type or a member is doesn't change while the process runs. `XppProxy` keeps what the X++ proxies answer about a type (`IsXppType`, `IsCommonType`, `IsEnum`, `IsStringEdt`); `ReflectionHelper` and `ClrBinder` keep members by `MemberKey`, also the answer that a type has no such member; `MXTXppCoreCastingProxy::getXppTypeByTypeName` keeps the kind of a type name.
 - **Never scan the members of a type for each operation.** A table class has hundreds of fields and more than a thousand methods.
 - **A value that can't change is kept by the instruction**, as `StaticLoad` does with an enum literal. A static field is not such a value.
 - **The overload of a .NET call** depends only on the types of the arguments, or on the declared type for a null (`ClrConversions.GetCost`). `ClrBinder` keeps it under exactly that, so a change that makes the cost depend on a value has to change the key.
@@ -89,7 +89,7 @@ After the lookups, the same day: what a script costs when it touches no data. "B
 ## What the platform charges, compiled or not
 
 - **Another publisher.** Every X++ method starts with `ManagedSessionState::EnterPublisherScope`. When the publisher of its model is not the one of the code that called it, the kernel opens a scope, and that takes about 20 µs for each call. Microsoft's models count as one publisher and don't pay it. The interpreter belongs to the publisher of `MXppTools`, so a script that calls a class of your own model pays it on every call (`b20` to `b22`), exactly as compiled code of one of your models pays it when it calls another publisher's model.
-- **A function called from X++** pays it once for each call of `MXTXppScript`, and nothing more inside the function: the proxies it uses belong to the same publisher. [CallingScripts.md](CallingScripts.md) has what such a call costs.
+- **A function called from X++** pays it once for each call of `MXTXppCoreScript`, and nothing more inside the function: the proxies it uses belong to the same publisher. [CallingScripts.md](CallingScripts.md) has what such a call costs.
 - **The first run** of a script compiles what it touches, in the interpreter and in the kernel: the benchmark runs each case twice and keeps the best.
 
 ## What is left

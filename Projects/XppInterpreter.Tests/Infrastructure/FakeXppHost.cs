@@ -348,7 +348,7 @@ namespace XppInterpreter.Tests.Infrastructure
 
         public object As(object value, string typeName) => Is(value, typeName) ? value : null;
 
-        // Same rules as MXTXppCastingProxy.ImplicitConversionExists
+        // Same rules as MXTXppCoreCastingProxy.ImplicitConversionExists
         public bool ImplicitConversionExists(Type from, Type to)
         {
             if (to is null) return false;

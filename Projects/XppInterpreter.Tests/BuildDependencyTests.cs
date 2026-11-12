@@ -19,7 +19,7 @@ namespace XppInterpreter.Tests
     {
         private static readonly string[] InterpreterReferences = { "mscorlib", "System", "System.Core" };
 
-        // The X++ runtime, the assemblies MXTXppTypes finds by name, and the XML namespace of the metadata files
+        // The X++ runtime, the assemblies MXTXppCoreCastingProxy finds by name, and the XML namespace of the metadata files
         private static readonly Regex ModelNames = new Regex(@"^Microsoft\.Dynamics\.(Ax(\.Xpp\..+)?|AX\.Xpp\.Support|AX\.Data\.Core|AX\.Metadata\.V6)$");
 
         [TestMethod]
@@ -162,7 +162,7 @@ namespace XppInterpreter.Tests
         [TestMethod]
         public void FailureOfTheProviderReachesTheCaller()
         {
-            // MXTXppReflectionProxy catches it as a CLR error
+            // MXTXppCoreReflectionProxy catches it as a CLR error
             var error = Assert.ThrowsException<TargetInvocationException>(() => new AosMetadata(new Provider()).ReadMacroLibrary("Broken"));
 
             Assert.AreEqual("Cannot read", error.InnerException.Message);

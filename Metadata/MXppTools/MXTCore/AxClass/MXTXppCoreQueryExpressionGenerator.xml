@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
-	<Name>MXTXppQueryExpressionGenerator</Name>
+	<Name>MXTXppCoreQueryExpressionGenerator</Name>
 	<SourceCode>
 		<Declaration><![CDATA[
 using XppInterpreter.Interpreter.Query;
@@ -11,7 +11,7 @@ using XppInterpreter;
 /// Class to generate a SyDa query from an Xpp AST during execution. 
 /// Uses the visitor pattern.
 /// </summary>
-internal final class MXTXppQueryExpressionGenerator
+public final class MXTXppCoreQueryExpressionGenerator
 {
     private RuntimeContext context;
     private Set tablesInQuery;
@@ -25,11 +25,6 @@ internal final class MXTXppQueryExpressionGenerator
 			<Method>
 				<Name>new</Name>
 				<Source><![CDATA[
-    /// <summary>
-    /// Constructor
-    /// </summary>
-    /// <param name = "_context">Runtime context</param>
-    /// <param name = "_tablesInQuery">Tables in query</param>
     void new(RuntimeContext _context, Set _tablesInQuery, boolean _isExpression = false, Common _buffer = null)
     {
         context = _context;
@@ -279,7 +274,6 @@ internal final class MXTXppQueryExpressionGenerator
     /// <summary>
     /// Checks if the expression has a value without reading the tables of the query
     /// </summary>
-    /// <param name = "_expression">Expression</param>
     /// <returns>True when it doesn't use their fields</returns>
     private boolean isComputable(Parser.Expression _expression)
     {
@@ -315,11 +309,6 @@ internal final class MXTXppQueryExpressionGenerator
 			<Method>
 				<Name>isVariableTable</Name>
 				<Source><![CDATA[
-    /// <summary>
-    /// Checks if the variable is a table buffer
-    /// </summary>
-    /// <param name = "_variable">Paser variable token</param>
-    /// <returns>If it references a table buffer, true, otherwise false</returns>
     private boolean isVariableTable(Parser.Variable _variable)
     {
         if (_variable.Caller != null && _variable.Caller.Token is Lexer.Word)

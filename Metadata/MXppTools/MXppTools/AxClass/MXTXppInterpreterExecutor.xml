@@ -21,28 +21,7 @@ internal final class MXTXppInterpreterExecutor
     /// </summary>
     static void TypeNew()
     {
-        proxy = new XppInterpreter.Interpreter.Proxy.XppProxy(
-            new MXTXppIntrinsicFunctionProvider(),
-            new MXTXppBinaryOperationProxy(),
-            new MXTXppCastingProxy(),
-            new MXTXppUnaryOperationProxy(),
-            new MXTXppDataAccessProxy(),
-            new MXTXppReflectionProxy(),
-            new MXTXppExceptionsProxy(),
-            new MXTXppQueryGenerationProxy());
-    }
-
-]]></Source>
-			</Method>
-			<Method>
-				<Name>sharedProxy</Name>
-				<Source><![CDATA[
-    /// <summary>
-    /// The X++ side of the interpreter, for the other classes of the model that run code
-    /// </summary>
-    internal static XppInterpreter.Interpreter.Proxy.XppProxy sharedProxy()
-    {
-        return proxy;
+        proxy = MXTXppCoreScript::sharedProxy();
     }
 
 ]]></Source>

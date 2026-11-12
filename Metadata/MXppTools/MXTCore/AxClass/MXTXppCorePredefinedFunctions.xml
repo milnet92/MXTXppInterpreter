@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
-	<Name>MXTXppPredefinedFunctions</Name>
+	<Name>MXTXppCorePredefinedFunctions</Name>
 	<SourceCode>
 		<Declaration><![CDATA[
 /// <summary>
 /// Implementation of the predefined functions that cannot be called by reflection
 /// </summary>
-internal final class MXTXppPredefinedFunctions
+public final class MXTXppCorePredefinedFunctions
 {
-    public static System.Type ThisType = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::GetTypeFromClassName(classStr(MXTXppPredefinedFunctions));
+    public static System.Type ThisType = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::GetTypeFromClassName(classStr(MXTXppCorePredefinedFunctions));
     private static System.Collections.Hashtable predefinedFunctions;
 
 }
@@ -1079,7 +1079,7 @@ internal final class MXTXppPredefinedFunctions
 				<Source><![CDATA[
     private static int setPrefixInternal(str _prefix, XppInterpreter.Interpreter.RuntimeContext _context)
     {
-        System.Object  objGuard = _context.ScopeHandler.GetDisposableByType(MXTXppTypes::PrefixGuardType);
+        System.Object  objGuard = _context.ScopeHandler.GetDisposableByType(MXTXppCoreCastingProxy::PrefixGuardType);
         int     ret = 0;
 
         if (!objGuard)
@@ -1421,11 +1421,6 @@ internal final class MXTXppPredefinedFunctions
 			<Method>
 				<Name>isCustomPredefinedFunction</Name>
 				<Source><![CDATA[
-    /// <summary>
-    /// Checks if the given method is a valid predefined function
-    /// </summary>
-    /// <param name = "_methodName">method name</param>
-    /// <returns>True if valid, otherwise false</returns>
     public static boolean isCustomPredefinedFunction(str _methodName)
     {
         // Asked for every global function call of a script; the methods of this class don't change while the AOS runs
@@ -1436,7 +1431,7 @@ internal final class MXTXppPredefinedFunctions
 
         if (!predefinedFunctions.ContainsKey(_methodName))
         {
-            predefinedFunctions.set_Item(_methodName, SysDictClass::newName(classStr(MXTXppPredefinedFunctions)).hasStaticMethod(_methodName));
+            predefinedFunctions.set_Item(_methodName, SysDictClass::newName(classStr(MXTXppCorePredefinedFunctions)).hasStaticMethod(_methodName));
         }
 
         return System.Convert::ToBoolean(predefinedFunctions.get_Item(_methodName));
@@ -1447,12 +1442,6 @@ internal final class MXTXppPredefinedFunctions
 			<Method>
 				<Name>callMethod</Name>
 				<Source><![CDATA[
-    /// <summary>
-    /// Calls a method with the given parameters
-    /// </summary>
-    /// <param name = "_methodName">Method name</param>
-    /// <param name = "_parameters">Parameters</param>
-    /// <returns>Call return object</returns>
     public static System.Object callMethod(XppInterpreter.Interpreter.RuntimeContext _context, str _methodName, System.Object[] _parameters)
     {
         System.String invariantMethodName = XppInterpreter.Core.ReflectionHelper::GetMethodInvariantName(ThisType, _methodName);
@@ -1468,7 +1457,7 @@ internal final class MXTXppPredefinedFunctions
         else if (invariantMethodName == 'setPrefix')
         {
             str prefix = _parameters.GetValue(0);
-            return MXTXppPredefinedFunctions::setPrefixInternal(prefix, _context);
+            return MXTXppCorePredefinedFunctions::setPrefixInternal(prefix, _context);
         }
 
         return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeStaticCall(ThisType, invariantMethodName, _parameters);

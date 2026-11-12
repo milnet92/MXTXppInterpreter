@@ -43,7 +43,7 @@ Execute empties both input fields before it runs, so a second click without a ne
 * Experiment with unknown or new functionality
 * Test pieces of your code
 * Get metadata information quickly (class and table ids, label texts, enum values...)
-* Keep a piece of logic as a script in a setup table, and call its functions from compiled X++ with `MXTXppScript`
+* Keep a piece of logic as a script in a setup table, and call its functions from compiled X++ with `MXTXppCoreScript`
 
 ## Security
 For development environments no additional security is needed. On any other system a user needs the **System administrator** role and the **MXT Script executor** role (`MXTXppInterpreterScriptExecutionLog::checkSecurityRights`).

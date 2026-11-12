@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
-	<Name>MXTXppScript</Name>
+	<Name>MXTXppCoreScript</Name>
 	<SourceCode>
 		<Declaration><![CDATA[
 /// <summary>
@@ -8,8 +8,9 @@
 /// A call runs in the transaction and with the rights of the caller: the role, the log and the parameters of the
 /// interpreter don't apply. Whoever can change the text decides what runs, so the table that holds it needs its own security.
 /// </summary>
-public final class MXTXppScript
+public final class MXTXppCoreScript
 {
+    private static XppInterpreter.Interpreter.Proxy.XppProxy proxy;
     private static XppInterpreter.Interpreter.CompiledScriptCache scripts;
 
     private XppInterpreter.Interpreter.CompiledScript script;
@@ -22,7 +23,45 @@ public final class MXTXppScript
 				<Source><![CDATA[
     static void TypeNew()
     {
-        scripts = new XppInterpreter.Interpreter.CompiledScriptCache(MXTXppInterpreterExecutor::sharedProxy());
+        proxy = MXTXppCoreScript::newProxy();
+        scripts = new XppInterpreter.Interpreter.CompiledScriptCache(proxy);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>newProxy</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// The X++ side of the interpreter: the objects its DLL calls to work with X++ values, statements and metadata
+    /// </summary>
+    public static XppInterpreter.Interpreter.Proxy.XppProxy newProxy()
+    {
+        MXTXppCoreBinaryOperationProxy operators = new MXTXppCoreBinaryOperationProxy();
+        MXTXppCoreDataAccessProxy dataAccess = new MXTXppCoreDataAccessProxy();
+
+        return new XppInterpreter.Interpreter.Proxy.XppProxy(
+            new MXTXppCoreIntrinsicFunctionProvider(),
+            operators,
+            new MXTXppCoreCastingProxy(),
+            operators,
+            dataAccess,
+            new MXTXppCoreReflectionProxy(),
+            dataAccess,
+            new MXTXppCoreQueryGenerator());
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>sharedProxy</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// The proxy of the session, for the other code that runs scripts
+    /// </summary>
+    public static XppInterpreter.Interpreter.Proxy.XppProxy sharedProxy()
+    {
+        return proxy;
     }
 
 ]]></Source>
@@ -43,9 +82,9 @@ public final class MXTXppScript
     /// The text is parsed the first time the session uses it, and found by its text after that: X++ keeps a static field for each session.
     /// A text with errors gives a script too: isValid, parseErrors and validate say what is wrong.
     /// </summary>
-    public static MXTXppScript newFromSource(str _source)
+    public static MXTXppCoreScript newFromSource(str _source)
     {
-        MXTXppScript ret = new MXTXppScript();
+        MXTXppCoreScript ret = new MXTXppCoreScript();
 
         ret.initFromSource(_source);
 
@@ -82,7 +121,34 @@ public final class MXTXppScript
     /// </summary>
     public List parseErrors()
     {
-        return MXTXppInterpreterExecutionResult::construct(script.ParseResult).parseErrors();
+        return MXTXppCoreScript::parseErrorList(script.ParseResult);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parseErrorList</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// The errors of a parse result, as "Line n, position m: message"
+    /// </summary>
+    public static List parseErrorList(XppInterpreter.Parser.ParseResult _parseResult)
+    {
+        List errors = new List(Types::String);
+
+        if (_parseResult != null && !_parseResult.IsCorrect)
+        {
+            System.Collections.IEnumerator enumerator = _parseResult.Errors.GetEnumerator();
+
+            while (enumerator.MoveNext())
+            {
+                XppInterpreter.Parser.ParseError parseError = enumerator.Current;
+
+                errors.addEnd(strFmt("Line %1, position %2: %3", parseError.Line + 1, parseError.Position, parseError.Message));
+            }
+        }
+
+        return errors;
     }
 
 ]]></Source>
@@ -122,7 +188,7 @@ public final class MXTXppScript
 
             if (function == null)
             {
-                ret = checkFailed(strFmt("@MXT:ScriptFunctionNotFound", _function));
+                ret = checkFailed(strFmt("The script has no function '%1'.", _function));
             }
             else
             {
@@ -130,7 +196,7 @@ public final class MXTXppScript
 
                 if (variables)
                 {
-                    ret = checkFailed(strFmt("@MXT:ScriptFunctionVariable", _function, variables));
+                    ret = checkFailed(strFmt("The function '%1' uses %2, declared outside the functions of the script. In a call those variables don't exist.", _function, variables));
                 }
             }
         }
@@ -195,7 +261,7 @@ public final class MXTXppScript
             argumentCount = 7;
         }
 
-        return this.callWithArguments(_function, MXTXppScript::argumentArray(argumentCount,
+        return this.callWithArguments(_function, MXTXppCoreScript::argumentArray(argumentCount,
             _argument1, _argument2, _argument3, _argument4, _argument5, _argument6, _argument7, _argument8));
     }
 
@@ -256,9 +322,9 @@ public final class MXTXppScript
             argumentCount = 7;
         }
 
-        MXTXppScript script = MXTXppScript::newFromSource(_source);
+        MXTXppCoreScript script = MXTXppCoreScript::newFromSource(_source);
 
-        return script.callWithArguments(_function, MXTXppScript::argumentArray(argumentCount,
+        return script.callWithArguments(_function, MXTXppCoreScript::argumentArray(argumentCount,
             _argument1, _argument2, _argument3, _argument4, _argument5, _argument6, _argument7, _argument8));
     }
 
@@ -344,19 +410,19 @@ public final class MXTXppScript
                 error(errors.current());
             }
 
-            throw error("@MXT:ScriptNotValid");
+            throw error("The script has errors, so its functions can't be called.");
         }
 
         XppInterpreter.Interpreter.ScriptFunction function = script.FindFunction(_function);
 
         if (function == null)
         {
-            throw error(strFmt("@MXT:ScriptFunctionNotFound", _function));
+            throw error(strFmt("The script has no function '%1'.", _function));
         }
 
         if (!function.Accepts(_argumentCount))
         {
-            throw error(strFmt("@MXT:ScriptFunctionArguments", _function, _argumentCount));
+            throw error(strFmt("The function '%1' of the script can't be called with %2 arguments.", _function, _argumentCount));
         }
 
         // Stopped here as an X++ error. Running it would fail on the first use of the variable, as a .NET error
@@ -364,7 +430,7 @@ public final class MXTXppScript
 
         if (variables)
         {
-            throw error(strFmt("@MXT:ScriptFunctionVariable", _function, variables));
+            throw error(strFmt("The function '%1' uses %2, declared outside the functions of the script. In a call those variables don't exist.", _function, variables));
         }
 
         return function;

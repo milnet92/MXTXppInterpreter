@@ -27,13 +27,13 @@ internal final class MXTXppInterpreterVariableInspectorEntryManager
     {
         switch (_type)
         {
-            case MXTXppTypes::BooleanType.ToString():
-            case MXTXppTypes::GuidType.ToString():
-            case MXTXppTypes::DecimalType.ToString():
-            case MXTXppTypes::DateType.ToString():
-            case MXTXppTypes::Int32Type.ToString():
-            case MXTXppTypes::Int64Type.ToString():
-            case MXTXppTypes::StringType.ToString():
+            case MXTXppCoreCastingProxy::BooleanType.ToString():
+            case MXTXppCoreCastingProxy::GuidType.ToString():
+            case MXTXppCoreCastingProxy::DecimalType.ToString():
+            case MXTXppCoreCastingProxy::DateType.ToString():
+            case MXTXppCoreCastingProxy::Int32Type.ToString():
+            case MXTXppCoreCastingProxy::Int64Type.ToString():
+            case MXTXppCoreCastingProxy::StringType.ToString():
                 return false;
 
             case "System.Object[]":
@@ -56,7 +56,7 @@ internal final class MXTXppInterpreterVariableInspectorEntryManager
                     }
                     else
                     {
-                        return MXTXppCastingProxy::getXppTypeByTypeName(t.Name) != Types::Enum;
+                        return MXTXppCoreCastingProxy::getXppTypeByTypeName(t.Name) != Types::Enum;
                     }
                 }
                 else if (_value is Common)
@@ -175,7 +175,7 @@ internal final class MXTXppInterpreterVariableInspectorEntryManager
 
             }
 
-            xppType = MXTXppCastingProxy::getXppTypeByTypeName(typeName);
+            xppType = MXTXppCoreCastingProxy::getXppTypeByTypeName(typeName);
         }
 
         // Handle record type before null check as records with no RecId evaluates to true
@@ -217,8 +217,8 @@ internal final class MXTXppInterpreterVariableInspectorEntryManager
             dictField = new SysDictField(dictTable.id(), dictTable.fieldCnt2Id(i));
                 
             System.Type fieldType = dictField.typeName() ? 
-                MXTXppCastingProxy::getClrTypeFromTypeName(dictField.typeName()) :
-                MXTXppCastingProxy::getSystemTypeFromTypes(dictField.type());
+                MXTXppCoreCastingProxy::getClrTypeFromTypeName(dictField.typeName()) :
+                MXTXppCoreCastingProxy::getSystemTypeFromTypes(dictField.type());
 
             var newEntry = this.createEntry(
                 dictField.name(),
@@ -319,7 +319,7 @@ internal final class MXTXppInterpreterVariableInspectorEntryManager
             TYPE_MEMBER);
 
         // The public data of a .NET object is in its properties
-        if (!new MXTXppReflectionProxy().IsXppType(type))
+        if (!new MXTXppCoreReflectionProxy().IsXppType(type))
         {
             this.buildClrProperties(_entry, type, _value);
         }

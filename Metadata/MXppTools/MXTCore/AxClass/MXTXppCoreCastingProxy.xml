@@ -1,17 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
-	<Name>MXTXppCastingProxy</Name>
+	<Name>MXTXppCoreCastingProxy</Name>
 	<SourceCode>
 		<Declaration><![CDATA[
 using XppInterpreter.Interpreter.Proxy;
 using Microsoft.Dynamics.Ax;
 
-
 /// <summary>
-/// Cast proxy used by the interpreter
+/// The conversions of a script, and the .NET types of the X++ base types
 /// </summary>
-internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Proxy.IXppCastingProxy
+public final class MXTXppCoreCastingProxy implements XppInterpreter.Interpreter.Proxy.IXppCastingProxy
 {
+    public static System.Type GlobalType = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType("Global");
+    public static System.Type ArrayType = System.Type::GetType("Microsoft.Dynamics.Ax.Xpp.EdtArray`1, Microsoft.Dynamics.AX.Data.Core");
+    public static System.Type Int32Type = System.Type::GetType("System.Int32");
+    public static System.Type Int64Type = System.Type::GetType("System.Int64");
+    public static System.Type BooleanType = System.Type::GetType("System.Boolean");
+    public static System.Type GuidType = System.Type::GetType("System.Guid");
+    public static System.Type DecimalType = System.Type::GetType("System.Decimal");
+    public static System.Type StringType = System.Type::GetType("System.String");
+    public static System.Type DateTimeType = System.Type::GetType("Microsoft.Dynamics.Ax.Xpp.AxShared.utcdatetime, Microsoft.Dynamics.Ax.Xpp.AxShared");
+    public static System.Type DateType = System.Type::GetType("Microsoft.Dynamics.Ax.Xpp.AxShared.Date, Microsoft.Dynamics.Ax.Xpp.AxShared");
+    public static System.Type ContainerType = System.Type::GetType("System.Object[]");
+    public static System.Type AnyTypeType = System.Type::GetType("System.Object");
+    public static System.Type CommonType = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType(CommonTypeStr);
+    public static System.Type PrefixGuardType = System.Type::GetType("Microsoft.Dynamics.Ax.Xpp.SetPrefixGuard, Microsoft.Dynamics.AX.Xpp.Support");
+    public static System.Type IEnumerable = System.Type::GetType("System.Collections.IEnumerable");
+    public static System.Type ObjectType = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::GetTypeFromClassName("Object");
+
+    public const str RealTypeStr = "real";
+    public const str Int32TypeStr = "int";
+    public const str GuidTypeStr = "guid";
+    public const str ContainerTypeStr = "container";
+    public const str Int64TypeStr = "int64";
+    public const str DateTimeTypeStr = "utcdatetime";
+    public const str StringTypeStr = "str";
+    public const str DateTypeStr = "date";
+    public const str AnyTypeTypeStr = "anytype";
+    public const str BooleanTypeStr = "boolean";
+    public const str CommonTypeStr = "common";
+
     private static System.Collections.Hashtable xppTypesByName;
 }
 ]]></Declaration>
@@ -19,11 +47,6 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 			<Method>
 				<Name>getXppTypeByTypeName</Name>
 				<Source><![CDATA[
-    /// <summary>
-    /// Retrieve the Types type by name
-    /// </summary>
-    /// <param name = "_name">Type name</param>
-    /// <returns>Types type</returns>
     public static Types getXppTypeByTypeName(str _name)
     {
         // Asked for every declaration a script runs, and for a name that is not an enum it takes up to four lookups
@@ -35,7 +58,7 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 
         if (!xppTypesByName.ContainsKey(_name))
         {
-            xppTypesByName.set_Item(_name, enum2int(MXTXppCastingProxy::findXppTypeByTypeName(_name)));
+            xppTypesByName.set_Item(_name, enum2int(MXTXppCoreCastingProxy::findXppTypeByTypeName(_name)));
         }
 
         int type = System.Convert::ToInt32(xppTypesByName.get_Item(_name));
@@ -50,26 +73,22 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 				<Source><![CDATA[
     private static Types findXppTypeByTypeName(str _name)
     {
-        // Base Enums
         if (SysDictEnum::newName(_name) != null)
         {
             return Types::Enum;
         }
 
-        // Extended data types
         var dictType = SysDictType::newName(_name);
         if (dictType != null)
         {
             return dictType.baseType();
         }
 
-        //Common
         if (SysDictTable::newName(_name) != null)
         {
             return Types::Record;
         }
 
-        // Classes
         if (SysDictClass::newName(_name) != null)
         {
             return Types::Class;
@@ -77,15 +96,15 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 
         switch(_name)
         {
-            case MXtXppTypes::RealTypeStr: return Types::Real;
-            case MXtXppTypes::Int32TypeStr: return Types::Integer;
-            case MXtXppTypes::GuidTypeStr: return Types::Guid;
-            case MXtXppTypes::ContainerTypeStr: return Types::Container;
-            case MXtXppTypes::Int64TypeStr: return Types::Int64;
-            case MXtXppTypes::DateTimeTypeStr: return Types::UtcDateTime;
-            case MXtXppTypes::StringTypeStr: return Types::String;
-            case MXtXppTypes::DateTypeStr : return Types::Date;
-            case MXtXppTypes::AnyTypeTypeStr: return Types::AnyType;
+            case MXTXppCoreCastingProxy::RealTypeStr: return Types::Real;
+            case MXTXppCoreCastingProxy::Int32TypeStr: return Types::Integer;
+            case MXTXppCoreCastingProxy::GuidTypeStr: return Types::Guid;
+            case MXTXppCoreCastingProxy::ContainerTypeStr: return Types::Container;
+            case MXTXppCoreCastingProxy::Int64TypeStr: return Types::Int64;
+            case MXTXppCoreCastingProxy::DateTimeTypeStr: return Types::UtcDateTime;
+            case MXTXppCoreCastingProxy::StringTypeStr: return Types::String;
+            case MXTXppCoreCastingProxy::DateTypeStr : return Types::Date;
+            case MXTXppCoreCastingProxy::AnyTypeTypeStr: return Types::AnyType;
         }
 
         return Types::void;
@@ -101,32 +120,32 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
         switch (_type)
         {
             case Types::Integer:
-                return MXTXppTypes::Int32Type;
+                return MXTXppCoreCastingProxy::Int32Type;
 
             case Types::Int64:
-                return MXTXppTypes::Int64Type;
+                return MXTXppCoreCastingProxy::Int64Type;
 
             case Types::Guid:
-                return MXTXppTypes::GuidType;
+                return MXTXppCoreCastingProxy::GuidType;
 
             case Types::Real:
-                return MXTXppTypes::DecimalType;
+                return MXTXppCoreCastingProxy::DecimalType;
 
             case Types::String:
             case Types::VarString:
-                return MXTXppTypes::StringType;
+                return MXTXppCoreCastingProxy::StringType;
 
             case Types::UtcDateTime:
-                return MXTXppTypes::DateTimeType;
+                return MXTXppCoreCastingProxy::DateTimeType;
 
             case Types::Container:
-                return MXTXppTypes::ContainerType;
+                return MXTXppCoreCastingProxy::ContainerType;
 
             case Types::Date:
-                return MXTXppTypes::DateType;
+                return MXTXppCoreCastingProxy::DateType;
 
             case Types::AnyType:
-                return MXTXppTypes::AnyTypeType;
+                return MXTXppCoreCastingProxy::AnyTypeType;
         }
 
         return null;
@@ -140,12 +159,12 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
     public static System.Type getClrTypeFromTypeName(str _typeName)
     {
         // boolean is not a type for some reason
-        boolean isBoolean = _typeName == MXtXppTypes::BooleanTypeStr;
+        boolean isBoolean = _typeName == MXTXppCoreCastingProxy::BooleanTypeStr;
 
         if (isBoolean)
-            return MXTXppTypes::BooleanType;
+            return MXTXppCoreCastingProxy::BooleanType;
 
-        var xppType = MXTXppCastingProxy::getXppTypeByTypeName(_typeName);
+        var xppType = MXTXppCoreCastingProxy::getXppTypeByTypeName(_typeName);
 
         switch (xppType)
         {
@@ -164,7 +183,7 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
                 return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType(_typeName);
 
             default:
-                return MXTXppCastingProxy::getSystemTypeFromTypes(xppType);
+                return MXTXppCoreCastingProxy::getSystemTypeFromTypes(xppType);
         }
 
         return null;
@@ -175,14 +194,9 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 			<Method>
 				<Name>GetSystemTypeFromTypeName</Name>
 				<Source><![CDATA[
-    /// <summary>
-    /// Gets the System.Type by native type name (str, int, boolean...)
-    /// </summary>
-    /// <param name = "_typeName">Native type name</param>
-    /// <returns></returns>
     public System.Type GetSystemTypeFromTypeName(str _typeName)
     {
-        return MXTXppCastingProxy::getClrTypeFromTypeName(_typeName);
+        return MXTXppCoreCastingProxy::getClrTypeFromTypeName(_typeName);
     }
 
 ]]></Source>
@@ -190,11 +204,6 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 			<Method>
 				<Name>ToBoolean</Name>
 				<Source><![CDATA[
-    /// <summary>
-    /// Casts an object into a boolean
-    /// </summary>
-    /// <param name = "value"></param>
-    /// <returns></returns>
 	public boolean ToBoolean(System.Object value)
     {
         return value;
@@ -205,11 +214,6 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 			<Method>
 				<Name>IsStringEDT</Name>
 				<Source><![CDATA[
-    /// <summary>
-    /// Checks if a type is a string Extended Data Type
-    /// </summary>
-    /// <param name = "typeName">EDT to check</param>
-    /// <returns></returns>
     public boolean IsStringEDT(System.String typeName)
     {
         var dictType = SysDictType::newName(typeName);
@@ -227,12 +231,6 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 			<Method>
 				<Name>TruncateEDTString</Name>
 				<Source><![CDATA[
-    /// <summary>
-    /// Truncates the string based on an EDT
-    /// </summary>
-    /// <param name = "value">String value to truncate</param>
-    /// <param name = "typeName">EDT name</param>
-    /// <returns></returns>
     public System.String TruncateEDTString(System.String value, System.String typeName)
     {
         return Microsoft.Dynamics.Ax.Xpp.EdtHelper::GetEdtStringTruncated(value, typeName);
@@ -243,16 +241,11 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 			<Method>
 				<Name>CreateDynamicArray</Name>
 				<Source><![CDATA[
-    /// <summary>
-    /// Creates a native dynamic array of the given type as string
-    /// </summary>
-    /// <param name = "typeName">Array type</param>
-    /// <returns>Dynamics array as an object</returns>
     public System.Object CreateDynamicArray(System.String typeName)
     {
         System.Type type = this.GetSystemTypeFromTypeName(typeName);
 
-        return XppInterpreter.Core.ReflectionHelper::MakeGenericInstance(MXTXppTypes::ArrayType, type);
+        return XppInterpreter.Core.ReflectionHelper::MakeGenericInstance(MXTXppCoreCastingProxy::ArrayType, type);
     }
 
 ]]></Source>
@@ -260,17 +253,11 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 			<Method>
 				<Name>CreateFixedArray</Name>
 				<Source><![CDATA[
-    /// <summary>
-    /// Creates a native fixed sized array of the given type as string
-    /// </summary>
-    /// <param name = "typeName">Array type</param>
-    /// <param name = "size">Array size</param>
-    /// <returns>Fixed size array as an object</returns>
     public System.Object CreateFixedArray(System.String typeName, System.Int32 size)
     {
         System.Type type = this.GetSystemTypeFromTypeName(typeName);
 
-        return XppInterpreter.Core.ReflectionHelper::MakeGenericInstance(MXTXppTypes::ArrayType, type, size);
+        return XppInterpreter.Core.ReflectionHelper::MakeGenericInstance(MXTXppCoreCastingProxy::ArrayType, type, size);
     }
 
 ]]></Source>
@@ -278,15 +265,9 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 			<Method>
 				<Name>GetArrayIndexValue</Name>
 				<Source><![CDATA[
-    /// <summary>
-    /// Gets the value of an array by index performing type and boundary checks
-    /// </summary>
-    /// <param name = "array">Array object</param>
-    /// <param name = "idx">Index</param>
-    /// <returns>Value</returns>
     public System.Object GetArrayIndexValue(System.Object array, System.Int32 idx)
     {
-        if (!array.GetType().IsGenericType || array.GetType().GetGenericTypeDefinition() != MXTXppTypes::ArrayType)
+        if (!array.GetType().IsGenericType || array.GetType().GetGenericTypeDefinition() != MXTXppCoreCastingProxy::ArrayType)
         {
             throw Error("The array indexing can only be applied to X++ array types.");
         }
@@ -301,15 +282,9 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 			<Method>
 				<Name>SetArrayIndexValue</Name>
 				<Source><![CDATA[
-    /// <summary>
-    /// Sets the value of an array by index performing type and boundary checks
-    /// </summary>
-    /// <param name = "array">Array object</param>
-    /// <param name = "idx">Index</param>
-    /// <param name = "value">Value</param>
     public void SetArrayIndexValue(System.Object array, System.Int32 idx, System.Object value)
     {
-        if (!array.GetType().IsGenericType || array.GetType().GetGenericTypeDefinition() != MXTXppTypes::ArrayType)
+        if (!array.GetType().IsGenericType || array.GetType().GetGenericTypeDefinition() != MXTXppCoreCastingProxy::ArrayType)
         {
             throw Error("The array indexing can only be applied to X++ array types.");
         }
@@ -324,12 +299,6 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 			<Method>
 				<Name>As</Name>
 				<Source><![CDATA[
-    /// <summary>
-    /// Executes the as statement
-    /// </summary>
-    /// <param name = "_value">Value to cast</param>
-    /// <param name = "_typeName">Type cast</param>
-    /// <returns></returns>
     public System.Object As(System.Object _value, System.String _typeName)
     {
         if (this.Is(_value, _typeName))
@@ -345,12 +314,6 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 			<Method>
 				<Name>Is</Name>
 				<Source><![CDATA[
-    /// <summary>
-    /// Executes the is statement
-    /// </summary>
-    /// <param name = "_value">Value to check</param>
-    /// <param name = "_typeName">Type name to check</param>
-    /// <returns></returns>
     public System.Boolean Is(System.Object _value, System.String _typeName)
     {
         if (className2Id(_typeName))
@@ -379,11 +342,10 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
         }
         else if (tableName2Id(_typeName))
         {
-            // Validate if it's common'
             if (_value)
             {
                 System.Type valueType = _value.GetType();
-                boolean isCommonType = valueType == MXTXppTypes::CommonType || valueType.IsSubclassOf(MXTXppTypes::CommonType);
+                boolean isCommonType = valueType == MXTXppCoreCastingProxy::CommonType || valueType.IsSubclassOf(MXTXppCoreCastingProxy::CommonType);
 
                 if (!isCommonType)
                 {
@@ -444,14 +406,14 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
     {
         switch (_type)
         {
-            case MXTXppTypes::BooleanType: return this.GetDefaultValueForType(MXTXppTypes::BooleanTypeStr);
-            case MXTXppTypes::DateType: return this.GetDefaultValueForType(MXTXppTypes::DateTypeStr);
-            case MXTXppTypes::DateTimeType: return this.GetDefaultValueForType(MXTXppTypes::DateTimeTypeStr);
-            case MXTXppTypes::StringType: return this.GetDefaultValueForType(MXTXppTypes::StringTypeStr);
-            case MXTXppTypes::Int32Type: return this.GetDefaultValueForType(MXTXppTypes::Int32TypeStr);
-            case MXTXppTypes::Int64Type: return this.GetDefaultValueForType(MXTXppTypes::Int64TypeStr);
-            case MXTXppTypes::GuidType: return this.GetDefaultValueForType(MXTXppTypes::GuidTypeStr);
-            case MXTXppTypes::DecimalType: return this.GetDefaultValueForType(MXTXppTypes::RealTypeStr);
+            case MXTXppCoreCastingProxy::BooleanType: return this.GetDefaultValueForType(MXTXppCoreCastingProxy::BooleanTypeStr);
+            case MXTXppCoreCastingProxy::DateType: return this.GetDefaultValueForType(MXTXppCoreCastingProxy::DateTypeStr);
+            case MXTXppCoreCastingProxy::DateTimeType: return this.GetDefaultValueForType(MXTXppCoreCastingProxy::DateTimeTypeStr);
+            case MXTXppCoreCastingProxy::StringType: return this.GetDefaultValueForType(MXTXppCoreCastingProxy::StringTypeStr);
+            case MXTXppCoreCastingProxy::Int32Type: return this.GetDefaultValueForType(MXTXppCoreCastingProxy::Int32TypeStr);
+            case MXTXppCoreCastingProxy::Int64Type: return this.GetDefaultValueForType(MXTXppCoreCastingProxy::Int64TypeStr);
+            case MXTXppCoreCastingProxy::GuidType: return this.GetDefaultValueForType(MXTXppCoreCastingProxy::GuidTypeStr);
+            case MXTXppCoreCastingProxy::DecimalType: return this.GetDefaultValueForType(MXTXppCoreCastingProxy::RealTypeStr);
             default: return this.GetDefaultValueForType(_type.Name);
         }
     }
@@ -461,16 +423,11 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 			<Method>
 				<Name>GetDefaultValueForType</Name>
 				<Source><![CDATA[
-    /// <summary>
-    /// Gets the default value for the given type name (int: 0, boolean: false ...)
-    /// </summary>
-    /// <param name = "_name">Type name</param>
-    /// <returns></returns>
 	public System.Object GetDefaultValueForType(System.String _name)
     {
-        if (_name == MXTXppTypes::BooleanTypeStr) return false;
+        if (_name == MXTXppCoreCastingProxy::BooleanTypeStr) return false;
 
-        Types types = MXTXppCastingProxy::getXppTypeByTypeName(_name);
+        Types types = MXTXppCoreCastingProxy::getXppTypeByTypeName(_name);
         
         switch (types)
         {
@@ -498,11 +455,6 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 			<Method>
 				<Name>isEnumType</Name>
 				<Source><![CDATA[
-    /// <summary>
-    /// Checks if the given System.Type is an enumeration
-    /// </summary>
-    /// <param name = "_type">Systen.Type to check</param>
-    /// <returns>True if it is an enum, otherwise false</returns>
     private boolean isEnumType(System.Type _type)
     {
         return SysDictEnum::newName(_type.Name) != null;
@@ -520,20 +472,20 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
         if (_toType.IsAssignableFrom(_fromType) || _fromType.IsAssignableFrom(_toType)) return true;
 
         // anytype is always convertible
-        if (_toType == MXTXppTypes::AnyTypeType) return true;
+        if (_toType == MXTXppCoreCastingProxy::AnyTypeType) return true;
 
         // A record goes to a table map and back
         if (this.isMapType(_toType) || this.isMapType(_fromType))
         {
-            return _toType.IsSubclassOf(MXTXppTypes::CommonType) && _fromType.IsSubclassOf(MXTXppTypes::CommonType);
+            return _toType.IsSubclassOf(MXTXppCoreCastingProxy::CommonType) && _fromType.IsSubclassOf(MXTXppCoreCastingProxy::CommonType);
         }
 
         // int, int64, real, boolean and enum are all implicitly convertible
         Set numCheckSet = new Set(Types::Class);
-        numCheckSet.add(MXTXppTypes::Int32Type);
-        numCheckSet.add(MXTXppTypes::Int64Type);
-        numCheckSet.add(MXTXppTypes::DecimalType);
-        numCheckSet.add(MXTXppTypes::BooleanType);
+        numCheckSet.add(MXTXppCoreCastingProxy::Int32Type);
+        numCheckSet.add(MXTXppCoreCastingProxy::Int64Type);
+        numCheckSet.add(MXTXppCoreCastingProxy::DecimalType);
+        numCheckSet.add(MXTXppCoreCastingProxy::BooleanType);
 
         if ((numCheckSet.in(_fromType) || this.isEnumType(_fromType)) &&
             (numCheckSet.in(_toType) || this.isEnumType(_toType)))
@@ -542,8 +494,8 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
         }
 
         // date and datetime are convertible
-        if ((_toType == MXTXppTypes::DateType && _fromType == MXTXppTypes::DateTimeType) ||
-            (_toType == MXTXppTypes::DateTimeType && _fromType == MXTXppTypes::DateType))
+        if ((_toType == MXTXppCoreCastingProxy::DateType && _fromType == MXTXppCoreCastingProxy::DateTimeType) ||
+            (_toType == MXTXppCoreCastingProxy::DateTimeType && _fromType == MXTXppCoreCastingProxy::DateType))
         {
             return true;
         }
@@ -556,33 +508,28 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 			<Method>
 				<Name>IsReferenceType</Name>
 				<Source><![CDATA[
-    /// <summary>
-    /// Checks if the System.Type provided is a reference type
-    /// </summary>
-    /// <param name = "_type">System.Type</param>
-    /// <returns>True if it's a reference type, otherwise false</returns>
     public System.Boolean IsReferenceType(System.Type _type)
     {
         if (_type == null) return false;
 
         switch (_type)
         {
-            case MXTXppTypes::AnyTypeType:
-            case MXTXppTypes::ArrayType:
-            case MXTXppTypes::BooleanType:
-            case MXTXppTypes::CommonType:
-            case MXTXppTypes::ContainerType:
-            case MXTXppTypes::DateTimeType:
-            case MXTXppTypes::DateType:
-            case MXTXppTypes::DecimalType:
-            case MXTXppTypes::GuidType:
-            case MXTXppTypes::Int32Type:
-            case MXTXppTypes::Int64Type:
-            case MXTXppTypes::StringType:
+            case MXTXppCoreCastingProxy::AnyTypeType:
+            case MXTXppCoreCastingProxy::ArrayType:
+            case MXTXppCoreCastingProxy::BooleanType:
+            case MXTXppCoreCastingProxy::CommonType:
+            case MXTXppCoreCastingProxy::ContainerType:
+            case MXTXppCoreCastingProxy::DateTimeType:
+            case MXTXppCoreCastingProxy::DateType:
+            case MXTXppCoreCastingProxy::DecimalType:
+            case MXTXppCoreCastingProxy::GuidType:
+            case MXTXppCoreCastingProxy::Int32Type:
+            case MXTXppCoreCastingProxy::Int64Type:
+            case MXTXppCoreCastingProxy::StringType:
                 return false;
         }
 
-        Types type = MXTXppCastingProxy::getXppTypeByTypeName(_type.Name);
+        Types type = MXTXppCoreCastingProxy::getXppTypeByTypeName(_type.Name);
 
         switch (type)
         {
@@ -606,7 +553,7 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
     public System.Object Cast(System.Object _value, System.Type _toType)
     {
         // Not with != null: for X++ an empty record is the same as null
-        if (MXTXppTypes::CommonType.IsInstanceOfType(_value) && _toType.IsSubclassOf(MXTXppTypes::CommonType))
+        if (MXTXppCoreCastingProxy::CommonType.IsInstanceOfType(_value) && _toType.IsSubclassOf(MXTXppCoreCastingProxy::CommonType))
         {
             if (_toType.IsInstanceOfType(_value) || _value.GetType().IsAssignableFrom(_toType))
             {
@@ -632,21 +579,21 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
         }
 
         // Boolean is also an enum in X++, but it has to stay a boolean
-        if (_toType != MXTXppTypes::BooleanType && this.isEnumType(_toType))
+        if (_toType != MXTXppCoreCastingProxy::BooleanType && this.isEnumType(_toType))
         {
             return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToInt(_value);
         }
 
         switch (_toType)
         {
-            case MXTXppTypes::BooleanType: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ToBoolean(_value);
-            case MXTXppTypes::DateType: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToDate(_value, false);
-            case MXTXppTypes::DateTimeType: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToDateTime(_value, false);
-            case MXTXppTypes::DecimalType: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToReal(_value);
-            case MXTXppTypes::GuidType: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToGuid(_value);
-            case MXTXppTypes::Int32Type: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToInt(_value);
-            case MXTXppTypes::Int64Type: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToInt64(_value);
-            case MXTXppTypes::StringType: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToString(_value);
+            case MXTXppCoreCastingProxy::BooleanType: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ToBoolean(_value);
+            case MXTXppCoreCastingProxy::DateType: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToDate(_value, false);
+            case MXTXppCoreCastingProxy::DateTimeType: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToDateTime(_value, false);
+            case MXTXppCoreCastingProxy::DecimalType: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToReal(_value);
+            case MXTXppCoreCastingProxy::GuidType: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToGuid(_value);
+            case MXTXppCoreCastingProxy::Int32Type: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToInt(_value);
+            case MXTXppCoreCastingProxy::Int64Type: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToInt64(_value);
+            case MXTXppCoreCastingProxy::StringType: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToString(_value);
         }
 
         return System.Convert::ChangeType(_value, _toType);
@@ -661,7 +608,7 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
     {
         if (_type == null) return null;
 
-        return MXTXppTypes::ArrayType.MakeGenericType(_type);
+        return MXTXppCoreCastingProxy::ArrayType.MakeGenericType(_type);
     }
 
 ]]></Source>
@@ -671,7 +618,7 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 				<Source><![CDATA[
     private boolean isMapType(System.Type _type)
     {
-        if (!_type.IsSubclassOf(MXTXppTypes::CommonType))
+        if (!_type.IsSubclassOf(MXTXppCoreCastingProxy::CommonType))
         {
             return false;
         }

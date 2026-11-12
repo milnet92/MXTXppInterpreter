@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
-	<Name>MXTXppIntrinsicFunctionProvider</Name>
+	<Name>MXTXppCoreIntrinsicFunctionProvider</Name>
 	<SourceCode>
 		<Declaration><![CDATA[
 /// <summary>
 /// Implementation of compile-time X++ functions
 /// </summary>
-internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.Interpreter.Proxy.IIntrinsicFunctionProvider
+public final class MXTXppCoreIntrinsicFunctionProvider implements XppInterpreter.Interpreter.Proxy.IIntrinsicFunctionProvider
 {
 }
 ]]></Declaration>
@@ -16,7 +16,7 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     System.Type GetCustomPredefinedFunctionProvider()
     {
-        return MXTXppPredefinedFunctions::ThisType;
+        return MXTXppCorePredefinedFunctions::ThisType;
     }
 
 ]]></Source>
@@ -26,7 +26,7 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
 	public int classNum(str name)
     {
-        MXTXppIntrinsicFunctionHelper::validateClassName(name);
+        MXTXppCoreIntrinsicFunctionProvider::validateClassName(name);
 
         return className2Id(name);
 	}
@@ -48,7 +48,7 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public str formStr(str name)
     {
-        MXTXppIntrinsicFunctionHelper::validateFormName(name);
+        MXTXppCoreIntrinsicFunctionProvider::validateFormName(name);
 
         return name;
     }
@@ -60,7 +60,7 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public int tableNum(str name)
     {
-        MXTXppIntrinsicFunctionHelper::validateTableName(name);
+        MXTXppCoreIntrinsicFunctionProvider::validateTableName(name);
 
         return tableName2Id(name);
     }
@@ -122,7 +122,7 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public str menuItemActionStr(System.String name)
     {
-        MXTXppIntrinsicFunctionHelper::validateMenuItem(name, MenuItemType::Action);
+        MXTXppCoreIntrinsicFunctionProvider::validateMenuItem(name, MenuItemType::Action);
 
         return name;
     }
@@ -134,7 +134,7 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public str menuItemDisplayStr(System.String name)
     {
-        MXTXppIntrinsicFunctionHelper::validateMenuItem(name, MenuItemType::Display);
+        MXTXppCoreIntrinsicFunctionProvider::validateMenuItem(name, MenuItemType::Display);
 
         return name;
     }
@@ -146,7 +146,7 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public str menuItemOutputStr(System.String name)
     {
-        MXTXppIntrinsicFunctionHelper::validateMenuItem(name, MenuItemType::Output);
+        MXTXppCoreIntrinsicFunctionProvider::validateMenuItem(name, MenuItemType::Output);
 
         return name;
     }
@@ -158,7 +158,7 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public str methodStr(System.String className, System.String methodName)
     {
-        MXTXppIntrinsicFunctionHelper::validateInstanceMethod(className, methodName);
+        MXTXppCoreIntrinsicFunctionProvider::validateInstanceMethod(className, methodName);
 
         return methodName;
     }
@@ -170,7 +170,7 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public str staticMethodStr(System.String className, System.String methodName)
     {
-        MXTXppIntrinsicFunctionHelper::validateStaticMethod(className, methodName);
+        MXTXppCoreIntrinsicFunctionProvider::validateStaticMethod(className, methodName);
 
         return methodName;
     }
@@ -202,7 +202,7 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public int enumNum(System.String enumName)
     {
-        MXTXppIntrinsicFunctionHelper::validateEnumName(enumName);
+        MXTXppCoreIntrinsicFunctionProvider::validateEnumName(enumName);
 
         return enumName2Id(enumName);
     }
@@ -214,7 +214,7 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public int configurationKeyNum(System.String keyName)
     {
-        MXTXppIntrinsicFunctionHelper::validateConfigurationKeyName(keyName);
+        MXTXppCoreIntrinsicFunctionProvider::validateConfigurationKeyName(keyName);
 
         return configurationKeyName2Id(keyName);
     }
@@ -286,7 +286,7 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public str attributeStr(System.String attribute)
     {
-        MXTXppIntrinsicFunctionHelper::validateAttributeName(attribute);
+        MXTXppCoreIntrinsicFunctionProvider::validateAttributeName(attribute);
 
         return attribute;
     }
@@ -318,7 +318,7 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public str enumLiteralStr(System.String enumName, System.String literal)
     {
-        MXTXppIntrinsicFunctionHelper::validateEnumValue(enumName, literal);
+        MXTXppCoreIntrinsicFunctionProvider::validateEnumValue(enumName, literal);
 
         return literal;
     }
@@ -340,7 +340,7 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public int extendedTypeNum(System.String edtName)
     {
-        MXTXppIntrinsicFunctionHelper::validateEDTName(edtName);
+        MXTXppCoreIntrinsicFunctionProvider::validateEDTName(edtName);
         return extendedTypeName2Id(edtName);
     }
 
@@ -351,7 +351,7 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public int fieldNum(System.String tableName, System.String fieldName)
     {
-        MXTXppIntrinsicFunctionHelper::validateFieldName(tableName, fieldName);
+        MXTXppCoreIntrinsicFunctionProvider::validateFieldName(tableName, fieldName);
 
         return fieldName2Id(tableName2Id(tableName), fieldName);
     }
@@ -573,7 +573,7 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
 				<Source><![CDATA[
     public str roleStr(System.String roleName)
     {
-        MXTXppIntrinsicFunctionHelper::validateRoleName(roleName);
+        MXTXppCoreIntrinsicFunctionProvider::validateRoleName(roleName);
 
         return roleName;
     }
@@ -836,6 +836,242 @@ internal final class MXTXppIntrinsicFunctionProvider implements XppInterpreter.I
     public str workflowTypeStr(System.String workflowTypeName)
     {
         return workflowTypeName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>throwArgumentException</Name>
+				<Source><![CDATA[
+    private static void throwArgumentException(str _argValue, str _expectedType)
+    {
+        throw new System.Exception(strFmt("'%1' argument does not specify a known %2.", _argValue, _expectedType));
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateClassName</Name>
+				<Source><![CDATA[
+	private static void validateClassName(str _className)
+    {
+        if (className2Id(_className) == 0)
+        {
+            MXTXppCoreIntrinsicFunctionProvider::throwArgumentException(_className, 'class');
+        }
+	}
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateFormName</Name>
+				<Source><![CDATA[
+    private static void validateFormName(str _formName)
+    {
+        if (Microsoft.Dynamics.Ax.Xpp.MetadataSupport::GetForm(_formName) == null)
+        {
+            throw new System.Exception(strFmt("Form '%1' is not found.", _formName));
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateTableName</Name>
+				<Source><![CDATA[
+    private static void validateTableName(str _tableName)
+    {
+        if (tableName2Id(_tableName) == 0)
+        {
+            MXTXppCoreIntrinsicFunctionProvider::throwArgumentException(_tableName, 'table/map/view/data entity');
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateFieldName</Name>
+				<Source><![CDATA[
+    private static void validateFieldName(str _tableName, str _fieldName)
+    {
+        MXTXppCoreIntrinsicFunctionProvider::validateTableName(_tableName);
+
+        if (fieldName2Id(tableName2Id(_tableName), _fieldName) == 0)
+        {
+            throw new System.Exception(strFmt("Table '%1' does not contain a field named '%2'.", _tableName, _fieldName));
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateEDTName</Name>
+				<Source><![CDATA[
+    private static void validateEDTName(str _edtName)
+    {
+        if (extendedTypeName2Id(_edtName) == 0)
+        {
+            MXTXppCoreIntrinsicFunctionProvider::throwArgumentException(_edtName, 'extended data type');
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateMenuItem</Name>
+				<Source><![CDATA[
+    private static void validateMenuItem(str _menuItemName, MenuItemType _type)
+    {
+        switch (_type)
+        {
+            case MenuItemType::Action:
+                if (Microsoft.Dynamics.Ax.Xpp.MetadataSupport::GetMenuItemAction(_menuItemName) == null)
+                {
+                    MXTXppCoreIntrinsicFunctionProvider::throwArgumentException(_menuItemName, 'menu item action');
+                }
+                break;
+
+            case MenuItemType::Display:
+                if (Microsoft.Dynamics.Ax.Xpp.MetadataSupport::GetMenuItemDisplay(_menuItemName) == null)
+                {
+                    MXTXppCoreIntrinsicFunctionProvider::throwArgumentException(_menuItemName, 'menu item display');
+                }
+                break;
+
+            case MenuItemType::Output:
+                if (Microsoft.Dynamics.Ax.Xpp.MetadataSupport::GetMenuItemOutput(_menuItemName) == null)
+                {
+                    MXTXppCoreIntrinsicFunctionProvider::throwArgumentException(_menuItemName, 'menu item output');
+                }
+                break;
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateInstanceMethod</Name>
+				<Source><![CDATA[
+    private static void validateInstanceMethod(str _className, str _methodName)
+    {
+        MXTXppCoreIntrinsicFunctionProvider::validateClassName(_className);
+        
+        SysDictClass dictClass = new SysDictClass(className2Id(_className));
+
+        if (!dictClass.hasObjectMethod(_methodName))
+        {
+            throw new System.Exception(strFmt("The instance method designated by argument '%1' dos not exist.", _methodName));
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateStaticMethod</Name>
+				<Source><![CDATA[
+    private static void validateStaticMethod(str _className, str _methodName)
+    {
+        MXTXppCoreIntrinsicFunctionProvider::validateClassName(_className);
+        
+        SysDictClass dictClass = new SysDictClass(className2Id(_className));
+
+        if (!dictClass.hasStaticMethod(_methodName))
+        {
+            throw new System.Exception(strFmt("The static method designated by argument '%1' dos not exist.", _methodName));
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateEnumName</Name>
+				<Source><![CDATA[
+    private static void validateEnumName(str _enumName)
+    {
+        if (enumName2Id(_enumName) == 0)
+        {
+            MXTXppCoreIntrinsicFunctionProvider::throwArgumentException(_enumName, 'enumeration');
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateEnumValue</Name>
+				<Source><![CDATA[
+    private static void validateEnumValue(str _enumName, str _enumValue)
+    {
+        MXTXppCoreIntrinsicFunctionProvider::validateEnumName(_enumName);
+
+        var sysDictEnum = new SysDictEnum(enumName2Id(_enumName));
+        for(int i = 0 ; i <= sysDictEnum.values() ; i++)
+        {
+            if(sysDictEnum.index2Name(i) == _enumValue)
+            {
+                return;
+            }
+        }
+
+        throw new System.Exception(strFmt("Enumerable '%1' does not contain a value named '%2'.", _enumName, _enumValue));
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateAttributeName</Name>
+				<Source><![CDATA[
+    private static void validateAttributeName(str _attributeName)
+    {
+        if (className2Id(_attributeName) == 0)
+        {
+            MXTXppCoreIntrinsicFunctionProvider::throwArgumentException(_attributeName, 'attribute');
+        }
+
+        DictClass dictClass = SysDictClass::newName(_attributeName);
+
+        if (dictClass.extend() != classNum(SysAttribute))
+        {
+            MXTXppCoreIntrinsicFunctionProvider::throwArgumentException(_attributeName, 'attribute');
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateConfigurationKeyName</Name>
+				<Source><![CDATA[
+    private static void validateConfigurationKeyName(str _configurationKeyName)
+    {
+        if (configurationKeyName2Id(_configurationKeyName) == 0)
+        {
+            MXTXppCoreIntrinsicFunctionProvider::throwArgumentException(_configurationKeyName, 'configuration key');
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateDataEntityName</Name>
+				<Source><![CDATA[
+    private static void validateDataEntityName(str _dataEntityName)
+    {
+        if (Microsoft.Dynamics.Ax.Xpp.MetadataSupport::GetDataEntity(_dataEntityName) == null)
+        {
+            throw new System.Exception(strFmt("Data entity '%1' is not found.", _dataEntityName));
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validateRoleName</Name>
+				<Source><![CDATA[
+    private static void validateRoleName(str _roleName)
+    {
+        if (Microsoft.Dynamics.Ax.Xpp.MetadataSupport::GetSecurityRole(_roleName) == null)
+        {
+            throw new System.Exception(strFmt("Security role '%1' is not found.", _roleName));
+        }
     }
 
 ]]></Source>

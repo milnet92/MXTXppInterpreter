@@ -8,7 +8,7 @@ using XppInterpreter.Tests.Infrastructure;
 namespace XppInterpreter.Tests
 {
     /// <summary>
-    /// A host calls the functions of a script by name, with its own values: MXTXppScript on an AOS.
+    /// A host calls the functions of a script by name, with its own values: MXTXppCoreScript on an AOS.
     /// The record and object arguments of a compiled caller can only be tried on an AOS.
     /// </summary>
     [TestClass]

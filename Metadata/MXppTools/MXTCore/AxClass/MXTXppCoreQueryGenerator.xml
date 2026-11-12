@@ -1,16 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
-	<Name>MXTXppQueryGenerator</Name>
+	<Name>MXTXppCoreQueryGenerator</Name>
 	<SourceCode>
 		<Declaration><![CDATA[
 using XppInterpreter.Interpreter.Query;
 using XppInterpreter.Interpreter;
 using XppInterpreter;
 
-internal final class MXTXppQueryGenerator implements XppInterpreter.Interpreter.Query.IQueryGenerator
+/// <summary>
+/// Builds the SysDa statement of a select, insert_recordset, update_recordset or delete_from of a script.
+/// The interpreter keeps one object that creates a generator for each statement (NewQueryGenerator), and a select
+/// returns one more that reads its rows (NewSearchInstance).
+/// </summary>
+public final class MXTXppCoreQueryGenerator implements
+    XppInterpreter.Interpreter.Query.IQueryGenerator,
+    XppInterpreter.Interpreter.Proxy.IXppQueryGenerationProxy,
+    XppInterpreter.Interpreter.Query.ISearchInstance
 {
     private Set tablesInQuery = new Set(Types::String);
 
+    private SysDaSearchObject rowSearchObject;
+    private SysDaSearchStatement rowSearchStatement;
+    private boolean nextExecuted = false;
 }
 ]]></Declaration>
 		<Methods>
@@ -78,7 +89,7 @@ internal final class MXTXppQueryGenerator implements XppInterpreter.Interpreter.
             }
         }
 
-        var searchInstance = new MXTXppSearchInstance();
+        var searchInstance = new MXTXppCoreQueryGenerator();
         searchInstance.SetSearchObjects(searchObject, searchStatement);
 
         return searchInstance;
@@ -135,7 +146,6 @@ internal final class MXTXppQueryGenerator implements XppInterpreter.Interpreter.
             sysDaInsert.fields().add(fields.GetValue(i));
         }
 
-        // Select query
         sysDaInsert.query(this.generateFromQuery(_insertRecordset.Select.Query, _runtimeContext));
 
         return sysDaInsert;
@@ -154,25 +164,22 @@ internal final class MXTXppQueryGenerator implements XppInterpreter.Interpreter.
 
         SysDaUpdateObject sysDaUpdate = new SysDaUpdateObject(common);
 
-        // Join
         if (_updateRecordset.Join != null)
         {
             sysDaUpdate.joinClause(this.getJoinKind(_updateRecordset.Join), this.generateFromQuery(_updateRecordset.Join.Select, _runtimeContext));
         }
 
-        // Where
         if (_updateRecordset.Where != null)
         {
-            MXTXppQueryExpressionGenerator queryExpressionGenerator = new MXTXppQueryExpressionGenerator(_runtimeContext, tablesInQuery);
+            MXTXppCoreQueryExpressionGenerator queryExpressionGenerator = new MXTXppCoreQueryExpressionGenerator(_runtimeContext, tablesInQuery);
             sysDaUpdate.whereClause(queryExpressionGenerator.visitExpression(_updateRecordset.Where.Expression));
         }
 
-        // Settings
         var settings = _updateRecordset.Settings.ToArray();
         for (int i = 0; i < settings.Length; i++)
         {
             Parser.Data.Setting settingField = settings.GetValue(i);
-            MXTXppQueryExpressionGenerator queryExpressionGenerator = new MXTXppQueryExpressionGenerator(_runtimeContext, tablesInQuery);
+            MXTXppCoreQueryExpressionGenerator queryExpressionGenerator = new MXTXppCoreQueryExpressionGenerator(_runtimeContext, tablesInQuery);
             sysDaUpdate.settingClause().add(settingField.FieldName, queryExpressionGenerator.visitExpression(settingField.Expression));
         }
 
@@ -192,16 +199,14 @@ internal final class MXTXppQueryGenerator implements XppInterpreter.Interpreter.
 
         SysDaQueryObject sysDaQuery = new SysDaQueryObject(common);
 
-        // Join
         if (_deleteFrom.Join != null)
         {
             sysDaQuery.joinClause(this.getJoinKind(_deleteFrom.Join), this.generateFromQuery(_deleteFrom.Join.Select, _runtimeContext));
         }
 
-        // Where
         if (_deleteFrom.Where != null)
         {
-            MXTXppQueryExpressionGenerator queryExpressionGenerator = new MXTXppQueryExpressionGenerator(_runtimeContext, tablesInQuery);
+            MXTXppCoreQueryExpressionGenerator queryExpressionGenerator = new MXTXppCoreQueryExpressionGenerator(_runtimeContext, tablesInQuery);
             sysDaQuery.whereClause(queryExpressionGenerator.visitExpression(_deleteFrom.Where.Expression));
         }
 
@@ -245,7 +250,6 @@ internal final class MXTXppQueryGenerator implements XppInterpreter.Interpreter.
         sysDaQuery.repeatablereadHint = _query.RepeatableRead;
         sysDaQuery.noFetchHint = _query.NoFetch;
 
-        // Selection fields
         if (_query.SelectionFields != null)
         {
             var selectionFields = _query.SelectionFields.ToArray();
@@ -259,7 +263,6 @@ internal final class MXTXppQueryGenerator implements XppInterpreter.Interpreter.
             this.addAllSelectionFields(sysDaQuery.projection(), sysDaQuery.table().TableId);
         }
 
-        // Group by
         if (_query.GroupFields != null)
         {
             var groupFields = _query.GroupFields.ToArray();
@@ -271,7 +274,6 @@ internal final class MXTXppQueryGenerator implements XppInterpreter.Interpreter.
             }
         }
 
-        // Order by
         if (_query.OrderFields != null)
         {
             var orderFields = _query.OrderFields.ToArray();
@@ -302,11 +304,10 @@ internal final class MXTXppQueryGenerator implements XppInterpreter.Interpreter.
         // is the value the buffer holds, which is what compiled X++ does (conformance pM43, pM59)
         if (_query.Where != null)
         {
-            MXTXppQueryExpressionGenerator queryExpressionGenerator = new MXTXppQueryExpressionGenerator(_runtimeContext, tablesInQuery, _isQueryExpression, _buffer);
+            MXTXppCoreQueryExpressionGenerator queryExpressionGenerator = new MXTXppCoreQueryExpressionGenerator(_runtimeContext, tablesInQuery, _isQueryExpression, _buffer);
             sysDaQuery.whereClause(queryExpressionGenerator.visitExpression(_query.Where.Expression));
         }
 
-        // Join
         if (!isExpression && _query.Join != null)
         {
             sysDaQuery.joinClause(this.getJoinKind(_query.Join), this.generateFromQuery(_query.Join.Select, _runtimeContext, false, null, true));
@@ -452,6 +453,48 @@ internal final class MXTXppQueryGenerator implements XppInterpreter.Interpreter.
         }
 
         throw new System.Exception("Invalid join type.");
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>NewQueryGenerator</Name>
+				<Source><![CDATA[
+    public XppInterpreter.Interpreter.Query.IQueryGenerator NewQueryGenerator()
+    {
+        return new MXTXppCoreQueryGenerator();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>Next</Name>
+				<Source><![CDATA[
+	public boolean Next()
+    {
+        nextExecuted = true;
+        return rowSearchStatement.findNext(rowSearchObject);
+	}
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>SetSearchObjects</Name>
+				<Source><![CDATA[
+    public void SetSearchObjects(System.Object _searchObject, System.Object _searchStatement)
+    {
+        rowSearchObject = _searchObject;
+        rowSearchStatement = _searchStatement;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>IsNextExecuted</Name>
+				<Source><![CDATA[
+    public boolean IsNextExecuted()
+    {
+        return nextExecuted;
     }
 
 ]]></Source>

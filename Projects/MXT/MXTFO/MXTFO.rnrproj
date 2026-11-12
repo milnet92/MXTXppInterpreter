@@ -49,16 +49,6 @@
     <Folder Include="Tiles\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="AxClass\MXTXppBinaryOperationProxy">
-      <SubType>Content</SubType>
-      <Name>MXTXppBinaryOperationProxy</Name>
-      <Link>Classes\MXTXppBinaryOperationProxy</Link>
-    </Content>
-    <Content Include="AxClass\MXTXppCastingProxy">
-      <SubType>Content</SubType>
-      <Name>MXTXppCastingProxy</Name>
-      <Link>Classes\MXTXppCastingProxy</Link>
-    </Content>
     <Content Include="AxClass\MXTXppCompletionEntryContract">
       <SubType>Content</SubType>
       <Name>MXTXppCompletionEntryContract</Name>
@@ -73,16 +63,6 @@
       <SubType>Content</SubType>
       <Name>MXTXppCompletionsContract</Name>
       <Link>Classes\MXTXppCompletionsContract</Link>
-    </Content>
-    <Content Include="AxClass\MXTXppDataAccessProxy">
-      <SubType>Content</SubType>
-      <Name>MXTXppDataAccessProxy</Name>
-      <Link>Classes\MXTXppDataAccessProxy</Link>
-    </Content>
-    <Content Include="AxClass\MXTXppExceptionsProxy">
-      <SubType>Content</SubType>
-      <Name>MXTXppExceptionsProxy</Name>
-      <Link>Classes\MXTXppExceptionsProxy</Link>
     </Content>
     <Content Include="AxClass\MXTXppExportProcess">
       <SubType>Content</SubType>
@@ -149,11 +129,6 @@
       <Name>MXTXppInterpreterDebugSession</Name>
       <Link>Classes\MXTXppInterpreterDebugSession</Link>
     </Content>
-    <Content Include="AxClass\MXTXppScript">
-      <SubType>Content</SubType>
-      <Name>MXTXppScript</Name>
-      <Link>Classes\MXTXppScript</Link>
-    </Content>
     <Content Include="AxClass\MXTXppInterpreterExecutionResult">
       <SubType>Content</SubType>
       <Name>MXTXppInterpreterExecutionResult</Name>
@@ -184,16 +159,6 @@
       <Name>MXTXppInterpreterVariablesInspectorLocalsEntry</Name>
       <Link>Classes\MXTXppInterpreterVariablesInspectorLocalsEntry</Link>
     </Content>
-    <Content Include="AxClass\MXTXppIntrinsicFunctionHelper">
-      <SubType>Content</SubType>
-      <Name>MXTXppIntrinsicFunctionHelper</Name>
-      <Link>Classes\MXTXppIntrinsicFunctionHelper</Link>
-    </Content>
-    <Content Include="AxClass\MXTXppIntrinsicFunctionProvider">
-      <SubType>Content</SubType>
-      <Name>MXTXppIntrinsicFunctionProvider</Name>
-      <Link>Classes\MXTXppIntrinsicFunctionProvider</Link>
-    </Content>
     <Content Include="AxClass\MXTXppMetadataElementsContract">
       <SubType>Content</SubType>
       <Name>MXTXppMetadataElementsContract</Name>
@@ -203,31 +168,6 @@
       <SubType>Content</SubType>
       <Name>MXTXppOpenGithub</Name>
       <Link>Classes\MXTXppOpenGithub</Link>
-    </Content>
-    <Content Include="AxClass\MXTXppPredefinedFunctions">
-      <SubType>Content</SubType>
-      <Name>MXTXppPredefinedFunctions</Name>
-      <Link>Classes\MXTXppPredefinedFunctions</Link>
-    </Content>
-    <Content Include="AxClass\MXTXppQueryExpressionGenerator">
-      <SubType>Content</SubType>
-      <Name>MXTXppQueryExpressionGenerator</Name>
-      <Link>Classes\MXTXppQueryExpressionGenerator</Link>
-    </Content>
-    <Content Include="AxClass\MXTXppQueryGenerationProxy">
-      <SubType>Content</SubType>
-      <Name>MXTXppQueryGenerationProxy</Name>
-      <Link>Classes\MXTXppQueryGenerationProxy</Link>
-    </Content>
-    <Content Include="AxClass\MXTXppQueryGenerator">
-      <SubType>Content</SubType>
-      <Name>MXTXppQueryGenerator</Name>
-      <Link>Classes\MXTXppQueryGenerator</Link>
-    </Content>
-    <Content Include="AxClass\MXTXppReflectionProxy">
-      <SubType>Content</SubType>
-      <Name>MXTXppReflectionProxy</Name>
-      <Link>Classes\MXTXppReflectionProxy</Link>
     </Content>
     <Content Include="AxClass\MXTXppScriptCollection">
       <SubType>Content</SubType>
@@ -244,30 +184,10 @@
       <Name>MXTXppScriptEntry</Name>
       <Link>Classes\MXTXppScriptEntry</Link>
     </Content>
-    <Content Include="AxClass\MXTXppSearchInstance">
-      <SubType>Content</SubType>
-      <Name>MXTXppSearchInstance</Name>
-      <Link>Classes\MXTXppSearchInstance</Link>
-    </Content>
     <Content Include="AxClass\MXTXppTokenMetadata">
       <SubType>Content</SubType>
       <Name>MXTXppTokenMetadata</Name>
       <Link>Classes\MXTXppTokenMetadata</Link>
-    </Content>
-    <Content Include="AxClass\MXTXppTypes">
-      <SubType>Content</SubType>
-      <Name>MXTXppTypes</Name>
-      <Link>Classes\MXTXppTypes</Link>
-    </Content>
-    <Content Include="AxClass\MXTXppUnaryOperationProxy">
-      <SubType>Content</SubType>
-      <Name>MXTXppUnaryOperationProxy</Name>
-      <Link>Classes\MXTXppUnaryOperationProxy</Link>
-    </Content>
-    <Content Include="AxClass\SysDictMethodMXT_Extension">
-      <SubType>Content</SubType>
-      <Name>SysDictMethodMXT_Extension</Name>
-      <Link>Classes\SysDictMethodMXT_Extension</Link>
     </Content>
     <Content Include="AxEdt\MXTSourceCode">
       <SubType>Content</SubType>

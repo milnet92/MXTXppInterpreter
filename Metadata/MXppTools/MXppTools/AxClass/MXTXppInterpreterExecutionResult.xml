@@ -76,21 +76,7 @@ internal final class MXTXppInterpreterExecutionResult
     /// </summary>
     public List parseErrors()
     {
-        List errors = new List(Types::String);
-
-        if (parseResult != null && !parseResult.IsCorrect)
-        {
-            System.Collections.IEnumerator enumerator = parseResult.Errors.GetEnumerator();
-
-            while (enumerator.MoveNext())
-            {
-                XppInterpreter.Parser.ParseError parseError = enumerator.Current;
-
-                errors.addEnd(strFmt("@MXT:ParseErrorAt", parseError.Line + 1, parseError.Position, parseError.Message));
-            }
-        }
-
-        return errors;
+        return MXTXppCoreScript::parseErrorList(parseResult);
     }
 
 ]]></Source>

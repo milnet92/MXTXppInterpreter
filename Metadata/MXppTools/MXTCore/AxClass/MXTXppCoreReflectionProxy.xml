@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
-	<Name>MXTXppReflectionProxy</Name>
+	<Name>MXTXppCoreReflectionProxy</Name>
 	<SourceCode>
 		<Declaration><![CDATA[
 using XppInterpreter;
 using CArray = Microsoft.Dynamics.Ax.Xpp.Array;
 
-public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.Proxy.IXppReflectionProxy
+public final class MXTXppCoreReflectionProxy implements XppInterpreter.Interpreter.Proxy.IXppReflectionProxy
 {
     #define.MacroLibraryCacheSeconds(5)
     #define.TicksPerSecond(10000000)
@@ -23,8 +23,6 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
     /// <summary>
     /// Tells if the type comes from X++: a class, a table or an enumeration. Any other type is called as .NET
     /// </summary>
-    /// <param name = "_type">Type</param>
-    /// <returns>True if it's an X++ type</returns>
     public boolean IsXppType(System.Type _type)
     {
         if (!_type) return false;
@@ -32,8 +30,8 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
         str typeNamespace = _type.Namespace;
 
         return strStartsWith(typeNamespace, 'Dynamics.AX')
-            || MXTXppTypes::CommonType.IsAssignableFrom(_type)
-            || MXTXppTypes::ObjectType.IsAssignableFrom(_type);
+            || MXTXppCoreCastingProxy::CommonType.IsAssignableFrom(_type)
+            || MXTXppCoreCastingProxy::ObjectType.IsAssignableFrom(_type);
     }
 
 ]]></Source>
@@ -41,7 +39,6 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 			<Method>
 				<Name>GetMacroLibrary</Name>
 				<Source><![CDATA[
-    /// <param name = "_name">Library name</param>
     /// <returns>The text, or null when there is no library with that name</returns>
     public System.String GetMacroLibrary(System.String _name)
     {
@@ -214,7 +211,6 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
     {
         System.Type classType = this.getClassType(_className);
 
-        // Check if it's actually a property
         System.Reflection.PropertyInfo propertyInfo = classType.GetProperty(_propertyName);
         if (propertyInfo)
         {
@@ -222,7 +218,6 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
         }
         else
         {
-            // Check if it's a field
             System.Reflection.FieldInfo fieldInfo = classType.GetField(_propertyName);
             if (fieldInfo)
             {
@@ -230,7 +225,7 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
             }
             else
             {
-                throw error(strFmt("@MXT:InvalidPropertyError", _propertyName));
+                throw error(strFmt("Invalid property name %1", _propertyName));
             }
         }
     }
@@ -281,7 +276,7 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
                 }
                 else
                 {
-                    throw error(strFmt("@MXT:InvalidPropertyError", _propertyName));
+                    throw error(strFmt("Invalid property name %1", _propertyName));
                 }
             }
         }
@@ -301,7 +296,7 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
             return propertyInfo.GetValue(null);
         }
 
-        throw error(strFmt("@MXT:InvalidPropertyError", _propertyName));
+        throw error(strFmt("Invalid property name %1", _propertyName));
     }
 
 ]]></Source>
@@ -328,7 +323,7 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
         // Not only the tables that derive from Common directly: a table that extends another one (DirPerson) is a record
         // too. Without it, null assigned to such a buffer left the variable null, and its fields were found only when
         // written with the case of the class property (conformance pN01 to pN07)
-        return _type.IsSubclassOf(MXTXppTypes::CommonType);
+        return _type.IsSubclassOf(MXTXppCoreCastingProxy::CommonType);
     }
 
 ]]></Source>
@@ -350,7 +345,6 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
                 System.Reflection.BindingFlags::Public | System.Reflection.BindingFlags::NonPublic | 
                 System.Reflection.BindingFlags::Instance;
 
-            // Check if it's actually a property
             System.Reflection.PropertyInfo propertyInfo = _instance.GetType().GetProperty(_propertyName, bindingFlags);
             if (propertyInfo)
             {
@@ -358,7 +352,6 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
             }
             else
             {
-                // Check if it's a field
                 System.Reflection.FieldInfo fieldInfo = _instance.GetType().GetField(_propertyName, bindingFlags);
                 if (fieldInfo)
                 {
@@ -366,7 +359,7 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
                 }
                 else
                 {
-                    throw error(strFmt("@MXT:InvalidPropertyError", _propertyName));
+                    throw error(strFmt("Invalid property name %1", _propertyName));
                 }
             }
         }
@@ -379,14 +372,14 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 				<Source><![CDATA[
     public System.Object CallGlobalOrPredefinedFunction(XppInterpreter.Interpreter.RuntimeContext _context, System.String _methodName, System.Object[] _parameters)
     {
-        if (MXTXppPredefinedFunctions::isCustomPredefinedFunction(_methodName))
+        if (MXTXppCorePredefinedFunctions::isCustomPredefinedFunction(_methodName))
         {
-            return MXTXppPredefinedFunctions::callMethod(_context, _methodName, _parameters);
+            return MXTXppCorePredefinedFunctions::callMethod(_context, _methodName, _parameters);
         }
         else if (this.isGlobalFunction(_methodName))
         {
-            System.String invariantMethodName = XppInterpreter.Core.ReflectionHelper::GetMethodInvariantName(MXTXppTypes::GlobalType, _methodName);
-            return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeStaticCall(MXTXppTypes::GlobalType, invariantMethodName, _parameters);
+            System.String invariantMethodName = XppInterpreter.Core.ReflectionHelper::GetMethodInvariantName(MXTXppCoreCastingProxy::GlobalType, _methodName);
+            return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeStaticCall(MXTXppCoreCastingProxy::GlobalType, invariantMethodName, _parameters);
         }
 
         throw new System.Exception(strFmt("Function '%1' was not found.", _methodName));
@@ -399,7 +392,7 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 				<Source><![CDATA[
     private boolean isGlobalFunction(str _methodName)
     {
-        return XppInterpreter.Core.ReflectionHelper::GetMethodInvariantName(MXTXppTypes::GlobalType, _methodName) != null;
+        return XppInterpreter.Core.ReflectionHelper::GetMethodInvariantName(MXTXppCoreCastingProxy::GlobalType, _methodName) != null;
     }
 
 ]]></Source>
@@ -464,7 +457,73 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
     {
         SysDictMethod dictMethod = this.getDictMethod(_typeName, _methodName);
 
-        return dictMethod ? dictMethod.metadataSyntax() : '';
+        return dictMethod ? MXTXppCoreReflectionProxy::methodSyntax(dictMethod) : '';
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>methodSyntax</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// The declaration of a method as the editor shows it: "public static str name(int _a, [str _b])"
+    /// </summary>
+    public static str methodSyntax(SysDictMethod _method)
+    {
+        int i;
+        str ret;
+
+        if (_method.parentId() &&
+            _method.parentType() == UtilElementType::Class &&
+            _method.name() == identifierStr(ClassDeclaration))
+        {
+            return "";
+        }
+
+        switch (_method.displayType())
+        {
+            case DisplayFunctionType::Set:
+            case DisplayFunctionType::RecordSet:
+                ret += 'edit ';
+                break;
+
+            case DisplayFunctionType::Get:
+            case DisplayFunctionType::RecordGet:
+                ret += 'display ';
+                break;
+
+            default:
+                ret += strLwr(enum2str(_method.accessSpecifier()))+' ';
+        }
+        if (_method.isStatic())
+        {
+            ret += 'static ';
+        }
+        if (_method.isAbstract())
+        {
+            ret += 'abstract ';
+        }
+
+        ret += extendedTypeId2DisplayName(_method.returnType(), _method.returnId());
+        ret += ' ' + _method.name() + '(';
+
+        for (i=1;i<=_method.parameterCnt();i++)
+        {
+            if (_method.parameterOptional(i))
+                ret += '[';
+
+            ret += extendedTypeId2DisplayName(_method.parameterType(i), _method.parameterId(i));
+            ret += ' '+_method.parameterName(i);
+
+            if (_method.parameterOptional(i))
+                ret += ']';
+
+            if (i < _method.parameterCnt())
+                ret += ', ';
+        }
+        ret += ')';
+
+        return ret;
     }
 
 ]]></Source>
@@ -510,11 +569,11 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
         {
             if (this.isGlobalFunction(_methodName))
             {
-                dictMethod = new SysDictMethod(UtilElementType::ClassStaticMethod, className2Id(MXTXppTypes::GlobalType.Name), _methodName);
+                dictMethod = new SysDictMethod(UtilElementType::ClassStaticMethod, className2Id(MXTXppCoreCastingProxy::GlobalType.Name), _methodName);
             }
-            else if (MXTXppPredefinedFunctions::isCustomPredefinedFunction(_methodName))
+            else if (MXTXppCorePredefinedFunctions::isCustomPredefinedFunction(_methodName))
             {
-                dictMethod = new SysDictMethod(UtilElementType::ClassStaticMethod, classNum(MXTXppPredefinedFunctions), _methodName);
+                dictMethod = new SysDictMethod(UtilElementType::ClassStaticMethod, classNum(MXTXppCorePredefinedFunctions), _methodName);
             }
         }
 
@@ -595,8 +654,8 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
         if (dictMethod)
         {
             System.Type returnType = dictMethod.returnTypeName()
-                ? MXTXppCastingProxy::getClrTypeFromTypeName(dictMethod.returnTypeName())
-                : MXTXppCastingProxy::getSystemTypeFromTypes(dictMethod.returnType());
+                ? MXTXppCoreCastingProxy::getClrTypeFromTypeName(dictMethod.returnTypeName())
+                : MXTXppCoreCastingProxy::getSystemTypeFromTypes(dictMethod.returnType());
 
             if (returnType)
             {
@@ -627,11 +686,11 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 
             if (dictField.typeName())
             {
-                return MXTXppCastingProxy::getClrTypeFromTypeName(dictField.typeName());
+                return MXTXppCoreCastingProxy::getClrTypeFromTypeName(dictField.typeName());
             }
             else
             {
-                return MXTXppCastingProxy::getSystemTypeFromTypes(dictField.type());
+                return MXTXppCoreCastingProxy::getSystemTypeFromTypes(dictField.type());
             }
         }
         else if (XppInterpreter.Core.ReflectionHelper::TypeHasField(_caller, _fieldName, _includeNonPublic))
@@ -653,7 +712,7 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 				<Source><![CDATA[
     System.Type GetDateType()
     {
-        return MXTXppTypes::DateType;
+        return MXTXppCoreCastingProxy::DateType;
     }
 
 ]]></Source>
@@ -663,7 +722,7 @@ public final class MXTXppReflectionProxy implements XppInterpreter.Interpreter.P
 				<Source><![CDATA[
     System.Type GetUtcDateTimeType()
     {
-        return MXTXppTypes::DateTimeType;
+        return MXTXppCoreCastingProxy::DateTimeType;
     }
 
 ]]></Source>
