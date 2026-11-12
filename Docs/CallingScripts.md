@@ -114,10 +114,35 @@ public boolean validateWrite()
 ## What a call does
 
 - **Transaction:** the function runs in the transaction of the caller. Its own `ttsbegin` and `ttscommit` nest in it, and a `ttsabort` of the caller takes back what the function wrote. Outside a transaction, a function that commits has saved its data.
-- **Errors:** an exception of the function reaches the caller. `throw error("...")` is caught with `catch (Exception::Error)`, a warning with `Exception::Warning`, and a .NET exception with `Exception::CLRError`. A missing function, a wrong number of arguments and a text with errors stop the call with an X++ error.
+- **Errors:** an exception of the function reaches the caller as the same statement in a compiled method would: see [Exceptions](#exceptions). A missing function, a wrong number of arguments and a text with errors stop the call with an X++ error.
 - **No editor settings:** the parameters of the interpreter don't apply. There is no rollback at the end, no limit for loops and no debugger.
 - **No log:** a call writes nothing to the execution log.
 - **Security:** a call checks no role. The function runs as the user of the calling code, with full X++ and .NET. Whoever can change the text decides what runs in the sessions of other users, so give the table that holds it its own privilege, and remember data entities and data management when you do.
+
+## Exceptions
+
+A `throw` in a function behaves as the same `throw` in a compiled method that the caller called. This was checked on the AOS with 26 cases, each one run twice: with compiled X++ that throws, and with a script function that throws. The catch block that ran, the transaction level, the rows in the database, the messages and the company were the same in all of them.
+
+| The function | In the caller |
+|---|---|
+| `throw error("...")`, no transaction | `catch (Exception::Error)` runs, with one message in the infolog |
+| Throws inside a transaction of the caller | The transaction is aborted. The catch outside the transaction runs at level 0, and what the caller and the function inserted is gone |
+| Throws, and the `try` of the caller is inside its transaction | That catch is skipped. The catch outside the transaction runs |
+| Opens a transaction itself and throws | The transaction is aborted |
+| Has its own `try` and `catch`, called outside a transaction | The catch of the function runs |
+| Has its own `try` and `catch`, called inside a transaction | The catch of the function is skipped, as in a compiled method, and the catch of the caller outside the transaction runs |
+| `throw Exception::UpdateConflict` | `catch (Exception::UpdateConflict)` runs. When its `try` is inside the transaction, in the caller or in the function, the transaction stays open |
+| A duplicate key in `insert()` | `Exception::DuplicateKeyException`, which a catch inside the transaction gets |
+| A .NET exception, such as `System.Int32::Parse("x")` | `catch (Exception::CLRError)` runs and the transaction is aborted. `CLRInterop::getLastException()` holds the `FormatException` as inner exception |
+| Throws inside `changecompany` | The company is the one of the caller again |
+| Calls a compiled method that throws | The exception of that method, with its one message |
+| Has a `finally` block | It runs before the caller gets the exception |
+| `throw warning("...")` | `catch (Exception::Warning)` |
+| `ttsabort` | The transaction of the caller is aborted, and the call returns |
+
+`retry` in the catch of the caller calls the function again, and a call after an exception runs as the first one.
+
+**An error of the interpreter itself is a .NET exception.** A function that reads a variable declared outside the functions, or an argument of a type that can't be converted, stops the call with one. `catch (Exception::Error)` doesn't get it: `catch (Exception::CLRError)` or a catch without a type does. A transaction of the caller is aborted as with any other exception. `validate` finds the errors of the text when it is saved, not these.
 
 ## Speed
 

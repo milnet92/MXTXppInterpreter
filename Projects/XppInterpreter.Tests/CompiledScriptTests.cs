@@ -154,6 +154,66 @@ namespace XppInterpreter.Tests
             Assert.Fail("The exception of the script should reach the caller");
         }
 
+        private const string TryInside = "str tryInside() { try { throw Exception::Error; } catch { return 'caught inside'; } return 'not thrown'; }";
+
+        [TestMethod]
+        public void Call_OutsideATransaction_CatchesInTheFunction() =>
+            Assert.AreEqual("caught inside", Call(TryInside, "tryInside"));
+
+        /// <summary>
+        /// A compiled method that is called inside a transaction can't catch an error either: it goes to the code outside the transaction
+        /// </summary>
+        [TestMethod]
+        public void Call_InsideATransactionOfTheCaller_SkipsTheCatchOfTheFunction()
+        {
+            var host = new FakeXppHost();
+            ScriptFunction function = Function(TryInside, "tryInside", host);
+
+            host.Proxy.Data.TtsBegin();
+
+            try
+            {
+                function.Call(null);
+            }
+            catch (Exception)
+            {
+                Assert.AreEqual(1, host.TtsLevelValue, "The transaction is the one of the caller: the function leaves it as it is");
+                return;
+            }
+
+            Assert.Fail("The catch of the function should not run inside a transaction of the caller");
+        }
+
+        [TestMethod]
+        public void Call_InsideATransactionOfTheCaller_CatchesAnUpdateConflictInTheFunction()
+        {
+            var host = new FakeXppHost();
+            ScriptFunction function = Function(
+                "str tryConflict() { try { throw Exception::UpdateConflict; } catch (Exception::UpdateConflict) { return 'caught inside'; } return 'not thrown'; }",
+                "tryConflict", host);
+
+            host.Proxy.Data.TtsBegin();
+
+            Assert.AreEqual("caught inside", function.Call(null));
+            Assert.AreEqual(1, host.TtsLevelValue);
+        }
+
+        [TestMethod]
+        public void Call_AfterAnException_RunsAgain()
+        {
+            var script = new CompiledScript("void fail() { throw Exception::Error; } int ok() { return 1; }", new FakeXppHost().Proxy);
+
+            try
+            {
+                script.FindFunction("fail").Call(null);
+            }
+            catch (Exception)
+            {
+            }
+
+            Assert.AreEqual(1, script.FindFunction("ok").Call(null));
+        }
+
         [TestMethod]
         public void Call_HasNoLoopLimit() =>
             Assert.AreEqual(200000, Call("int loop() { int i, n; for (i = 0; i < 200000; i++) { n++; } return n; }", "loop"));
