@@ -1,0 +1,665 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppCoreCastingProxy</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+using XppInterpreter.Interpreter.Proxy;
+using Microsoft.Dynamics.Ax;
+
+/// <summary>
+/// The conversions of a script, and the .NET types of the X++ base types
+/// </summary>
+public final class MXTXppCoreCastingProxy implements XppInterpreter.Interpreter.Proxy.IXppCastingProxy
+{
+    public static System.Type GlobalType = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType("Global");
+    public static System.Type ArrayType = System.Type::GetType("Microsoft.Dynamics.Ax.Xpp.EdtArray`1, Microsoft.Dynamics.AX.Data.Core");
+    public static System.Type Int32Type = System.Type::GetType("System.Int32");
+    public static System.Type Int64Type = System.Type::GetType("System.Int64");
+    public static System.Type BooleanType = System.Type::GetType("System.Boolean");
+    public static System.Type GuidType = System.Type::GetType("System.Guid");
+    public static System.Type DecimalType = System.Type::GetType("System.Decimal");
+    public static System.Type StringType = System.Type::GetType("System.String");
+    public static System.Type DateTimeType = System.Type::GetType("Microsoft.Dynamics.Ax.Xpp.AxShared.utcdatetime, Microsoft.Dynamics.Ax.Xpp.AxShared");
+    public static System.Type DateType = System.Type::GetType("Microsoft.Dynamics.Ax.Xpp.AxShared.Date, Microsoft.Dynamics.Ax.Xpp.AxShared");
+    public static System.Type ContainerType = System.Type::GetType("System.Object[]");
+    public static System.Type AnyTypeType = System.Type::GetType("System.Object");
+    public static System.Type CommonType = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType(CommonTypeStr);
+    public static System.Type PrefixGuardType = System.Type::GetType("Microsoft.Dynamics.Ax.Xpp.SetPrefixGuard, Microsoft.Dynamics.AX.Xpp.Support");
+    public static System.Type IEnumerable = System.Type::GetType("System.Collections.IEnumerable");
+    public static System.Type ObjectType = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::GetTypeFromClassName("Object");
+
+    public const str RealTypeStr = "real";
+    public const str Int32TypeStr = "int";
+    public const str GuidTypeStr = "guid";
+    public const str ContainerTypeStr = "container";
+    public const str Int64TypeStr = "int64";
+    public const str DateTimeTypeStr = "utcdatetime";
+    public const str StringTypeStr = "str";
+    public const str DateTypeStr = "date";
+    public const str AnyTypeTypeStr = "anytype";
+    public const str BooleanTypeStr = "boolean";
+    public const str CommonTypeStr = "common";
+
+    private static System.Collections.Hashtable xppTypesByName;
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>getXppTypeByTypeName</Name>
+				<Source><![CDATA[
+    public static Types getXppTypeByTypeName(str _name)
+    {
+        // Asked for every declaration a script runs, and for a name that is not an enum it takes up to four lookups
+        // in the data dictionary; what a name is doesn't change while the AOS runs
+        if (!xppTypesByName)
+        {
+            xppTypesByName = System.Collections.Hashtable::Synchronized(new System.Collections.Hashtable(System.StringComparer::OrdinalIgnoreCase));
+        }
+
+        if (!xppTypesByName.ContainsKey(_name))
+        {
+            xppTypesByName.set_Item(_name, enum2int(MXTXppCoreCastingProxy::findXppTypeByTypeName(_name)));
+        }
+
+        int type = System.Convert::ToInt32(xppTypesByName.get_Item(_name));
+
+        return type;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>findXppTypeByTypeName</Name>
+				<Source><![CDATA[
+    private static Types findXppTypeByTypeName(str _name)
+    {
+        if (SysDictEnum::newName(_name) != null)
+        {
+            return Types::Enum;
+        }
+
+        var dictType = SysDictType::newName(_name);
+        if (dictType != null)
+        {
+            return dictType.baseType();
+        }
+
+        if (SysDictTable::newName(_name) != null)
+        {
+            return Types::Record;
+        }
+
+        if (SysDictClass::newName(_name) != null)
+        {
+            return Types::Class;
+        }
+
+        switch(_name)
+        {
+            case MXTXppCoreCastingProxy::RealTypeStr: return Types::Real;
+            case MXTXppCoreCastingProxy::Int32TypeStr: return Types::Integer;
+            case MXTXppCoreCastingProxy::GuidTypeStr: return Types::Guid;
+            case MXTXppCoreCastingProxy::ContainerTypeStr: return Types::Container;
+            case MXTXppCoreCastingProxy::Int64TypeStr: return Types::Int64;
+            case MXTXppCoreCastingProxy::DateTimeTypeStr: return Types::UtcDateTime;
+            case MXTXppCoreCastingProxy::StringTypeStr: return Types::String;
+            case MXTXppCoreCastingProxy::DateTypeStr : return Types::Date;
+            case MXTXppCoreCastingProxy::AnyTypeTypeStr: return Types::AnyType;
+        }
+
+        return Types::void;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getSystemTypeFromTypes</Name>
+				<Source><![CDATA[
+    public static System.Type getSystemTypeFromTypes(Types _type)
+    {
+        switch (_type)
+        {
+            case Types::Integer:
+                return MXTXppCoreCastingProxy::Int32Type;
+
+            case Types::Int64:
+                return MXTXppCoreCastingProxy::Int64Type;
+
+            case Types::Guid:
+                return MXTXppCoreCastingProxy::GuidType;
+
+            case Types::Real:
+                return MXTXppCoreCastingProxy::DecimalType;
+
+            case Types::String:
+            case Types::VarString:
+                return MXTXppCoreCastingProxy::StringType;
+
+            case Types::UtcDateTime:
+                return MXTXppCoreCastingProxy::DateTimeType;
+
+            case Types::Container:
+                return MXTXppCoreCastingProxy::ContainerType;
+
+            case Types::Date:
+                return MXTXppCoreCastingProxy::DateType;
+
+            case Types::AnyType:
+                return MXTXppCoreCastingProxy::AnyTypeType;
+        }
+
+        return null;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getClrTypeFromTypeName</Name>
+				<Source><![CDATA[
+    public static System.Type getClrTypeFromTypeName(str _typeName)
+    {
+        // boolean is not a type for some reason
+        boolean isBoolean = _typeName == MXTXppCoreCastingProxy::BooleanTypeStr;
+
+        if (isBoolean)
+            return MXTXppCoreCastingProxy::BooleanType;
+
+        var xppType = MXTXppCoreCastingProxy::getXppTypeByTypeName(_typeName);
+
+        switch (xppType)
+        {
+            case Types::Class:
+                return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::GetTypeFromClassName(_typeName);
+
+            case Types::Enum:
+                str enumName = _typeName;
+                if (extendedTypeName2Id(_typeName))
+                {
+                    enumName = enumId2Name(SysDictType::newName(_typeName).enumId());
+                }
+                return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType(enumName);
+
+            case Types::Record:
+                return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType(_typeName);
+
+            default:
+                return MXTXppCoreCastingProxy::getSystemTypeFromTypes(xppType);
+        }
+
+        return null;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetSystemTypeFromTypeName</Name>
+				<Source><![CDATA[
+    public System.Type GetSystemTypeFromTypeName(str _typeName)
+    {
+        return MXTXppCoreCastingProxy::getClrTypeFromTypeName(_typeName);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>ToBoolean</Name>
+				<Source><![CDATA[
+	public boolean ToBoolean(System.Object value)
+    {
+        return value;
+	}
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>IsStringEDT</Name>
+				<Source><![CDATA[
+    public boolean IsStringEDT(System.String typeName)
+    {
+        var dictType = SysDictType::newName(typeName);
+
+        if (dictType != null)
+        {
+            return dictType.baseType() == Types::String;
+        }
+
+        return false;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>TruncateEDTString</Name>
+				<Source><![CDATA[
+    public System.String TruncateEDTString(System.String value, System.String typeName)
+    {
+        return Microsoft.Dynamics.Ax.Xpp.EdtHelper::GetEdtStringTruncated(value, typeName);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>CreateDynamicArray</Name>
+				<Source><![CDATA[
+    public System.Object CreateDynamicArray(System.String typeName)
+    {
+        System.Type type = this.GetSystemTypeFromTypeName(typeName);
+
+        return XppInterpreter.Core.ReflectionHelper::MakeGenericInstance(MXTXppCoreCastingProxy::ArrayType, type);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>CreateFixedArray</Name>
+				<Source><![CDATA[
+    public System.Object CreateFixedArray(System.String typeName, System.Int32 size)
+    {
+        System.Type type = this.GetSystemTypeFromTypeName(typeName);
+
+        return XppInterpreter.Core.ReflectionHelper::MakeGenericInstance(MXTXppCoreCastingProxy::ArrayType, type, size);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetArrayIndexValue</Name>
+				<Source><![CDATA[
+    public System.Object GetArrayIndexValue(System.Object array, System.Int32 idx)
+    {
+        if (!array.GetType().IsGenericType || array.GetType().GetGenericTypeDefinition() != MXTXppCoreCastingProxy::ArrayType)
+        {
+            throw Error("The array indexing can only be applied to X++ array types.");
+        }
+        else
+        {
+            return XppInterpreter.Core.ReflectionHelper::GetEdtArrayIndexerValue(array, idx);
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>SetArrayIndexValue</Name>
+				<Source><![CDATA[
+    public void SetArrayIndexValue(System.Object array, System.Int32 idx, System.Object value)
+    {
+        if (!array.GetType().IsGenericType || array.GetType().GetGenericTypeDefinition() != MXTXppCoreCastingProxy::ArrayType)
+        {
+            throw Error("The array indexing can only be applied to X++ array types.");
+        }
+        else
+        {
+            XppInterpreter.Core.ReflectionHelper::SetEdtArrayIndexerValue(array, idx, value);
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>As</Name>
+				<Source><![CDATA[
+    public System.Object As(System.Object _value, System.String _typeName)
+    {
+        if (this.Is(_value, _typeName))
+        {
+            return _value;
+        }
+
+        return null;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>Is</Name>
+				<Source><![CDATA[
+    public System.Boolean Is(System.Object _value, System.String _typeName)
+    {
+        if (className2Id(_typeName))
+        {
+            ClassId         classId,
+                            newClassId = className2Id(_typeName);
+            SysDictClass    sysDictClass;
+            boolean         ret;
+            
+            classId = classIdGet(_value);
+            if (classId == 0)
+            {
+                return false;
+            }
+
+            sysDictClass = new SysDictClass(classId);
+
+            ret = sysDictClass.isImplementing(newClassId);
+
+            if (!ret)
+            {
+                ret = SysDictClass::isEqualOrSuperclass(classId, newClassId);
+            }
+
+            return ret;
+        }
+        else if (tableName2Id(_typeName))
+        {
+            if (_value)
+            {
+                System.Type valueType = _value.GetType();
+                boolean isCommonType = valueType == MXTXppCoreCastingProxy::CommonType || valueType.IsSubclassOf(MXTXppCoreCastingProxy::CommonType);
+
+                if (!isCommonType)
+                {
+                    return false;
+                }
+                else if (_typeName == 'Common')
+                {
+                    return true;
+                }
+            }
+
+            // Validate extends. A record of a table hierarchy selected into a buffer of a base table is the derived type
+            // the row has, as the kernel decides it in compiled X++: by InstanceRelationType, not by the type of the buffer (pM32)
+            Common record = _value;
+            TableId sourceTableId = record.TableId;
+            TableId targetTableId = tablename2id(_typeName);
+            FieldId instanceRelationTypeId = fieldName2Id(sourceTableId, 'InstanceRelationType');
+
+            if (instanceRelationTypeId)
+            {
+                TableId instanceTableId = record.(instanceRelationTypeId);
+
+                if (instanceTableId)
+                {
+                    sourceTableId = instanceTableId;
+                }
+            }
+            
+            if (sourceTableId == targetTableId)
+            {
+                return true;
+            }
+
+            while (sourceTableId)
+            {
+                DictTable dt = new DictTable(sourceTableId);
+
+                if (dt.extends() != targetTableId)
+                {
+                    sourceTableId = dt.extends();
+                }
+                else
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetDefaultValueForSystemType</Name>
+				<Source><![CDATA[
+    public System.Object GetDefaultValueForSystemType(System.Type _type)
+    {
+        switch (_type)
+        {
+            case MXTXppCoreCastingProxy::BooleanType: return this.GetDefaultValueForType(MXTXppCoreCastingProxy::BooleanTypeStr);
+            case MXTXppCoreCastingProxy::DateType: return this.GetDefaultValueForType(MXTXppCoreCastingProxy::DateTypeStr);
+            case MXTXppCoreCastingProxy::DateTimeType: return this.GetDefaultValueForType(MXTXppCoreCastingProxy::DateTimeTypeStr);
+            case MXTXppCoreCastingProxy::StringType: return this.GetDefaultValueForType(MXTXppCoreCastingProxy::StringTypeStr);
+            case MXTXppCoreCastingProxy::Int32Type: return this.GetDefaultValueForType(MXTXppCoreCastingProxy::Int32TypeStr);
+            case MXTXppCoreCastingProxy::Int64Type: return this.GetDefaultValueForType(MXTXppCoreCastingProxy::Int64TypeStr);
+            case MXTXppCoreCastingProxy::GuidType: return this.GetDefaultValueForType(MXTXppCoreCastingProxy::GuidTypeStr);
+            case MXTXppCoreCastingProxy::DecimalType: return this.GetDefaultValueForType(MXTXppCoreCastingProxy::RealTypeStr);
+            default: return this.GetDefaultValueForType(_type.Name);
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetDefaultValueForType</Name>
+				<Source><![CDATA[
+	public System.Object GetDefaultValueForType(System.String _name)
+    {
+        if (_name == MXTXppCoreCastingProxy::BooleanTypeStr) return false;
+
+        Types types = MXTXppCoreCastingProxy::getXppTypeByTypeName(_name);
+        
+        switch (types)
+        {
+            case Types::Integer: return 0;
+            case Types::Real: return 0.0;
+            case Types::Container: return conNull();
+            case Types::Date: return dateNull();
+            case Types::Guid: return emptyGuid();
+            case Types::UtcDateTime: return DateTimeUtil::minValue();
+            case Types::Int64:
+                {
+                    int64 val = 0;
+                    return val;
+                }
+            case Types::String: return "";
+            case Types::Record: return DictTable::createRecord(_name);
+            case Types::Enum: return SysDictEnum::newName(_name).firstValue();
+        }
+
+        return null;
+	}
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>isEnumType</Name>
+				<Source><![CDATA[
+    private boolean isEnumType(System.Type _type)
+    {
+        return SysDictEnum::newName(_type.Name) != null;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>ImplicitConversionExists</Name>
+				<Source><![CDATA[
+    public System.Boolean ImplicitConversionExists(System.Type _fromType, System.Type _toType)
+    {
+        if (_toType == null ) return false;
+        if (_fromType == _toType) return true;
+        if (_toType.IsAssignableFrom(_fromType) || _fromType.IsAssignableFrom(_toType)) return true;
+
+        // anytype is always convertible
+        if (_toType == MXTXppCoreCastingProxy::AnyTypeType) return true;
+
+        // A record goes to a table map and back
+        if (this.isMapType(_toType) || this.isMapType(_fromType))
+        {
+            return _toType.IsSubclassOf(MXTXppCoreCastingProxy::CommonType) && _fromType.IsSubclassOf(MXTXppCoreCastingProxy::CommonType);
+        }
+
+        // int, int64, real, boolean and enum are all implicitly convertible
+        Set numCheckSet = new Set(Types::Class);
+        numCheckSet.add(MXTXppCoreCastingProxy::Int32Type);
+        numCheckSet.add(MXTXppCoreCastingProxy::Int64Type);
+        numCheckSet.add(MXTXppCoreCastingProxy::DecimalType);
+        numCheckSet.add(MXTXppCoreCastingProxy::BooleanType);
+
+        if ((numCheckSet.in(_fromType) || this.isEnumType(_fromType)) &&
+            (numCheckSet.in(_toType) || this.isEnumType(_toType)))
+        {
+            return true;
+        }
+
+        // date and datetime are convertible
+        if ((_toType == MXTXppCoreCastingProxy::DateType && _fromType == MXTXppCoreCastingProxy::DateTimeType) ||
+            (_toType == MXTXppCoreCastingProxy::DateTimeType && _fromType == MXTXppCoreCastingProxy::DateType))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>IsReferenceType</Name>
+				<Source><![CDATA[
+    public System.Boolean IsReferenceType(System.Type _type)
+    {
+        if (_type == null) return false;
+
+        switch (_type)
+        {
+            case MXTXppCoreCastingProxy::AnyTypeType:
+            case MXTXppCoreCastingProxy::ArrayType:
+            case MXTXppCoreCastingProxy::BooleanType:
+            case MXTXppCoreCastingProxy::CommonType:
+            case MXTXppCoreCastingProxy::ContainerType:
+            case MXTXppCoreCastingProxy::DateTimeType:
+            case MXTXppCoreCastingProxy::DateType:
+            case MXTXppCoreCastingProxy::DecimalType:
+            case MXTXppCoreCastingProxy::GuidType:
+            case MXTXppCoreCastingProxy::Int32Type:
+            case MXTXppCoreCastingProxy::Int64Type:
+            case MXTXppCoreCastingProxy::StringType:
+                return false;
+        }
+
+        Types type = MXTXppCoreCastingProxy::getXppTypeByTypeName(_type.Name);
+
+        switch (type)
+        {
+            case Types::BLOB:
+            case Types::Class:
+            case Types::UserType:
+            case Types::VarString:
+            case Types::VarArg:
+            case Types::void:
+                return true;
+        }
+
+        return false;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>Cast</Name>
+				<Source><![CDATA[
+    public System.Object Cast(System.Object _value, System.Type _toType)
+    {
+        // Not with != null: for X++ an empty record is the same as null
+        if (MXTXppCoreCastingProxy::CommonType.IsInstanceOfType(_value) && _toType.IsSubclassOf(MXTXppCoreCastingProxy::CommonType))
+        {
+            if (_toType.IsInstanceOfType(_value) || _value.GetType().IsAssignableFrom(_toType))
+            {
+                return _value;
+            }
+
+            if (this.isMapType(_toType) || this.isMapType(_value.GetType()))
+            {
+                return XppInterpreter.Core.ReflectionHelper::CastToMap(_value, _toType);
+            }
+
+            throw new System.InvalidCastException(strFmt("Cannot convert from type '%1' to type '%2'.", _value.GetType().Name, _toType.Name));
+        }
+
+        if (_value != null)
+        {
+            System.Type fromType = _value.GetType();
+
+            if (fromType == _toType || _toType.IsAssignableFrom(fromType) || fromType.IsAssignableFrom(_toType))
+            {
+                return _value;
+            }
+        }
+
+        // Boolean is also an enum in X++, but it has to stay a boolean
+        if (_toType != MXTXppCoreCastingProxy::BooleanType && this.isEnumType(_toType))
+        {
+            return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToInt(_value);
+        }
+
+        switch (_toType)
+        {
+            case MXTXppCoreCastingProxy::BooleanType: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ToBoolean(_value);
+            case MXTXppCoreCastingProxy::DateType: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToDate(_value, false);
+            case MXTXppCoreCastingProxy::DateTimeType: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToDateTime(_value, false);
+            case MXTXppCoreCastingProxy::DecimalType: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToReal(_value);
+            case MXTXppCoreCastingProxy::GuidType: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToGuid(_value);
+            case MXTXppCoreCastingProxy::Int32Type: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToInt(_value);
+            case MXTXppCoreCastingProxy::Int64Type: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToInt64(_value);
+            case MXTXppCoreCastingProxy::StringType: return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToString(_value);
+        }
+
+        return System.Convert::ChangeType(_value, _toType);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetArrayType</Name>
+				<Source><![CDATA[
+    public System.Type GetArrayType(System.Type _type)
+    {
+        if (_type == null) return null;
+
+        return MXTXppCoreCastingProxy::ArrayType.MakeGenericType(_type);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>isMapType</Name>
+				<Source><![CDATA[
+    private boolean isMapType(System.Type _type)
+    {
+        if (!_type.IsSubclassOf(MXTXppCoreCastingProxy::CommonType))
+        {
+            return false;
+        }
+
+        SysDictTable dictTable = SysDictTable::newName(_type.Name);
+
+        return dictTable && dictTable.isMap();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>ContainerPack</Name>
+				<Source><![CDATA[
+    public System.Object ContainerPack(System.Object value)
+    {
+        return Microsoft.Dynamics.Ax.Xpp.PredefinedFunctions::ContainerPack(value);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>ContainerUnpack</Name>
+				<Source><![CDATA[
+    public System.Object ContainerUnpack(System.Object value)
+    {
+        return Microsoft.Dynamics.Ax.Xpp.PredefinedFunctions::ContainerUnpack(value);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>CreateDate</Name>
+				<Source><![CDATA[
+    public System.Object CreateDate(System.Int32 day, System.Int32 month, System.Int32 year)
+    {
+        return mkDate(day, month, year);
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

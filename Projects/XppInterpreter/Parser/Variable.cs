@@ -12,6 +12,15 @@ namespace XppInterpreter.Parser
         public Expression Caller { get; }
         public bool StaticCall { get; }
 
+        /// <summary>
+        /// When this is the name of a .NET type, used to reach its static members: the type.
+        /// </summary>
+        public System.Type ClrType { get; set; }
+
+        public bool IsByRef { get; set; }
+
+        public bool IsSystemVariable { get; set; }
+
         public Variable(Word identifier, Expression caller, bool staticCall, SourceCodeBinding sourceCodeBinding) : base(identifier, sourceCodeBinding)
         {
             Caller = caller;

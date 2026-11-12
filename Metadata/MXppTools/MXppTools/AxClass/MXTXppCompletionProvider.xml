@@ -23,7 +23,7 @@ public final class MXTXppCompletionProvider implements ICompletionProvider
     /// <returns>Method documentation</returns>
     private str getMethodDocumentation(SysDictMethod _method)
     {
-        return _method.metadataSyntax();
+        return MXTXppCoreReflectionProxy::methodSyntax(_method);
     }
 
 ]]></Source>
@@ -359,7 +359,7 @@ public final class MXTXppCompletionProvider implements ICompletionProvider
         globalFunctions = new List(Types::String);
 
         MXTXppCompletionProvider::fillClassMethodList(globalFunctions, classStr(Global), true, false);
-        MXTXppCompletionProvider::fillClassMethodList(globalFunctions, classStr(MXTXppPredefinedFunctions), true, false);
+        MXTXppCompletionProvider::fillClassMethodList(globalFunctions, classStr(MXTXppCorePredefinedFunctions), true, false);
         
         return globalFunctions;
     }

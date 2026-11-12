@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppCoreQueryExpressionGenerator</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+using XppInterpreter.Interpreter.Query;
+using XppInterpreter.Interpreter;
+using XppInterpreter;
+
+/// <summary>
+/// Class to generate a SyDa query from an Xpp AST during execution. 
+/// Uses the visitor pattern.
+/// </summary>
+public final class MXTXppCoreQueryExpressionGenerator
+{
+    private RuntimeContext context;
+    private Set tablesInQuery;
+    private XppInterpreter.Interpreter.Query.QueryGenerationHelper generationHelper;
+    private Common buffer;
+    private boolean isExpression;
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>new</Name>
+				<Source><![CDATA[
+    void new(RuntimeContext _context, Set _tablesInQuery, boolean _isExpression = false, Common _buffer = null)
+    {
+        context = _context;
+        tablesInQuery = _tablesInQuery;
+        generationHelper = new XppInterpreter.Interpreter.Query.QueryGenerationHelper(_context);
+        isExpression = _isExpression;
+        buffer = _buffer;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>visitExpression</Name>
+				<Source><![CDATA[
+    public SysDaQueryExpression visitExpression(Parser.Expression _expression)
+    {
+        if (_expression is Parser.BinaryOperation)
+        {
+            return this.visitBinaryOperation(_expression);
+        }
+        else if (_expression is Parser.UnaryOperation)
+        {
+            return this.visitUnaryOperation(_expression);
+        }
+        else if (_expression is Parser.Constant)
+        {
+            return this.visitConstant(_expression);
+        }
+        else if (_expression is Parser.Variable)
+        {
+            return this.visitVariable(_expression);
+        }
+        else if (_expression is Parser.TableField)
+        {
+            return this.visitTableField(_expression);
+        }
+
+        throw new System.NotImplementedException();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>visitTableField</Name>
+				<Source><![CDATA[
+    private SysDaQueryExpression visitTableField(Parser.TableField _tableField)
+    {
+        return new SysDaFieldExpression(buffer, _tableField.FieldName);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>visitBinaryOperation</Name>
+				<Source><![CDATA[
+    private SysDaQueryExpression visitBinaryOperation(Parser.BinaryOperation _binaryOperation)
+    {
+        // Without fields the value is known now: the database would not add two strings
+        if (this.isArithmetic(_binaryOperation) && this.isComputable(_binaryOperation))
+        {
+            return new SysDaValueExpression(generationHelper.ComputeExpression(_binaryOperation));
+        }
+
+        var left = this.visitExpression(_binaryOperation.LeftOperand);
+        var right = this.visitExpression(_binaryOperation.RightOperand);
+
+        switch (_binaryOperation.Token.TokenType)
+        {
+            case Lexer.TType::And: return new SysDaAndExpression(left, right);
+            case Lexer.TType::Or: return new SysDaOrExpression(left, right);
+            case Lexer.TType::Equal: return new SysDaEqualsExpression(left, right);
+            case Lexer.TType::NotEqual: return new SysDaNotEqualsExpression(left, right);
+            case Lexer.TType::Greater: return new SysDaGreaterThanExpression(left, right);
+            case Lexer.TType::GreaterOrEqual: return new SysDaGreaterThanOrEqualsExpression(left, right);
+            case Lexer.TType::Smaller: return new SysDaLessThanExpression(left, right);
+            case Lexer.TType::SmallerOrEqual: return new SysDaLessThanOrEqualsExpression(left, right);
+            case Lexer.TType::Plus: return new SysDaPlusExpression(left, right);
+            case Lexer.TType::Minus: return new SysDaMinusExpression(left, right);
+            case Lexer.TType::Division: return new SysDaDivideExpression(left, right);
+            case Lexer.TType::Star: return new SysDaMultiplyExpression(left, right);
+            case Lexer.TType::Mod: return new SysDaModExpression(left, right);
+            // Compiled X++ translates div to the SQL division of the two integers. The kernel renders the platform's
+            // SysDaIntDivExpression as [badsym] and the statement fails with "Internal error number 173" (conformance pM52, pM54)
+            case Lexer.TType::IntegerDivision: return new SysDaDivideExpression(left, right);
+            case Lexer.TType::In: return new SysDaInExpression(left, right);
+            case Lexer.TType::Like: return new SysDaLikeExpression(left, right);
+        }
+
+        throw new System.Exception("Invalid binary expression.");
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>visitUnaryOperation</Name>
+				<Source><![CDATA[
+    private SysDaQueryExpression visitUnaryOperation(Parser.UnaryOperation _unaryOperation)
+    {
+        SysDaQueryExpression left, right;
+
+        if (_unaryOperation.Token.TokenType != Lexer.TType::Negation)
+        {
+            if (this.isComputable(_unaryOperation))
+            {
+                return new SysDaValueExpression(generationHelper.ComputeExpression(_unaryOperation));
+            }
+
+            if (_unaryOperation.Token.TokenType == Lexer.TType::Minus)
+            {
+                return new SysDaMinusExpression(new SysDaValueExpression(0), this.visitExpression(_unaryOperation.Expression));
+            }
+
+            return this.visitExpression(_unaryOperation.Expression);
+        }
+
+        if (_unaryOperation.Expression is Parser.BinaryOperation || _unaryOperation.Expression is Parser.UnaryOperation)
+        {
+            return new SysDaNotExpression(this.visitExpression(_unaryOperation.Expression));
+        }
+
+
+
+        if (_unaryOperation.Expression is Parser.Variable)
+        {
+            Parser.Variable variable = _unaryOperation.Expression as Parser.Variable;
+
+            if (variable is Parser.FieldByIdAccess && this.isVariableTable(variable))
+            {
+                Parser.FieldByIdAccess fieldById = variable as Parser.FieldByIdAccess;
+                Common record = generationHelper.ComputeVariable(fieldById.Caller);
+                int fieldId = generationHelper.ComputeExpression(fieldById.FieldId);
+                Common emptyRecord = new DictTable(record.TableId).makeRecord();
+
+                // The type of the field is not known before this, and an empty record has its default value
+                left = new SysDaFieldExpression(record, fieldId2Name(record.TableId, fieldId));
+                right = new SysDaValueExpression(emptyRecord.(fieldId));
+            }
+            else if (this.isVariableTable(variable))
+            {
+                Common common = generationHelper.ComputeVariable(variable.Caller);
+                Lexer.Word word = variable.Token;
+
+                left = new SysDaFieldExpression(common, word.Lexeme);
+                right = new SysDaValueExpression(generationHelper.GetDefaultValueForType(_unaryOperation.Expression.ReturnType));
+            }
+            else 
+            {
+                System.Object falseValue = generationHelper.GetDefaultValueForType(_unaryOperation.Expression.ReturnType);
+                left = new SysDaValueExpression(true);
+                
+                if (variable is Parser.FunctionCall)
+                {
+                    System.Object value = generationHelper.ComputeFunctionCall(variable);
+                    right = new SysDaValueExpression(falseValue == value);
+                }
+                else
+                {
+                    System.Object value = generationHelper.ComputeVariable(variable);
+                    right = new SysDaValueExpression(falseValue == value);
+                }
+            }
+        }
+        else if (_unaryOperation.Expression is Parser.Constant)
+        {
+            System.Boolean boolValue = context.Proxy.Casting.ToBoolean(generationHelper.ComputeConstant(_unaryOperation.Expression));
+            left = new SysDaValueExpression(true);
+
+            right = new SysDaValueExpression(!boolValue);
+        }
+        else
+        {
+            throw new System.Exception("Invalid unary expression.");
+        }
+
+        return new SysDaEqualsExpression(left, right);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>visitConstant</Name>
+				<Source><![CDATA[
+    private SysDaQueryExpression visitConstant(Parser.Constant _constant)
+    {
+        return new SysDaValueExpression(generationHelper.ComputeConstant(_constant));
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>visitVariable</Name>
+				<Source><![CDATA[
+    private SysDaQueryExpression visitVariable(Parser.Variable _variable)
+    {
+        if (_variable is Parser.FieldByIdAccess && this.isVariableTable(_variable))
+        {
+            Parser.FieldByIdAccess fieldById = _variable as Parser.FieldByIdAccess;
+            Common record = generationHelper.ComputeVariable(fieldById.Caller);
+            int fieldId = generationHelper.ComputeExpression(fieldById.FieldId);
+
+            return new SysDaFieldExpression(record, fieldId2Name(record.TableId, fieldId));
+        }
+
+        if (this.isVariableTable(_variable))
+        {
+            Common common = generationHelper.ComputeVariable(_variable.Caller);
+            Lexer.Word word = _variable.Token;
+
+            return new SysDaFieldExpression(common, word.Lexeme);
+        }
+        else if (_variable is Parser.FunctionCall)
+        {
+            return new SysDaValueExpression(generationHelper.ComputeFunctionCall(_variable));
+        }
+        else
+        {
+            return new SysDaValueExpression(generationHelper.ComputeVariable(_variable));
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>isArithmetic</Name>
+				<Source><![CDATA[
+    private boolean isArithmetic(Parser.BinaryOperation _binaryOperation)
+    {
+        switch (_binaryOperation.Token.TokenType)
+        {
+            case Lexer.TType::Plus:
+            case Lexer.TType::Minus:
+            case Lexer.TType::Division:
+            case Lexer.TType::Star:
+            case Lexer.TType::Mod:
+            case Lexer.TType::IntegerDivision:
+                return true;
+        }
+
+        return false;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>isComputable</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Checks if the expression has a value without reading the tables of the query
+    /// </summary>
+    /// <returns>True when it doesn't use their fields</returns>
+    private boolean isComputable(Parser.Expression _expression)
+    {
+        if (_expression is Parser.Constant)
+        {
+            return true;
+        }
+
+        if (_expression is Parser.BinaryOperation)
+        {
+            Parser.BinaryOperation binaryOperation = _expression as Parser.BinaryOperation;
+
+            return this.isComputable(binaryOperation.LeftOperand) && this.isComputable(binaryOperation.RightOperand);
+        }
+
+        if (_expression is Parser.UnaryOperation)
+        {
+            Parser.UnaryOperation unaryOperation = _expression as Parser.UnaryOperation;
+
+            return this.isComputable(unaryOperation.Expression);
+        }
+
+        if (_expression is Parser.Variable)
+        {
+            return !this.isVariableTable(_expression as Parser.Variable);
+        }
+
+        return false;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>isVariableTable</Name>
+				<Source><![CDATA[
+    private boolean isVariableTable(Parser.Variable _variable)
+    {
+        if (_variable.Caller != null && _variable.Caller.Token is Lexer.Word)
+        {
+            Lexer.Word word = _variable.Caller.Token;
+
+            return tablesInQuery.in(word.Lexeme);
+        }
+
+        return false;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

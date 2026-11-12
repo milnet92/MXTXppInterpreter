@@ -1,0 +1,443 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppCoreScript</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+/// <summary>
+/// A script whose functions X++ code calls by name, with arguments and a return value.
+/// A call runs in the transaction and with the rights of the caller: the role, the log and the parameters of the
+/// interpreter don't apply. Whoever can change the text decides what runs, so the table that holds it needs its own security.
+/// </summary>
+public final class MXTXppCoreScript
+{
+    private static XppInterpreter.Interpreter.Proxy.XppProxy proxy;
+    private static XppInterpreter.Interpreter.CompiledScriptCache scripts;
+
+    private XppInterpreter.Interpreter.CompiledScript script;
+
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>TypeNew</Name>
+				<Source><![CDATA[
+    static void TypeNew()
+    {
+        proxy = MXTXppCoreScript::newProxy();
+        scripts = new XppInterpreter.Interpreter.CompiledScriptCache(proxy);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>newProxy</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// The X++ side of the interpreter: the objects its DLL calls to work with X++ values, statements and metadata
+    /// </summary>
+    public static XppInterpreter.Interpreter.Proxy.XppProxy newProxy()
+    {
+        MXTXppCoreBinaryOperationProxy operators = new MXTXppCoreBinaryOperationProxy();
+        MXTXppCoreDataAccessProxy dataAccess = new MXTXppCoreDataAccessProxy();
+
+        return new XppInterpreter.Interpreter.Proxy.XppProxy(
+            new MXTXppCoreIntrinsicFunctionProvider(),
+            operators,
+            new MXTXppCoreCastingProxy(),
+            operators,
+            dataAccess,
+            new MXTXppCoreReflectionProxy(),
+            dataAccess,
+            new MXTXppCoreQueryGenerator());
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>sharedProxy</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// The proxy of the session, for the other code that runs scripts
+    /// </summary>
+    public static XppInterpreter.Interpreter.Proxy.XppProxy sharedProxy()
+    {
+        return proxy;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>new</Name>
+				<Source><![CDATA[
+    protected void new()
+    {
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>newFromSource</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// The text is parsed the first time the session uses it, and found by its text after that: X++ keeps a static field for each session.
+    /// A text with errors gives a script too: isValid, parseErrors and validate say what is wrong.
+    /// </summary>
+    public static MXTXppCoreScript newFromSource(str _source)
+    {
+        MXTXppCoreScript ret = new MXTXppCoreScript();
+
+        ret.initFromSource(_source);
+
+        return ret;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>initFromSource</Name>
+				<Source><![CDATA[
+    private void initFromSource(str _source)
+    {
+        script = scripts.Get(_source);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>isValid</Name>
+				<Source><![CDATA[
+    public boolean isValid()
+    {
+        return script.IsCorrect;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parseErrors</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// The errors of the text, as "Line n, position m: message"
+    /// </summary>
+    public List parseErrors()
+    {
+        return MXTXppCoreScript::parseErrorList(script.ParseResult);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parseErrorList</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// The errors of a parse result, as "Line n, position m: message"
+    /// </summary>
+    public static List parseErrorList(XppInterpreter.Parser.ParseResult _parseResult)
+    {
+        List errors = new List(Types::String);
+
+        if (_parseResult != null && !_parseResult.IsCorrect)
+        {
+            System.Collections.IEnumerator enumerator = _parseResult.Errors.GetEnumerator();
+
+            while (enumerator.MoveNext())
+            {
+                XppInterpreter.Parser.ParseError parseError = enumerator.Current;
+
+                errors.addEnd(strFmt("Line %1, position %2: %3", parseError.Line + 1, parseError.Position, parseError.Message));
+            }
+        }
+
+        return errors;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>hasFunction</Name>
+				<Source><![CDATA[
+    public boolean hasFunction(str _function)
+    {
+        return script.FindFunction(_function) != null;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validate</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// For the validateWrite of the table that holds the text: reports its errors as checkFailed does
+    /// </summary>
+    /// <param name = "_function">
+    /// A function that the script must have, and that a call can run: it can't use a variable declared outside the functions
+    /// </param>
+    public boolean validate(str _function = '')
+    {
+        boolean        ret = true;
+        ListEnumerator errors = this.parseErrors().getEnumerator();
+
+        while (errors.moveNext())
+        {
+            ret = checkFailed(errors.current());
+        }
+
+        if (ret && _function)
+        {
+            XppInterpreter.Interpreter.ScriptFunction function = script.FindFunction(_function);
+
+            if (function == null)
+            {
+                ret = checkFailed(strFmt("The script has no function '%1'.", _function));
+            }
+            else
+            {
+                str variables = function.get_ScriptVariableNames();
+
+                if (variables)
+                {
+                    ret = checkFailed(strFmt("The function '%1' uses %2, declared outside the functions of the script. In a call those variables don't exist.", _function, variables));
+                }
+            }
+        }
+
+        return ret;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>call</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Runs a function of the script in the transaction of the caller. A record or an object that is passed is the one
+    /// of the caller, so the function changes it for the caller. The statements outside the functions don't run,
+    /// and an exception of the function reaches the caller.
+    /// </summary>
+    /// <returns>What the function returns, converted to its return type</returns>
+    public anytype call(
+        str     _function,
+        anytype _argument1 = '',
+        anytype _argument2 = '',
+        anytype _argument3 = '',
+        anytype _argument4 = '',
+        anytype _argument5 = '',
+        anytype _argument6 = '',
+        anytype _argument7 = '',
+        anytype _argument8 = '')
+    {
+        int argumentCount = 8;
+
+        if (prmIsDefault(_argument1))
+        {
+            argumentCount = 0;
+        }
+        else if (prmIsDefault(_argument2))
+        {
+            argumentCount = 1;
+        }
+        else if (prmIsDefault(_argument3))
+        {
+            argumentCount = 2;
+        }
+        else if (prmIsDefault(_argument4))
+        {
+            argumentCount = 3;
+        }
+        else if (prmIsDefault(_argument5))
+        {
+            argumentCount = 4;
+        }
+        else if (prmIsDefault(_argument6))
+        {
+            argumentCount = 5;
+        }
+        else if (prmIsDefault(_argument7))
+        {
+            argumentCount = 6;
+        }
+        else if (prmIsDefault(_argument8))
+        {
+            argumentCount = 7;
+        }
+
+        return this.callWithArguments(_function, MXTXppCoreScript::argumentArray(argumentCount,
+            _argument1, _argument2, _argument3, _argument4, _argument5, _argument6, _argument7, _argument8));
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>callFromSource</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// newFromSource and call in one step, for code that doesn't keep the script object. The platform charges every
+    /// entry into this model from a model of another publisher, and this is one entry instead of two.
+    /// </summary>
+    /// <returns>What the function returns, converted to its return type</returns>
+    public static anytype callFromSource(
+        str     _source,
+        str     _function,
+        anytype _argument1 = '',
+        anytype _argument2 = '',
+        anytype _argument3 = '',
+        anytype _argument4 = '',
+        anytype _argument5 = '',
+        anytype _argument6 = '',
+        anytype _argument7 = '',
+        anytype _argument8 = '')
+    {
+        int argumentCount = 8;
+
+        if (prmIsDefault(_argument1))
+        {
+            argumentCount = 0;
+        }
+        else if (prmIsDefault(_argument2))
+        {
+            argumentCount = 1;
+        }
+        else if (prmIsDefault(_argument3))
+        {
+            argumentCount = 2;
+        }
+        else if (prmIsDefault(_argument4))
+        {
+            argumentCount = 3;
+        }
+        else if (prmIsDefault(_argument5))
+        {
+            argumentCount = 4;
+        }
+        else if (prmIsDefault(_argument6))
+        {
+            argumentCount = 5;
+        }
+        else if (prmIsDefault(_argument7))
+        {
+            argumentCount = 6;
+        }
+        else if (prmIsDefault(_argument8))
+        {
+            argumentCount = 7;
+        }
+
+        MXTXppCoreScript script = MXTXppCoreScript::newFromSource(_source);
+
+        return script.callWithArguments(_function, MXTXppCoreScript::argumentArray(argumentCount,
+            _argument1, _argument2, _argument3, _argument4, _argument5, _argument6, _argument7, _argument8));
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>argumentArray</Name>
+				<Source><![CDATA[
+    private static System.Object[] argumentArray(
+        int     _argumentCount,
+        anytype _argument1,
+        anytype _argument2,
+        anytype _argument3,
+        anytype _argument4,
+        anytype _argument5,
+        anytype _argument6,
+        anytype _argument7,
+        anytype _argument8)
+    {
+        System.Object[] arguments = new System.Object[_argumentCount]();
+
+        if (_argumentCount >= 1)
+        {
+            arguments.SetValue(_argument1, 0);
+        }
+        if (_argumentCount >= 2)
+        {
+            arguments.SetValue(_argument2, 1);
+        }
+        if (_argumentCount >= 3)
+        {
+            arguments.SetValue(_argument3, 2);
+        }
+        if (_argumentCount >= 4)
+        {
+            arguments.SetValue(_argument4, 3);
+        }
+        if (_argumentCount >= 5)
+        {
+            arguments.SetValue(_argument5, 4);
+        }
+        if (_argumentCount >= 6)
+        {
+            arguments.SetValue(_argument6, 5);
+        }
+        if (_argumentCount >= 7)
+        {
+            arguments.SetValue(_argument7, 6);
+        }
+        if (_argumentCount >= 8)
+        {
+            arguments.SetValue(_argument8, 7);
+        }
+
+        return arguments;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>callWithArguments</Name>
+				<Source><![CDATA[
+    private anytype callWithArguments(str _function, System.Object[] _arguments)
+    {
+        XppInterpreter.Interpreter.ScriptFunction function = this.findFunction(_function, _arguments.get_Length());
+
+        return function.Call(_arguments);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>findFunction</Name>
+				<Source><![CDATA[
+    private XppInterpreter.Interpreter.ScriptFunction findFunction(str _function, int _argumentCount)
+    {
+        if (!script.IsCorrect)
+        {
+            ListEnumerator errors = this.parseErrors().getEnumerator();
+
+            while (errors.moveNext())
+            {
+                error(errors.current());
+            }
+
+            throw error("The script has errors, so its functions can't be called.");
+        }
+
+        XppInterpreter.Interpreter.ScriptFunction function = script.FindFunction(_function);
+
+        if (function == null)
+        {
+            throw error(strFmt("The script has no function '%1'.", _function));
+        }
+
+        if (!function.Accepts(_argumentCount))
+        {
+            throw error(strFmt("The function '%1' of the script can't be called with %2 arguments.", _function, _argumentCount));
+        }
+
+        // Stopped here as an X++ error. Running it would fail on the first use of the variable, as a .NET error
+        str variables = function.get_ScriptVariableNames();
+
+        if (variables)
+        {
+            throw error(strFmt("The function '%1' uses %2, declared outside the functions of the script. In a call those variables don't exist.", _function, variables));
+        }
+
+        return function;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

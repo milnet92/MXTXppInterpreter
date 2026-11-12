@@ -8,7 +8,17 @@ namespace XppInterpreter.Interpreter.Bytecode
 
         public void Execute(RuntimeContext context)
         {
-            context.Proxy.Data.Next(context.Stack.Pop());
+            object record = context.Stack.Pop();
+
+            if (context.PendingFetches.TryGetValue(record, out ISearchInstance search))
+            {
+                context.PendingFetches.Remove(record);
+                search.Next();
+            }
+            else
+            {
+                context.Proxy.Data.Next(record);
+            }
         }
     }
 }

@@ -14,6 +14,8 @@ namespace XppInterpreter.Parser
         public Expression Expression { get; }
         public string TypeName { get; }
 
+        public System.Type ClrType { get; set; }
+
         public Is(Expression expression, string typeName, SourceCodeBinding sourceCodeBinding)
             : base(Word.Is, sourceCodeBinding, null)
         {

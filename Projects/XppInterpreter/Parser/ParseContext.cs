@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using XppInterpreter.Core;
 using XppInterpreter.Interpreter.Proxy;
 using XppInterpreter.Lexer;
-
 namespace XppInterpreter.Parser
 {
     public class ParseContext
@@ -15,6 +15,10 @@ namespace XppInterpreter.Parser
         public ParseContextStack<bool> LoopStack { get; } = new ParseContextStack<bool>();
         internal readonly ParseContextStack FinallyStack = new ParseContextStack();
         internal readonly ParseContextStack CatchStack = new ParseContextStack();
+
+        internal readonly List<string> Usings = new List<string>();
+
+        internal readonly Dictionary<string, string> UsingAliases = new Dictionary<string, string>();
 
         public ParseContext()
         {

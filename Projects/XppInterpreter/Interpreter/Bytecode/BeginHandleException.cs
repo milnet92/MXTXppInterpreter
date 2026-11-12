@@ -19,7 +19,10 @@ namespace XppInterpreter.Interpreter.Bytecode
 
         public void Execute(RuntimeContext context)
         {
-            context.ScopeHandler.AddExceptionHandler(new Core.ExceptionHandler(context.Counter, Offset, CatchReferences));
+            // The option that rolls everything back opens a transaction around the script: the script doesn't count it
+            int globalTransactions = context.Interpreter?.Options?.EmitGlobalTtsAbort == true ? 1 : 0;
+
+            context.ScopeHandler.AddExceptionHandler(new Core.ExceptionHandler(context.Counter, Offset, CatchReferences, context.Proxy.Data.TtsLevel(), globalTransactions));
         }
     }
 }

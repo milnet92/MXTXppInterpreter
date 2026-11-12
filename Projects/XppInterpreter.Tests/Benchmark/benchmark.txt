@@ -1,0 +1,452 @@
+// Benchmark snippets: each one runs compiled by the real X++ compiler and through the interpreter, on an AOS.
+// Scripts\RunBenchmark.ps1 runs them, see Docs\Development.md.
+//
+// Format:   ### name           b + two digits + a name; the digits group the cases, so a filter like "b4" runs one group
+//           source lines       the body of a static method that returns a str, used as it is for both runs
+//
+// Both runs have to return the same value: the report marks a case where they differ.
+// Keep a case to one construct inside a loop, so its time minus the time of b01_emptyLoop is the cost of that construct.
+// The data cases read USMF demo data (CustTable, InventTrans, SalesLine): open the class with &cmp=USMF.
+// The model needs a reference to ContactPerson for the CustTable cases.
+//
+// b20 to b22 call a class of the model the benchmark is in. The interpreter belongs to another publisher, and the kernel
+// opens a publisher scope whenever a method of another publisher is entered: about 20 microseconds for each call, which
+// compiled X++ pays too when it calls a model of another publisher. Calls to Microsoft code (b23, b24) don't pay it.
+
+### b01_emptyLoop
+int i;
+for (i = 0; i < 50000; i++)
+{
+}
+return int2Str(i);
+
+### b02_intAdd
+int i, n;
+for (i = 0; i < 50000; i++)
+{
+    n += i;
+}
+return int2Str(n);
+
+### b03_whileLoop
+int i, n;
+while (i < 50000)
+{
+    n += 2;
+    i++;
+}
+return int2Str(n);
+
+### b04_realMath
+int i;
+real r;
+for (i = 0; i < 50000; i++)
+{
+    r += i * 1.5 / 3;
+}
+return num2Str(r, 0, 2, 1, 0);
+
+### b05_strAssign
+int i;
+str s;
+for (i = 0; i < 50000; i++)
+{
+    s = 'abc' + 'def';
+}
+return s;
+
+### b06_globalFunction
+int i, n;
+for (i = 0; i < 50000; i++)
+{
+    n += strLen('abcdef');
+}
+return int2Str(n);
+
+### b07_strFmt
+int i;
+str s;
+for (i = 0; i < 20000; i++)
+{
+    s = strFmt('%1-%2', i, 'abc');
+}
+return s;
+
+### b08_enumLiteral
+int i, n;
+NoYes v = NoYes::Yes;
+for (i = 0; i < 50000; i++)
+{
+    if (v == NoYes::Yes)
+    {
+        n++;
+    }
+}
+return int2Str(n);
+
+### b09_ifAndElse
+int i, n;
+for (i = 0; i < 50000; i++)
+{
+    if (i mod 2 == 0 && i > 10)
+    {
+        n++;
+    }
+    else
+    {
+        n--;
+    }
+}
+return int2Str(n);
+
+### b10_switch
+int i, n;
+for (i = 0; i < 50000; i++)
+{
+    switch (i mod 4)
+    {
+        case 0:
+            n++;
+            break;
+        case 1:
+            n += 2;
+            break;
+        default:
+            n--;
+    }
+}
+return int2Str(n);
+
+### b11_declarationInLoop
+int i, n;
+for (i = 0; i < 50000; i++)
+{
+    int a = i;
+    str s = 'x';
+    n += a;
+}
+return int2Str(n);
+
+### b12_edtDeclarationInLoop
+int i, n;
+for (i = 0; i < 20000; i++)
+{
+    CustAccount acc = 'abc';
+    ItemId item = 'x';
+    n++;
+}
+return int2Str(n);
+
+### b13_recordDeclarationInLoop
+int i, n;
+for (i = 0; i < 20000; i++)
+{
+    InventTrans t;
+    n++;
+}
+return int2Str(n);
+
+### b14_localFunction
+int add(int _a, int _b)
+{
+    return _a + _b;
+}
+int i, n;
+for (i = 0; i < 20000; i++)
+{
+    n = add(n, 1);
+}
+return int2Str(n);
+
+### b15_ternary
+int i, n;
+for (i = 0; i < 50000; i++)
+{
+    n += (i > 5) ? 1 : 2;
+}
+return int2Str(n);
+
+### b16_strCompare
+int i, n;
+str a = 'abc', b = 'abd';
+for (i = 0; i < 50000; i++)
+{
+    if (a != b)
+    {
+        n++;
+    }
+}
+return int2Str(n);
+
+### b17_tryInLoop
+int i, n;
+for (i = 0; i < 20000; i++)
+{
+    try
+    {
+        n++;
+    }
+    catch
+    {
+        n--;
+    }
+}
+return int2Str(n);
+
+### b18_container
+int i, n;
+container con;
+for (i = 0; i < 2000; i++)
+{
+    con += i;
+}
+for (i = 1; i <= conLen(con); i++)
+{
+    n += conPeek(con, i);
+}
+return int2Str(n);
+
+### b19_intrinsic
+int i, n;
+for (i = 0; i < 20000; i++)
+{
+    n = fieldNum(InventTrans, ItemId);
+}
+return int2Str(n);
+
+### b20_xppStaticCall
+int i, n;
+for (i = 0; i < 20000; i++)
+{
+    n += DEVXppBenchmarkHelper::one();
+}
+return int2Str(n);
+
+### b21_xppInstanceCall
+int i, n;
+DEVXppBenchmarkHelper o = new DEVXppBenchmarkHelper();
+for (i = 0; i < 20000; i++)
+{
+    n += o.two();
+}
+return int2Str(n);
+
+### b22_xppStaticCallWithArguments
+int i, n;
+for (i = 0; i < 20000; i++)
+{
+    n += DEVXppBenchmarkHelper::addOne(i, 'x');
+}
+return int2Str(n);
+
+### b23_platformStaticCall
+int i, n;
+for (i = 0; i < 20000; i++)
+{
+    if (Global::strStartsWith('abc', 'a'))
+    {
+        n++;
+    }
+}
+return int2Str(n);
+
+### b24_applicationStaticCall
+int i, n;
+for (i = 0; i < 20000; i++)
+{
+    if (InventDim::inventDimIdBlank())
+    {
+        n++;
+    }
+}
+return int2Str(n);
+
+### b25_kernelClassCalls
+int i, n;
+List l = new List(Types::Integer);
+for (i = 0; i < 20000; i++)
+{
+    l.addEnd(i);
+}
+ListEnumerator e = l.getEnumerator();
+while (e.moveNext())
+{
+    n += e.current();
+}
+return int2Str(n);
+
+### b26_tableKernelMethod
+int i, n;
+InventTrans t;
+for (i = 0; i < 20000; i++)
+{
+    if (!t.isTmp())
+    {
+        n++;
+    }
+}
+return int2Str(n);
+
+### b27_tableMethod
+int i, n;
+InventDim d;
+for (i = 0; i < 20000; i++)
+{
+    if (!d.anyProductDimensionSpecified())
+    {
+        n++;
+    }
+}
+return int2Str(n);
+
+### b28_clrInstanceCall
+int i;
+System.Text.StringBuilder sb = new System.Text.StringBuilder();
+for (i = 0; i < 20000; i++)
+{
+    sb.Append('a');
+}
+return int2Str(sb.Length);
+
+### b29_clrStaticCall
+int i, n;
+for (i = 0; i < 20000; i++)
+{
+    n += System.Math::Abs(-1);
+}
+return int2Str(n);
+
+### b30_clrPropertyRead
+int i, n;
+System.Text.StringBuilder sb = new System.Text.StringBuilder('abc');
+for (i = 0; i < 20000; i++)
+{
+    n += sb.Length;
+}
+return int2Str(n);
+
+### b40_fieldRead
+int i;
+str acc;
+CustTable c = CustTable::find('DE-001');
+for (i = 0; i < 20000; i++)
+{
+    acc = c.AccountNum;
+}
+return acc;
+
+### b41_fieldWrite
+int i;
+CustTable c;
+for (i = 0; i < 20000; i++)
+{
+    c.CreditMax = i;
+}
+return num2Str(c.CreditMax, 0, 0, 1, 0);
+
+### b42_whileSelect
+int n;
+InventTrans t;
+while select t
+{
+    n++;
+}
+return int2Str(n);
+
+### b43_whileSelectFields
+int n;
+real q;
+str id;
+InventTrans t;
+while select t
+{
+    n++;
+    q += t.Qty;
+    id = t.ItemId;
+}
+return int2Str(n);
+
+### b44_whileSelectFieldList
+int n;
+real q;
+str id;
+InventTrans t;
+while select ItemId, Qty from t
+{
+    n++;
+    q += t.Qty;
+    id = t.ItemId;
+}
+return int2Str(n);
+
+### b45_whileSelectJoin
+int n;
+SalesLine sl;
+SalesTable st;
+while select SalesId from sl
+    join CustAccount from st
+    where st.SalesId == sl.SalesId
+{
+    n++;
+}
+return int2Str(n);
+
+### b46_selectInLoop
+int i, n;
+CustTable c;
+for (i = 0; i < 2000; i++)
+{
+    select firstonly RecId from c where c.AccountNum == 'DE-001';
+    if (c.RecId)
+    {
+        n++;
+    }
+}
+return int2Str(n);
+
+### b47_selectAllFieldsInLoop
+int i, n;
+CustTable c;
+for (i = 0; i < 2000; i++)
+{
+    select firstonly c where c.AccountNum == 'DE-001';
+    if (c.RecId)
+    {
+        n++;
+    }
+}
+return int2Str(n);
+
+### b48_findInLoop
+int i, n;
+for (i = 0; i < 2000; i++)
+{
+    if (CustTable::find('DE-001').RecId)
+    {
+        n++;
+    }
+}
+return int2Str(n);
+
+### b49_typicalScript
+int n;
+real total;
+SalesLine sl;
+Map qtyPerItem = new Map(Types::String, Types::Real);
+while select sl
+{
+    if (sl.SalesStatus == SalesStatus::Invoiced && sl.SalesQty > 0)
+    {
+        total += sl.LineAmount;
+        if (qtyPerItem.exists(sl.ItemId))
+        {
+            qtyPerItem.insert(sl.ItemId, qtyPerItem.lookup(sl.ItemId) + sl.SalesQty);
+        }
+        else
+        {
+            qtyPerItem.insert(sl.ItemId, sl.SalesQty);
+        }
+        n++;
+    }
+}
+return strFmt('%1 %2', n, qtyPerItem.elements());

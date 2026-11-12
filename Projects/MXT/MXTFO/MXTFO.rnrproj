@@ -49,16 +49,6 @@
     <Folder Include="Tiles\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="AxClass\MXTXppBinaryOperationProxy">
-      <SubType>Content</SubType>
-      <Name>MXTXppBinaryOperationProxy</Name>
-      <Link>Classes\MXTXppBinaryOperationProxy</Link>
-    </Content>
-    <Content Include="AxClass\MXTXppCastingProxy">
-      <SubType>Content</SubType>
-      <Name>MXTXppCastingProxy</Name>
-      <Link>Classes\MXTXppCastingProxy</Link>
-    </Content>
     <Content Include="AxClass\MXTXppCompletionEntryContract">
       <SubType>Content</SubType>
       <Name>MXTXppCompletionEntryContract</Name>
@@ -74,15 +64,50 @@
       <Name>MXTXppCompletionsContract</Name>
       <Link>Classes\MXTXppCompletionsContract</Link>
     </Content>
-    <Content Include="AxClass\MXTXppDataAccessProxy">
+    <Content Include="AxClass\MXTXppCoreBinaryOperationProxy">
       <SubType>Content</SubType>
-      <Name>MXTXppDataAccessProxy</Name>
-      <Link>Classes\MXTXppDataAccessProxy</Link>
+      <Name>MXTXppCoreBinaryOperationProxy</Name>
+      <Link>Classes\MXTXppCoreBinaryOperationProxy</Link>
     </Content>
-    <Content Include="AxClass\MXTXppExceptionsProxy">
+    <Content Include="AxClass\MXTXppCoreCastingProxy">
       <SubType>Content</SubType>
-      <Name>MXTXppExceptionsProxy</Name>
-      <Link>Classes\MXTXppExceptionsProxy</Link>
+      <Name>MXTXppCoreCastingProxy</Name>
+      <Link>Classes\MXTXppCoreCastingProxy</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppCoreDataAccessProxy">
+      <SubType>Content</SubType>
+      <Name>MXTXppCoreDataAccessProxy</Name>
+      <Link>Classes\MXTXppCoreDataAccessProxy</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppCoreIntrinsicFunctionProvider">
+      <SubType>Content</SubType>
+      <Name>MXTXppCoreIntrinsicFunctionProvider</Name>
+      <Link>Classes\MXTXppCoreIntrinsicFunctionProvider</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppCorePredefinedFunctions">
+      <SubType>Content</SubType>
+      <Name>MXTXppCorePredefinedFunctions</Name>
+      <Link>Classes\MXTXppCorePredefinedFunctions</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppCoreQueryExpressionGenerator">
+      <SubType>Content</SubType>
+      <Name>MXTXppCoreQueryExpressionGenerator</Name>
+      <Link>Classes\MXTXppCoreQueryExpressionGenerator</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppCoreQueryGenerator">
+      <SubType>Content</SubType>
+      <Name>MXTXppCoreQueryGenerator</Name>
+      <Link>Classes\MXTXppCoreQueryGenerator</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppCoreReflectionProxy">
+      <SubType>Content</SubType>
+      <Name>MXTXppCoreReflectionProxy</Name>
+      <Link>Classes\MXTXppCoreReflectionProxy</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppCoreScript">
+      <SubType>Content</SubType>
+      <Name>MXTXppCoreScript</Name>
+      <Link>Classes\MXTXppCoreScript</Link>
     </Content>
     <Content Include="AxClass\MXTXppExportProcess">
       <SubType>Content</SubType>
@@ -149,6 +174,11 @@
       <Name>MXTXppInterpreterDebugSession</Name>
       <Link>Classes\MXTXppInterpreterDebugSession</Link>
     </Content>
+    <Content Include="AxClass\MXTXppInterpreterExecutionResult">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterExecutionResult</Name>
+      <Link>Classes\MXTXppInterpreterExecutionResult</Link>
+    </Content>
     <Content Include="AxClass\MXTXppInterpreterExecutor">
       <SubType>Content</SubType>
       <Name>MXTXppInterpreterExecutor</Name>
@@ -174,16 +204,6 @@
       <Name>MXTXppInterpreterVariablesInspectorLocalsEntry</Name>
       <Link>Classes\MXTXppInterpreterVariablesInspectorLocalsEntry</Link>
     </Content>
-    <Content Include="AxClass\MXTXppIntrinsicFunctionHelper">
-      <SubType>Content</SubType>
-      <Name>MXTXppIntrinsicFunctionHelper</Name>
-      <Link>Classes\MXTXppIntrinsicFunctionHelper</Link>
-    </Content>
-    <Content Include="AxClass\MXTXppIntrinsicFunctionProvider">
-      <SubType>Content</SubType>
-      <Name>MXTXppIntrinsicFunctionProvider</Name>
-      <Link>Classes\MXTXppIntrinsicFunctionProvider</Link>
-    </Content>
     <Content Include="AxClass\MXTXppMetadataElementsContract">
       <SubType>Content</SubType>
       <Name>MXTXppMetadataElementsContract</Name>
@@ -193,31 +213,6 @@
       <SubType>Content</SubType>
       <Name>MXTXppOpenGithub</Name>
       <Link>Classes\MXTXppOpenGithub</Link>
-    </Content>
-    <Content Include="AxClass\MXTXppPredefinedFunctions">
-      <SubType>Content</SubType>
-      <Name>MXTXppPredefinedFunctions</Name>
-      <Link>Classes\MXTXppPredefinedFunctions</Link>
-    </Content>
-    <Content Include="AxClass\MXTXppQueryExpressionGenerator">
-      <SubType>Content</SubType>
-      <Name>MXTXppQueryExpressionGenerator</Name>
-      <Link>Classes\MXTXppQueryExpressionGenerator</Link>
-    </Content>
-    <Content Include="AxClass\MXTXppQueryGenerationProxy">
-      <SubType>Content</SubType>
-      <Name>MXTXppQueryGenerationProxy</Name>
-      <Link>Classes\MXTXppQueryGenerationProxy</Link>
-    </Content>
-    <Content Include="AxClass\MXTXppQueryGenerator">
-      <SubType>Content</SubType>
-      <Name>MXTXppQueryGenerator</Name>
-      <Link>Classes\MXTXppQueryGenerator</Link>
-    </Content>
-    <Content Include="AxClass\MXTXppReflectionProxy">
-      <SubType>Content</SubType>
-      <Name>MXTXppReflectionProxy</Name>
-      <Link>Classes\MXTXppReflectionProxy</Link>
     </Content>
     <Content Include="AxClass\MXTXppScriptCollection">
       <SubType>Content</SubType>
@@ -234,30 +229,10 @@
       <Name>MXTXppScriptEntry</Name>
       <Link>Classes\MXTXppScriptEntry</Link>
     </Content>
-    <Content Include="AxClass\MXTXppSearchInstance">
-      <SubType>Content</SubType>
-      <Name>MXTXppSearchInstance</Name>
-      <Link>Classes\MXTXppSearchInstance</Link>
-    </Content>
     <Content Include="AxClass\MXTXppTokenMetadata">
       <SubType>Content</SubType>
       <Name>MXTXppTokenMetadata</Name>
       <Link>Classes\MXTXppTokenMetadata</Link>
-    </Content>
-    <Content Include="AxClass\MXTXppTypes">
-      <SubType>Content</SubType>
-      <Name>MXTXppTypes</Name>
-      <Link>Classes\MXTXppTypes</Link>
-    </Content>
-    <Content Include="AxClass\MXTXppUnaryOperationProxy">
-      <SubType>Content</SubType>
-      <Name>MXTXppUnaryOperationProxy</Name>
-      <Link>Classes\MXTXppUnaryOperationProxy</Link>
-    </Content>
-    <Content Include="AxClass\SysDictMethodMXT_Extension">
-      <SubType>Content</SubType>
-      <Name>SysDictMethodMXT_Extension</Name>
-      <Link>Classes\SysDictMethodMXT_Extension</Link>
     </Content>
     <Content Include="AxEdt\MXTSourceCode">
       <SubType>Content</SubType>
@@ -289,10 +264,25 @@
       <Name>MXTXppInterpreterEditorLanguage</Name>
       <Link>Base Enums\MXTXppInterpreterEditorLanguage</Link>
     </Content>
+    <Content Include="AxEnum\MXTXppInterpreterExecutionStatus">
+      <SubType>Content</SubType>
+      <Name>MXTXppInterpreterExecutionStatus</Name>
+      <Link>Base Enums\MXTXppInterpreterExecutionStatus</Link>
+    </Content>
     <Content Include="AxEnum\MXTXppInterpreterExecutionPhase">
       <SubType>Content</SubType>
       <Name>MXTXppInterpreterExecutionPhase</Name>
       <Link>Base Enums\MXTXppInterpreterExecutionPhase</Link>
+    </Content>
+    <Content Include="AxForm\MXTAgentMCPExecute">
+      <SubType>Content</SubType>
+      <Name>MXTAgentMCPExecute</Name>
+      <Link>Forms\MXTAgentMCPExecute</Link>
+    </Content>
+    <Content Include="AxForm\MXTDataCorrectionLog">
+      <SubType>Content</SubType>
+      <Name>MXTDataCorrectionLog</Name>
+      <Link>Forms\MXTDataCorrectionLog</Link>
     </Content>
     <Content Include="AxForm\MXTExecuteFormDialog">
       <SubType>Content</SubType>
@@ -363,6 +353,16 @@
       <SubType>Content</SubType>
       <Name>MXTImportMXTFile</Name>
       <Link>Action Menu Items\MXTImportMXTFile</Link>
+    </Content>
+    <Content Include="AxMenuItemDisplay\MXTAgentMCPExecute">
+      <SubType>Content</SubType>
+      <Name>MXTAgentMCPExecute</Name>
+      <Link>Display Menu Items\MXTAgentMCPExecute</Link>
+    </Content>
+    <Content Include="AxMenuItemDisplay\MXTDataCorrectionLog">
+      <SubType>Content</SubType>
+      <Name>MXTDataCorrectionLog</Name>
+      <Link>Display Menu Items\MXTDataCorrectionLog</Link>
     </Content>
     <Content Include="AxMenuItemDisplay\MXTExecuteFormDialog">
       <SubType>Content</SubType>
@@ -489,6 +489,11 @@
       <Name>MXTSymbolTable</Name>
       <Link>Resources\MXTSymbolTable</Link>
     </Content>
+    <Content Include="AxResource\MXTSymbolNamespace">
+      <SubType>Content</SubType>
+      <Name>MXTSymbolNamespace</Name>
+      <Link>Resources\MXTSymbolNamespace</Link>
+    </Content>
     <Content Include="AxResource\MXTSymbolTableIndex">
       <SubType>Content</SubType>
       <Name>MXTSymbolTableIndex</Name>
@@ -519,6 +524,11 @@
       <Name>MXTXppInterpreterVariablesInspectorJS</Name>
       <Link>Resources\MXTXppInterpreterVariablesInspectorJS</Link>
     </Content>
+    <Content Include="AxSecurityPrivilege\MXTDataCorrectionLogMaintain">
+      <SubType>Content</SubType>
+      <Name>MXTDataCorrectionLogMaintain</Name>
+      <Link>Security Privileges\MXTDataCorrectionLogMaintain</Link>
+    </Content>
     <Content Include="AxSecurityPrivilege\MXTXppInterpreterScriptExecutionLogMaintain">
       <SubType>Content</SubType>
       <Name>MXTXppInterpreterScriptExecutionLogMaintain</Name>
@@ -528,6 +538,11 @@
       <SubType>Content</SubType>
       <Name>MXTXppInterpreterRole</Name>
       <Link>Security Roles\MXTXppInterpreterRole</Link>
+    </Content>
+    <Content Include="AxTable\MXTDataCorrectionLog">
+      <SubType>Content</SubType>
+      <Name>MXTDataCorrectionLog</Name>
+      <Link>Tables\MXTDataCorrectionLog</Link>
     </Content>
     <Content Include="AxTable\MXTEditorParameters">
       <SubType>Content</SubType>
@@ -708,6 +723,11 @@
       <SubType>Content</SubType>
       <Name>MXTXppInterpreterVariablesInspector.js</Name>
       <DependentUpon>AxResource\MXTXppInterpreterVariablesInspectorJS</DependentUpon>
+    </Content>
+    <Content Include="Namespace_16x.png">
+      <SubType>Content</SubType>
+      <Name>Namespace_16x.png</Name>
+      <DependentUpon>AxResource\MXTSymbolNamespace</DependentUpon>
     </Content>
     <Content Include="TableIndex_16x.png">
       <SubType>Content</SubType>

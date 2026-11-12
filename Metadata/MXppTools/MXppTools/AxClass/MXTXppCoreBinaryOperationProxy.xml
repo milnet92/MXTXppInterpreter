@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppCoreBinaryOperationProxy</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+using XppInterpreter.Interpreter.Proxy;
+
+/// <summary>
+/// The operators of a script: the binary ones and the negation
+/// </summary>
+public final class MXTXppCoreBinaryOperationProxy implements
+    XppInterpreter.Interpreter.Proxy.IXppBinaryOperationProxy,
+    XppInterpreter.Interpreter.Proxy.IXppUnaryOperationProxy
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>Add</Name>
+				<Source><![CDATA[
+	public System.Object Add(System.Object left, System.Object right)
+    {
+        anytype l = left, r = right;
+
+        // The compiler picks the overload for a record by its static type, and the one for anytype refuses it (pM92)
+        if (typeOf(l) == Types::Container && MXTXppCoreCastingProxy::CommonType.IsInstanceOfType(right))
+        {
+            container items = l;
+            Common record = right;
+            items += record;
+            return items;
+        }
+
+        return l + r;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>Substract</Name>
+				<Source><![CDATA[
+    public System.Object Substract(System.Object left, System.Object right)
+    {
+        anytype l = left, r = right;
+        return l - r;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>Multiply</Name>
+				<Source><![CDATA[
+    public System.Object Multiply(System.Object left, System.Object right)
+    {
+        anytype l = left, r = right;
+        return l * r;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>Divide</Name>
+				<Source><![CDATA[
+    public System.Object Divide(System.Object left, System.Object right)
+    {
+        anytype l = left, r = right;
+        return l / r;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>IntDivide</Name>
+				<Source><![CDATA[
+    public System.Object IntDivide(System.Object left, System.Object right)
+    {
+        anytype l = left, r = right;
+        return l div r;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>BinaryAnd</Name>
+				<Source><![CDATA[
+    public System.Object BinaryAnd(System.Object left, System.Object right)
+    {
+        anytype l = left, r = right;
+        return l & r;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>BinaryOr</Name>
+				<Source><![CDATA[
+    public System.Object BinaryOr(System.Object left, System.Object right)
+    {
+        anytype l = left, r = right;
+        return l | r;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>BinaryXOr</Name>
+				<Source><![CDATA[
+    public System.Object BinaryXOr(System.Object left, System.Object right)
+    {
+        anytype l = left, r = right;
+        return l ^ r;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>LeftShift</Name>
+				<Source><![CDATA[
+    public System.Object LeftShift(System.Object left, System.Object right)
+    {
+        int r = right;
+        anytype l = left;
+        return l << r;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>RightShift</Name>
+				<Source><![CDATA[
+    public System.Object RightShift(System.Object left, System.Object right)
+    {
+        int r = right;
+        anytype l = left;
+        return l >> r;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>Mod</Name>
+				<Source><![CDATA[
+    public System.Object Mod(System.Object left, System.Object right)
+    {
+        anytype l = left, r = right;
+        return l mod r;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>Greater</Name>
+				<Source><![CDATA[
+    public System.Boolean Greater(System.Object left, System.Object right)
+    {
+        anytype l = left, r = right;
+        return l > r;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>Like</Name>
+				<Source><![CDATA[
+    public System.Boolean Like(System.Object left, System.Object right)
+    {
+        str text = left, pattern = right;
+
+        return text like pattern;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>AreEqual</Name>
+				<Source><![CDATA[
+    public System.Boolean AreEqual(System.Object left, System.Object right)
+    {
+        return left == right;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>Negate</Name>
+				<Source><![CDATA[
+	public System.Object Negate(System.Object value)
+    {
+        return !value;
+	}
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

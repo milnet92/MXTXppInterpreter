@@ -1,0 +1,732 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppCoreReflectionProxy</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+using XppInterpreter;
+using CArray = Microsoft.Dynamics.Ax.Xpp.Array;
+
+public final class MXTXppCoreReflectionProxy implements XppInterpreter.Interpreter.Proxy.IXppReflectionProxy
+{
+    #define.MacroLibraryCacheSeconds(5)
+    #define.TicksPerSecond(10000000)
+
+    private static System.String[] referencedAssemblies;
+    private static System.Collections.Hashtable macroLibraries;
+    private static System.Collections.Hashtable macroLibraryReadTicks;
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>IsXppType</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Tells if the type comes from X++: a class, a table or an enumeration. Any other type is called as .NET
+    /// </summary>
+    public boolean IsXppType(System.Type _type)
+    {
+        if (!_type) return false;
+
+        str typeNamespace = _type.Namespace;
+
+        return strStartsWith(typeNamespace, 'Dynamics.AX')
+            || MXTXppCoreCastingProxy::CommonType.IsAssignableFrom(_type)
+            || MXTXppCoreCastingProxy::ObjectType.IsAssignableFrom(_type);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetMacroLibrary</Name>
+				<Source><![CDATA[
+    /// <returns>The text, or null when there is no library with that name</returns>
+    public System.String GetMacroLibrary(System.String _name)
+    {
+        // The parser asks on every change in the editor, also for a macro that is being written, so the answer is kept for
+        // a few seconds. The library comes from the model source when the environment has it, so a change shows after that
+        // without a compile or a restart of the AOS.
+        int64 now = System.DateTime::UtcNow.Ticks;
+
+        if (!macroLibraries)
+        {
+            macroLibraries = System.Collections.Hashtable::Synchronized(new System.Collections.Hashtable(System.StringComparer::OrdinalIgnoreCase));
+            macroLibraryReadTicks = System.Collections.Hashtable::Synchronized(new System.Collections.Hashtable(System.StringComparer::OrdinalIgnoreCase));
+        }
+
+        if (macroLibraries.ContainsKey(_name))
+        {
+            int64 readTicks = macroLibraryReadTicks.get_Item(_name);
+
+            if (now - readTicks < #MacroLibraryCacheSeconds * #TicksPerSecond)
+            {
+                return macroLibraries.get_Item(_name);
+            }
+        }
+
+        System.String source = null;
+
+        try
+        {
+            source = XppInterpreter.Core.Clr.AosMetadata::get_Current().ReadMacroLibrary(_name);
+        }
+        catch (Exception::CLRError)
+        {
+            // There is no library with that name
+        }
+
+        macroLibraries.set_Item(_name, source);
+        macroLibraryReadTicks.set_Item(_name, now);
+
+        return source;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetSystemVariable</Name>
+				<Source><![CDATA[
+    public System.Object GetSystemVariable(System.String _name)
+    {
+        str name = _name;
+
+        switch (strLwr(name))
+        {
+            case 'appl': return appl;
+            case 'infolog': return infolog;
+            case 'classfactory': return classFactory;
+        }
+
+        return null;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetFieldValueById</Name>
+				<Source><![CDATA[
+    public System.Object GetFieldValueById(System.Object _record, System.Int32 _fieldId)
+    {
+        Common record = _record;
+
+        return record.(_fieldId);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>SetFieldValueById</Name>
+				<Source><![CDATA[
+    public void SetFieldValueById(System.Object _record, System.Int32 _fieldId, System.Object _value)
+    {
+        Common record = _record;
+
+        record.(_fieldId) = _value;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetReferencedAssemblies</Name>
+				<Source><![CDATA[
+    public System.String[] GetReferencedAssemblies()
+    {
+        if (referencedAssemblies)
+        {
+            return referencedAssemblies;
+        }
+
+        try
+        {
+            referencedAssemblies = XppInterpreter.Core.Clr.AosMetadata::get_Current().ReadReferencedAssemblies();
+
+            return referencedAssemblies;
+        }
+        catch (Exception::CLRError)
+        {
+            // The types of the loaded assemblies can still be used
+            warning(AifUtil::getClrErrorMessage());
+        }
+
+        return new System.String[0]();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>IsEnum</Name>
+				<Source><![CDATA[
+    public System.Boolean IsEnum(System.String name)
+    {
+        return SysDictEnum::newName(name) != null;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>IsInstantiable</Name>
+				<Source><![CDATA[
+    public System.Boolean IsInstantiable(System.String name)
+    {
+        return className2Id(name) != 0;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>ClearCommon</Name>
+				<Source><![CDATA[
+    public void ClearCommon(System.Object _common)
+    {
+        Common common = _common;
+
+        common.clear();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>CallInstanceFunction</Name>
+				<Source><![CDATA[
+    public System.Object CallInstanceFunction(System.Object _instance, System.String _functionName, System.Object[] _parameters)
+    {
+        return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeInstanceCall(_instance, _functionName, _parameters);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>CallStaticFunction</Name>
+				<Source><![CDATA[
+    public System.Object CallStaticFunction(System.String _className, System.String _methodName, System.Object[] _parameters)
+    {
+        return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeStaticCall(this.getClassType(_className), _methodName, _parameters);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>SetStaticProperty</Name>
+				<Source><![CDATA[
+    public void SetStaticProperty(System.String _className, System.String _propertyName, System.Object _value)
+    {
+        System.Type classType = this.getClassType(_className);
+
+        System.Reflection.PropertyInfo propertyInfo = classType.GetProperty(_propertyName);
+        if (propertyInfo)
+        {
+            propertyInfo.SetValue(null, _value);
+        }
+        else
+        {
+            System.Reflection.FieldInfo fieldInfo = classType.GetField(_propertyName);
+            if (fieldInfo)
+            {
+                fieldInfo.SetValue(null, _value);
+            }
+            else
+            {
+                throw error(strFmt("Invalid property name %1", _propertyName));
+            }
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>CreateInstance</Name>
+				<Source><![CDATA[
+    public System.Object CreateInstance(System.String _className, System.Object[] parameters)
+    {
+        System.Type classType = this.getClassType(_className);
+
+        return System.Activator::CreateInstance(
+            classType,
+            System.Reflection.BindingFlags::Public | System.Reflection.BindingFlags::Instance,
+            null,
+            XppInterpreter.Core.ReflectionHelper::PackConstructorArguments(classType, parameters),
+            null);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetInstanceProperty</Name>
+				<Source><![CDATA[
+    public System.Object GetInstanceProperty(System.Object _instance, System.String _propertyName)
+    {
+        if (this.isCommon(_instance))
+        {
+            Microsoft.Dynamics.Ax.Xpp.Common common = _instance;
+            return common.getFieldValue(_propertyName);
+        }
+        else
+        {
+            System.Reflection.PropertyInfo propertyInfo = _instance.GetType().GetProperty(_propertyName);
+
+            if (propertyInfo)
+            {
+                return propertyInfo.GetValue(_instance);
+            }
+            else
+            {
+                System.Reflection.FieldInfo fieldInfo = _instance.GetType().GetField(_propertyName);
+                if (fieldInfo)
+                {
+                    return fieldInfo.GetValue(_instance);
+                }
+                else
+                {
+                    throw error(strFmt("Invalid property name %1", _propertyName));
+                }
+            }
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetStaticProperty</Name>
+				<Source><![CDATA[
+    public System.Object GetStaticProperty(System.String _className, System.String _propertyName)
+    {
+        System.Reflection.PropertyInfo propertyInfo = this.getClassType(_className).GetProperty(_propertyName);
+        
+        if (propertyInfo)
+        {
+            return propertyInfo.GetValue(null);
+        }
+
+        throw error(strFmt("Invalid property name %1", _propertyName));
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>IsCommon</Name>
+				<Source><![CDATA[
+    public boolean IsCommon(System.Object _instance)
+    {
+        System.Type type = _instance.GetType();
+
+        return this.IsCommonType(type);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>IsCommonType</Name>
+				<Source><![CDATA[
+    public boolean IsCommonType(System.Type _type)
+    {
+        if (_type == null) return false;
+
+        // Not only the tables that derive from Common directly: a table that extends another one (DirPerson) is a record
+        // too. Without it, null assigned to such a buffer left the variable null, and its fields were found only when
+        // written with the case of the class property (conformance pN01 to pN07)
+        return _type.IsSubclassOf(MXTXppCoreCastingProxy::CommonType);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>SetInstanceProperty</Name>
+				<Source><![CDATA[
+    public void SetInstanceProperty(System.Object _instance, System.String _propertyName, System.Object _value)
+    {
+        if (this.IsCommon(_instance))
+        {
+            Microsoft.Dynamics.Ax.Xpp.Common common = _instance;
+            
+            this.setCommonFieldValue(common, _propertyName, _value);
+        }
+        else
+        {
+            System.Reflection.BindingFlags bindingFlags = 
+                System.Reflection.BindingFlags::Public | System.Reflection.BindingFlags::NonPublic | 
+                System.Reflection.BindingFlags::Instance;
+
+            System.Reflection.PropertyInfo propertyInfo = _instance.GetType().GetProperty(_propertyName, bindingFlags);
+            if (propertyInfo)
+            {
+                propertyInfo.SetValue(_instance, _value);
+            }
+            else
+            {
+                System.Reflection.FieldInfo fieldInfo = _instance.GetType().GetField(_propertyName, bindingFlags);
+                if (fieldInfo)
+                {
+                    fieldInfo.SetValue(_instance, _value);
+                }
+                else
+                {
+                    throw error(strFmt("Invalid property name %1", _propertyName));
+                }
+            }
+        }
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>CallGlobalOrPredefinedFunction</Name>
+				<Source><![CDATA[
+    public System.Object CallGlobalOrPredefinedFunction(XppInterpreter.Interpreter.RuntimeContext _context, System.String _methodName, System.Object[] _parameters)
+    {
+        if (MXTXppCorePredefinedFunctions::isCustomPredefinedFunction(_methodName))
+        {
+            return MXTXppCorePredefinedFunctions::callMethod(_context, _methodName, _parameters);
+        }
+        else if (this.isGlobalFunction(_methodName))
+        {
+            System.String invariantMethodName = XppInterpreter.Core.ReflectionHelper::GetMethodInvariantName(MXTXppCoreCastingProxy::GlobalType, _methodName);
+            return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::MakeStaticCall(MXTXppCoreCastingProxy::GlobalType, invariantMethodName, _parameters);
+        }
+
+        throw new System.Exception(strFmt("Function '%1' was not found.", _methodName));
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>isGlobalFunction</Name>
+				<Source><![CDATA[
+    private boolean isGlobalFunction(str _methodName)
+    {
+        return XppInterpreter.Core.ReflectionHelper::GetMethodInvariantName(MXTXppCoreCastingProxy::GlobalType, _methodName) != null;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getClassType</Name>
+				<Source><![CDATA[
+    private System.Type getClassType(str _className)
+    {
+        return Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::GetTypeFromClassName(_className);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetEnumValue</Name>
+				<Source><![CDATA[
+    public System.Object GetEnumValue(System.String _enumClass, System.String _enumValue)
+    {
+        System.Type enumType = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::getType(_enumClass);
+
+        Debug::assert(enumType.IsEnum);
+
+        return System.Enum::ToObject(enumType, symbol2Enum(enumName2Id(_enumClass), _enumValue));
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetAllEnumvalues</Name>
+				<Source><![CDATA[
+    public System.String[] GetAllEnumvalues(System.String _enumType)
+    {
+        SysDictEnum dictEnum = new SysDictEnum(enumName2Id(_enumType));
+        System.String[] ret = new System.String[dictEnum.values()]();
+
+        for (int i = 0; i < dictEnum.values(); i++)
+        {
+            ret.SetValue(dictEnum.index2Symbol(i), i);
+        }
+
+        return ret;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>setCommonFieldValue</Name>
+				<Source><![CDATA[
+    private void setCommonFieldValue(Common _common, str _fieldName, anytype _value)
+    {
+        // The id SysDictField::newName finds, without creating the object for every assignment
+        _common.(fieldName2Id(_common.TableId, _fieldName)) = _value;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetMethodSyntax</Name>
+				<Source><![CDATA[
+    public System.String GetMethodSyntax(System.String _typeName, System.String _methodName)
+    {
+        SysDictMethod dictMethod = this.getDictMethod(_typeName, _methodName);
+
+        return dictMethod ? MXTXppCoreReflectionProxy::methodSyntax(dictMethod) : '';
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>methodSyntax</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// The declaration of a method as the editor shows it: "public static str name(int _a, [str _b])"
+    /// </summary>
+    public static str methodSyntax(SysDictMethod _method)
+    {
+        int i;
+        str ret;
+
+        if (_method.parentId() &&
+            _method.parentType() == UtilElementType::Class &&
+            _method.name() == identifierStr(ClassDeclaration))
+        {
+            return "";
+        }
+
+        switch (_method.displayType())
+        {
+            case DisplayFunctionType::Set:
+            case DisplayFunctionType::RecordSet:
+                ret += 'edit ';
+                break;
+
+            case DisplayFunctionType::Get:
+            case DisplayFunctionType::RecordGet:
+                ret += 'display ';
+                break;
+
+            default:
+                ret += strLwr(enum2str(_method.accessSpecifier()))+' ';
+        }
+        if (_method.isStatic())
+        {
+            ret += 'static ';
+        }
+        if (_method.isAbstract())
+        {
+            ret += 'abstract ';
+        }
+
+        ret += extendedTypeId2DisplayName(_method.returnType(), _method.returnId());
+        ret += ' ' + _method.name() + '(';
+
+        for (i=1;i<=_method.parameterCnt();i++)
+        {
+            if (_method.parameterOptional(i))
+                ret += '[';
+
+            ret += extendedTypeId2DisplayName(_method.parameterType(i), _method.parameterId(i));
+            ret += ' '+_method.parameterName(i);
+
+            if (_method.parameterOptional(i))
+                ret += ']';
+
+            if (i < _method.parameterCnt())
+                ret += ', ';
+        }
+        ret += ')';
+
+        return ret;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getDictMethod</Name>
+				<Source><![CDATA[
+    private SysDictMethod getDictMethod(str _typeName, str _methodName)
+    {
+        SysDictMethod dictMethod = null;
+
+        if (this.IsInstantiable(_typeName))
+        {
+            SysDictClass dictClass = SysDictClass::newName(_typeName);
+
+            if (dictClass.hasObjectMethod(_methodName))
+            {
+                dictMethod = new SysDictMethod(UtilElementType::ClassInstanceMethod, className2Id(_typeName), _methodName);
+            }
+            else if (dictClass.hasStaticMethod(_methodName))
+            {
+                dictMethod = new SysDictMethod(UtilElementType::ClassStaticMethod, className2Id(_typeName), _methodName);
+            }
+        }
+        else if (tableName2Id(_typeName))
+        {
+            SysDictTable dictTable = SysDictTable::newName(_typeName);
+
+            Set tableMethods = dictTable.methods(true, true, true, tableStr(Common));
+            SetEnumerator tableMethodsEnumerator = tableMethods.getEnumerator();
+
+            while (tableMethodsEnumerator.moveNext())
+            {
+                SysDictMethod currentMethod = tableMethodsEnumerator.current() as SysDictMethod;
+                if (currentMethod.name() == _methodName)
+                {
+                    dictMethod = currentMethod;
+                    break;
+                }
+            }
+        }
+        else if (!_typeName)
+        {
+            if (this.isGlobalFunction(_methodName))
+            {
+                dictMethod = new SysDictMethod(UtilElementType::ClassStaticMethod, className2Id(MXTXppCoreCastingProxy::GlobalType.Name), _methodName);
+            }
+            else if (MXTXppCorePredefinedFunctions::isCustomPredefinedFunction(_methodName))
+            {
+                dictMethod = new SysDictMethod(UtilElementType::ClassStaticMethod, classNum(MXTXppCorePredefinedFunctions), _methodName);
+            }
+        }
+
+        return dictMethod;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>LabelIdToValue</Name>
+				<Source><![CDATA[
+    public System.String LabelIdToValue(System.String _labelId, System.String _languageId)
+    {
+        str languageId = _languageId ? _languageId : Global::infolog().language();
+        return SysLabel::labelId2String(_labelId, languageId);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>TypeHasMethod</Name>
+				<Source><![CDATA[
+    public boolean TypeHasMethod(System.Type _caller, System.String _methodName)
+    {
+        if (!_caller) return false;
+
+        return this.getDictMethod(_caller.Name, _methodName) ||
+               XppInterpreter.Core.ReflectionHelper::TypeHasMethod(_caller, _methodName);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>TypeHasProperty</Name>
+				<Source><![CDATA[
+    public boolean TypeHasProperty(System.Type _caller, System.String _propertyName, System.Boolean _includeNonPublic)
+    {
+        if (this.IsCommonType(_caller))
+        {
+            return fieldName2Id(tableName2Id(_caller.Name), _propertyName);
+        }
+        else if (_caller)
+        {
+            return XppInterpreter.Core.ReflectionHelper::TypeHasField(_caller, _propertyName, _includeNonPublic) ||
+                   XppInterpreter.Core.ReflectionHelper::TypeHasProperty(_caller, _propertyName, _includeNonPublic);
+        }
+
+        return false;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>EnumHasMember</Name>
+				<Source><![CDATA[
+    public boolean EnumHasMember(System.String _enumName, System.String _memberName)
+    {
+        if (!_enumName) return false;
+
+        SysDictEnum enum = SysDictEnum::newName(_enumName);
+
+        if (!enum) return false;
+
+        return enum.symbol2Value(_memberName) != 255;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetMethodReturnType</Name>
+				<Source><![CDATA[
+    public System.Type GetMethodReturnType(System.Type _caller, System.String _methodName)
+    {
+        if (!_caller) return null;
+
+        DictMethod dictMethod = this.getDictMethod(_caller.Name, _methodName);
+
+        if (dictMethod)
+        {
+            System.Type returnType = dictMethod.returnTypeName()
+                ? MXTXppCoreCastingProxy::getClrTypeFromTypeName(dictMethod.returnTypeName())
+                : MXTXppCoreCastingProxy::getSystemTypeFromTypes(dictMethod.returnType());
+
+            if (returnType)
+            {
+                return returnType;
+            }
+        }
+
+        // A .NET type is not in the data dictionary
+        System.Reflection.MethodInfo methodInfo = XppInterpreter.Core.ReflectionHelper::GetMethod(_caller, _methodName);
+
+        return methodInfo ? methodInfo.ReturnType : null;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetFieldReturnType</Name>
+				<Source><![CDATA[
+    public System.Type GetFieldReturnType(System.Type _caller, System.String _fieldName, System.Boolean _includeNonPublic = false)
+    {
+        if (!_caller) return null;
+
+        str typeName = _caller.Name;
+
+        if (fieldName2Id(tableName2Id(typeName), _fieldName))
+        {
+            SysDictField dictField = SysDictField::findFieldByName(typeName, _fieldName);
+
+            if (dictField.typeName())
+            {
+                return MXTXppCoreCastingProxy::getClrTypeFromTypeName(dictField.typeName());
+            }
+            else
+            {
+                return MXTXppCoreCastingProxy::getSystemTypeFromTypes(dictField.type());
+            }
+        }
+        else if (XppInterpreter.Core.ReflectionHelper::TypeHasField(_caller, _fieldName, _includeNonPublic))
+        {
+            return XppInterpreter.Core.ReflectionHelper::GetField(_caller, _fieldName, _includeNonPublic).FieldType;
+        }
+        else if (XppInterpreter.Core.ReflectionHelper::TypeHasProperty(_caller, _fieldName, _includeNonPublic))
+        {
+            return XppInterpreter.Core.ReflectionHelper::GetProperty(_caller, _fieldName, _includeNonPublic).PropertyType;
+        }
+
+        return null;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetDateType</Name>
+				<Source><![CDATA[
+    System.Type GetDateType()
+    {
+        return MXTXppCoreCastingProxy::DateType;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>GetUtcDateTimeType</Name>
+				<Source><![CDATA[
+    System.Type GetUtcDateTimeType()
+    {
+        return MXTXppCoreCastingProxy::DateTimeType;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

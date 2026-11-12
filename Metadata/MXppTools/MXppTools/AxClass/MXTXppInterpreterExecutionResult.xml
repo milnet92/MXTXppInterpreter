@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppInterpreterExecutionResult</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+/// <summary>
+/// What <c>MXTXppInterpreterExecutor::execute</c> did with a script: the parse errors when it didn't run it, or the value
+/// of the return statement that ended it. An exception of the script leaves execute as before, so it isn't here.
+/// </summary>
+internal final class MXTXppInterpreterExecutionResult
+{
+    XppInterpreter.Parser.ParseResult parseResult;
+    System.Object returnValue;
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>construct</Name>
+				<Source><![CDATA[
+    public static MXTXppInterpreterExecutionResult construct(XppInterpreter.Parser.ParseResult _parseResult)
+    {
+        MXTXppInterpreterExecutionResult result = new MXTXppInterpreterExecutionResult();
+
+        result.parmParseResult(_parseResult);
+
+        return result;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmParseResult</Name>
+				<Source><![CDATA[
+    public XppInterpreter.Parser.ParseResult parmParseResult(XppInterpreter.Parser.ParseResult _parseResult = parseResult)
+    {
+        parseResult = _parseResult;
+
+        return parseResult;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmReturnValue</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// The value of the return statement that ended the script, or null
+    /// </summary>
+    public System.Object parmReturnValue(System.Object _returnValue = returnValue)
+    {
+        returnValue = _returnValue;
+
+        return returnValue;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>hasRun</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// The script parsed, so execute ran it to its end
+    /// </summary>
+    public boolean hasRun()
+    {
+        return parseResult != null && parseResult.IsCorrect;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parseErrors</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// The errors that kept the script from running, as "Line n, position m: message"
+    /// </summary>
+    public List parseErrors()
+    {
+        return MXTXppCoreScript::parseErrorList(parseResult);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>returnValueText</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// The return value as text: an X++ value as strFmt shows it, a container as [a, b], an object by its ToString
+    /// </summary>
+    public str returnValueText()
+    {
+        return returnValue == null ? '' : MXTXppInterpreterExecutionResult::valueText(returnValue);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>valueText</Name>
+				<Source><![CDATA[
+    private static str valueText(anytype _value)
+    {
+        switch (typeOf(_value))
+        {
+            // con2Str shows only the first value of a container inside a container
+            case Types::Container:
+                container values = _value;
+                str text;
+
+                for (int i = 1; i <= conLen(values); i++)
+                {
+                    text += (i > 1 ? ', ' : '') + MXTXppInterpreterExecutionResult::valueText(conPeek(values, i));
+                }
+
+                return '[' + text + ']';
+
+            case Types::Class:
+                System.Object instance = _value;
+                return instance == null ? '' : instance.ToString();
+
+            default:
+                return strFmt('%1', _value);
+        }
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>

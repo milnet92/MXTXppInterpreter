@@ -21,15 +21,7 @@ internal final class MXTXppInterpreterExecutor
     /// </summary>
     static void TypeNew()
     {
-        proxy = new XppInterpreter.Interpreter.Proxy.XppProxy(
-            new MXTXppIntrinsicFunctionProvider(),
-            new MXTXppBinaryOperationProxy(),
-            new MXTXppCastingProxy(),
-            new MXTXppUnaryOperationProxy(),
-            new MXTXppDataAccessProxy(),
-            new MXTXppReflectionProxy(),
-            new MXTXppExceptionsProxy(),
-            new MXTXppQueryGenerationProxy());
+        proxy = MXTXppCoreScript::sharedProxy();
     }
 
 ]]></Source>
@@ -74,11 +66,12 @@ internal final class MXTXppInterpreterExecutor
     /// </summary>
     /// <param name = "_script">A record of <c>MXTXppInterpreterScript</c></param>
     /// <param name = "_parameters">A record of <c>MXTXppInterpreterParameters</c></param>
-    public static void executeScript(MXTXppInterpreterScript _script, MXTXppInterpreterParameters _parameters)
+    /// <returns>The parse errors, or the return value of the script</returns>
+    public static MXTXppInterpreterExecutionResult executeScript(MXTXppInterpreterScript _script, MXTXppInterpreterParameters _parameters)
     {
         var dependencies = MXTXppScriptDependencyManager::parseDependencies(_script.RecId);
 
-        MXTXppInterpreterExecutor::execute(_script.SourceCode, null, _parameters, dependencies);
+        return MXTXppInterpreterExecutor::execute(_script.SourceCode, null, _parameters, dependencies);
     }
 
 ]]></Source>
@@ -166,8 +159,9 @@ internal final class MXTXppInterpreterExecutor
     /// <param name = "_debugger">Debugger</param>
     /// <param name = "_parameters">Configuration</param>
     /// <param name = "_dependencies">Dependency scripts</param>
-    public static void executeProgram(
-        XppInterpreter.Parser.Program               _program, 
+    /// <returns>The result of the interpreter, with the return value of the program</returns>
+    public static XppInterpreter.Interpreter.InterpreterResult executeProgram(
+        XppInterpreter.Parser.Program               _program,
         XppInterpreter.Interpreter.Debug.IDebugger _debugger    = null, 
         MXTXppInterpreterParameters                _parameters  = MXTXppInterpreterParameters::find(),
         XppInterpreter.Interpreter.XppInterpreterDependencyCollection _dependencies = null)
@@ -177,9 +171,59 @@ internal final class MXTXppInterpreterExecutor
         options.EmitGlobalTtsAbort = _parameters.EmitGlobalTtsAbort;
         options.MaxLoopIterations = _parameters.MaxLoopIteratations;
 
-        XppInterpreter.Interpreter.XppInterpreter interpreter = new XppInterpreter.Interpreter.XppInterpreter(proxy);
+        XppInterpreter.Interpreter.XppInterpreter interpreter = new XppInterpreter.Interpreter.XppInterpreter(proxy, options);
 
-        interpreter.Interpret(_program, _dependencies);
+        return interpreter.Interpret(_program, _dependencies);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>getRootNamespaces</Name>
+				<Source><![CDATA[
+    public static List getRootNamespaces()
+    {
+        List ret = new List(Types::String);
+        System.String[] names = proxy.ClrTypes.GetRootNamespaces();
+
+        for (int i = 0; i < names.Length; i++)
+        {
+            str name = names.GetValue(i);
+
+            ret.addEnd(name);
+        }
+
+        return ret;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>evaluate</Name>
+				<Source><![CDATA[
+    public static System.Object evaluate(str _sourceCode)
+    {
+        XppInterpreter.Parser.ParseResult parseResult = MXTXppInterpreterExecutor::parse(_sourceCode);
+
+        if (!parseResult.IsCorrect)
+        {
+            System.Collections.IEnumerator enumerator = parseResult.Errors.GetEnumerator();
+
+            while (enumerator.MoveNext())
+            {
+                XppInterpreter.Parser.ParseError parseError = enumerator.Current;
+
+                throw error(parseError.Message);
+            }
+        }
+
+        XppInterpreter.Interpreter.XppInterpreter interpreter = new XppInterpreter.Interpreter.XppInterpreter(proxy);
+        XppInterpreter.Interpreter.Bytecode.ByteCode byteCode = interpreter.Compile(parseResult.AST as XppInterpreter.Parser.Program, null);
+        XppInterpreter.Interpreter.RuntimeContext context = new XppInterpreter.Interpreter.RuntimeContext(proxy, byteCode);
+
+        interpreter.Interpret(byteCode, context, true, XppInterpreter.Interpreter.Debug.DebugAction::None);
+
+        return context.ReturnValue;
     }
 
 ]]></Source>
@@ -194,21 +238,27 @@ internal final class MXTXppInterpreterExecutor
     /// <param name = "_debugger">Debugger</param>
     /// <param name = "_parameters">Configuration</param>
     /// <param name = "_dependencies">Dependency scripts</param>
-    public static void execute(
-        str                                         _sourceCode, 
-        XppInterpreter.Interpreter.Debug.IDebugger  _debugger = null, 
+    /// <returns>The parse errors, or the return value of the script. An exception of the script is thrown as before.</returns>
+    public static MXTXppInterpreterExecutionResult execute(
+        str                                         _sourceCode,
+        XppInterpreter.Interpreter.Debug.IDebugger  _debugger = null,
         MXTXppInterpreterParameters                 _parameters  = MXTXppInterpreterParameters::find(),
         XppInterpreter.Interpreter.XppInterpreterDependencyCollection _dependencies = null)
     {
         // Create lexer and parser
         XppInterpreter.Parser.ParseResult parseResult = MXTXppInterpreterExecutor::parse(_sourceCode);
+        MXTXppInterpreterExecutionResult result = MXTXppInterpreterExecutionResult::construct(parseResult);
 
         if (parseResult.IsCorrect)
         {
             MXTXppInterpreterScriptExecutionLog::startLog(_sourceCode, _parameters.EmitGlobalTtsAbort);
 
-            MXTXppInterpreterExecutor::executeProgram(parseResult.AST as XppInterpreter.Parser.Program, _debugger, _parameters, _dependencies);
+            XppInterpreter.Interpreter.InterpreterResult interpreterResult = MXTXppInterpreterExecutor::executeProgram(parseResult.AST as XppInterpreter.Parser.Program, _debugger, _parameters, _dependencies);
+
+            result.parmReturnValue(interpreterResult.ReturnValue);
         }
+
+        return result;
 	}
 
 ]]></Source>

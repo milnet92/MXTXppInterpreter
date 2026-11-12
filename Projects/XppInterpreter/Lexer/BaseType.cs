@@ -67,6 +67,11 @@
         public Date(DateLiteral date) : base(date, TType.Date) { }
     }
 
+    public class UtcDateTime : BaseType
+    {
+        public UtcDateTime(System.DateTime value) : base(value, TType.UtcDateTime) { }
+    }
+
     public readonly struct DateLiteral
     {
         public int Day { get; }

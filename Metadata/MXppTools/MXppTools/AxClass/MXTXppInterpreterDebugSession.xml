@@ -30,15 +30,7 @@ public class MXTXppInterpreterDebugSession
     
     XppInterpreterDependencyCollection          dependencyCollection;
 
-    XppInterpreter.Interpreter.Proxy.XppProxy proxy = new XppInterpreter.Interpreter.Proxy.XppProxy(
-                    new MXTXppIntrinsicFunctionProvider(),
-                    new MXTXppBinaryOperationProxy(),
-                    new MXTXppCastingProxy(),
-                    new MXTXppUnaryOperationProxy(),
-                    new MXTXppDataAccessProxy(),
-                    new MXTXppReflectionProxy(),
-                    new MXTXppExceptionsProxy(),
-                    new MXTXppQueryGenerationProxy());
+    XppInterpreter.Interpreter.Proxy.XppProxy proxy = MXTXppCoreScript::newProxy();
 
 }
 ]]></Declaration>
