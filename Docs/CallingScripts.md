@@ -27,7 +27,7 @@ info(strFmt("%1", totalAmount(SalesTable::find('000002'))));
 ```
 
 - **The statements outside the functions** never run in a call. In the editor they run, so they are the place for test code.
-- **A function uses** its parameters, its own variables and the other functions of the script. A variable declared outside the functions doesn't exist in a call: reading it fails with `Variable total was not declared.`
+- **A function uses** its parameters, its own variables and the other functions of the script. A variable declared outside the functions doesn't exist in a call. `call` refuses a function that uses one, itself or through a function it calls, and `validate` reports it when the text is saved.
 - **Names** of functions are found in any case, as in X++.
 
 ## Arguments and the return value
@@ -109,7 +109,13 @@ public boolean validateWrite()
 }
 ```
 
-`validate` reports each error of the text as `checkFailed` does, in the form `Line 1, position 10: Syntax error...`, and then a missing function. `isValid`, `parseErrors` and `hasFunction` give the same answers without messages. `newFromSource` never throws: a text with errors gives a script whose `call` stops with an error.
+`validate` reports as `checkFailed` does:
+
+- **The errors of the text,** in the form `Line 1, position 10: Syntax error...`
+- **A missing function:** `The script has no function 'isExported'.`
+- **A function that can't be called:** `The function 'isExported' uses total, declared outside the functions of the script. In a call those variables don't exist.` It follows the functions that the function calls.
+
+Without the name of a function, `validate` only checks the text. `isValid`, `parseErrors` and `hasFunction` give the same answers without messages. `newFromSource` never throws: a text with errors gives a script whose `call` stops with an error.
 
 ## What a call does
 
@@ -142,7 +148,9 @@ A `throw` in a function behaves as the same `throw` in a compiled method that th
 
 `retry` in the catch of the caller calls the function again, and a call after an exception runs as the first one.
 
-**An error of the interpreter itself is a .NET exception.** A function that reads a variable declared outside the functions, or an argument of a type that can't be converted, stops the call with one. `catch (Exception::Error)` doesn't get it: `catch (Exception::CLRError)` or a catch without a type does. A transaction of the caller is aborted as with any other exception. `validate` finds the errors of the text when it is saved, not these.
+**What `call` refuses is an X++ error:** a missing function, a wrong number of arguments, a text with errors, a function that uses a variable declared outside the functions. `catch (Exception::Error)` gets it, before any statement of the function ran.
+
+**An error of the interpreter itself is a .NET exception.** An argument of a type that can't be converted stops the call with one. `catch (Exception::Error)` doesn't get it: `catch (Exception::CLRError)` or a catch without a type does. A transaction of the caller is aborted as with any other exception.
 
 ## Speed
 

@@ -555,7 +555,7 @@ namespace XppInterpreter.Parser
         {
             string name = ((Word)currentToken).Lexeme;
 
-            if (_parseContext.CurrentScope.FindVariableDeclaration(name) != null)
+            if (FindVariable(name) != null)
             {
                 return null;
             }
@@ -597,7 +597,7 @@ namespace XppInterpreter.Parser
             {
                 if (arguments[i] is Variable variable && !(variable is FunctionCall) && variable.Caller is null)
                 {
-                    var declaration = _parseContext.CurrentScope.FindVariableDeclaration(variable.Name);
+                    var declaration = FindVariable(variable.Name);
 
                     if (declaration != null && declaration.IsClrType)
                     {
@@ -910,7 +910,7 @@ namespace XppInterpreter.Parser
                 if (currentToken.TokenType == TType.LeftBracket)
                 {
                     // Only X++ arrays take [index]: a .NET list or array needs get_Item, GetValue and SetValue, as compiled X++ requires
-                    var indexedVariable = caller is null ? _parseContext.CurrentScope.FindVariableDeclaration(((Word)identifier.Token).Lexeme) : null;
+                    var indexedVariable = caller is null ? FindVariable(((Word)identifier.Token).Lexeme) : null;
 
                     if (indexedVariable != null && !indexedVariable.IsArray)
                     {
@@ -942,7 +942,7 @@ namespace XppInterpreter.Parser
             if (currentToken.TokenType != TType.StaticDoubleDot && validateVariableName)
             {
                 string variableName = ((Word)identifier.Token).Lexeme;
-                var declaredVariable = _parseContext.CurrentScope.FindVariableDeclaration(variableName);
+                var declaredVariable = FindVariable(variableName);
 
                 if (declaredVariable is null)
                 {
@@ -1454,7 +1454,7 @@ namespace XppInterpreter.Parser
         {
             return expression is Variable variable
                 && variable.Caller is null
-                && _parseContext.CurrentScope.FindVariableDeclaration(variable.Name)?.IsConst == true;
+                && FindVariable(variable.Name)?.IsConst == true;
         }
 
         private void ValidateNotConst(Expression assignee)
@@ -1785,7 +1785,7 @@ namespace XppInterpreter.Parser
 
             if (expression is Variable variable && !(expression is FunctionCall) && !(expression is ArrayAccess) && variable.Caller is null)
             {
-                var declaration = _parseContext.CurrentScope.FindVariableDeclaration(variable.Name);
+                var declaration = FindVariable(variable.Name);
 
                 if (declaration?.ClrType != null && typeof(Exception).IsAssignableFrom(declaration.ClrType))
                 {
@@ -1974,6 +1974,8 @@ namespace XppInterpreter.Parser
 
             Match(TType.LeftParenthesis);
 
+            bool outermostFunction = BeginFunctionVariables();
+
             _parseContext.FunctionDeclarationStack.New();
             _parseContext.CurrentScope.FunctionReferences.Add(new FunctionDeclarationReference((funcNameToken).Lexeme, type)
             {
@@ -2012,12 +2014,74 @@ namespace XppInterpreter.Parser
                 block,
                 SourceCodeBinding(start, lastScanResult))
             {
-                ReturnClrType = parsedType.ClrType
+                ReturnClrType = parsedType.ClrType,
+                ScriptVariables = EndFunctionVariables(outermostFunction)
             };
 
             _parseContext.CurrentScope.FunctionDeclarations.Add(ret);
 
             return ret;
+        }
+
+        // The variables that were declared when the outermost function started: the ones of the script.
+        // A host calls a function without running the statements around it, so they don't exist then.
+        private HashSet<ParseContextScopeVariable> _scriptVariables;
+        private HashSet<string> _functionParameters;
+        private HashSet<string> _usedScriptVariables;
+        private int _functionDepth;
+
+        private bool BeginFunctionVariables()
+        {
+            bool outermost = _functionDepth == 0;
+
+            if (outermost)
+            {
+                _scriptVariables = new HashSet<ParseContextScopeVariable>();
+                _functionParameters = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                _usedScriptVariables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                for (ParseContextScope scope = _parseContext.CurrentScope; scope != null; scope = scope.Parent)
+                {
+                    _scriptVariables.UnionWith(scope.VariableDeclarations);
+                }
+            }
+
+            _functionDepth++;
+
+            return outermost;
+        }
+
+        /// <returns>The variables of the script that the function uses. A function inside another one counts for the outer one</returns>
+        private string[] EndFunctionVariables(bool outermost)
+        {
+            _functionDepth--;
+
+            if (!outermost)
+            {
+                return new string[0];
+            }
+
+            string[] used = _usedScriptVariables.OrderBy(name => name, StringComparer.OrdinalIgnoreCase).ToArray();
+
+            _functionDepth = 0;
+            _scriptVariables = null;
+            _functionParameters = null;
+            _usedScriptVariables = null;
+
+            return used;
+        }
+
+        private ParseContextScopeVariable FindVariable(string name)
+        {
+            ParseContextScopeVariable declaration = _parseContext.CurrentScope.FindVariableDeclaration(name);
+
+            // A parameter is declared in the scope of the script too, after the variables: the name decides
+            if (declaration != null && _functionDepth > 0 && _scriptVariables.Contains(declaration) && !_functionParameters.Contains(name))
+            {
+                _usedScriptVariables.Add(declaration.Name);
+            }
+
+            return declaration;
         }
 
         FunctionDeclarationParameter FunctionDeclarationParameter()
@@ -2035,6 +2099,8 @@ namespace XppInterpreter.Parser
             System.Type inferedType = parsedType.ClrType ?? _proxy.Casting.GetSystemTypeFromTypeName(type.Lexeme);
 
             Word id = Match(TType.Id).Token as Word;
+
+            _functionParameters?.Add(id.Lexeme);
 
             bool isArray = currentToken.TokenType == TType.LeftBracket;
 
@@ -2838,7 +2904,7 @@ namespace XppInterpreter.Parser
 
             string name = ((Word)currentToken).Lexeme;
 
-            if (_parseContext.CurrentScope.FindVariableDeclaration(name) != null) return;
+            if (FindVariable(name) != null) return;
 
             for (int offset = 0; PeekToken(offset).TokenType == TType.Dot; offset += 2)
             {

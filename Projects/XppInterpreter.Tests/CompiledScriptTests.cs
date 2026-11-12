@@ -120,10 +120,55 @@ namespace XppInterpreter.Tests
         {
             ScriptFunction function = Function("int total = 5; int read() { return total; }", "read");
 
-            var exception = Assert.ThrowsException<Exception>(() => function.Call(null));
+            Assert.AreEqual("total", function.ScriptVariableNames);
+
+            var exception = Assert.ThrowsException<InvalidOperationException>(() => function.Call(null));
 
             StringAssert.Contains(exception.Message, "total");
         }
+
+        private static string ScriptVariables(string source, string name) => Function(source, name).ScriptVariableNames;
+
+        [TestMethod]
+        public void ScriptVariables_AreFoundWhenTheFunctionWritesOne() =>
+            Assert.AreEqual("total", ScriptVariables("int total; void write() { total = 5; }", "write"));
+
+        [TestMethod]
+        public void ScriptVariables_AreFoundThroughAFunctionThatIsCalled() =>
+            Assert.AreEqual("limit, total", ScriptVariables(
+                "int total = 1; int limit = 2; int read() { return total; } int both() { return read() + limit; } int none(int a) { return a; }",
+                "both"));
+
+        [TestMethod]
+        public void ScriptVariables_AreFoundInAFieldAccess() =>
+            Assert.AreEqual("record", ScriptVariables("TestCommon record; str read() { return record.AccountNum; }", "read"));
+
+        [TestMethod]
+        public void ScriptVariables_AreFoundInANestedBlock() =>
+            Assert.AreEqual("total", ScriptVariables("int total; int read(int a) { if (a > 0) { while (a > 0) { a -= total; } } return a; }", "read"));
+
+        [TestMethod]
+        public void ScriptVariables_AreNotTheParametersAndTheVariablesOfTheFunction() =>
+            Assert.AreEqual(string.Empty, ScriptVariables(
+                "int other(int a) { return a; } int own(int a, int b = 2) { int c = a + b; TestCommon record; record.AccountNum = 'x'; return c + other(a) + appl.ttsLevel(); }",
+                "own"));
+
+        [TestMethod]
+        public void ScriptVariables_AreNotAParameterWithTheNameOfOne()
+        {
+            ScriptFunction function = Function("int total = 5; int same(int total) { return total; }", "same");
+
+            Assert.AreEqual(string.Empty, function.ScriptVariableNames);
+            Assert.AreEqual(7, function.Call(new object[] { 7 }));
+        }
+
+        [TestMethod]
+        public void ScriptVariables_AreNotTheOnesDeclaredAfterTheFunction() =>
+            Assert.AreEqual(string.Empty, ScriptVariables("int one() { int total = 1; return total; } int total = 5;", "one"));
+
+        [TestMethod]
+        public void ScriptVariables_DoNotStopTheScriptInTheEditor() =>
+            Assert.AreEqual(12, ScriptRunner.Evaluate("int total = 5; int read() { return total; } void write() { total = 6; } int before = read(); write(); return before + read() + 1;"));
 
         [TestMethod]
         public void Call_LeavesTheTransactionToTheCaller()

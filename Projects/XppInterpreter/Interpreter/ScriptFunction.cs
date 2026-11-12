@@ -22,6 +22,11 @@ namespace XppInterpreter.Interpreter
         public string Name => _function.Declaration.Name;
         public int ParameterCount => _function.Declaration.Parameters.Count;
         public int RequiredParameterCount { get; }
+        /// <summary>
+        /// The variables of the script that the function uses, itself or through the functions it calls, separated by commas.
+        /// Empty for a function that can be called: those variables don't exist in a call.
+        /// </summary>
+        public string ScriptVariableNames { get; }
 
         internal ScriptFunction(RefFunction function, List<RefFunction> declaredFunctions, XppProxy proxy)
         {
@@ -30,12 +35,41 @@ namespace XppInterpreter.Interpreter
             _byteCode = new ByteCode(function.Instructions) { DeclaredFunctions = declaredFunctions };
 
             RequiredParameterCount = function.Declaration.Parameters.Count(p => p.DefaultValue is null);
+            ScriptVariableNames = string.Join(", ", FindScriptVariables(function));
 
             if (function.Declaration.Type.TokenType != TType.Void)
             {
                 _returnType = function.Declaration.ReturnClrType
                     ?? proxy.Casting.GetSystemTypeFromTypeName(((Word)function.Declaration.Type).Lexeme);
             }
+        }
+
+        private static SortedSet<string> FindScriptVariables(RefFunction function)
+        {
+            var names = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+            var visited = new HashSet<RefFunction>();
+            var pending = new Stack<RefFunction>();
+
+            pending.Push(function);
+
+            while (pending.Count > 0)
+            {
+                RefFunction current = pending.Pop();
+
+                if (!visited.Add(current))
+                {
+                    continue;
+                }
+
+                names.UnionWith(current.Declaration.ScriptVariables);
+
+                foreach (DeclaredFunctionCall call in current.Instructions.OfType<DeclaredFunctionCall>())
+                {
+                    pending.Push(call.Function);
+                }
+            }
+
+            return names;
         }
 
         public bool Accepts(int argumentCount)
@@ -54,6 +88,12 @@ namespace XppInterpreter.Interpreter
             if (!Accepts(arguments.Length))
             {
                 throw new ArgumentException($"The function '{Name}' can't be called with {arguments.Length} arguments.");
+            }
+
+            if (ScriptVariableNames.Length > 0)
+            {
+                throw new InvalidOperationException(
+                    $"The function '{Name}' uses {ScriptVariableNames}, declared outside the functions of the script. In a call those variables don't exist.");
             }
 
             // The scope of the script is not there: the statements outside the functions didn't run

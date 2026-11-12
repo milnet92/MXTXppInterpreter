@@ -105,3 +105,4 @@ AgentResultHelp=The value of the return statement that ended the script.
 ScriptNotValid=The script has errors, so its functions can't be called.
 ScriptFunctionNotFound=The script has no function '%1'.
 ScriptFunctionArguments=The function '%1' of the script can't be called with %2 arguments.
+ScriptFunctionVariable=The function '%1' uses %2, declared outside the functions of the script. In a call those variables don't exist.

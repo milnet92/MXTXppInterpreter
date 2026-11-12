@@ -103,7 +103,9 @@ public final class MXTXppScript
     /// <summary>
     /// For the validateWrite of the table that holds the text: reports its errors as checkFailed does
     /// </summary>
-    /// <param name = "_function">A function that the script must have</param>
+    /// <param name = "_function">
+    /// A function that the script must have, and that a call can run: it can't use a variable declared outside the functions
+    /// </param>
     public boolean validate(str _function = '')
     {
         boolean        ret = true;
@@ -114,9 +116,23 @@ public final class MXTXppScript
             ret = checkFailed(errors.current());
         }
 
-        if (ret && _function && !this.hasFunction(_function))
+        if (ret && _function)
         {
-            ret = checkFailed(strFmt("@MXT:ScriptFunctionNotFound", _function));
+            XppInterpreter.Interpreter.ScriptFunction function = script.FindFunction(_function);
+
+            if (function == null)
+            {
+                ret = checkFailed(strFmt("@MXT:ScriptFunctionNotFound", _function));
+            }
+            else
+            {
+                str variables = function.get_ScriptVariableNames();
+
+                if (variables)
+                {
+                    ret = checkFailed(strFmt("@MXT:ScriptFunctionVariable", _function, variables));
+                }
+            }
         }
 
         return ret;
@@ -341,6 +357,14 @@ public final class MXTXppScript
         if (!function.Accepts(_argumentCount))
         {
             throw error(strFmt("@MXT:ScriptFunctionArguments", _function, _argumentCount));
+        }
+
+        // Stopped here as an X++ error. Running it would fail on the first use of the variable, as a .NET error
+        str variables = function.get_ScriptVariableNames();
+
+        if (variables)
+        {
+            throw error(strFmt("@MXT:ScriptFunctionVariable", _function, variables));
         }
 
         return function;

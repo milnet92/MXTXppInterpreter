@@ -15,6 +15,10 @@ namespace XppInterpreter.Parser
         /// Set when the return type is a .NET type. An X++ type is found by its name.
         /// </summary>
         public System.Type ReturnClrType { get; internal set; }
+        /// <summary>
+        /// The variables declared outside the functions that this one uses. They exist when the script runs, not when a host calls the function.
+        /// </summary>
+        public string[] ScriptVariables { get; internal set; } = new string[0];
 
         public FunctionDeclaration(string name, Token returnType, List<FunctionDeclarationParameter> parameters, Block block, SourceCodeBinding sourceCodeBinding) : base(sourceCodeBinding, null)
         {

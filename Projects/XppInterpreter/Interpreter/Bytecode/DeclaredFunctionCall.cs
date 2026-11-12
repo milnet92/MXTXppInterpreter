@@ -10,6 +10,7 @@ namespace XppInterpreter.Interpreter.Bytecode
         private readonly bool _allocate;
         public string OperationCode => "CALL";
         public string Name => _ref.Declaration.Name;
+        internal RefFunction Function => _ref;
         public int NArgs { get; set; }
         public bool Alloc => _allocate && _ref.Declaration.Type.TokenType != TType.Void;
         public bool ProcessParameters => true;
