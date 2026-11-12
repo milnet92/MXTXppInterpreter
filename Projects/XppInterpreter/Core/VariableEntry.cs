@@ -9,6 +9,8 @@ namespace XppInterpreter.Core
         public Type DeclarationType { get; private set; }
         public string TypeName { get; private set; }
 
+        public int StringLength { get; set; }
+
         public VariableEntry(string name, object value)
         {
             Name = name;

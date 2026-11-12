@@ -10,7 +10,12 @@ namespace XppInterpreter.Core
 {
     public class ExceptionHandler
     {
-        private int _transactionCounter = 0;
+        private const string CLR_ERROR_MEMBER = "CLRError";
+
+        private readonly int _transactionLevel;
+
+        private readonly int _globalTransactions;
+
         public List<ExceptionCatchReference> ExceptionCatchReferences { get; }
 
         /// <summary>
@@ -35,52 +40,61 @@ namespace XppInterpreter.Core
         /// <param name="start">Program counter when the handler whas created</param>
         /// <param name="offset"></param>Relative position from start where the try block ends
         /// <param name="references">Catch references</param>
-        public ExceptionHandler(int start, int offset, List<ExceptionCatchReference> references)
+        /// <param name="transactionLevel">The number of open transactions</param>
+        /// <param name="globalTransactions">How many of them the interpreter opened around the script</param>
+        public ExceptionHandler(int start, int offset, List<ExceptionCatchReference> references, int transactionLevel, int globalTransactions = 0)
         {
             TryPointer = start;
             TryEndOffset = offset;
 
             ExceptionCatchReferences = references;
-        }
-
-        public void IncreaseTransactionCounter()
-        {
-            _transactionCounter++;
-        }
-
-        public void DecreaseTransactionCounter()
-        {
-            if (_transactionCounter > 0)
-            {
-                _transactionCounter--;
-            }
+            _transactionLevel = transactionLevel;
+            _globalTransactions = globalTransactions;
         }
 
         public void HandleException(Exception exception, RuntimeContext context)
         {
+            exception = Unwrap(exception);
+
             Exception = exception;
+
+            context.AbandonFinallyBlocks(context.ScopeHandler.ExceptionHandlerCount);
 
             if (CanCatch)
             {
                 CanCatch = false;
 
+                // Compiled code does this for every catch: it keeps the exception for CLRInterop::getLastException()
+                context.Proxy.Exceptions.IsExceptionMember(exception, CLR_ERROR_MEMBER);
+
                 foreach (var catchReference in ExceptionCatchReferences)
                 {
-                    if (CanBeCatched(exception, catchReference.ExceptionMemberName, context.Proxy.Exceptions))
+                    if (_transactionLevel > _globalTransactions && !CanCatchInsideTransaction(catchReference))
+                    {
+                        continue;
+                    }
+
+                    bool canBeCatched = catchReference.ClrType != null
+                        ? catchReference.ClrType.IsInstanceOfType(exception)
+                        : CanBeCatched(exception, catchReference.ExceptionMemberName, context.Proxy.Exceptions);
+
+                    if (canBeCatched)
                     {
                         Exception = null;
                         Catched = true;
 
                         int catchOffset = catchReference.Offset - (context.Counter - TryPointer);
 
-                        while (_transactionCounter > 0)
-                        {
-                            _transactionCounter--;
-                            context.Proxy.Data.TtsAbort();
-                        }
+                        RestoreTransactionLevel(context);
+
 
                         // Close any unbalanced scope
                         context.EndScopeRange(context.Counter, catchOffset);
+
+                        if (catchReference.VariableName != null)
+                        {
+                            context.ScopeHandler.CurrentScope.SetVar(catchReference.VariableName, exception, context.Proxy);
+                        }
 
                         // Move to catch block
                         context.MoveCounter(catchOffset);
@@ -94,13 +108,47 @@ namespace XppInterpreter.Core
                 Catched = false;
             }
 
-            int endOffset = TryEndOffset - (context.Counter - TryPointer);
+            MoveToEnd(context);
+        }
 
-            // Close any unbalanced scope
-            context.EndScopeRange(context.Counter, endOffset);
+        /// <summary>
+        /// A try statement inside a transaction only catches these two: every other exception goes to the code outside the transaction.
+        /// </summary>
+        private static bool CanCatchInsideTransaction(ExceptionCatchReference catchReference)
+        {
+            return string.Equals(catchReference.ExceptionMemberName, "UpdateConflict", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(catchReference.ExceptionMemberName, "DuplicateKeyException", StringComparison.OrdinalIgnoreCase);
+        }
 
-            // Move to end of scope handler
-            context.MoveCounter(endOffset);
+        /// <summary>
+        /// The transactions opened by the try block end. At the first level they are aborted. Inside a transaction nothing is committed yet.
+        /// </summary>
+        private void RestoreTransactionLevel(RuntimeContext context)
+        {
+            if (_transactionLevel == 0)
+            {
+                if (context.Proxy.Data.TtsLevel() > 0)
+                {
+                    context.Proxy.Data.TtsAbort();
+                }
+
+                return;
+            }
+
+            while (context.Proxy.Data.TtsLevel() > _transactionLevel)
+            {
+                context.Proxy.Data.TtsCommit();
+            }
+        }
+
+        private static Exception Unwrap(Exception exception)
+        {
+            while (exception is System.Reflection.TargetInvocationException && exception.InnerException != null)
+            {
+                exception = exception.InnerException;
+            }
+
+            return exception;
         }
 
         private bool CanBeCatched(Exception exception, string exceptionMember, Interpreter.Proxy.IXppExceptionsProxy proxy)
@@ -118,7 +166,7 @@ namespace XppInterpreter.Core
             ResetHandle();
 
             // Close anu unbalanced scope from the start to now
-            context.EndScopeRange(TryPointer + 1, context.Counter);
+            context.EndScopeRange(TryPointer + 1, context.Counter - TryPointer - 1);
 
             _retyCount ++;
 
@@ -137,8 +185,22 @@ namespace XppInterpreter.Core
 
         internal void SetNativeRetryCount(RuntimeContext context)
         {
-            // Increase retry count
-            context.Proxy.Exceptions.SetRetryCount(_retyCount);
+            // Called for every instruction inside a try block: the proxy is only needed when the value changes
+            if (context.NativeRetryCount != _retyCount)
+            {
+                context.NativeRetryCount = _retyCount;
+                context.Proxy.Exceptions.SetRetryCount(_retyCount);
+            }
+        }
+
+        internal void MoveToEnd(RuntimeContext context)
+        {
+            int endOffset = TryEndOffset - (context.Counter - TryPointer);
+
+            // Close any unbalanced scope
+            context.EndScopeRange(context.Counter, endOffset);
+
+            context.MoveCounter(endOffset);
         }
     }
 }

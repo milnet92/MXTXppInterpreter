@@ -318,6 +318,12 @@ internal final class MXTXppInterpreterVariableInspectorEntryManager
             System.Reflection.BindingFlags::Public | System.Reflection.BindingFlags::Instance,
             TYPE_MEMBER);
 
+        // The public data of a .NET object is in its properties
+        if (!new MXTXppReflectionProxy().IsXppType(type))
+        {
+            this.buildClrProperties(_entry, type, _value);
+        }
+
         // Private members
         MXTXppInterpreterVariablesInspectorLocalsEntry privateMembersEntry = this.createEntry("Private Members", "", "", TYPE_METADATA, _entry.parmPath());
         this.buildClassFields(
@@ -343,6 +349,41 @@ internal final class MXTXppInterpreterVariableInspectorEntryManager
 
         if (merge)
             _entry.parmSubentries(List::merge(subEntries, _entry.parmSubentries()));
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>buildClrProperties</Name>
+				<Source><![CDATA[
+    private void buildClrProperties(MXTXppInterpreterVariablesInspectorLocalsEntry _entry, System.Type _type, anytype _value)
+    {
+        System.Reflection.PropertyInfo[] properties = _type.GetProperties(System.Reflection.BindingFlags::Public | System.Reflection.BindingFlags::Instance);
+
+        for (int i = 0; i < properties.Length; i++)
+        {
+            System.Reflection.PropertyInfo property = properties.GetValue(i);
+
+            if (property.GetIndexParameters().Length > 0 || !XppInterpreter.Core.Clr.ClrValues::CanInspect(_value, property.Name))
+            {
+                continue;
+            }
+
+            try
+            {
+                _entry.parmSubentries().addEnd(this.createEntry(
+                    property.Name,
+                    property.GetValue(_value),
+                    property.PropertyType.FullName,
+                    TYPE_MEMBER,
+                    _entry.parmPath(),
+                    false));
+            }
+            catch (Exception::CLRError)
+            {
+                // Reading a property can fail: the others are still shown
+            }
+        }
     }
 
 ]]></Source>

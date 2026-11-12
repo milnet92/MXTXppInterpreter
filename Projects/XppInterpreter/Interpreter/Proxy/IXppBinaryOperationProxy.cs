@@ -15,5 +15,6 @@
         object Mod(object left, object right);
         bool Greater(object left, object right);
         bool AreEqual(object left, object right);
+        bool Like(object left, object right);
     }
 }

@@ -63,9 +63,7 @@ internal final class MXTXppQueryGenerator implements XppInterpreter.Interpreter.
 
         if (_query.ValidTimeState != null)
         {
-            searchObject.validTimeState(new SysDaValidTimeStateDateRange(
-                generationHelper.ComputeVariable(_query.ValidTimeState.FromDate),
-                generationHelper.ComputeVariable(_query.ValidTimeState.ToDate)));
+            searchObject.validTimeState(this.validTimeState(_query.ValidTimeState, generationHelper));
         }
 
         if (_query.CrossCompany != null)
@@ -84,6 +82,38 @@ internal final class MXTXppQueryGenerator implements XppInterpreter.Interpreter.
         searchInstance.SetSearchObjects(searchObject, searchStatement);
 
         return searchInstance;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>validTimeState</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// validTimeState(asOf) or validTimeState(from, to), with dates or utcdatetimes: compiled X++ compares with the same
+    /// precision as the values (conformance pM33, pM69). A range of dates covered every case before.
+    /// </summary>
+    private SysDaValidTimeState validTimeState(Parser.Data.ValidTimeState _validTimeState, XppInterpreter.Interpreter.Query.QueryGenerationHelper _generationHelper)
+    {
+        anytype fromValue = _generationHelper.ComputeVariable(_validTimeState.FromDate);
+        anytype toValue = _generationHelper.ComputeVariable(_validTimeState.ToDate);
+
+        if (typeOf(fromValue) == Types::UtcDateTime)
+        {
+            if (_validTimeState.AsOf)
+            {
+                return new SysDaValidTimeStateAsOfDateTime(fromValue);
+            }
+
+            return new SysDaValidTimeStateDateTimeRange(fromValue, toValue);
+        }
+
+        if (_validTimeState.AsOf)
+        {
+            return new SysDaValidTimeStateAsOfDate(fromValue);
+        }
+
+        return new SysDaValidTimeStateDateRange(fromValue, toValue);
     }
 
 ]]></Source>
@@ -183,7 +213,7 @@ internal final class MXTXppQueryGenerator implements XppInterpreter.Interpreter.
 			<Method>
 				<Name>generateFromQuery</Name>
 				<Source><![CDATA[
-    private SysDaQueryObject generateFromQuery(Parser.Data.Query _query, RuntimeContext _runtimeContext, boolean _isQueryExpression = false, Common _buffer = null)
+    private SysDaQueryObject generateFromQuery(Parser.Data.Query _query, RuntimeContext _runtimeContext, boolean _isQueryExpression = false, Common _buffer = null, boolean _isJoined = false)
     {
         Common common;
         boolean isExpression = _isQueryExpression;
@@ -260,21 +290,61 @@ internal final class MXTXppQueryGenerator implements XppInterpreter.Interpreter.
                 }
             }
         }
-        
-        // Join
-        if (!isExpression && _query.Join != null)
-        {
-            sysDaQuery.joinClause(this.getJoinKind(_query.Join), this.generateFromQuery(_query.Join.Select, _runtimeContext));
-        }
 
-        // Where
+        // index: compiled X++ orders the rows of the first table by the fields of that index, also for index hint on this
+        // platform, and ignores an index on a joined table (conformance pM71, pM78 to pM83)
+        if (_query.Index != null && _query.OrderFields == null && !_isJoined)
+        {
+            this.addIndexOrder(sysDaQuery, common.TableId, _query.Index, _query.Reverse);
+        }
+        
+        // Where. It comes before the join: a table that is joined later is not a table of this where yet, so its field
+        // is the value the buffer holds, which is what compiled X++ does (conformance pM43, pM59)
         if (_query.Where != null)
         {
             MXTXppQueryExpressionGenerator queryExpressionGenerator = new MXTXppQueryExpressionGenerator(_runtimeContext, tablesInQuery, _isQueryExpression, _buffer);
             sysDaQuery.whereClause(queryExpressionGenerator.visitExpression(_query.Where.Expression));
         }
 
+        // Join
+        if (!isExpression && _query.Join != null)
+        {
+            sysDaQuery.joinClause(this.getJoinKind(_query.Join), this.generateFromQuery(_query.Join.Select, _runtimeContext, false, null, true));
+        }
+
         return sysDaQuery;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>addIndexOrder</Name>
+				<Source><![CDATA[
+    private void addIndexOrder(SysDaQueryObject _sysDaQuery, TableId _tableId, str _indexName, boolean _reverse)
+    {
+        DictIndex dictIndex = new DictIndex(_tableId, indexName2Id(_tableId, _indexName));
+
+        if (!dictIndex)
+        {
+            throw error(strFmt("Index '%1' was not found on table %2.", _indexName, tableId2Name(_tableId)));
+        }
+
+        // The physical index starts with the partition and the company: compiled SQL says ORDER BY T1.PARTITION,T1.DATAAREAID,...
+        // With reverse, compiled X++ orders by the index fields only, descending (pM79, pM82)
+        if (!_reverse)
+        {
+            _sysDaQuery.orderByClause().add('Partition');
+
+            if (new DictTable(_tableId).dataPrCompany())
+            {
+                _sysDaQuery.orderByClause().add('dataAreaId');
+            }
+        }
+
+        for (int i = 1; i <= dictIndex.numberOfFields(); i++)
+        {
+            _sysDaQuery.orderByClause().add(fieldId2Name(_tableId, dictIndex.field(i)));
+        }
     }
 
 ]]></Source>

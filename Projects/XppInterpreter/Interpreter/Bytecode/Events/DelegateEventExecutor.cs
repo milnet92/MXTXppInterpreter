@@ -103,19 +103,27 @@
                 DeclaredFunctions = _context.ByteCode.DeclaredFunctions
             };
 
-            RuntimeContext newContext = new RuntimeContext(_context.Proxy, newByteCode);
+            RuntimeContext newContext = new RuntimeContext(_context.Proxy, newByteCode, new Core.ScopeHandler(_context.Proxy, _context.ScopeHandler.ClosureScope));
 
             for (int numParam = 0; numParam < arguments.Length; numParam++)
             {
                 var funcParameter = _ref.Declaration.Parameters[numParam];
                 System.Type declarationType = _ref.Declaration.Parameters[numParam].DeclarationClrType;
 
-                newContext.ScopeHandler.CurrentScope.SetVar(funcParameter.Name, arguments[numParam], _context.Proxy.Casting, true, declarationType);
+                newContext.ScopeHandler.CurrentScope.SetVar(funcParameter.Name, arguments[numParam], _context.Proxy, true, declarationType);
             }
 
             XppInterpreter interpreter = new XppInterpreter(_context.Proxy, _context.Interpreter.Options);
 
-            interpreter.Interpret(newContext.ByteCode, newContext, nextAction: Interpreter.Debug.DebugAction.None);
+            try
+            {
+                interpreter.Interpret(newContext.ByteCode, newContext, nextAction: Interpreter.Debug.DebugAction.None);
+            }
+            finally
+            {
+                // The try statements of the handler wrote their own retry count
+                _context.NativeRetryCount = -1;
+            }
         }
     }
 }

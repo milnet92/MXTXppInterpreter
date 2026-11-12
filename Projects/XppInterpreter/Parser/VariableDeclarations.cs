@@ -12,6 +12,12 @@ namespace XppInterpreter.Parser
         public Word DeclarationType { get; }
         public Dictionary<Word, Expression> Identifiers { get; }
 
+        public int StringLength { get; set; }
+
+        public List<VariableArrayDeclaration> ArrayDeclarations { get; set; } = new List<VariableArrayDeclaration>();
+
+        public bool IsClrType { get; set; }
+
         public VariableDeclarations(Word declarationType, System.Type declarationClrType, Dictionary<Word, Expression> identifiers, SourceCodeBinding sourceCodeBinding) : base(sourceCodeBinding, sourceCodeBinding)
         {
             DeclarationType = declarationType;

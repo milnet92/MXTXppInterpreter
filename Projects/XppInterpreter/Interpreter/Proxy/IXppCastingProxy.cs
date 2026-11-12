@@ -21,5 +21,7 @@ namespace XppInterpreter.Interpreter.Proxy
         object CreateDate(int day, int month, int year);
         bool IsStringEDT(string typeName);
         string TruncateEDTString(string value, string typeName);
+        object ContainerPack(object value);
+        object ContainerUnpack(object value);
     }
 }
