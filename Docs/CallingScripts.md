@@ -32,7 +32,7 @@ info(strFmt("%1", totalAmount(SalesTable::find('000002'))));
 
 ## Arguments and the return value
 
-`call` takes the name of the function and up to 8 arguments. A parameter with a default value can be left out.
+`call` takes the name of the function and up to 8 arguments. A parameter with a default value can be left out. `MXTXppScript::callFromSource(text, 'totalAmount', salesTable)` does the same without the object.
 
 | Passed | What the function gets |
 |---|---|
@@ -77,7 +77,13 @@ boolean isExported(CustGroup _record)
 ```
 public void update()
 {
-    boolean exported = MyExportSetup::script(this.TableId).call('isExported', this);
+    MyExportSetup setup = MyExportSetup::find(this.TableId);
+    boolean       exported;
+
+    if (setup.ScriptText)
+    {
+        exported = MXTXppScript::callFromSource(setup.ScriptText, 'isExported', this);
+    }
 
     super();
 
@@ -88,7 +94,7 @@ public void update()
 }
 ```
 
-`MyExportSetup::script` is your own method. It finds the setup record and returns `MXTXppScript::newFromSource(setup.ScriptText)`, or keeps the object in a static `Map` by table: X++ keeps a static field for each session.
+`MyExportSetup` and `MyExportLog` are your own tables. `callFromSource` is `newFromSource` and `call` in one step: it takes the text, the name of the function and the same arguments.
 
 ## Checking the text when it is saved
 
@@ -119,19 +125,22 @@ Measured on 2026-11-12 from a compiled class of another model: platform 7.0.8199
 
 | Call | Script | Compiled X++ |
 |---|---|---|
-| A function that adds 1 to its argument | 21 µs | 0.07 µs |
-| `isExported` above, on a changed record | 50 µs | 7 µs |
+| A function that adds 1 to its argument, `call` on a kept object | 21 µs | 0.07 µs |
+| The same with `callFromSource` | 23 µs | |
+| The same with `newFromSource(...).call(...)` | 43 µs | |
+| `isExported` above, on a changed record | 53 µs | 7 µs |
 | `totalAmount` above, outside a transaction | 1.40 ms | 1.21 ms |
 | `totalAmount` inside a transaction of the caller | 0.42 ms | not measured |
 | `newFromSource` of a text the session already used | 19 µs | |
 | The first use of a text in a session: parsing 3 to 5 statements | 0.15 to 0.5 ms | |
 
 - **19 µs of every call is the platform:** it opens a scope when code of one publisher calls a model of another one ([Performance.md](Performance.md), "What the platform charges"). The same call from code of the publisher of `MXppTools` takes 2 µs. `isValid` and `hasFunction` cost those 19 µs too, so don't ask before every call.
-- **Keep the script object** where the function is called often: `newFromSource` and `call` are two entries, 40 µs. With the object in a variable or a static field it is one.
+- **One entry for each call:** `newFromSource(...).call(...)` enters the model twice. Keep the object, or use `callFromSource`, which finds the text in the cache and calls in one entry.
+- **Where the 53 µs of `isExported` go:** 19 µs for the entry and 2 µs for the call. `orig()` takes 6 µs compiled, because it creates a record, and 18 µs in the function. A field read takes 3 to 5 µs.
 - **The cache is for each session,** because X++ keeps static fields for each session: every session parses a text once. It holds 500 texts and is emptied when it is full.
 - **Sessions at the same time:** 6 sessions that each called two functions of one text 20,000 times got no wrong answer.
+- **Batch:** a batch task ran the same tests with the same results and the same times: 21 µs for the function that adds 1, 1.40 ms for `totalAmount`.
 
 ## Not verified
 
-- A call in a batch task.
 - Other platform versions than 7.0.8199.55.

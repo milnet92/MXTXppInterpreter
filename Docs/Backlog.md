@@ -33,11 +33,10 @@ What is known to be missing or unverified, as of 2026-11-12. Add to it when you 
 
 What [CallingScripts.md](CallingScripts.md) leaves.
 
-- **Batch.** `MXTXppScript` was called from an interactive session and from sessions started with `runAsync`, not from a batch task.
 - **A variable of the script in a function.** The statements outside the functions don't run in a call, so a function that reads such a variable fails at run time with the .NET error `Variable total was not declared.` The parser sees the declaration and reports nothing. `CompiledScript` would have to find those reads when it compiles the text.
 - **A wrong argument** is found by the conversion: a record of another table is an `InvalidCastException`, and a `str` for an `int` parameter becomes 0. Both reach the caller as they are, without the name of the function or the parameter.
 - **A cache for the AOS.** The compiled scripts are kept for each session, because the X++ proxies are (`XppSessionStaticVariableHelper` holds every static field of an X++ class). The syntax tree and the instructions don't hold a proxy, and `CompiledScriptTests` calls one function from several threads, so they could be shared. Check first what the parser reads for the session: the value of a label, the company.
-- **A small function is 4 times slower than compiled.** `_record.orig().Name != _record.Name` takes 30 µs in a function against 7 µs compiled: a call of `orig`, two field reads and a comparison of strings. Which of them costs was not measured.
+- **The statements cost twice as much in a call.** `_record.orig().Name != _record.Name` takes 13 µs in a loop of a script, 31 µs in a function called from a compiled class, and 7 µs compiled. In the call, `orig()` takes 18 µs instead of 8, a field read 3 to 5 µs instead of 2.4, and `isTmp()` 3 µs instead of 1. Why was not found: the instructions are the same, the entry into the model is paid once, and passing the record costs nothing. A profiler on the AOS would show it.
 
 ## Speed
 

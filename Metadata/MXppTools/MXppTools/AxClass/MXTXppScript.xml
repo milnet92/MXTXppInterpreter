@@ -179,43 +179,137 @@ public final class MXTXppScript
             argumentCount = 7;
         }
 
-        XppInterpreter.Interpreter.ScriptFunction function = this.findFunction(_function, argumentCount);
-        System.Object[] arguments = new System.Object[argumentCount]();
+        return this.callWithArguments(_function, MXTXppScript::argumentArray(argumentCount,
+            _argument1, _argument2, _argument3, _argument4, _argument5, _argument6, _argument7, _argument8));
+    }
 
-        if (argumentCount >= 1)
+]]></Source>
+			</Method>
+			<Method>
+				<Name>callFromSource</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// newFromSource and call in one step, for code that doesn't keep the script object. The platform charges every
+    /// entry into this model from a model of another publisher, and this is one entry instead of two.
+    /// </summary>
+    /// <returns>What the function returns, converted to its return type</returns>
+    public static anytype callFromSource(
+        str     _source,
+        str     _function,
+        anytype _argument1 = '',
+        anytype _argument2 = '',
+        anytype _argument3 = '',
+        anytype _argument4 = '',
+        anytype _argument5 = '',
+        anytype _argument6 = '',
+        anytype _argument7 = '',
+        anytype _argument8 = '')
+    {
+        int argumentCount = 8;
+
+        if (prmIsDefault(_argument1))
+        {
+            argumentCount = 0;
+        }
+        else if (prmIsDefault(_argument2))
+        {
+            argumentCount = 1;
+        }
+        else if (prmIsDefault(_argument3))
+        {
+            argumentCount = 2;
+        }
+        else if (prmIsDefault(_argument4))
+        {
+            argumentCount = 3;
+        }
+        else if (prmIsDefault(_argument5))
+        {
+            argumentCount = 4;
+        }
+        else if (prmIsDefault(_argument6))
+        {
+            argumentCount = 5;
+        }
+        else if (prmIsDefault(_argument7))
+        {
+            argumentCount = 6;
+        }
+        else if (prmIsDefault(_argument8))
+        {
+            argumentCount = 7;
+        }
+
+        MXTXppScript script = MXTXppScript::newFromSource(_source);
+
+        return script.callWithArguments(_function, MXTXppScript::argumentArray(argumentCount,
+            _argument1, _argument2, _argument3, _argument4, _argument5, _argument6, _argument7, _argument8));
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>argumentArray</Name>
+				<Source><![CDATA[
+    private static System.Object[] argumentArray(
+        int     _argumentCount,
+        anytype _argument1,
+        anytype _argument2,
+        anytype _argument3,
+        anytype _argument4,
+        anytype _argument5,
+        anytype _argument6,
+        anytype _argument7,
+        anytype _argument8)
+    {
+        System.Object[] arguments = new System.Object[_argumentCount]();
+
+        if (_argumentCount >= 1)
         {
             arguments.SetValue(_argument1, 0);
         }
-        if (argumentCount >= 2)
+        if (_argumentCount >= 2)
         {
             arguments.SetValue(_argument2, 1);
         }
-        if (argumentCount >= 3)
+        if (_argumentCount >= 3)
         {
             arguments.SetValue(_argument3, 2);
         }
-        if (argumentCount >= 4)
+        if (_argumentCount >= 4)
         {
             arguments.SetValue(_argument4, 3);
         }
-        if (argumentCount >= 5)
+        if (_argumentCount >= 5)
         {
             arguments.SetValue(_argument5, 4);
         }
-        if (argumentCount >= 6)
+        if (_argumentCount >= 6)
         {
             arguments.SetValue(_argument6, 5);
         }
-        if (argumentCount >= 7)
+        if (_argumentCount >= 7)
         {
             arguments.SetValue(_argument7, 6);
         }
-        if (argumentCount >= 8)
+        if (_argumentCount >= 8)
         {
             arguments.SetValue(_argument8, 7);
         }
 
-        return function.Call(arguments);
+        return arguments;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>callWithArguments</Name>
+				<Source><![CDATA[
+    private anytype callWithArguments(str _function, System.Object[] _arguments)
+    {
+        XppInterpreter.Interpreter.ScriptFunction function = this.findFunction(_function, _arguments.get_Length());
+
+        return function.Call(_arguments);
     }
 
 ]]></Source>

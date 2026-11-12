@@ -4,6 +4,7 @@
 #
 # -IncludeModel also compiles the X++ model, its labels and copies the web resources.
 # Use it when X++ code changed, or the C# classes X++ calls did. Without it, IIS only needs the new DLL.
+# A batch service that is running is stopped for the build and started again, so batch tasks use the new code too.
 param
 (
     [string]$Configuration = "Debug",
@@ -68,7 +69,16 @@ if ($LASTEXITCODE -ne 0)
     throw "Build failed"
 }
 
-# The AOS keeps the DLL locked while it is running
+# The AOS keeps the DLL locked while it is running, and so does the batch service once a batch task used the interpreter
+$BatchService = Get-Service DynamicsAxBatch -ErrorAction SilentlyContinue
+$RestartBatch = $BatchService -and $BatchService.Status -eq 'Running'
+
+if ($RestartBatch)
+{
+    Write-Host "Stopping the batch service"
+    Stop-Service DynamicsAxBatch -Force
+}
+
 Write-Host "Stopping IIS"
 iisreset /stop
 try
@@ -84,4 +94,10 @@ finally
 {
     Write-Host "Starting IIS"
     iisreset /start
+
+    if ($RestartBatch)
+    {
+        Write-Host "Starting the batch service"
+        Start-Service DynamicsAxBatch
+    }
 }
