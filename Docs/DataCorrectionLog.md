@@ -90,7 +90,7 @@ custGroup.insert();
 MXTDataCorrectionLog::restoreRecId(custGroup, log.RefRecId);
 ```
 
-`restoreRecId` updates `RECID` in SQL, in the transaction of the caller, and reads the record again. It stops with an error if the old RecId already exists in that table, in any company, and needs the same rights as running a script.
+`restoreRecId` updates `RECID` in SQL, in the transaction of the caller, and reads the record again. The kernel doesn't see that update, so the method also flushes the record cache of the table, when the table has one. It stops with an error if the old RecId already exists in that table, in any company, and needs the same rights as running a script.
 
 ## Try a correction first
 

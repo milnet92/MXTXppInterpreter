@@ -80,12 +80,17 @@ public class MXTDataCorrectionLog extends common
             throw error(strFmt("@MXT:DataCorrectionRecIdExists", _oldRecId, dictTable.name()));
         }
 
-        str sql = strFmt('UPDATE %1 SET RECID = %2 WHERE RECID = %3 AND PARTITION = %4',
-            dictTable.name(DbBackend::Sql), _oldRecId, _record.RecId, getCurrentPartitionRecId());
+        str sql = strFmt('UPDATE %1 SET RECID = @OLDRECID WHERE RECID = @NEWRECID AND PARTITION = @PARTITION',
+            dictTable.name(DbBackend::Sql));
+        Map parameters = SqlParams::create();
+
+        parameters.add('OLDRECID', _oldRecId);
+        parameters.add('NEWRECID', _record.RecId);
+        parameters.add('PARTITION', getCurrentPartitionRecId());
 
         new SqlStatementExecutePermission(sql).assert();
         Connection connection = new Connection();
-        int updated = connection.createStatement().executeUpdate(sql);
+        int updated = connection.createStatement().executeUpdateWithParameters(sql, parameters);
         CodeAccessPermission::revertAssert();
 
         if (updated != 1)
@@ -93,11 +98,32 @@ public class MXTDataCorrectionLog extends common
             throw error(strFmt("@MXT:DataCorrectionRecIdMissing", dictTable.name()));
         }
 
-        // A cached read into the inserted buffer would keep its temporary RecId in the record cache after the commit
-        _record.disableCache(true);
+        // The kernel doesn't see the UPDATE. Without the flush, a transaction that deleted the record before
+        // reads the new RecId from the record cache until it ends
+        TableId cachedTableId = _record.TableId;
 
-        select firstonly crosscompany _record
-            where _record.RecId == _oldRecId;
+        while (cachedTableId)
+        {
+            DictTable cachedTable = new DictTable(cachedTableId);
+
+            if (cachedTable.cacheLookup() != RecordCacheLevel::None)
+            {
+                Dictionary::dataFlush(cachedTableId);
+            }
+
+            cachedTableId = cachedTable.extends();
+        }
+
+        // Not into the inserted buffer: in that transaction it comes back empty.
+        // Not through the cache: it would keep the new RecId there after the commit
+        Common restored = new DictTable(_record.TableId).makeRecord();
+
+        restored.disableCache(true);
+
+        select firstonly crosscompany restored
+            where restored.RecId == _oldRecId;
+
+        _record.data(restored);
     }
 
 ]]></Source>
