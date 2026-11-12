@@ -64,6 +64,51 @@
       <Name>MXTXppCompletionsContract</Name>
       <Link>Classes\MXTXppCompletionsContract</Link>
     </Content>
+    <Content Include="AxClass\MXTXppCoreBinaryOperationProxy">
+      <SubType>Content</SubType>
+      <Name>MXTXppCoreBinaryOperationProxy</Name>
+      <Link>Classes\MXTXppCoreBinaryOperationProxy</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppCoreCastingProxy">
+      <SubType>Content</SubType>
+      <Name>MXTXppCoreCastingProxy</Name>
+      <Link>Classes\MXTXppCoreCastingProxy</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppCoreDataAccessProxy">
+      <SubType>Content</SubType>
+      <Name>MXTXppCoreDataAccessProxy</Name>
+      <Link>Classes\MXTXppCoreDataAccessProxy</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppCoreIntrinsicFunctionProvider">
+      <SubType>Content</SubType>
+      <Name>MXTXppCoreIntrinsicFunctionProvider</Name>
+      <Link>Classes\MXTXppCoreIntrinsicFunctionProvider</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppCorePredefinedFunctions">
+      <SubType>Content</SubType>
+      <Name>MXTXppCorePredefinedFunctions</Name>
+      <Link>Classes\MXTXppCorePredefinedFunctions</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppCoreQueryExpressionGenerator">
+      <SubType>Content</SubType>
+      <Name>MXTXppCoreQueryExpressionGenerator</Name>
+      <Link>Classes\MXTXppCoreQueryExpressionGenerator</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppCoreQueryGenerator">
+      <SubType>Content</SubType>
+      <Name>MXTXppCoreQueryGenerator</Name>
+      <Link>Classes\MXTXppCoreQueryGenerator</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppCoreReflectionProxy">
+      <SubType>Content</SubType>
+      <Name>MXTXppCoreReflectionProxy</Name>
+      <Link>Classes\MXTXppCoreReflectionProxy</Link>
+    </Content>
+    <Content Include="AxClass\MXTXppCoreScript">
+      <SubType>Content</SubType>
+      <Name>MXTXppCoreScript</Name>
+      <Link>Classes\MXTXppCoreScript</Link>
+    </Content>
     <Content Include="AxClass\MXTXppExportProcess">
       <SubType>Content</SubType>
       <Name>MXTXppExportProcess</Name>

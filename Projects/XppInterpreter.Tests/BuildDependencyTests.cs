@@ -52,6 +52,45 @@ namespace XppInterpreter.Tests
             Assert.AreEqual(0, unexpected.Count, string.Join(Environment.NewLine, unexpected));
         }
 
+        /// <summary>
+        /// The classes named MXTXppCore are what a script needs to run, and a project can move them into its own package.
+        /// That only works while they use nothing else of the model: no class, table or form of the editor, and no label.
+        /// They share a model with the editor, so the compiler doesn't notice when one of them starts to.
+        /// </summary>
+        [TestMethod]
+        public void CoreClassesUseNothingElseOfTheModel()
+        {
+            string model = ModelFolder();
+            string[] core = Directory.GetFiles(Path.Combine(model, "AxClass"), "MXTXppCore*.xml");
+            var coreNames = new HashSet<string>(core.Select(Path.GetFileNameWithoutExtension), StringComparer.OrdinalIgnoreCase);
+
+            // The reference to XppInterpreter.dll moves with them
+            var others = new HashSet<string>(
+                Directory.GetDirectories(model, "Ax*")
+                    .Where(folder => Path.GetFileName(folder) != "AxReference")
+                    .SelectMany(folder => Directory.GetFiles(folder, "*.xml"))
+                    .Select(Path.GetFileNameWithoutExtension)
+                    .Where(name => !coreNames.Contains(name)),
+                StringComparer.OrdinalIgnoreCase);
+
+            var unexpected = new SortedSet<string>();
+
+            foreach (string file in core)
+            {
+                foreach (Match match in Regex.Matches(File.ReadAllText(file), @"@MXT:\w+|\b[A-Za-z_]\w*"))
+                {
+                    if (match.Value.StartsWith("@") || others.Contains(match.Value))
+                    {
+                        unexpected.Add($"{match.Value} in {Path.GetFileName(file)}");
+                    }
+                }
+            }
+
+            Assert.IsTrue(core.Length > 0, "The model has no core classes");
+            Assert.IsTrue(others.Count > 0, "The model has nothing but core classes");
+            Assert.AreEqual(0, unexpected.Count, string.Join(Environment.NewLine, unexpected));
+        }
+
         private static string ModelFolder()
         {
             for (var folder = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory); folder != null; folder = folder.Parent)

@@ -56,11 +56,11 @@ $KernelFunctions = @(
 $InterpreterCode = @(
     @{ File = "Projects\XppInterpreter\Interpreter\Bytecode\Container.cs"; Contains = "Casting.ContainerPack(context.Stack.Pop())" },
     @{ File = "Projects\XppInterpreter\Interpreter\Bytecode\ContainerStore.cs"; Contains = "Casting.ContainerUnpack(" },
-    @{ File = "Metadata\MXppTools\MXTCore\AxClass\MXTXppCoreCastingProxy.xml"; Contains = "PredefinedFunctions::ContainerPack(value)" },
-    @{ File = "Metadata\MXppTools\MXTCore\AxClass\MXTXppCoreCastingProxy.xml"; Contains = "PredefinedFunctions::ContainerUnpack(value)" },
-    @{ File = "Metadata\MXppTools\MXTCore\AxClass\MXTXppCorePredefinedFunctions.xml"; Contains = "return conIns(con, start, value);" },
-    @{ File = "Metadata\MXppTools\MXTCore\AxClass\MXTXppCorePredefinedFunctions.xml"; Contains = "return conPeek(_container, number);" },
-    @{ File = "Metadata\MXppTools\MXTCore\AxClass\MXTXppCoreBinaryOperationProxy.xml"; Contains = "items += record;" }
+    @{ File = "Metadata\MXppTools\MXppTools\AxClass\MXTXppCoreCastingProxy.xml"; Contains = "PredefinedFunctions::ContainerPack(value)" },
+    @{ File = "Metadata\MXppTools\MXppTools\AxClass\MXTXppCoreCastingProxy.xml"; Contains = "PredefinedFunctions::ContainerUnpack(value)" },
+    @{ File = "Metadata\MXppTools\MXppTools\AxClass\MXTXppCorePredefinedFunctions.xml"; Contains = "return conIns(con, start, value);" },
+    @{ File = "Metadata\MXppTools\MXppTools\AxClass\MXTXppCorePredefinedFunctions.xml"; Contains = "return conPeek(_container, number);" },
+    @{ File = "Metadata\MXppTools\MXppTools\AxClass\MXTXppCoreBinaryOperationProxy.xml"; Contains = "items += record;" }
 )
 
 function Get-PackagesFolder

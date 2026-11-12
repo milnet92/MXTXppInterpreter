@@ -176,21 +176,21 @@ Measured on 2026-11-12 from a compiled class of another model: platform 7.0.8199
 
 ## Which model to reference
 
-`MXTXppCoreScript` is in the model `MXTCore`, with the eight other classes a script needs ([Development.md](Development.md), "The core classes"). `MXTCore` is a model of the package `MXppTools`, so code that calls scripts references the module `MXppTools`.
+`MXTXppCoreScript` is in the model `MXppTools`, so code that calls scripts references the module `MXppTools`. It and the eight other classes named `MXTXppCore*` are what a script needs to run ([Development.md](Development.md), "The core classes").
 
 ## Moving the core into your own package
 
-A project that calls scripts often can move the model `MXTCore` into its own package. It is a move of files: nothing is needed in Visual Studio.
+A project that calls scripts often can move those nine classes into a model of its own. It is a move of files: nothing is needed in Visual Studio.
 
-1. Move the folder `MXppTools/MXTCore` under your package. It holds the nine classes and the reference to the DLL.
-2. Move `MXppTools/Descriptor/MXTCore.xml` to the `Descriptor` folder of your package. In it, set `ModelModule` to the name of your package and `Publisher` to the publisher of your model.
+1. Move the nine `AxClass/MXTXppCore*.xml` files of `MXppTools/MXppTools` to the `AxClass` folder of your model.
+2. Move `MXppTools/MXppTools/AxReference/XppInterpreter.xml` to the `AxReference` folder of your model.
 3. Move `MXppTools/bin/XppInterpreter.dll` to the `bin` folder of your package.
-4. In `MXppTools/Descriptor/MXppTools.xml`, add your package to `ModuleReferences` and set the same `Publisher`.
+4. In `MXppTools/Descriptor/MXppTools.xml`, add your package to `ModuleReferences` and set `Publisher` to the publisher of your model.
 5. Compile your package, then `MXppTools`. The compiler finds the DLL in the `bin` folder of the package that `MXppTools` references.
 
-The class files stay as they are in this repository, so taking a later version is a folder compare. Take the DLL, the nine classes and `MXppTools` from the same commit: the classes implement interfaces of the DLL.
+The class files stay as they are in this repository, so taking a later version is a compare of nine files. Take the DLL, the nine classes and `MXppTools` from the same commit: the classes implement interfaces of the DLL.
 
-Then a call no longer enters a model of another publisher. Measured on 2026-11-12 by giving `MXTCore` the publisher of the calling model:
+Then a call no longer enters a model of another publisher, because the classes have the publisher of your model. Measured on 2026-11-12 with the nine classes in a package of their own that had the publisher of the calling model:
 
 | Call | Core of another publisher | Core of the caller's publisher |
 |---|---|---|
@@ -202,11 +202,8 @@ Then a call no longer enters a model of another publisher. Measured on 2026-11-1
 
 **That is why step 4 sets the publisher of the editor model too.** With `MXppTools` under another publisher than the core, a script run from the editor took 22 to 33 µs for a statement instead of 2 to 3, and 150 µs for a select instead of 45. With the same publisher in both descriptors it ran as before.
 
-A model inside a package of another model costs nothing by itself: a call into it takes what a call inside the model takes (0.03 µs), as long as both descriptors name the same publisher.
-
 ## Not verified
 
-- The move of `MXTCore` into an existing package. What was run: the core as a package of its own that `MXppTools` references, with every test of this page, and a call between two models of one package.
-- A deployable package built from the two models.
+- The move into a model that exists already, as the steps describe it. What was run: the nine classes and the DLL in a package of their own that `MXppTools` references, with every test of this page.
 
 - Other platform versions than 7.0.8199.55.
