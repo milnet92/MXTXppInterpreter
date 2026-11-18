@@ -144,6 +144,33 @@
   <data name="ExceptionInvalidExceptionEnum" xml:space="preserve">
     <value>Invalid Exception enum</value>
   </data>
+  <data name="ExceptionInvalidByRef" xml:space="preserve">
+    <value>Only a local variable can be passed with byref.</value>
+  </data>
+  <data name="ExceptionClrTypeInXppArray" xml:space="preserve">
+    <value>An X++ array can't hold a .NET type. Use a .NET array: System.String[] name = new System.String[3]();</value>
+  </data>
+  <data name="ExceptionVoidFunctionReturnsValue" xml:space="preserve">
+    <value>A function declared as void cannot return a value.</value>
+  </data>
+  <data name="ExceptionFunctionMustReturnValue" xml:space="preserve">
+    <value>The function has to return a value.</value>
+  </data>
+  <data name="ExceptionConstCannotChange" xml:space="preserve">
+    <value>The const variable '{0}' cannot be changed.</value>
+  </data>
+  <data name="ExceptionConstNotConstant" xml:space="preserve">
+    <value>The expression being assigned to '{0}' must be constant.</value>
+  </data>
+  <data name="ExceptionConstWithoutValue" xml:space="preserve">
+    <value>A const variable requires a value to be provided.</value>
+  </data>
+  <data name="ExceptionSystemVariableDeclared" xml:space="preserve">
+    <value>A local variable named '{0}' cannot be declared: the name belongs to a system variable.</value>
+  </data>
+  <data name="ExceptionEmptyStatement" xml:space="preserve">
+    <value>Invalid use of ';'. Use '{ }' if an empty statement is intended.</value>
+  </data>
   <data name="ExceptionInvalidSyntax" xml:space="preserve">
     <value>Invalid syntax.</value>
   </data>
@@ -167,9 +194,6 @@
   </data>
   <data name="ExceptionRetryNotInCatch" xml:space="preserve">
     <value>Retry statement can only be used within a catch statement.</value>
-  </data>
-  <data name="ExceptionReturnOutOfFunction" xml:space="preserve">
-    <value>Return statement can only be used inside function declarations.</value>
   </data>
   <data name="ExceptionTokenExpected" xml:space="preserve">
     <value>Syntax error: {0} expected.</value>
@@ -197,5 +221,11 @@
   </data>
   <data name="ExceptionInvalidTypeField" xml:space="preserve">
     <value>Type '{0}' does not have a field named '{1}'.</value>
+  </data>
+  <data name="ExceptionArrayIndexingClrType" xml:space="preserve">
+    <value>The array indexing syntax can only be applied to X++ array types. Use the SetValue and GetValue methods on managed array types.</value>
+  </data>
+  <data name="ExceptionMethodNotFoundForArguments" xml:space="preserve">
+    <value>Method '{0}({1})' is not found on type '{2}'.</value>
   </data>
 </root>

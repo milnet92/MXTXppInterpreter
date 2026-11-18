@@ -25,6 +25,10 @@ namespace XppInterpreter.Interpreter.Bytecode
         public string TypeName { get; }
         public Type ClrType { get; }
 
+        public int StringLength { get; set; }
+
+        public bool IsFieldById { get; set; }
+
         public Store(string name, bool fromStack, bool top, bool isArray, string typeName, Type clrType)
         {
             Name = name;
@@ -42,7 +46,16 @@ namespace XppInterpreter.Interpreter.Bytecode
 
         public void Execute(RuntimeContext context)
         {
-            int index = IsArray ? (int)context.Stack.Pop() : 0;
+            if (IsFieldById)
+            {
+                int fieldId = Convert.ToInt32(context.Stack.Pop());
+                object record = context.Stack.Pop();
+
+                context.Proxy.Reflection.SetFieldValueById(record, fieldId, GetValue(context));
+                return;
+            }
+
+            int index = IsArray ? Load.ToArrayIndex(context.Stack.Pop()) : 0;
 
             if (FromStack)
             {
@@ -54,6 +67,10 @@ namespace XppInterpreter.Interpreter.Bytecode
                     // Get the instance property array and assign the value to the corresponding index
                     var array = context.Proxy.Reflection.GetInstanceProperty(caller, Name);
                     context.Proxy.Casting.SetArrayIndexValue(array, index, value);
+                }
+                else if (caller is null || !context.Proxy.IsXppType(caller.GetType()))
+                {
+                    Core.Clr.ClrBinder.SetMember(caller, Name, value);
                 }
                 else
                 {
@@ -75,29 +92,31 @@ namespace XppInterpreter.Interpreter.Bytecode
 
                     if (declaration)
                     {
-                        if (value is null && context.Proxy.Reflection.IsCommonType(ClrType))
+                        if (value is null && context.Proxy.IsCommonType(ClrType))
                         {
                             var defaultValue = context.Proxy.Casting.GetDefaultValueForType(TypeName);
-                            context.ScopeHandler.CurrentScope.SetVar(Name, defaultValue, context.Proxy.Casting, Top, ClrType, TypeName);
+                            context.ScopeHandler.CurrentScope.SetVar(Name, defaultValue, context.Proxy, Top, ClrType, TypeName, StringLength);
                         }
                         else
                         {
-                            context.ScopeHandler.CurrentScope.SetVar(Name, value, context.Proxy.Casting, Top, ClrType, TypeName);
+                            context.ScopeHandler.CurrentScope.SetVar(Name, value, context.Proxy, Top, ClrType, TypeName, StringLength);
                         }
                     }
                     else
                     {
-                        var currentValue = context.ScopeHandler.CurrentScope.GetVar(Name);
-                        var type = currentValue?.GetType();
+                        // Null assigned to a record clears it. Only then the current value matters.
+                        if (value is null)
+                        {
+                            var currentValue = context.ScopeHandler.CurrentScope.GetVar(Name);
 
-                        if (value is null && context.Proxy.Reflection.IsCommonType(type))
-                        {
-                            context.Proxy.Reflection.ClearCommon(currentValue);
+                            if (context.Proxy.IsCommonType(currentValue?.GetType()))
+                            {
+                                context.Proxy.Reflection.ClearCommon(currentValue);
+                                return;
+                            }
                         }
-                        else
-                        {
-                            context.ScopeHandler.CurrentScope.SetVar(Name, value, context.Proxy.Casting);
-                        }
+
+                        context.ScopeHandler.CurrentScope.SetVar(Name, value, context.Proxy);
                     }
                 }
             }

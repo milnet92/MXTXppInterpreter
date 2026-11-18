@@ -9,6 +9,7 @@
 internal final class MXTXppPredefinedFunctions
 {
     public static System.Type ThisType = Microsoft.Dynamics.Ax.Xpp.ReflectionCallHelper::GetTypeFromClassName(classStr(MXTXppPredefinedFunctions));
+    private static System.Collections.Hashtable predefinedFunctions;
 
 }
 ]]></Declaration>
@@ -798,7 +799,7 @@ internal final class MXTXppPredefinedFunctions
 			<Method>
 				<Name>min</Name>
 				<Source><![CDATA[
-    static real min(System.Object[] _parameters)
+    static anytype min(System.Object[] _parameters)
     {
         return Microsoft.Dynamics.Ax.Xpp.PredefinedFunctions::Min(_parameters);
     }
@@ -1427,7 +1428,18 @@ internal final class MXTXppPredefinedFunctions
     /// <returns>True if valid, otherwise false</returns>
     public static boolean isCustomPredefinedFunction(str _methodName)
     {
-        return SysDictClass::newName(classStr(MXTXppPredefinedFunctions)).hasStaticMethod(_methodName);
+        // Asked for every global function call of a script; the methods of this class don't change while the AOS runs
+        if (!predefinedFunctions)
+        {
+            predefinedFunctions = System.Collections.Hashtable::Synchronized(new System.Collections.Hashtable(System.StringComparer::OrdinalIgnoreCase));
+        }
+
+        if (!predefinedFunctions.ContainsKey(_methodName))
+        {
+            predefinedFunctions.set_Item(_methodName, SysDictClass::newName(classStr(MXTXppPredefinedFunctions)).hasStaticMethod(_methodName));
+        }
+
+        return System.Convert::ToBoolean(predefinedFunctions.get_Item(_methodName));
     }
 
 ]]></Source>
@@ -1446,7 +1458,7 @@ internal final class MXTXppPredefinedFunctions
         System.String invariantMethodName = XppInterpreter.Core.ReflectionHelper::GetMethodInvariantName(ThisType, _methodName);
 
         // Special case...
-        if (invariantMethodName == 'strFmt')
+        if (invariantMethodName == 'strFmt' || invariantMethodName == 'min' || invariantMethodName == 'max')
         {
             System.Object[] params = new System.Object[1]();
             params.SetValue(_parameters, 0);

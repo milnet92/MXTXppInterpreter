@@ -18,14 +18,7 @@ namespace XppInterpreter.Interpreter.Bytecode
 
         public void Execute(RuntimeContext context)
         {
-            object disposable = context.ScopeHandler.GetVar(VariableName);
-
-            if (disposable != null)
-            {
-                var disposeMethodName = Core.ReflectionHelper.GetMethodInvariantName(disposable.GetType(), "Dispose");
-                System.Diagnostics.Debug.Assert(!string.IsNullOrEmpty(disposeMethodName));
-                disposable.GetType().GetMethod(disposeMethodName).Invoke(disposable, null);
-            }
+            (context.ScopeHandler.GetVar(VariableName) as System.IDisposable)?.Dispose();
         }
     }
 }

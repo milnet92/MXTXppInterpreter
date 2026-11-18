@@ -59,7 +59,8 @@ internal final class MXTXppExceptionsProxy implements XppInterpreter.Interpreter
         switch (exception)
         {
             case Exception::Break: return _exception is Microsoft.Dynamics.Ax.Xpp.BreakException;
-            case Exception::CLRError: return _exception is Microsoft.Dynamics.Ax.Xpp.ClrErrorException;
+            // The filter of compiled code: true for any exception X++ did not throw, and keeps it for CLRInterop::getLastException()
+            case Exception::CLRError: return _exception is Microsoft.Dynamics.Ax.Xpp.ClrErrorException || Microsoft.Dynamics.Ax.Xpp.CLRInterop::filterCLRException(_exception);
             case Exception::CompanyAccessViolation: return _exception is Microsoft.Dynamics.Ax.Xpp.CompanyAccessViolationException;
             case Exception::DDEerror: return _exception is Microsoft.Dynamics.Ax.Xpp.DDEException;
             case Exception::Deadlock: return _exception is Microsoft.Dynamics.Ax.Xpp.DeadlockException;

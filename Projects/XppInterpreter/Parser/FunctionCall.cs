@@ -12,6 +12,11 @@ namespace XppInterpreter.Parser
         public List<Expression> Parameters { get; }
         public bool Intrinsical { get; }
 
+        /// <summary>
+        /// The declared type of the arguments that are .NET variables, null for the others. It chooses the overload when the value is null.
+        /// </summary>
+        public System.Type[] ArgumentTypes { get; set; }
+
         public FunctionCall(
             Word identifier,
             List<Expression> parameters,

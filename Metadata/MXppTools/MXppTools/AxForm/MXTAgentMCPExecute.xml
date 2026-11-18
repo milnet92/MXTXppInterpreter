@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxForm xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns="Microsoft.Dynamics.AX.Metadata.V6">
+	<Name>MXTAgentMCPExecute</Name>
+	<SourceCode>
+		<Methods xmlns="">
+			<Method>
+				<Name>classDeclaration</Name>
+				<Source><![CDATA[
+/// <summary>
+/// Runs a script for callers without a browser, such as the form tools of the Dynamics 365 ERP MCP server: they set
+/// Script, or the ID of a saved script, click Execute and read the infolog in the reply of that click.
+/// The script editor stays as it is.
+/// </summary>
+[Form]
+public class MXTAgentMCPExecute extends FormRun
+{
+}
+]]></Source>
+			</Method>
+			<Method>
+				<Name>runScript</Name>
+				<Source><![CDATA[
+    /// <summary>
+    /// Both fields are emptied first, so a click without a new script can't run an old one. The security check and the
+    /// execution log are the ones of the script editor: both run through MXTXppInterpreterExecutor::execute.
+    /// Status says whether the script ran to its end, and Result holds what it returned.
+    /// </summary>
+    public void runScript()
+    {
+        str source = Script.text();
+        RecId savedScriptId = ScriptId.value();
+
+        Script.text('');
+        ScriptId.value(0);
+        Status.selection(MXTXppInterpreterExecutionStatus::NotRun);
+        Result.text('');
+
+        MXTXppInterpreterScriptExecutionLog::checkSecurityRights();
+
+        if (source && savedScriptId)
+        {
+            error("@MXT:AgentScriptOrId");
+            return;
+        }
+
+        if (!source && !savedScriptId)
+        {
+            error("@MXT:AgentScriptEmpty");
+            return;
+        }
+
+        MXTXppInterpreterScript savedScript;
+
+        if (savedScriptId)
+        {
+            savedScript = MXTXppInterpreterScript::find(savedScriptId);
+
+            if (!savedScript)
+            {
+                error(strFmt("@MXT:AgentScriptNotFound", savedScriptId));
+                return;
+            }
+        }
+
+        MXTXppInterpreterExecutionResult executionResult;
+        System.Exception ex;
+
+        try
+        {
+            // A saved script runs as Execute now of the workspace does: with its dependencies
+            executionResult = savedScript
+                ? MXTXppInterpreterExecutor::executeScript(savedScript, MXTXppInterpreterParameters::find())
+                : MXTXppInterpreterExecutor::execute(source);
+        }
+        catch (Exception::Error)
+        {
+            Status.selection(MXTXppInterpreterExecutionStatus::Failed);
+            return;
+        }
+        catch (ex)
+        {
+            // As in the script editor: only an X++ error is in the infolog already
+            error(ex.ToString());
+            Status.selection(MXTXppInterpreterExecutionStatus::Failed);
+            return;
+        }
+
+        ListEnumerator parseErrors = executionResult.parseErrors().getEnumerator();
+
+        while (parseErrors.moveNext())
+        {
+            error(parseErrors.current());
+        }
+
+        if (executionResult.hasRun())
+        {
+            Status.selection(MXTXppInterpreterExecutionStatus::Succeeded);
+            Result.text(executionResult.returnValueText());
+        }
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+		<DataSources xmlns="" />
+		<DataControls xmlns="">
+			<Control>
+				<Name>ExecuteButton</Name>
+				<Type>Button</Type>
+				<Methods>
+					<Method>
+						<Name>clicked</Name>
+						<Source><![CDATA[
+        public void clicked()
+        {
+            super();
+
+            element.runScript();
+        }
+
+]]></Source>
+					</Method>
+				</Methods>
+			</Control>
+		</DataControls>
+		<Members xmlns="" />
+	</SourceCode>
+	<DataSources />
+	<Design>
+		<Caption xmlns="">@MXT:AgentMCPExecute</Caption>
+		<Pattern xmlns="">Custom</Pattern>
+		<ViewEditMode xmlns="">Edit</ViewEditMode>
+		<Controls xmlns="">
+			<AxFormControl xmlns=""
+				i:type="AxFormInt64Control">
+				<Name>ScriptId</Name>
+				<AutoDeclaration>Yes</AutoDeclaration>
+				<HelpText>@MXT:AgentScriptIdHelp</HelpText>
+				<Type>Int64</Type>
+				<FormControlExtension
+					i:nil="true" />
+				<ExtendedDataType>RefRecId</ExtendedDataType>
+				<Label>@MXT:ScriptId</Label>
+			</AxFormControl>
+			<AxFormControl xmlns=""
+				i:type="AxFormStringControl">
+				<Name>Script</Name>
+				<AutoDeclaration>Yes</AutoDeclaration>
+				<HelpText>@MXT:AgentScriptHelp</HelpText>
+				<HeightMode>SizeToAvailable</HeightMode>
+				<Type>String</Type>
+				<WidthMode>SizeToAvailable</WidthMode>
+				<FormControlExtension
+					i:nil="true" />
+				<Label>@MXT:Script</Label>
+				<MultiLine>Yes</MultiLine>
+			</AxFormControl>
+			<AxFormControl xmlns=""
+				i:type="AxFormButtonControl">
+				<Name>ExecuteButton</Name>
+				<AutoDeclaration>Yes</AutoDeclaration>
+				<Type>Button</Type>
+				<FormControlExtension
+					i:nil="true" />
+				<Text>@MXT:Execute</Text>
+			</AxFormControl>
+			<AxFormControl xmlns=""
+				i:type="AxFormComboBoxControl">
+				<Name>Status</Name>
+				<AllowEdit>No</AllowEdit>
+				<AutoDeclaration>Yes</AutoDeclaration>
+				<HelpText>@MXT:AgentStatusHelp</HelpText>
+				<Type>ComboBox</Type>
+				<FormControlExtension
+					i:nil="true" />
+				<EnumType>MXTXppInterpreterExecutionStatus</EnumType>
+				<Label>@MXT:ExecutionStatus</Label>
+				<Items />
+			</AxFormControl>
+			<AxFormControl xmlns=""
+				i:type="AxFormStringControl">
+				<Name>Result</Name>
+				<AllowEdit>No</AllowEdit>
+				<AutoDeclaration>Yes</AutoDeclaration>
+				<HelpText>@MXT:AgentResultHelp</HelpText>
+				<HeightMode>SizeToAvailable</HeightMode>
+				<Type>String</Type>
+				<WidthMode>SizeToAvailable</WidthMode>
+				<FormControlExtension
+					i:nil="true" />
+				<Label>@MXT:ExecutionResult</Label>
+				<MultiLine>Yes</MultiLine>
+			</AxFormControl>
+		</Controls>
+	</Design>
+	<Parts />
+</AxForm>

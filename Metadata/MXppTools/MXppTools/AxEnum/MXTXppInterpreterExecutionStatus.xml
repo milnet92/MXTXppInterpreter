@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxEnum xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXTXppInterpreterExecutionStatus</Name>
+	<Label>@MXT:ExecutionStatus</Label>
+	<EnumValues>
+		<AxEnumValue>
+			<Name>NotRun</Name>
+			<Label>@MXT:ExecutionNotRun</Label>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Succeeded</Name>
+			<Label>@MXT:ExecutionSucceeded</Label>
+			<Value>1</Value>
+		</AxEnumValue>
+		<AxEnumValue>
+			<Name>Failed</Name>
+			<Label>@MXT:ExecutionFailed</Label>
+			<Value>2</Value>
+		</AxEnumValue>
+	</EnumValues>
+</AxEnum>

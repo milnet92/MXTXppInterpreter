@@ -1,0 +1,90 @@
+using System;
+using XppInterpreter.Interpreter.Proxy;
+
+namespace XppInterpreter.Tests.Infrastructure
+{
+    /// <summary>The compile-time intrinsics (classStr, tableNum...) need D365 metadata: the ones tests use just echo their input.</summary>
+    public sealed class FakeIntrinsicFunctionProvider : IIntrinsicFunctionProvider
+    {
+        public Type GetCustomPredefinedFunctionProvider() => null;
+        public int classNum(string name) => throw new NotSupportedException();
+        public string classStr(string name) => name;
+        public string formStr(string name) => name;
+        public string extendedTypeStr(string name) => name;
+        public string menuItemActionStr(string name) => name;
+        public string menuItemDisplayStr(string name) => name;
+        public string menuItemOutputStr(string name) => name;
+        public string methodStr(string className, string methodName) => className;
+        public string staticMethodStr(string className, string methodName) => className;
+        public int tableNum(string name) => throw new NotSupportedException();
+        public string tableStr(string name) => name;
+        public object conNull() => new object[0];
+        public object dateNull() => throw new NotSupportedException();
+        public object maxDate() => throw new NotSupportedException();
+        public int maxInt() => int.MaxValue;
+        public int minInt() => int.MinValue;
+        public int enumNum(string enumName) => throw new NotSupportedException();
+        public int configurationKeyNum(string keyName) => throw new NotSupportedException();
+        public string configurationKeyStr(string keyName) => keyName;
+        public string dataEntityDataSourceStr(string dataEntity, string dataSource) => dataEntity;
+        public string delegateStr(string className, string instanceDelegate) => className;
+        public string dimensionHierarchyLevelStr(string dimensionHierarchyLevel) => dimensionHierarchyLevel;
+        public string dimensionHierarchyStr(string dimensionHierarchy) => dimensionHierarchy;
+        public string dimensionReferenceStr(string dimensionReference) => dimensionReference;
+        public string attributeStr(string attribute) => attribute;
+        public string dutyStr(string securityDuty) => securityDuty;
+        public int enumCnt(string enumType) => throw new NotSupportedException();
+        public string enumLiteralStr(string enumName, string literal) => enumName;
+        public string enumStr(string enumName) => enumName;
+        public int extendedTypeNum(string enumName) => throw new NotSupportedException();
+        public int fieldNum(string tableName, string fieldName) => throw new NotSupportedException();
+        public string fieldPName(string tableName, string fieldName) => tableName;
+        public string fieldStr(string talbeName, string fieldName) => talbeName;
+        public string formControlStr(string formName, string controlName) => formName;
+        public string formDataFieldStr(string formName, string dataSourceName, string dataFieldName) => formName;
+        public string formDataSourceStr(string formName, string dataSourceName) => formName;
+        public string formMethodStr(string formName, string methodName) => formName;
+        public string identifierStr(string identifierName) => identifierName;
+        public int indexNum(string talbeName, string indexName) => throw new NotSupportedException();
+        public string indexStr(string talbeName, string indexName) => talbeName;
+        public int licenseCodeNum(string licenseCodeName) => throw new NotSupportedException();
+        public string licenseCodeStr(string licenseCodeName) => licenseCodeName;
+        public string literalStr(string literalStr) => literalStr;
+        public string measurementStr(string measurementName) => measurementName;
+        public string measureStr(string measureName) => measureName;
+        public string menuStr(string menuName) => menuName;
+        public string privilegeStr(string privilegeName) => privilegeName;
+        public string queryDatasourceStr(string queyrName, string dataSourceName) => queyrName;
+        public string queryMethodStr(string queryName, string methodName) => queryName;
+        public string queryStr(string queryName) => queryName;
+        public string reportStr(string reportName) => reportName;
+        public string resourceStr(string resourceName) => resourceName;
+        public string roleStr(string roleName) => roleName;
+        public string ssrsReportStr(string reportName, string designName) => reportName;
+        public string staticDelegateStr(string className, string delegateName) => className;
+        public string tableCollectionStr(string tableCollectionName) => tableCollectionName;
+        public string tableFieldGroupStr(string talbeName, string fieldGroupName) => talbeName;
+        public string tableMethodStr(string tableName, string methodName) => tableName;
+        public string tablePName(string tableName) => tableName;
+        public string tableStaticMethodStr(string tableName, string methodName) => tableName;
+        public string tileStr(string tileName) => tileName;
+        public string varStr(string varName) => varName;
+        public string webActionItemStr(string webActionItemName) => webActionItemName;
+        public string webDisplayContentItemStr(string webDisplayContentItemName) => webDisplayContentItemName;
+        public string webOutputContentItemStr(string webOutputContentItemName) => webOutputContentItemName;
+        public string webFormStr(string webFormName) => webFormName;
+        public string webletItemStr(string webletItemName) => webletItemName;
+        public string webMenuStr(string webMenuName) => webMenuName;
+        public string webpageDefStr(string webpageDefName) => webpageDefName;
+        public string webReportStr(string webReportName) => webReportName;
+        public string websiteDefStr(string websiteDefName) => websiteDefName;
+        public string webSiteTempStr(string webSiteTempName) => webSiteTempName;
+        public string webStaticFileStr(string webStaticFileName) => webStaticFileName;
+        public string webUrlItemStr(string webUrlItemName) => webUrlItemName;
+        public string webWebPartStr(string webWebPartName) => webWebPartName;
+        public string workflowapprovalstr(string workflowapprovalName) => workflowapprovalName;
+        public string workflowCategoryStr(string workflowCategoryName) => workflowCategoryName;
+        public string workflowTaskStr(string workflowTaskName) => workflowTaskName;
+        public string workflowTypeStr(string workflowTypeName) => workflowTypeName;
+    }
+}

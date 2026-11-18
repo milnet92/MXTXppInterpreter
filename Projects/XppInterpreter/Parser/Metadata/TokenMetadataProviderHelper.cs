@@ -59,9 +59,14 @@ namespace XppInterpreter.Parser.Metadata
                 return new IntrinsicMethodTokenMetadata(GenerateIntrinsicSignatureHtml(methodName, proxy, parameterPosition));
             }
 
-            string syntax = new Providers.MethodMetadataProvider(methodName, context, isStatic, isConstructor, callerType)
-                .GetTokenMetadata(proxy)
-                .GetDisplayHtml();
+            TokenMetadata metadata = new Providers.MethodMetadataProvider(methodName, context, isStatic, isConstructor, callerType).GetTokenMetadata(proxy);
+
+            if (metadata is ClrMethodTokenMetadata clrMetadata)
+            {
+                return new IntrinsicMethodTokenMetadata(clrMetadata.GetDisplayHtml(parameterPosition));
+            }
+
+            string syntax = metadata.GetDisplayHtml();
 
             StringBuilder builder = new StringBuilder();
             int parsingParamCount = -1;

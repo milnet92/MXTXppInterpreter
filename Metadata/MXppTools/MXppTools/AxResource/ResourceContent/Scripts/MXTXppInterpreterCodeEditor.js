@@ -11,7 +11,8 @@
         Tables: [],
         Edts: [],
         Enums: [],
-        GlobalFunctions: []
+        GlobalFunctions: [],
+        Namespaces: []
     }
 
     const knownTypes = ["var", "anytype", "date", "int", "int64", "date", "utcdatetime", "timeofday", "boolean", "container", "guid"];
@@ -175,6 +176,11 @@
             clearTimeout(change_timer);
 
             $dyn.callFunction(self.GetTokenMetadata, self, { _line: pos.row, _position: currentToken.start + 1, _isMethodParameters: true }, function (ret) {
+                var current = editor.getCursorPosition();
+
+                // The answer comes late: the user may be writing somewhere else by now
+                if (current.row !== pos.row || current.column !== pos.column) return;
+
                 if (ret !== null && typeof ret != 'undefined' && ret.DocHtml !== '') {
                     // Get client position
                     var position = editor.renderer.textToScreenCoordinates(pos.row, currentToken.start);
@@ -339,6 +345,7 @@
                     ...listObjects.Enums,
                     ...listObjects.Edts,
                     ...listObjects.GlobalFunctions,
+                    ...listObjects.Namespaces,
                     ...intrinsicCompleterList,
                     ...keywordsCompleterList])
 
@@ -464,6 +471,7 @@
                 Enums: ret.Enums.map(function (e) { return { value: e, name: e, type: 'Enum' } }),
                 Edts: ret.Edts.map(function (e) { return { value: e, name: e, type: 'Edt' } }),
                 GlobalFunctions: ret.GlobalFunctions.map(function (e) { return { value: e, name: e, type: 'GlobalFunction' } }),
+                Namespaces: ret.Namespaces.map(function (e) { return { value: e, name: e, type: 'Namespace' } }),
             };
 
             console.log("MXT:", "Finished receiving elements metadata.");

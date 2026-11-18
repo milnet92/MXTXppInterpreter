@@ -12,7 +12,17 @@ namespace XppInterpreter.Interpreter.Bytecode
 
         public void Execute(RuntimeContext context)
         {
-            context.ScopeHandler.CurrentExceptionHandler.ExecuteRetry(context);
+            // A using or a changecompany inside the catch block is closed first
+            int handlers = context.ScopeHandler.HandlersInsideCatchBlock;
+
+            if (handlers > 0)
+            {
+                context.BeginExit(PendingExit.Retry(handlers));
+            }
+            else
+            {
+                context.ScopeHandler.CurrentExceptionHandler.ExecuteRetry(context);
+            }
         }
     }
 }

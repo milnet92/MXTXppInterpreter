@@ -52,6 +52,10 @@ namespace XppInterpreter.Parser
         public string ExceptionMember { get; }
         public Block Block { get; }
 
+        public System.Type ClrType { get; set; }
+
+        public string VariableName { get; set; }
+
         public Catch(string exceptionMember, Block block)
         {
             ExceptionMember = exceptionMember;

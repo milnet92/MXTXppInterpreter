@@ -11,6 +11,10 @@ namespace XppInterpreter.Interpreter.Bytecode
         public string ExceptionMemberName { get; }
         public int Offset { get; }
 
+        public System.Type ClrType { get; set; }
+
+        public string VariableName { get; set; }
+
         public ExceptionCatchReference(string exceptionMemberName, int offset)
         {
             ExceptionMemberName = exceptionMemberName;

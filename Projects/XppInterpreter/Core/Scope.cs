@@ -10,7 +10,9 @@ namespace XppInterpreter.Core
     public class Scope
     {
         internal readonly VariableCollection VariableCollection = new VariableCollection();
-        internal readonly List<object> disposables = new List<object>();
+
+        // Only a scope that calls setPrefix has one: every block is a scope, so the list is created when it is needed
+        internal List<object> disposables;
 
         public readonly Stack<object> Stack = new Stack<object>();
         public Scope Parent { get; set; }
@@ -27,13 +29,16 @@ namespace XppInterpreter.Core
 
         public Scope End()
         {
-            foreach (var obj in disposables)
+            if (disposables != null)
             {
-                IDisposable disposable = obj as IDisposable;
-
-                if (disposable != null)
+                foreach (var obj in disposables)
                 {
-                    disposable.Dispose();
+                    IDisposable disposable = obj as IDisposable;
+
+                    if (disposable != null)
+                    {
+                        disposable.Dispose();
+                    }
                 }
             }
 
@@ -42,96 +47,101 @@ namespace XppInterpreter.Core
 
         public object GetVar(string varName)
         {
-            if (VariableCollection.Exists(varName))
+            for (Scope current = this; current != null; current = current.Parent)
             {
-                return VariableCollection[varName].Value;
-            }
-            else if (Parent != null)
-            {
-                return Parent.GetVar(varName);
+                if (current.VariableCollection.TryGet(varName, out VariableEntry entry))
+                {
+                    return entry.Value;
+                }
             }
 
             throw new Exception($"Variable {varName} was not declared.");
         }
 
-        public void SetVar(string varName, object varValue, Interpreter.Proxy.IXppCastingProxy castingProxy, bool forceOnTop = false, Type declarationType = null, string typeName = null)
+        /// <param name="proxy">Null when the debugger changes a value, which was already converted</param>
+        public void SetVar(string varName, object varValue, XppProxy proxy, bool forceOnTop = false, Type declarationType = null, string typeName = null, int stringLength = 0)
         {
-            Scope current = this;
-            bool found = false;
-
-            while (!found)
+            for (Scope current = this; current != null; current = current.Parent)
             {
-                bool exists = current.VariableCollection.Exists(varName);
-
-                if (current != null && (exists || forceOnTop))
+                if (current.VariableCollection.TryGet(varName, out VariableEntry entry))
                 {
-                    found = true;
-
-                    if (!exists)
-                    {
-                        if (declarationType != null)
-                        {
-                            object value;
-
-                            if (varValue != null && varValue.GetType() != declarationType)
-                            {
-                                if (declarationType.IsEnum)
-                                {
-                                    value = Enum.ToObject(declarationType, varValue);
-                                }
-                                else
-                                {
-                                    value = castingProxy.Cast(varValue, declarationType);
-                                }
-                            }
-                            else
-                            {
-                                value = varValue;
-                            }
-
-                            if (!string.IsNullOrEmpty(typeName) && castingProxy.IsStringEDT(typeName))
-                            {
-                                value = castingProxy.TruncateEDTString(value as string, typeName);
-                            }
-
-                            current.VariableCollection.Add(new VariableEntry(varName, declarationType, value, typeName));
-                        }
-                        else
-                        {
-                            throw new Exception($"Variable {varName} is not declared.");
-                        }
-                    }
-                    else
-                    {
-                        var entryTypeName = current.VariableCollection[varName].TypeName;
-
-                        object value;
-
-                        if (!string.IsNullOrEmpty(entryTypeName) && castingProxy.IsStringEDT(entryTypeName))
-                        {
-                            value = castingProxy.TruncateEDTString(varValue as string, entryTypeName);
-                        }
-                        else
-                        {
-                            value = varValue;
-                        }
-
-                        current.VariableCollection[varName].SetValue(value);
-                    }
-                }
-                else if (current == null)
-                {
-                    break;
+                    entry.SetValue(ConvertToType(varValue, entry.DeclarationType, entry.TypeName, entry.StringLength, proxy));
+                    return;
                 }
 
-                current = current.Parent;
+                if (forceOnTop)
+                {
+                    if (declarationType is null)
+                    {
+                        break;
+                    }
+
+                    object value = ConvertToType(varValue, declarationType, typeName, stringLength, proxy);
+
+                    current.VariableCollection.Add(new VariableEntry(varName, declarationType, value, typeName) { StringLength = stringLength });
+                    return;
+                }
             }
 
-            if (!found)
-            {
-                throw new Exception($"Variable {varName} is not declared.");
-            }
+            throw new Exception($"Variable {varName} is not declared.");
         }
+
+        /// <summary>
+        /// A variable keeps its declared type: the value is converted to it, as the X++ compiler does on every assignment.
+        /// </summary>
+        private static object ConvertToType(object value, Type declarationType, string typeName, int stringLength, XppProxy proxy)
+        {
+            if (proxy is null) return value;
+
+            object converted = Clr.ClrValues.CopyIfStruct(value);
+
+            if (value is null)
+            {
+                // An X++ str is never null. A System.String variable can be.
+                if (declarationType == typeof(string) && !string.IsNullOrEmpty(typeName))
+                {
+                    converted = string.Empty;
+                }
+                else if (declarationType != null && declarationType.IsValueType && Nullable.GetUnderlyingType(declarationType) is null)
+                {
+                    // A .NET nullable without value that goes to an int64, for example
+                    converted = Activator.CreateInstance(declarationType);
+                }
+            }
+            else if (declarationType != null && value.GetType() != declarationType)
+            {
+                converted = ConvertToDeclaredType(converted, declarationType, proxy.Casting);
+            }
+
+            if (converted is string edtValue && proxy.IsStringEdt(typeName))
+            {
+                converted = proxy.Casting.TruncateEDTString(edtValue, typeName);
+            }
+
+            if (stringLength > 0 && converted is string text && text.Length > stringLength)
+            {
+                converted = text.Substring(0, stringLength);
+            }
+
+            return converted;
+        }
+
+        private static object ConvertToDeclaredType(object value, Type declarationType, Interpreter.Proxy.IXppCastingProxy castingProxy)
+        {
+            // The X++ value types convert with the X++ rules, unless they come from a .NET value that X++ doesn't know
+            if (declarationType.IsInstanceOfType(value) || !IsXppValueType(value.GetType()) || !IsXppValueType(declarationType))
+            {
+                if (Clr.ClrConversions.TryConvert(value, declarationType, out object converted))
+                {
+                    return converted;
+                }
+            }
+
+            return castingProxy.Cast(value, declarationType);
+        }
+
+        private static bool IsXppValueType(Type type) =>
+            type == typeof(string) || type == typeof(int) || type == typeof(long) || type == typeof(decimal) || type == typeof(bool) || type == typeof(Guid);
 
         public NormalizedScopeEntry[] GetNormalizedScopeEntries(XppProxy proxy = null)
         {

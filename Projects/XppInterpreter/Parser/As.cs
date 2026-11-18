@@ -14,6 +14,10 @@ namespace XppInterpreter.Parser
         public Expression Expression { get; }
         public string TypeName { get; }
 
+        public System.Type ClrType { get; set; }
+
+        public bool IsMapCall { get; set; }
+
         public As(Expression expression, string typeName, SourceCodeBinding sourceCodeBinding)
             : base(Word.As, sourceCodeBinding)
         {

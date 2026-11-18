@@ -11,6 +11,10 @@ namespace XppInterpreter.Interpreter.Bytecode
         public string OperationCode => $"AS {TypeName}";
         public string TypeName { get; }
 
+        public System.Type ClrType { get; set; }
+
+        public bool IsMapCall { get; set; }
+
         public As(string typeName)
         {
             TypeName = typeName;
@@ -20,7 +24,13 @@ namespace XppInterpreter.Interpreter.Bytecode
         {
             var value = context.Stack.Pop();
 
-            context.Stack.Push(context.Proxy.Casting.As(value, TypeName));
+            if (IsMapCall)
+            {
+                context.Stack.Push(context.Proxy.Casting.Cast(value, context.Proxy.Casting.GetSystemTypeFromTypeName(TypeName)));
+                return;
+            }
+
+            context.Stack.Push(ClrType != null ? (ClrType.IsInstanceOfType(value) ? value : null) : context.Proxy.Casting.As(value, TypeName));
         }
     }
 }

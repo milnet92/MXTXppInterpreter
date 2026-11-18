@@ -12,6 +12,7 @@ using Microsoft.Dynamics.Ax;
 /// </summary>
 internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Proxy.IXppCastingProxy
 {
+    private static System.Collections.Hashtable xppTypesByName;
 }
 ]]></Declaration>
 		<Methods>
@@ -24,6 +25,30 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
     /// <param name = "_name">Type name</param>
     /// <returns>Types type</returns>
     public static Types getXppTypeByTypeName(str _name)
+    {
+        // Asked for every declaration a script runs, and for a name that is not an enum it takes up to four lookups
+        // in the data dictionary; what a name is doesn't change while the AOS runs
+        if (!xppTypesByName)
+        {
+            xppTypesByName = System.Collections.Hashtable::Synchronized(new System.Collections.Hashtable(System.StringComparer::OrdinalIgnoreCase));
+        }
+
+        if (!xppTypesByName.ContainsKey(_name))
+        {
+            xppTypesByName.set_Item(_name, enum2int(MXTXppCastingProxy::findXppTypeByTypeName(_name)));
+        }
+
+        int type = System.Convert::ToInt32(xppTypesByName.get_Item(_name));
+
+        return type;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>findXppTypeByTypeName</Name>
+				<Source><![CDATA[
+    private static Types findXppTypeByTypeName(str _name)
     {
         // Base Enums
         if (SysDictEnum::newName(_name) != null)
@@ -370,9 +395,22 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
                 }
             }
 
-            // Validate extends
-            TableId  sourceTableId = tableName2Id(_value.GetType().Name);
-            TableId  targetTableId = tablename2id(_typeName);
+            // Validate extends. A record of a table hierarchy selected into a buffer of a base table is the derived type
+            // the row has, as the kernel decides it in compiled X++: by InstanceRelationType, not by the type of the buffer (pM32)
+            Common record = _value;
+            TableId sourceTableId = record.TableId;
+            TableId targetTableId = tablename2id(_typeName);
+            FieldId instanceRelationTypeId = fieldName2Id(sourceTableId, 'InstanceRelationType');
+
+            if (instanceRelationTypeId)
+            {
+                TableId instanceTableId = record.(instanceRelationTypeId);
+
+                if (instanceTableId)
+                {
+                    sourceTableId = instanceTableId;
+                }
+            }
             
             if (sourceTableId == targetTableId)
             {
@@ -484,6 +522,12 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
         // anytype is always convertible
         if (_toType == MXTXppTypes::AnyTypeType) return true;
 
+        // A record goes to a table map and back
+        if (this.isMapType(_toType) || this.isMapType(_fromType))
+        {
+            return _toType.IsSubclassOf(MXTXppTypes::CommonType) && _fromType.IsSubclassOf(MXTXppTypes::CommonType);
+        }
+
         // int, int64, real, boolean and enum are all implicitly convertible
         Set numCheckSet = new Set(Types::Class);
         numCheckSet.add(MXTXppTypes::Int32Type);
@@ -561,6 +605,22 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
 				<Source><![CDATA[
     public System.Object Cast(System.Object _value, System.Type _toType)
     {
+        // Not with != null: for X++ an empty record is the same as null
+        if (MXTXppTypes::CommonType.IsInstanceOfType(_value) && _toType.IsSubclassOf(MXTXppTypes::CommonType))
+        {
+            if (_toType.IsInstanceOfType(_value) || _value.GetType().IsAssignableFrom(_toType))
+            {
+                return _value;
+            }
+
+            if (this.isMapType(_toType) || this.isMapType(_value.GetType()))
+            {
+                return XppInterpreter.Core.ReflectionHelper::CastToMap(_value, _toType);
+            }
+
+            throw new System.InvalidCastException(strFmt("Cannot convert from type '%1' to type '%2'.", _value.GetType().Name, _toType.Name));
+        }
+
         if (_value != null)
         {
             System.Type fromType = _value.GetType();
@@ -571,9 +631,8 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
             }
         }
 
-        boolean isCommonType = _toType == MXTXppTypes::CommonType || _toType.IsSubclassOf(MXTXppTypes::CommonType);
-        
-        if (this.isEnumType(_toType))
+        // Boolean is also an enum in X++, but it has to stay a boolean
+        if (_toType != MXTXppTypes::BooleanType && this.isEnumType(_toType))
         {
             return Microsoft.Dynamics.Ax.Xpp.CastHelper::ObjectToInt(_value);
         }
@@ -603,6 +662,43 @@ internal final class MXTXppCastingProxy implements XppInterpreter.Interpreter.Pr
         if (_type == null) return null;
 
         return MXTXppTypes::ArrayType.MakeGenericType(_type);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>isMapType</Name>
+				<Source><![CDATA[
+    private boolean isMapType(System.Type _type)
+    {
+        if (!_type.IsSubclassOf(MXTXppTypes::CommonType))
+        {
+            return false;
+        }
+
+        SysDictTable dictTable = SysDictTable::newName(_type.Name);
+
+        return dictTable && dictTable.isMap();
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>ContainerPack</Name>
+				<Source><![CDATA[
+    public System.Object ContainerPack(System.Object value)
+    {
+        return Microsoft.Dynamics.Ax.Xpp.PredefinedFunctions::ContainerPack(value);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>ContainerUnpack</Name>
+				<Source><![CDATA[
+    public System.Object ContainerUnpack(System.Object value)
+    {
+        return Microsoft.Dynamics.Ax.Xpp.PredefinedFunctions::ContainerUnpack(value);
     }
 
 ]]></Source>

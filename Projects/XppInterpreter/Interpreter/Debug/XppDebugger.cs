@@ -187,7 +187,16 @@ namespace XppInterpreter.Interpreter.Debug
         /// <returns>An instance of <see cref="Breakpoint"/>. If none is found, returns <c>null</c>.</returns>
         public Breakpoint GetBreakpointAtElement(IDebuggeable debuggeable)
         {
-            return _breakpoints.FirstOrDefault(bp => bp.Element == debuggeable);
+            // Asked for every statement of a script that runs from the editor, which mostly has no breakpoint
+            for (int i = 0; i < _breakpoints.Count; i++)
+            {
+                if (_breakpoints[i].Element == debuggeable)
+                {
+                    return _breakpoints[i];
+                }
+            }
+
+            return null;
         }
     }
 }

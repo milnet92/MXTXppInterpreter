@@ -14,7 +14,7 @@
         {
             var value = context.Stack.Pop();
 
-            if (!context.Proxy.Casting.ToBoolean(value))
+            if (!Core.Clr.ClrValues.ToBoolean(value, context.Proxy))
             {
                 if (ReturnToStack)
                     context.Stack.Push(false);

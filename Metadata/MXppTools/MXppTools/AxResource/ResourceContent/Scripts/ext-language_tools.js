@@ -1169,7 +1169,8 @@ var AcePopup = /** @class */ (function () {
                     "EnumValue": "enum-value",
                     "LocalVariable": "local-var",
                     "ClassProperty": "class-field",
-                    "TableIndex": "table-index"
+                    "TableIndex": "table-index",
+                    "Namespace": "namespace"
                 };
 
                 value.type && tokens.push({

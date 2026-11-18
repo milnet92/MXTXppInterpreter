@@ -7,6 +7,8 @@ namespace XppInterpreter.Interpreter.Proxy
         void TtsBegin();
         void TtsCommit();
         void TtsAbort();
+
+        int TtsLevel();
         IDisposable CreateChangeCompanyHandler(string datAreaId);
         IDisposable CreateUncheckedHandler(int uncheckedValue, string className, string methodName);
         void Next(object common);
