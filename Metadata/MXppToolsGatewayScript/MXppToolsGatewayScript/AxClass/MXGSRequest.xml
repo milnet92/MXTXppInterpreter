@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXGSRequest</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+[DataContract]
+public class MXGSRequest
+{
+    str     code;
+    boolean dryRun;
+    int     maxLoopIterations;
+    str     functionName;
+    List    arguments;
+    boolean noLog;
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>parmCode</Name>
+				<Source><![CDATA[
+    [DataMember("Code")]
+    public str parmCode(str _code = code)
+    {
+        code = _code;
+        return code;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmDryRun</Name>
+				<Source><![CDATA[
+    [DataMember("DryRun")]
+    public boolean parmDryRun(boolean _dryRun = dryRun)
+    {
+        dryRun = _dryRun;
+        return dryRun;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmMaxLoopIterations</Name>
+				<Source><![CDATA[
+    [DataMember("MaxLoopIterations")]
+    public int parmMaxLoopIterations(int _maxLoopIterations = maxLoopIterations)
+    {
+        maxLoopIterations = _maxLoopIterations;
+        return maxLoopIterations;
+    }
+
+]]></Source>
+			</Method>
+					<Method>
+				<Name>parmFunctionName</Name>
+				<Source><![CDATA[
+    [DataMember("FunctionName")]
+    public str parmFunctionName(str _functionName = functionName)
+    {
+        functionName = _functionName;
+        return functionName;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmArguments</Name>
+				<Source><![CDATA[
+    [DataMember("Arguments"), DataCollection(Types::String)]
+    public List parmArguments(List _arguments = arguments)
+    {
+        arguments = _arguments;
+        return arguments;
+    }
+
+]]></Source>
+			</Method>					<Method>
+				<Name>parmNoLog</Name>
+				<Source><![CDATA[
+    [DataMember("NoLog")]
+    public boolean parmNoLog(boolean _noLog = noLog)
+    {
+        noLog = _noLog;
+        return noLog;
+    }
+
+]]></Source>
+			</Method>		</Methods>
+	</SourceCode>
+</AxClass>

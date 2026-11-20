@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxServiceGroup xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXGSServiceGroup</Name>
+	<AutoDeploy>Yes</AutoDeploy>
+	<Services>
+		<AxServiceGroupService>
+			<Name>MXGSService</Name>
+			<Service>MXGSService</Service>
+		</AxServiceGroupService>
+	</Services>
+</AxServiceGroup>

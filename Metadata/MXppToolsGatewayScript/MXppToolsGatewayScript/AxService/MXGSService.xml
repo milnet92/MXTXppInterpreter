@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxService xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXGSService</Name>
+	<Class>MXGSService</Class>
+	<ExternalName>MXGSService</ExternalName>
+	<ServiceOperations>
+		<AxServiceOperation>
+			<Name>execute</Name>
+			<Method>execute</Method>
+		</AxServiceOperation>
+	</ServiceOperations>
+</AxService>

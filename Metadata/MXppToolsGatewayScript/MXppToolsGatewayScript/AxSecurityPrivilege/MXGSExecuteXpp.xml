@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxSecurityPrivilege xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXGSExecuteXpp</Name>
+	<Label>Execute X++ script functions via script gateway service</Label>
+	<EntryPoints>
+		<AxSecurityEntryPointReference>
+			<Name>MXGSServiceExecute</Name>
+			<Grant>
+				<Invoke>Allow</Invoke>
+			</Grant>
+			<ObjectChildName>execute</ObjectChildName>
+			<ObjectName>MXGSService</ObjectName>
+			<ObjectType>ServiceOperation</ObjectType>
+			<Forms />
+		</AxSecurityEntryPointReference>
+	</EntryPoints>
+</AxSecurityPrivilege>
