@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXGSResponse</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+[DataContract]
+public class MXGSResponse
+{
+    boolean success;
+    str     error;
+    List    messages;
+    str     result;
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>new</Name>
+				<Source><![CDATA[
+    public void new()
+    {
+        messages = new List(Types::Class);
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmSuccess</Name>
+				<Source><![CDATA[
+    [DataMember("Success")]
+    public boolean parmSuccess(boolean _success = success)
+    {
+        success = _success;
+        return success;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmError</Name>
+				<Source><![CDATA[
+    [DataMember("Error")]
+    public str parmError(str _error = error)
+    {
+        error = _error;
+        return error;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmMessages</Name>
+				<Source><![CDATA[
+    [DataMember("Messages"), DataCollection(Types::Class, classStr(MXGSMessage))]
+    public List parmMessages(List _messages = messages)
+    {
+        messages = _messages;
+        return messages;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>addMessage</Name>
+				<Source><![CDATA[
+    public void addMessage(str _type, str _text)
+    {
+        MXGSMessage message = new MXGSMessage();
+
+        message.parmType(_type);
+        message.parmText(_text);
+        messages.addEnd(message);
+    }
+
+]]></Source>
+			</Method>
+					<Method>
+				<Name>parmResult</Name>
+				<Source><![CDATA[
+    [DataMember("Result")]
+    public str parmResult(str _result = result)
+    {
+        result = _result;
+        return result;
+    }
+
+]]></Source>
+			</Method>		</Methods>
+	</SourceCode>
+</AxClass>

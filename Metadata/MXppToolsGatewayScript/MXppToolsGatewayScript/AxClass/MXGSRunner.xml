@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXGSRunner</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+/// <summary>
+/// Runs X++ script text through the public MXppTools core class MXTXppCoreScript (no InternalsVisibleTo needed).
+/// With a function name it calls that function with the string arguments; without one the whole text is run as the
+/// body of a function. Dry-run wraps the call in a transaction that is aborted afterwards.
+/// </summary>
+public final class MXGSRunner
+{
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>run</Name>
+				<Source><![CDATA[
+    public static MXGSResponse run(MXGSRequest _request)
+    {
+        MXGSResponse response = new MXGSResponse();
+        str          code     = _request.parmCode();
+        str          function = _request.parmFunctionName();
+        str          loggedCode = code;
+        List         args     = _request.parmArguments() ? _request.parmArguments() : new List(Types::String);
+
+        infolog.clear();
+
+        if (_request.parmFunctionName())
+        {
+            loggedCode += '\n// gateway call: ' + _request.parmFunctionName() + '(' + con2Str(MXGSRunner::argsToContainer(args), ', ') + ')';
+        }
+
+        if (strLRTrim(code) == '')
+        {
+            response.parmError('No code supplied.');
+            return response;
+        }
+
+        if (strLRTrim(function) == '')
+        {
+            function = 'mxgsMain';
+            code     = 'anytype mxgsMain()' + '\n{\n' + code + '\n}';
+        }
+
+        if (args.elements() > 8)
+        {
+            response.parmError('At most 8 arguments are supported.');
+            return response;
+        }
+
+        MXTXppCoreScript script = MXTXppCoreScript::newFromSource(code);
+
+        if (!script.isValid())
+        {
+            ListEnumerator parseErrors = script.parseErrors().getEnumerator();
+
+            while (parseErrors.moveNext())
+            {
+                response.addMessage('ParseError', parseErrors.current());
+            }
+
+            response.parmError('Parse failed.');
+            return response;
+        }
+
+        if (!script.hasFunction(function))
+        {
+            response.parmError(strFmt('The script has no function %1.', function));
+            return response;
+        }
+
+        boolean dryRun = _request.parmDryRun();
+
+        try
+        {
+            if (!_request.parmNoLog())
+            {
+                MXTXppInterpreterScriptExecutionLog::startLog(loggedCode, dryRun);
+            }
+
+            if (dryRun)
+            {
+                ttsbegin;
+            }
+
+            anytype result = MXGSRunner::callFunction(script, function, MXGSRunner::argsToContainer(args));
+
+            response.parmResult(strFmt('%1', result));
+
+            if (dryRun)
+            {
+                ttsabort;
+            }
+
+            response.parmSuccess(true);
+        }
+        catch (Exception::CLRError)
+        {
+            System.Exception clrException = CLRInterop::getLastException();
+
+            while (clrException != null && clrException.InnerException != null)
+            {
+                clrException = clrException.InnerException;
+            }
+
+            response.parmError(clrException ? clrException.Message : 'Unknown CLR error.');
+        }
+        catch (Exception::Error)
+        {
+            response.parmError('X++ error exception (see messages).');
+        }
+        catch
+        {
+            response.parmError('X++ exception (see messages).');
+        }
+
+        SysInfologEnumerator enumerator = SysInfologEnumerator::newData(infolog.infologData());
+
+        while (enumerator.moveNext())
+        {
+            response.addMessage(enum2Symbol(enumNum(Exception), enumerator.currentException()), enumerator.currentMessage());
+        }
+
+        return response;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>callFunction</Name>
+				<Source><![CDATA[
+    private static anytype callFunction(MXTXppCoreScript _script, str _function, container _args)
+    {
+        switch (conLen(_args))
+        {
+            case 0:
+                return _script.call(_function);
+
+            case 1:
+                return _script.call(_function, conPeek(_args, 1));
+
+            case 2:
+                return _script.call(_function, conPeek(_args, 1), conPeek(_args, 2));
+
+            case 3:
+                return _script.call(_function, conPeek(_args, 1), conPeek(_args, 2), conPeek(_args, 3));
+
+            case 4:
+                return _script.call(_function, conPeek(_args, 1), conPeek(_args, 2), conPeek(_args, 3), conPeek(_args, 4));
+
+            case 5:
+                return _script.call(_function, conPeek(_args, 1), conPeek(_args, 2), conPeek(_args, 3), conPeek(_args, 4), conPeek(_args, 5));
+
+            case 6:
+                return _script.call(_function, conPeek(_args, 1), conPeek(_args, 2), conPeek(_args, 3), conPeek(_args, 4), conPeek(_args, 5), conPeek(_args, 6));
+
+            case 7:
+                return _script.call(_function, conPeek(_args, 1), conPeek(_args, 2), conPeek(_args, 3), conPeek(_args, 4), conPeek(_args, 5), conPeek(_args, 6), conPeek(_args, 7));
+
+            case 8:
+                return _script.call(_function, conPeek(_args, 1), conPeek(_args, 2), conPeek(_args, 3), conPeek(_args, 4), conPeek(_args, 5), conPeek(_args, 6), conPeek(_args, 7), conPeek(_args, 8));
+
+            default:
+                throw error('At most 8 arguments are supported.');
+        }
+    }
+
+]]></Source>
+			</Method>
+					<Method>
+				<Name>argsToContainer</Name>
+				<Source><![CDATA[
+    private static container argsToContainer(List _args)
+    {
+        container        ret;
+        ListEnumerator   enumerator = _args.getEnumerator();
+
+        while (enumerator.moveNext())
+        {
+            ret += enumerator.current();
+        }
+
+        return ret;
+    }
+
+]]></Source>
+			</Method>		</Methods>
+	</SourceCode>
+</AxClass>

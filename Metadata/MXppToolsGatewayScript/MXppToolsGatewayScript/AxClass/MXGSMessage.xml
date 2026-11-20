@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AxClass xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+	<Name>MXGSMessage</Name>
+	<SourceCode>
+		<Declaration><![CDATA[
+[DataContract]
+public class MXGSMessage
+{
+    str type;
+    str text;
+}
+]]></Declaration>
+		<Methods>
+			<Method>
+				<Name>parmType</Name>
+				<Source><![CDATA[
+    [DataMember("Type")]
+    public str parmType(str _type = type)
+    {
+        type = _type;
+        return type;
+    }
+
+]]></Source>
+			</Method>
+			<Method>
+				<Name>parmText</Name>
+				<Source><![CDATA[
+    [DataMember("Text")]
+    public str parmText(str _text = text)
+    {
+        text = _text;
+        return text;
+    }
+
+]]></Source>
+			</Method>
+		</Methods>
+	</SourceCode>
+</AxClass>
